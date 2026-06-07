@@ -395,6 +395,17 @@ not refresh market data, call yfinance, call Alpaca, read live/current positions
 create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve
 execution.
 
+Display the saved promoted decision preview without trading:
+
+```powershell
+python bot.py --show-promoted-decision
+```
+
+Run this after `python bot.py --promoted-decision-preview`. This display helper only
+reads `data/promoted_decision_preview.csv`; it does not refresh market data, call
+yfinance, call Alpaca, read positions, create/submit/cancel orders, write SQLite
+`trade_log`, send Discord alerts, or approve execution.
+
 Preview slow SMA signals without trading:
 
 ```powershell

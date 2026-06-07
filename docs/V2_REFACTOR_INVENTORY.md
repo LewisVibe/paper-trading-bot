@@ -340,6 +340,13 @@ This inventory captures the current V2 refactor state before moving any more pro
 - It marks every row `execution_approved=False`, `research_only=True`, and `preview_only=True`.
 - It is a policy preview only. It does not refresh market data, call yfinance, call Alpaca, read live/current positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
 
+## Promoted Decision Display Status
+
+- `--show-promoted-decision` reads `data/promoted_decision_preview.csv`.
+- It is only a terminal display helper for the CSV produced by `python bot.py --promoted-decision-preview`.
+- It displays row count, counts by `decision_state`, counts by `execution_approved`, compact ticker-level decision rows, and a final execution-approved warning or all-false confirmation.
+- It does not refresh market data, call yfinance, call Alpaca, read live/current positions, submit/cancel/create orders, write SQLite `trade_log` rows, send Discord alerts, or approve execution.
+
 ## Strategy Lab Status
 
 - `trading_bot/strategies/base.py` and `trading_bot/strategies/registry.py` provide the initial strategy-lab skeleton.

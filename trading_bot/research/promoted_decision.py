@@ -29,6 +29,18 @@ PROMOTED_DECISION_COLUMNS = [
     "preview_only",
 ]
 
+PROMOTED_DECISION_DISPLAY_COLUMNS = [
+    "ticker",
+    "consensus_state",
+    "long_votes",
+    "flat_votes",
+    "risk_status_summary",
+    "action_summary",
+    "decision_state",
+    "execution_approved",
+    "reason",
+]
+
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
     with path.open(newline="", encoding="utf-8") as file:
@@ -145,6 +157,52 @@ def build_promoted_decision_summary(rows: list[dict[str, Any]], output_path: Pat
     ]
 
 
+def build_show_promoted_decision_lines(input_path: Path, rows: list[dict[str, str]]) -> list[str]:
+    decision_counts = Counter(row.get("decision_state", "") or "blank" for row in rows)
+    execution_counts = Counter(row.get("execution_approved", "") or "blank" for row in rows)
+    has_execution_approved = any(is_truthy(row.get("execution_approved", "")) for row in rows)
+    final_line = (
+        "WARNING: at least one row has execution_approved=True; manual review required."
+        if has_execution_approved
+        else "Execution approved: False for all rows."
+    )
+    return [
+        "READ-ONLY DISPLAY. NOT EXECUTION.",
+        "This command only reads data/promoted_decision_preview.csv and does not refresh data, read positions, or submit orders.",
+        f"Input file: {input_path}",
+        f"Rows: {len(rows)}",
+        "",
+        "Count by decision_state:",
+        *_format_display_counts(decision_counts),
+        "",
+        "Count by execution_approved:",
+        *_format_display_counts(execution_counts),
+        "",
+        *_format_promoted_decision_table(rows),
+        "",
+        final_line,
+    ]
+
+
+def build_missing_promoted_decision_lines(input_path: Path) -> list[str]:
+    return [
+        "READ-ONLY DISPLAY. NOT EXECUTION.",
+        "This command only reads data/promoted_decision_preview.csv and does not refresh data, read positions, or submit orders.",
+        f"Missing promoted decision preview file: {input_path}",
+        "Run these first:",
+        "python bot.py --promoted-consensus-preview",
+        "python bot.py --promoted-risk-preview",
+        "python bot.py --promoted-decision-preview",
+        "Then rerun: python bot.py --show-promoted-decision",
+    ]
+
+
+def show_promoted_decision_file(input_path: Path) -> tuple[int, list[str]]:
+    if not input_path.exists():
+        return 1, build_missing_promoted_decision_lines(input_path)
+    return 0, build_show_promoted_decision_lines(input_path, read_csv_rows(input_path))
+
+
 def run_promoted_decision_preview_files(
     consensus_path: Path,
     action_path: Path,
@@ -183,3 +241,61 @@ def format_counts(counts: Counter[str]) -> str:
     if not counts:
         return "none"
     return ", ".join(f"{name}={count}" for name, count in sorted(counts.items()))
+
+
+def _format_display_counts(counts: Counter[str]) -> list[str]:
+    if not counts:
+        return ["- none"]
+    return [f"- {name}: {count}" for name, count in sorted(counts.items())]
+
+
+def _format_promoted_decision_table(rows: list[dict[str, str]]) -> list[str]:
+    if not rows:
+        return ["No promoted decision rows found."]
+    display_rows = [
+        {
+            column: _truncate(str(row.get(column, "")), _column_width(column))
+            for column in PROMOTED_DECISION_DISPLAY_COLUMNS
+        }
+        for row in rows
+    ]
+    widths = {
+        column: min(
+            _column_width(column),
+            max(len(column), *(len(row[column]) for row in display_rows)),
+        )
+        for column in PROMOTED_DECISION_DISPLAY_COLUMNS
+    }
+    header = " | ".join(column.ljust(widths[column]) for column in PROMOTED_DECISION_DISPLAY_COLUMNS)
+    separator = "-+-".join("-" * widths[column] for column in PROMOTED_DECISION_DISPLAY_COLUMNS)
+    lines = [header, separator]
+    for row in display_rows:
+        lines.append(" | ".join(row[column].ljust(widths[column]) for column in PROMOTED_DECISION_DISPLAY_COLUMNS))
+    return lines
+
+
+def _column_width(column: str) -> int:
+    widths = {
+        "ticker": 8,
+        "consensus_state": 22,
+        "long_votes": 10,
+        "flat_votes": 10,
+        "risk_status_summary": 28,
+        "action_summary": 34,
+        "decision_state": 34,
+        "execution_approved": 18,
+        "reason": 64,
+    }
+    return widths.get(column, 20)
+
+
+def _truncate(value: str, width: int) -> str:
+    if len(value) <= width:
+        return value
+    if width <= 3:
+        return value[:width]
+    return f"{value[: width - 3]}..."
+
+
+def is_truthy(value: str) -> bool:
+    return str(value).strip().lower() in {"true", "1", "yes"}

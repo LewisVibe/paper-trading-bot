@@ -125,7 +125,7 @@ from trading_bot.research.promoted_preview import (
     write_promoted_preview,
 )
 from trading_bot.research.promoted_consensus import run_promoted_consensus_preview_files
-from trading_bot.research.promoted_decision import run_promoted_decision_preview_files
+from trading_bot.research.promoted_decision import run_promoted_decision_preview_files, show_promoted_decision_file
 from trading_bot.research.promoted_risk import run_promoted_risk_preview_files, show_promoted_risk_file
 from trading_bot.research.promotion import generate_strategy_promotion_report
 from trading_bot.research.reporting import generate_research_report
@@ -2330,6 +2330,13 @@ def run_promoted_decision_preview() -> int:
     return status_code
 
 
+def run_show_promoted_decision() -> int:
+    status_code, lines = show_promoted_decision_file(Path("data") / "promoted_decision_preview.csv")
+    for line in lines:
+        print(line)
+    return status_code
+
+
 def run_show_promoted_risk() -> int:
     status_code, lines = show_promoted_risk_file(Path("data") / "promoted_risk_preview.csv")
     for line in lines:
@@ -3824,6 +3831,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a research-only decision policy preview from saved promoted reports.",
     )
     parser.add_argument(
+        "--show-promoted-decision",
+        action="store_true",
+        help="Display the saved promoted decision preview CSV without trading.",
+    )
+    parser.add_argument(
         "--show-promoted-risk",
         action="store_true",
         help="Display the saved promoted risk preview CSV without trading.",
@@ -4030,6 +4042,8 @@ def main() -> int:
         return run_promoted_consensus_preview()
     if args.promoted_decision_preview:
         return run_promoted_decision_preview()
+    if args.show_promoted_decision:
+        return run_show_promoted_decision()
     if args.show_promoted_risk:
         return run_show_promoted_risk()
 
