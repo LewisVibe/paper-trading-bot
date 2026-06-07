@@ -1,0 +1,56 @@
+{
+  "tickers": ["AAPL", "MSFT", "SPY"],
+  "short_window": 20,
+  "long_window": 50,
+  "history_period": "6mo",
+  "history_interval": "1d",
+  "order_quantity": 1,
+  "dry_run": true,
+  "allow_shorting": false,
+  "database_path": "data/trades.db",
+  "log_file": "logs/bot.log",
+  "strategy": {
+    "name": "regime_sma_vol_filter",
+    "regime_ticker": "SPY",
+    "short_window": 20,
+    "long_window": 50,
+    "trend_window": 200,
+    "vol_window": 20,
+    "vol_median_window": 252,
+    "vol_gate_multiple": 1.5
+  },
+  "backtest": {
+    "enabled": false,
+    "starting_cash": 100000,
+    "position_size_dollars": 10000,
+    "slippage_bps": 5,
+    "history_period": "10y",
+    "split_date": "2021-01-01",
+    "output_csv": "data/backtest_results.csv",
+    "trades_csv": "data/backtest_trades.csv"
+  },
+  "research_universe": {
+    "enabled": false,
+    "tickers": ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "JPM", "V", "UNH", "XOM", "JNJ", "PG", "HD", "COST", "SPY", "QQQ", "DIA", "IWM", "XLK", "XLF", "XLE", "XLV", "XLY", "XLP"]
+  },
+  "etf_research_universe": {
+    "enabled": false,
+    "tickers": ["SPY", "QQQ", "DIA", "IWM", "XLK", "XLF", "XLE", "XLV", "XLY", "XLP", "XLI", "XLU", "XLB", "XLRE", "TLT", "IEF", "GLD", "SLV"]
+  },
+  "slow_sma_strategy": {
+    "enabled": false,
+    "short_window": 50,
+    "long_window": 200,
+    "etf_short_window": 100,
+    "etf_long_window": 200
+  },
+  "discord": {
+    "enabled": false,
+    "webhook_url": ""
+  },
+  "alpaca": {
+    "paper": true,
+    "api_key": "",
+    "secret_key": ""
+  }
+}
