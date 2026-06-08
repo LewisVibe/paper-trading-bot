@@ -19,6 +19,7 @@ from trading_bot.research.defensive_allocation_decision import generate_defensiv
 from trading_bot.research.defensive_allocation_risk import generate_defensive_allocation_risk_preview
 from trading_bot.research.defensive_allocation_preview import generate_defensive_allocation_preview
 from trading_bot.research.defensive_comparison import generate_defensive_candidate_comparison
+from trading_bot.research.defensive_execution_readiness import generate_defensive_execution_readiness_report
 from trading_bot.research.defensive_refresh import refresh_defensive_research
 from trading_bot.research.defensive_state import generate_defensive_research_state_report
 from trading_bot.research.deployment_readiness import generate_deployment_readiness_report
@@ -105,6 +106,17 @@ def run_defensive_allocation_decision_report_command() -> int:
         result = generate_defensive_allocation_decision_report()
     except Exception as exc:
         print(f"Defensive allocation decision report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
+
+
+def run_defensive_execution_readiness_report_command() -> int:
+    try:
+        result = generate_defensive_execution_readiness_report()
+    except Exception as exc:
+        print(f"Defensive execution readiness report failed: {exc}", file=sys.stderr)
         return 1
     for line in result.summary_lines:
         print(line)

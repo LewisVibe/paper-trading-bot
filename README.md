@@ -514,6 +514,14 @@ python scripts\verify_paper_kill_switch_enforcement_contract.py
 
 This no-network verifier defines the contract that any future defensive paper-execution command would have to satisfy before execution design can continue. It checks paper-only/default boundaries, confirmation gates, report/preview non-approval, and that the current gate remains blocked/future-work-required. It does not add a bot command, enforce a kill switch, touch order paths, or approve execution.
 
+Create a saved-data-only defensive execution readiness report:
+
+```powershell
+python bot.py --defensive-execution-readiness-report
+```
+
+This writes `data/defensive_execution_readiness_report.csv` and summarizes what still blocks future paper execution design for the defensive allocation path. It combines saved defensive allocation, kill-switch gate, contract-verifier presence, execution eligibility, and portfolio risk policy state. It does not start execution design, add enforcement to order paths, create order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+
 Create a saved-data-only execution eligibility view:
 
 ```powershell
