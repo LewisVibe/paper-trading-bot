@@ -53,6 +53,7 @@ REQUIRED_COMMANDS = [
     "--deployment-readiness-report",
     "--portfolio-risk-policy-report",
     "--show-portfolio-risk-policy",
+    "--paper-kill-switch-readiness-report",
     "--preview-slow-sma-signals",
     "--preview-slow-sma-actions",
     "--execute-slow-sma-paper",

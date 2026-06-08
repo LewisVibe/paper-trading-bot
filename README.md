@@ -490,6 +490,14 @@ python bot.py --show-portfolio-risk-policy
 
 This is a read-only terminal display helper for `data/portfolio_risk_policy_report.csv`. It does not refresh data, read positions, enforce risk policy, submit orders, write files, or approve execution.
 
+Create a reporting-only readiness audit for future paper kill-switch design:
+
+```powershell
+python bot.py --paper-kill-switch-readiness-report
+```
+
+This writes `data/paper_kill_switch_readiness_report.csv` and audits what would be required for a future paper-only kill switch. It does not add a config setting, enforce a kill switch, change order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
+
 The initial `trading_bot/` package skeleton now exists for V2 refactoring, but `bot.py` still owns the current behaviour for now.
 
 See `docs/V2_REFACTOR_INVENTORY.md` for the current extraction inventory and recommended next refactor order.

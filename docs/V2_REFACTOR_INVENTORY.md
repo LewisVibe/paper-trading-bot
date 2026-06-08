@@ -193,6 +193,15 @@ This inventory captures the current V2 refactor state before moving any more pro
 - It displays counts by `risk_policy_status` and `risk_level`, blocked-for-review rows, future-work rows, compact policy rows, and execution-approved status.
 - It does not rerun the policy report, refresh market data, call Alpaca, read positions, enforce risk checks, create/submit/cancel orders, write files, write SQLite `trade_log`, send Discord alerts, or approve execution.
 
+## Paper Kill-Switch Readiness Report Status
+
+- `--paper-kill-switch-readiness-report` performs a reporting-only readiness audit for future paper kill-switch design.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/paper_kill_switch.py`.
+- It writes `data/paper_kill_switch_readiness_report.csv`.
+- It audits paper-only/dry-run/shorting boundaries, high-risk command gating, saved promoted decision state, saved portfolio risk policy state, scheduling boundaries, and future tests/design work needed before any kill-switch enforcement.
+- Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
+- It does not add a config setting, enforce a kill switch, change order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
+
 ## Short Hedge Backtest Status
 
 - `--short-hedge-backtest` runs a synthetic SPY-only short hedge backtest for research.

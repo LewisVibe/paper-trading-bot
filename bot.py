@@ -134,6 +134,7 @@ from trading_bot.runners.research_reports import (
     run_drawdown_period_report_command,
     run_etf_defensive_drawdown_comparison_command,
     run_etf_rotation_robustness_command,
+    run_paper_kill_switch_readiness_report_command,
     run_plot_etf_defensive_comparison_command,
     run_portfolio_risk_policy_report_command,
     run_refresh_promoted_review_command,
@@ -3841,6 +3842,11 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved portfolio risk policy report CSV without enforcing risk or trading.",
     )
     parser.add_argument(
+        "--paper-kill-switch-readiness-report",
+        action="store_true",
+        help="Create a reporting-only readiness audit for future paper kill-switch design.",
+    )
+    parser.add_argument(
         "--show-promoted-risk",
         action="store_true",
         help="Display the saved promoted risk preview CSV without trading.",
@@ -4021,6 +4027,8 @@ def main() -> int:
         return run_portfolio_risk_policy_report_command()
     if args.show_portfolio_risk_policy:
         return run_show_portfolio_risk_policy_command()
+    if args.paper_kill_switch_readiness_report:
+        return run_paper_kill_switch_readiness_report_command()
     if args.show_promoted_risk:
         return run_show_promoted_risk_command()
 

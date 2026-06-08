@@ -22,6 +22,7 @@ from trading_bot.research.drawdown_periods import generate_drawdown_period_repor
 from trading_bot.research.etf_defensive_charts import plot_etf_defensive_comparison_charts
 from trading_bot.research.etf_defensive_drawdowns import generate_etf_defensive_drawdown_comparison
 from trading_bot.research.etf_rotation_robustness import generate_etf_rotation_robustness_report
+from trading_bot.research.paper_kill_switch import generate_paper_kill_switch_readiness_report
 from trading_bot.research.portfolio_risk_policy import (
     generate_portfolio_risk_policy_report,
     show_portfolio_risk_policy_file,
@@ -155,6 +156,17 @@ def run_show_portfolio_risk_policy_command() -> int:
     for line in lines:
         print(line)
     return status_code
+
+
+def run_paper_kill_switch_readiness_report_command() -> int:
+    try:
+        result = generate_paper_kill_switch_readiness_report()
+    except Exception as exc:
+        print(f"Paper kill-switch readiness report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
 
 
 def run_refresh_promoted_review_command(
