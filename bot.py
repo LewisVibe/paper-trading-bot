@@ -100,10 +100,7 @@ from trading_bot.research.backtesting import (
 from trading_bot.research.costs import CostModel, adjusted_buy_fill_price, adjusted_sell_fill_price
 from trading_bot.research.crypto import run_crypto_research_preview_files
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
-from trading_bot.research.crypto_decision import generate_crypto_strategy_decision_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
-from trading_bot.research.crypto_period_diagnostics import generate_crypto_period_diagnostics
-from trading_bot.research.crypto_report import generate_crypto_strategy_report
 from trading_bot.research.crypto_robustness import generate_crypto_robustness_report
 from trading_bot.research.crypto_signal_preview import generate_crypto_signal_preview
 from trading_bot.research.defensive import generate_defensive_strategy_report
@@ -128,7 +125,10 @@ from trading_bot.research.promotion import generate_strategy_promotion_report
 from trading_bot.research.reporting import generate_research_report
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
+    run_crypto_period_diagnostics_command,
     run_crypto_research_state_report_command,
+    run_crypto_strategy_decision_report_command,
+    run_crypto_strategy_report_command,
     run_defensive_candidate_comparison_command,
     run_deployment_readiness_report_command,
     run_drawdown_period_report_command,
@@ -3955,25 +3955,9 @@ def main() -> int:
             print(line)
         return 0
     if args.crypto_strategy_report:
-        try:
-            result = generate_crypto_strategy_report()
-        except Exception as exc:
-            print(f"Crypto strategy report failed: {exc}", file=sys.stderr)
-            return 1
-        for line in result.summary_lines:
-            print(line)
-        print(f"Saved crypto strategy report to {result.output_path}")
-        return 0
+        return run_crypto_strategy_report_command()
     if args.crypto_strategy_decision_report:
-        try:
-            result = generate_crypto_strategy_decision_report()
-        except Exception as exc:
-            print(f"Crypto strategy decision report failed: {exc}", file=sys.stderr)
-            return 1
-        for line in result.summary_lines:
-            print(line)
-        print(f"Saved crypto strategy decision report to {result.output_path}")
-        return 0
+        return run_crypto_strategy_decision_report_command()
     if args.crypto_cost_stress_report:
         try:
             result = generate_crypto_cost_stress_report()
@@ -3995,15 +3979,7 @@ def main() -> int:
         print(f"Saved crypto robustness report to {result.output_path}")
         return 0
     if args.crypto_period_diagnostics:
-        try:
-            result = generate_crypto_period_diagnostics()
-        except Exception as exc:
-            print(f"Crypto period diagnostics failed: {exc}", file=sys.stderr)
-            return 1
-        for line in result.summary_lines:
-            print(line)
-        print(f"Saved crypto period diagnostics to {result.output_path}")
-        return 0
+        return run_crypto_period_diagnostics_command()
     if args.preview_crypto_signals:
         try:
             result = generate_crypto_signal_preview()

@@ -10,7 +10,10 @@ import sys
 from pathlib import Path
 from typing import Callable
 
+from trading_bot.research.crypto_decision import generate_crypto_strategy_decision_report
 from trading_bot.research.crypto_monitor import show_crypto_monitor_file
+from trading_bot.research.crypto_period_diagnostics import generate_crypto_period_diagnostics
+from trading_bot.research.crypto_report import generate_crypto_strategy_report
 from trading_bot.research.crypto_state import generate_crypto_research_state_report
 from trading_bot.research.defensive_comparison import generate_defensive_candidate_comparison
 from trading_bot.research.defensive_refresh import refresh_defensive_research
@@ -93,6 +96,42 @@ def run_crypto_research_state_report_command() -> int:
         return 1
     for line in result.summary_lines:
         print(line)
+    return 0
+
+
+def run_crypto_strategy_report_command() -> int:
+    try:
+        result = generate_crypto_strategy_report()
+    except Exception as exc:
+        print(f"Crypto strategy report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    print(f"Saved crypto strategy report to {result.output_path}")
+    return 0
+
+
+def run_crypto_strategy_decision_report_command() -> int:
+    try:
+        result = generate_crypto_strategy_decision_report()
+    except Exception as exc:
+        print(f"Crypto strategy decision report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    print(f"Saved crypto strategy decision report to {result.output_path}")
+    return 0
+
+
+def run_crypto_period_diagnostics_command() -> int:
+    try:
+        result = generate_crypto_period_diagnostics()
+    except Exception as exc:
+        print(f"Crypto period diagnostics failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    print(f"Saved crypto period diagnostics to {result.output_path}")
     return 0
 
 

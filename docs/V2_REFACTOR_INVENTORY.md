@@ -228,6 +228,7 @@ This inventory captures the current V2 refactor state before moving any more pro
 ## Crypto Strategy Report Status
 
 - `--crypto-strategy-report` reads `data/crypto_strategy_lab_results.csv`.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/crypto_report.py`.
 - It writes `data/crypto_strategy_report.csv`.
 - It ranks crypto strategies by symbol and period and compares each row with the matching `crypto_buy_and_hold_baseline`.
 - It is saved-data-only research reporting and does not call yfinance, Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, enable leverage, or approve execution.
@@ -235,6 +236,7 @@ This inventory captures the current V2 refactor state before moving any more pro
 ## Crypto Strategy Decision Report Status
 
 - `--crypto-strategy-decision-report` reads `data/crypto_strategy_lab_results.csv` and `data/crypto_strategy_report.csv`.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/crypto_decision.py`.
 - It writes `data/crypto_strategy_decision_report.csv`.
 - It creates symbol-level research statuses using out-of-sample Calmar, Sharpe, CAGR gap, drawdown reduction, and whether the strategy beats buy-and-hold.
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
@@ -259,6 +261,7 @@ This inventory captures the current V2 refactor state before moving any more pro
 ## Crypto Period Diagnostics Status
 
 - `--crypto-period-diagnostics` reads saved `crypto_robustness_report.csv`, `crypto_strategy_lab_results.csv`, and `crypto_strategy_lab_trades.csv`.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/crypto_period_diagnostics.py`.
 - It writes `data/crypto_period_diagnostics.csv`.
 - It focuses on the current BTC and ETH crypto research candidates and labels weak out-of-sample split periods, including `benchmark_also_weak`, `cash_drag`, `whipsaw_sensitive`, and `profitable_but_weakening`.
 - It is saved-data-only research reporting and does not refresh market data, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, enable leverage, or approve execution.
