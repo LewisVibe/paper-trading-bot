@@ -778,6 +778,20 @@ Output:
 data/defensive_allocation_preview.csv
 ```
 
+Defensive allocation risk preview mode reads `data/defensive_allocation_preview.csv` and checks whether the saved posture preview is complete and safely non-executable before any future defensive allocation decision report is considered. It checks expected components, execution approval flags, order-instruction style columns, split sensitivity, diagnostic-only breadth status, adaptive complexity, paused short research, and the blocked execution gate. It is saved-data-only and does not approve execution.
+
+Command:
+
+```text
+python bot.py --defensive-allocation-risk-preview
+```
+
+Output:
+
+```text
+data/defensive_allocation_risk_preview.csv
+```
+
 ETF defensive drawdown comparison mode reads saved monthly ETF rotation and vol-managed ETF equity curves plus fixed-split robustness reports. It compares worst drawdown periods and the `split_80_20` out-of-sample drawdown tradeoff, including whether lower drawdown came with weaker CAGR/Sharpe/Calmar context. It is research-only and does not rerun backtests, refresh market data, call Alpaca, write SQLite `trade_log`, send Discord alerts, change strategy rules, or approve execution.
 
 Command:
