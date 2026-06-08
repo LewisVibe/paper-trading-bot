@@ -131,6 +131,7 @@ from trading_bot.runners.research_reports import (
     run_crypto_research_state_report_command,
     run_crypto_strategy_decision_report_command,
     run_crypto_strategy_report_command,
+    run_defensive_allocation_decision_report_command,
     run_defensive_allocation_preview_command,
     run_defensive_allocation_risk_preview_command,
     run_defensive_candidate_comparison_command,
@@ -3731,6 +3732,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a saved-data-only defensive allocation risk checkpoint without execution.",
     )
     parser.add_argument(
+        "--defensive-allocation-decision-report",
+        action="store_true",
+        help="Create a saved-data-only defensive allocation decision report without execution.",
+    )
+    parser.add_argument(
         "--drawdown-period-report",
         action="store_true",
         help="Create a research-only drawdown period analysis report from saved equity curves.",
@@ -4006,6 +4012,8 @@ def main() -> int:
         return run_defensive_allocation_preview_command()
     if args.defensive_allocation_risk_preview:
         return run_defensive_allocation_risk_preview_command()
+    if args.defensive_allocation_decision_report:
+        return run_defensive_allocation_decision_report_command()
     if args.drawdown_period_report:
         return run_drawdown_period_report_command()
     if args.etf_defensive_drawdown_comparison:

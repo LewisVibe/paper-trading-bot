@@ -147,6 +147,15 @@ This inventory captures the current V2 refactor state before moving any more pro
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not rerun backtests, download market data, call Alpaca, send Discord alerts, write to SQLite, create order instructions, promote strategies, or approve execution.
 
+## Defensive Allocation Decision Report Status
+
+- `--defensive-allocation-decision-report` reads saved `data/defensive_allocation_preview.csv` and `data/defensive_allocation_risk_preview.csv`.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the decision logic lives in `trading_bot/research/defensive_allocation_decision.py`.
+- It writes `data/defensive_allocation_decision_report.csv`.
+- It summarizes overall readiness, lead reference, preview safety, warning context, blocker context, and the next kill-switch/execution-readiness gate.
+- Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
+- It does not rerun backtests, download market data, call Alpaca, send Discord alerts, write to SQLite, create order instructions, promote strategies, approve execution, or move anything toward execution without future gates.
+
 ## ETF Defensive Drawdown Comparison Status
 
 - `--etf-defensive-drawdown-comparison` reads saved ETF rotation and vol-managed ETF equity curves plus fixed-split robustness reports.

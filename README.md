@@ -792,6 +792,20 @@ Output:
 data/defensive_allocation_risk_preview.csv
 ```
 
+Defensive allocation decision report mode combines the saved defensive allocation preview and risk preview into a final non-executable decision checkpoint. It answers whether the current defensive allocation posture can move toward paper-execution design; the current expected answer is no/not yet while execution remains blocked and future kill-switch, risk, and confirmation gates are not cleared. It does not create order instructions, promote strategies, or approve execution.
+
+Command:
+
+```text
+python bot.py --defensive-allocation-decision-report
+```
+
+Output:
+
+```text
+data/defensive_allocation_decision_report.csv
+```
+
 ETF defensive drawdown comparison mode reads saved monthly ETF rotation and vol-managed ETF equity curves plus fixed-split robustness reports. It compares worst drawdown periods and the `split_80_20` out-of-sample drawdown tradeoff, including whether lower drawdown came with weaker CAGR/Sharpe/Calmar context. It is research-only and does not rerun backtests, refresh market data, call Alpaca, write SQLite `trade_log`, send Discord alerts, change strategy rules, or approve execution.
 
 Command:

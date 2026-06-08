@@ -15,6 +15,7 @@ from trading_bot.research.crypto_monitor import show_crypto_monitor_file
 from trading_bot.research.crypto_period_diagnostics import generate_crypto_period_diagnostics
 from trading_bot.research.crypto_report import generate_crypto_strategy_report
 from trading_bot.research.crypto_state import generate_crypto_research_state_report
+from trading_bot.research.defensive_allocation_decision import generate_defensive_allocation_decision_report
 from trading_bot.research.defensive_allocation_risk import generate_defensive_allocation_risk_preview
 from trading_bot.research.defensive_allocation_preview import generate_defensive_allocation_preview
 from trading_bot.research.defensive_comparison import generate_defensive_candidate_comparison
@@ -92,6 +93,17 @@ def run_defensive_allocation_risk_preview_command() -> int:
         result = generate_defensive_allocation_risk_preview()
     except Exception as exc:
         print(f"Defensive allocation risk preview failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
+
+
+def run_defensive_allocation_decision_report_command() -> int:
+    try:
+        result = generate_defensive_allocation_decision_report()
+    except Exception as exc:
+        print(f"Defensive allocation decision report failed: {exc}", file=sys.stderr)
         return 1
     for line in result.summary_lines:
         print(line)

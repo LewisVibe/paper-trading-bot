@@ -28,6 +28,7 @@ REQUIRED_COMMANDS = [
     "--defensive-research-state-report",
     "--defensive-allocation-preview",
     "--defensive-allocation-risk-preview",
+    "--defensive-allocation-decision-report",
     "--drawdown-period-report",
     "--etf-defensive-drawdown-comparison",
     "--plot-etf-defensive-comparison",
