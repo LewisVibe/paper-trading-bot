@@ -10,6 +10,9 @@ This checkpoint is documentation only. It summarizes the project state for futur
 - `config.json`, API keys, and Discord webhook URLs stay private.
 - Research, backtest, report, preview, and display commands do not approve execution.
 - Execution-related commands are separate high-risk paths and must stay behind explicit confirmation and review.
+- `python scripts\verify_repo_safety.py` should be run before commits and pushes.
+- Deployment readiness and VPS checklist docs are audits/planning aids only. They do not deploy, schedule, or approve execution.
+- Portfolio risk policy reporting is not runtime enforcement and does not approve execution.
 
 ## Stock/ETF Research State
 
@@ -100,6 +103,7 @@ Conclusion: pause short-selling research for now. Do not add short preview or sh
 
 These commands form a non-execution review chain:
 
+- `python bot.py --refresh-promoted-review`
 - `python bot.py --preview-promoted-strategies`
 - `python bot.py --preview-promoted-actions`
 - `python bot.py --preview-promoted-actions --use-paper-positions-readonly`
@@ -108,13 +112,64 @@ These commands form a non-execution review chain:
 - `python bot.py --show-promoted-risk`
 - `python bot.py --promoted-consensus-preview`
 - `python bot.py --promoted-decision-preview`
+- `python bot.py --show-promoted-decision`
 
 Current promoted interpretation:
 
-- AAPL and SPY had mixed long/flat strategy disagreement.
-- MSFT was unanimous flat.
-- Decision preview blocked execution because of strategy disagreement or no action.
+- AAPL: `blocked_strategy_disagreement`.
+- MSFT: `no_action_unanimous_flat`.
+- SPY: `blocked_strategy_disagreement`.
+- `execution_approved=False` for all rows.
+- AAPL and SPY remain blocked by strategy disagreement.
+- MSFT remains no-action/unanimous flat.
 - All promoted strategy outputs remain preview-only or research-only.
+
+`--refresh-promoted-review` writes `data/promoted_review_refresh_summary.csv` and runs the promoted review chain in order. It remains preview/report/display only. It does not connect promoted candidates to execution.
+
+## Workflow / Deployment / Risk Policy State
+
+Today's workflow and risk-management additions are safety and reporting only. No deployment, scheduling, strategy change, risk enforcement, or execution approval was added.
+
+Repository safety:
+
+- `python scripts\verify_repo_safety.py` checks tracked and staged dangerous files, required `.gitignore` patterns, and repository hygiene before commits or pushes.
+- It is included in the baseline verifier.
+- Local repo safety passed.
+
+Deployment readiness and VPS planning:
+
+- `python bot.py --deployment-readiness-report` writes `data/deployment_readiness_report.csv`.
+- It audits local/VPS readiness without deploying, scheduling, refreshing market data, calling Alpaca, reading positions, submitting orders, writing SQLite `trade_log`, or sending Discord alerts.
+- `docs/VPS_SETUP_CHECKLIST.md` documents future Windows Server VPS setup, safe commands for future scheduling review, commands never to schedule, and secrets/config handling.
+- The VPS checklist is future setup documentation only.
+
+Portfolio risk policy:
+
+- `python bot.py --portfolio-risk-policy-report` writes `data/portfolio_risk_policy_report.csv`.
+- Current result: `blocked_for_review=1`, `not_implemented_future_work=2`, `pass=7`, `warning=2`.
+- `execution_approved=False` for all rows.
+- Main blocker: `strategy_disagreement_policy` for AAPL and SPY.
+- Warnings: saved notional can be inspected, but no live account equity was read.
+- Future-work rows: paper-only kill switch and Discord daily summary.
+- `python bot.py --show-portfolio-risk-policy` reads `data/portfolio_risk_policy_report.csv` only and displays status counts, blockers, future-work rows, compact policy rows, and confirms no risk enforcement or execution approval.
+- Portfolio risk policy reporting is policy/reporting only. It is not a runtime risk gate and does not enforce order sizing, exposure limits, kill switches, or execution approval.
+
+Low-risk refactor:
+
+- Additional saved display/report wrappers were extracted from `bot.py` into `trading_bot/runners/research_reports.py`.
+- High-risk execution paths remained untouched.
+
+Current verified workflow state:
+
+- Full baseline passed locally.
+- Repo safety passed locally.
+- Git status was clean after commits and pushes.
+- No runtime execution path changed.
+- No Alpaca order submission path changed.
+- No SQLite `trade_log` execution write path changed.
+- No Discord alert path changed.
+- No strategy logic changed.
+- No deployment or scheduling was performed.
 
 ## Crypto Research State
 
@@ -165,6 +220,8 @@ Explicit paper execution areas are high risk:
 
 Any future execution work must require preview, risk checks, consensus/decision review where relevant, and explicit confirmation. Research-only or preview-only rows must never be treated as execution approval.
 
+Current promoted review and portfolio risk policy both show no execution approval. AAPL and SPY remain blocked by strategy disagreement; MSFT remains no-action/unanimous flat.
+
 ## Recommended Next Steps
 
 A. Keep the current research state stable and avoid adding more strategy complexity.
@@ -173,11 +230,15 @@ B. Improve reporting/charting around drawdown periods if useful.
 
 C. Consider small refactors only after focused verifiers exist.
 
-D. Only later consider paper execution for one conservative strategy after preview, risk, consensus, and decision checks.
+D. Only later consider paper execution for one conservative strategy after preview, risk checks, consensus/decision review, portfolio risk policy review, and explicit confirmation.
 
 E. Crypto: keep monitoring BTC and ETH; do not add execution.
 
 F. If adding new crypto symbols later, add one at a time and label each as research-only.
+
+G. Run repo safety before commits/pushes and deployment readiness before any future VPS handoff.
+
+H. Do not schedule execution-capable commands. Use `docs/VPS_SETUP_CHECKLIST.md` only as future setup guidance.
 
 ## Useful Command Groups
 
@@ -205,6 +266,7 @@ python bot.py --defensive-candidate-comparison
 Promoted preview chain:
 
 ```text
+python bot.py --refresh-promoted-review
 python bot.py --preview-promoted-strategies
 python bot.py --preview-promoted-actions
 python bot.py --show-promoted-actions
@@ -212,6 +274,16 @@ python bot.py --promoted-risk-preview
 python bot.py --show-promoted-risk
 python bot.py --promoted-consensus-preview
 python bot.py --promoted-decision-preview
+python bot.py --show-promoted-decision
+```
+
+Workflow, deployment, and risk policy checks:
+
+```text
+python scripts\verify_repo_safety.py
+python bot.py --deployment-readiness-report
+python bot.py --portfolio-risk-policy-report
+python bot.py --show-portfolio-risk-policy
 ```
 
 Crypto research refresh:
