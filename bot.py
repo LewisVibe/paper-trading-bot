@@ -135,6 +135,7 @@ from trading_bot.runners.research_reports import (
     run_etf_defensive_drawdown_comparison_command,
     run_etf_rotation_robustness_command,
     run_plot_etf_defensive_comparison_command,
+    run_portfolio_risk_policy_report_command,
     run_refresh_promoted_review_command,
     run_refresh_defensive_research_command,
     run_show_promoted_decision_command,
@@ -3829,6 +3830,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a local VPS/server deployment readiness audit without deploying or executing.",
     )
     parser.add_argument(
+        "--portfolio-risk-policy-report",
+        action="store_true",
+        help="Create a research-only portfolio risk policy audit without enforcing execution gates.",
+    )
+    parser.add_argument(
         "--show-promoted-risk",
         action="store_true",
         help="Display the saved promoted risk preview CSV without trading.",
@@ -4005,6 +4011,8 @@ def main() -> int:
         return run_show_promoted_decision_command()
     if args.deployment_readiness_report:
         return run_deployment_readiness_report_command()
+    if args.portfolio_risk_policy_report:
+        return run_portfolio_risk_policy_report_command()
     if args.show_promoted_risk:
         return run_show_promoted_risk_command()
 

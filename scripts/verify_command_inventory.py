@@ -51,6 +51,7 @@ REQUIRED_COMMANDS = [
     "--show-promoted-decision",
     "--refresh-promoted-review",
     "--deployment-readiness-report",
+    "--portfolio-risk-policy-report",
     "--preview-slow-sma-signals",
     "--preview-slow-sma-actions",
     "--execute-slow-sma-paper",

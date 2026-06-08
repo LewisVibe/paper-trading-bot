@@ -474,6 +474,14 @@ python bot.py --deployment-readiness-report
 
 This is a reporting-only check for future Windows Server VPS use. It may inspect local files and Git metadata, but it does not deploy, create Windows Task Scheduler tasks, refresh market data, call Alpaca, submit orders, send Discord alerts, or approve execution. Any future Windows Task Scheduler setup must start with report/display commands only and is not execution approval.
 
+Create a research-only portfolio risk policy audit before any future execution discussion:
+
+```powershell
+python bot.py --portfolio-risk-policy-report
+```
+
+This reads saved CSVs and `config.example.json` only, writes `data/portfolio_risk_policy_report.csv`, and documents conservative report-only policies such as paper-only mode, dry-run default, shorting disabled, proposed max open positions, desired notional review, duplicate ticker exposure, strategy disagreement, execution approval status, future kill switch work, and future daily summary work. It does not enforce risk checks, change order sizing, read live positions/account equity, call Alpaca, submit orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
+
 The initial `trading_bot/` package skeleton now exists for V2 refactoring, but `bot.py` still owns the current behaviour for now.
 
 See `docs/V2_REFACTOR_INVENTORY.md` for the current extraction inventory and recommended next refactor order.

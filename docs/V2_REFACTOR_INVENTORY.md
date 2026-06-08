@@ -177,6 +177,15 @@ This inventory captures the current V2 refactor state before moving any more pro
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not deploy, add loop mode, create Windows Task Scheduler tasks, call Alpaca, refresh market data, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
 
+## Portfolio Risk Policy Report Status
+
+- `--portfolio-risk-policy-report` performs a saved-data/static-context portfolio risk policy audit only.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/portfolio_risk_policy.py`.
+- It writes `data/portfolio_risk_policy_report.csv`.
+- It documents conservative report-only policies for paper-only mode, dry-run default, shorting disabled, proposed max open positions, desired notional review, duplicate ticker exposure, strategy disagreement, execution approval status, future kill switch work, and future daily summary work.
+- Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
+- It does not enforce risk checks, change order sizing, call Alpaca, read positions/account equity, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
+
 ## Short Hedge Backtest Status
 
 - `--short-hedge-backtest` runs a synthetic SPY-only short hedge backtest for research.

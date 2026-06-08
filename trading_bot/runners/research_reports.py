@@ -22,6 +22,7 @@ from trading_bot.research.drawdown_periods import generate_drawdown_period_repor
 from trading_bot.research.etf_defensive_charts import plot_etf_defensive_comparison_charts
 from trading_bot.research.etf_defensive_drawdowns import generate_etf_defensive_drawdown_comparison
 from trading_bot.research.etf_rotation_robustness import generate_etf_rotation_robustness_report
+from trading_bot.research.portfolio_risk_policy import generate_portfolio_risk_policy_report
 from trading_bot.research.promoted_decision import show_promoted_decision_file
 from trading_bot.research.promoted_actions import show_promoted_actions_file
 from trading_bot.research.promoted_risk import show_promoted_risk_file
@@ -132,6 +133,17 @@ def run_crypto_period_diagnostics_command() -> int:
     for line in result.summary_lines:
         print(line)
     print(f"Saved crypto period diagnostics to {result.output_path}")
+    return 0
+
+
+def run_portfolio_risk_policy_report_command() -> int:
+    try:
+        result = generate_portfolio_risk_policy_report()
+    except Exception as exc:
+        print(f"Portfolio risk policy report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
     return 0
 
 
