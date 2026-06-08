@@ -60,6 +60,7 @@ def main() -> int:
     verify_report_preview_no_execution_approval(failures)
     verify_contract_has_no_order_instruction_columns(failures)
     verify_gate_blocked_future_work(failures)
+    verify_isolated_helper_exists_without_order_path_wiring(failures)
 
     if failures:
         print("Paper kill-switch enforcement contract verification failed.")
@@ -73,6 +74,7 @@ def main() -> int:
     print("Future defensive execution command absent: pass")
     print("Report/preview execution approval scan: pass")
     print("Current gate remains blocked/future-work-required: pass")
+    print("Isolated helper exists and is not wired into order paths: pass")
     print("Result: passed")
     return 0
 
@@ -171,6 +173,27 @@ def verify_gate_blocked_future_work(failures: list[str]) -> None:
         if str(row.get("execution_approved", "")).strip().lower() != "false":
             failures.append("paper kill-switch gate report must keep execution_approved=False for every row")
             break
+
+
+def verify_isolated_helper_exists_without_order_path_wiring(failures: list[str]) -> None:
+    helper_path = ROOT / "trading_bot" / "safety" / "paper_kill_switch.py"
+    if not helper_path.exists():
+        failures.append("isolated paper kill-switch helper is missing")
+        return
+    helper_text = read_text(helper_path)
+    if "evaluate_paper_kill_switch_gate" not in helper_text:
+        failures.append("isolated paper kill-switch helper must expose evaluate_paper_kill_switch_gate")
+    high_risk_paths = [
+        ROOT / "bot.py",
+        ROOT / "trading_bot" / "execution.py",
+        ROOT / "trading_bot" / "alpaca_client.py",
+        ROOT / "trading_bot" / "database.py",
+        ROOT / "trading_bot" / "discord_alerts.py",
+    ]
+    for path in high_risk_paths:
+        text = read_text(path)
+        if "trading_bot.safety.paper_kill_switch" in text or "evaluate_paper_kill_switch_gate" in text:
+            failures.append(f"isolated helper must not be wired into high-risk path: {path.relative_to(ROOT)}")
 
 
 def iter_report_preview_sources() -> list[Path]:

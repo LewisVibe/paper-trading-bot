@@ -514,6 +514,8 @@ python scripts\verify_paper_kill_switch_enforcement_contract.py
 
 This no-network verifier defines the contract that any future defensive paper-execution command would have to satisfy before execution design can continue. It checks paper-only/default boundaries, confirmation gates, report/preview non-approval, and that the current gate remains blocked/future-work-required. It does not add a bot command, enforce a kill switch, touch order paths, or approve execution.
 
+An isolated pure helper also exists at `trading_bot/safety/paper_kill_switch.py`. It can evaluate plain Python safety context values for future paper kill-switch design tests, but it is not wired into `--paper-order-test`, `--execute-slow-sma-paper`, normal `python bot.py` behavior, or any order path.
+
 Create a saved-data-only defensive execution readiness report:
 
 ```powershell

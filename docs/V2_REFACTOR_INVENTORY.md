@@ -269,6 +269,14 @@ This inventory captures the current V2 refactor state before moving any more pro
 - It confirms high-risk commands remain confirmation-gated and that the current paper kill-switch gate remains blocked/future-work-required.
 - It does not add a bot command, add enforcement to order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
+## Isolated Paper Kill-Switch Helper Status
+
+- `trading_bot/safety/paper_kill_switch.py` provides pure no-network helper logic for future paper kill-switch enforcement design tests.
+- It accepts plain Python safety context values and returns an allow/block decision object with reasons and a required next step.
+- `scripts/verify_paper_kill_switch_enforcement_logic.py` covers safe and blocked contexts and verifies the helper is not wired into high-risk order paths.
+- It is not imported by `bot.py`, `--paper-order-test`, `--execute-slow-sma-paper`, normal order/logging flow, open-order blocking, SQLite execution writes, or Discord sending.
+- It does not add a bot command, add enforcement to order paths, create/submit/cancel orders, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+
 ## Defensive Execution Readiness Report Status
 
 - `--defensive-execution-readiness-report` combines saved defensive allocation, kill-switch, execution eligibility, and portfolio risk policy artefacts into a final non-executable readiness report.
