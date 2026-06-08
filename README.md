@@ -406,6 +406,18 @@ reads `data/promoted_decision_preview.csv`; it does not refresh market data, cal
 yfinance, call Alpaca, read positions, create/submit/cancel orders, write SQLite
 `trade_log`, send Discord alerts, or approve execution.
 
+Refresh the promoted review chain without approving execution:
+
+```powershell
+python bot.py --refresh-promoted-review
+```
+
+This convenience command runs the promoted review chain in order, including the
+read-only paper-position action preview path, then prints a compact decision summary.
+It writes `data/promoted_review_refresh_summary.csv`. It does not change `dry_run`,
+create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve
+execution.
+
 Preview slow SMA signals without trading:
 
 ```powershell

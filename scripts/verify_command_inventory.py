@@ -49,6 +49,7 @@ REQUIRED_COMMANDS = [
     "--promoted-consensus-preview",
     "--promoted-decision-preview",
     "--show-promoted-decision",
+    "--refresh-promoted-review",
     "--preview-slow-sma-signals",
     "--preview-slow-sma-actions",
     "--execute-slow-sma-paper",

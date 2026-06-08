@@ -127,6 +127,7 @@ from trading_bot.research.promoted_preview import (
 from trading_bot.research.promoted_consensus import run_promoted_consensus_preview_files
 from trading_bot.research.promoted_decision import run_promoted_decision_preview_files, show_promoted_decision_file
 from trading_bot.research.promoted_risk import run_promoted_risk_preview_files, show_promoted_risk_file
+from trading_bot.research.promoted_review_refresh import PromotedReviewStep, refresh_promoted_review
 from trading_bot.research.promotion import generate_strategy_promotion_report
 from trading_bot.research.reporting import generate_research_report
 from trading_bot.research.walk_forward import generate_walk_forward_report
@@ -2337,6 +2338,54 @@ def run_show_promoted_decision() -> int:
     return status_code
 
 
+def run_refresh_promoted_review(config: AppConfig, logger: logging.Logger) -> int:
+    result = refresh_promoted_review(
+        steps=[
+            PromotedReviewStep(
+                "preview_promoted_strategies",
+                "python bot.py --preview-promoted-strategies",
+                Path("data") / "promoted_strategy_preview.csv",
+                lambda: run_promoted_strategy_preview(config, logger),
+            ),
+            PromotedReviewStep(
+                "preview_promoted_actions_readonly",
+                "python bot.py --preview-promoted-actions --use-paper-positions-readonly",
+                Path("data") / "promoted_strategy_action_preview.csv",
+                lambda: run_promoted_action_preview(config, logger, use_paper_positions_readonly=True),
+            ),
+            PromotedReviewStep(
+                "promoted_risk_preview",
+                "python bot.py --promoted-risk-preview",
+                Path("data") / "promoted_risk_preview.csv",
+                run_promoted_risk_preview,
+            ),
+            PromotedReviewStep(
+                "promoted_consensus_preview",
+                "python bot.py --promoted-consensus-preview",
+                Path("data") / "promoted_consensus_preview.csv",
+                run_promoted_consensus_preview,
+            ),
+            PromotedReviewStep(
+                "promoted_decision_preview",
+                "python bot.py --promoted-decision-preview",
+                Path("data") / "promoted_decision_preview.csv",
+                run_promoted_decision_preview,
+            ),
+            PromotedReviewStep(
+                "show_promoted_decision",
+                "python bot.py --show-promoted-decision",
+                Path("data") / "promoted_decision_preview.csv",
+                run_show_promoted_decision,
+            ),
+        ],
+        decision_path=Path("data") / "promoted_decision_preview.csv",
+        output_path=Path("data") / "promoted_review_refresh_summary.csv",
+    )
+    for line in result.summary_lines:
+        print(line)
+    return result.status_code
+
+
 def run_show_promoted_risk() -> int:
     status_code, lines = show_promoted_risk_file(Path("data") / "promoted_risk_preview.csv")
     for line in lines:
@@ -3836,6 +3885,11 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved promoted decision preview CSV without trading.",
     )
     parser.add_argument(
+        "--refresh-promoted-review",
+        action="store_true",
+        help="Refresh the promoted strategy review chain without execution.",
+    )
+    parser.add_argument(
         "--show-promoted-risk",
         action="store_true",
         help="Display the saved promoted risk preview CSV without trading.",
@@ -4057,6 +4111,7 @@ def main() -> int:
                 args.preview_slow_sma_actions
                 or args.preview_promoted_strategies
                 or args.preview_promoted_actions
+                or args.refresh_promoted_review
                 or (args.execute_slow_sma_paper and not args.confirm_slow_sma_paper)
             ),
         )
@@ -4084,6 +4139,8 @@ def main() -> int:
                 logger,
                 use_paper_positions_readonly=args.use_paper_positions_readonly,
             )
+        if args.refresh_promoted_review:
+            return run_refresh_promoted_review(config, logger)
         if args.preview_slow_sma_signals:
             return run_slow_sma_signal_preview(
                 config,
