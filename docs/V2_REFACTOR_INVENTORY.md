@@ -170,7 +170,7 @@ This inventory captures the current V2 refactor state before moving any more pro
 ## Deployment Readiness Report Status
 
 - `--deployment-readiness-report` performs a local readiness audit for possible future VPS/server use.
-- The report logic lives in `trading_bot/research/deployment_readiness.py`.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/deployment_readiness.py`.
 - It writes `data/deployment_readiness_report.csv`.
 - It checks local Python/package readiness, required files, Git ignore/safety status, paper-only/dry-run/shorting defaults, gated execution commands, safe scheduling candidates, must-not-schedule commands, and handoff docs.
 - It reports whether `config.json` exists locally but does not read or print its contents.
@@ -353,6 +353,7 @@ This inventory captures the current V2 refactor state before moving any more pro
 ## Promoted Decision Display Status
 
 - `--show-promoted-decision` reads `data/promoted_decision_preview.csv`.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the display logic lives in `trading_bot/research/promoted_decision.py`.
 - It is only a terminal display helper for the CSV produced by `python bot.py --promoted-decision-preview`.
 - It displays row count, counts by `decision_state`, counts by `execution_approved`, compact ticker-level decision rows, and a final execution-approved warning or all-false confirmation.
 - It does not refresh market data, call yfinance, call Alpaca, read live/current positions, submit/cancel/create orders, write SQLite `trade_log` rows, send Discord alerts, or approve execution.
@@ -360,6 +361,7 @@ This inventory captures the current V2 refactor state before moving any more pro
 ## Promoted Review Refresh Status
 
 - `--refresh-promoted-review` runs the promoted review chain in order and writes `data/promoted_review_refresh_summary.csv`.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the refresh logic lives in `trading_bot/research/promoted_review_refresh.py`.
 - It runs `--preview-promoted-strategies`, `--preview-promoted-actions --use-paper-positions-readonly`, `--promoted-risk-preview`, `--promoted-consensus-preview`, `--promoted-decision-preview`, and `--show-promoted-decision`.
 - It uses the existing read-only paper-position action preview path and does not change `dry_run`.
 - It does not create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, connect promoted candidates to execution, or approve execution.

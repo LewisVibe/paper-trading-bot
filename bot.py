@@ -109,7 +109,6 @@ from trading_bot.research.crypto_robustness import generate_crypto_robustness_re
 from trading_bot.research.crypto_signal_preview import generate_crypto_signal_preview
 from trading_bot.research.crypto_state import generate_crypto_research_state_report
 from trading_bot.research.defensive import generate_defensive_strategy_report
-from trading_bot.research.deployment_readiness import generate_deployment_readiness_report
 from trading_bot.research.plotting import plot_strategy_results
 from trading_bot.research.promoted_actions import (
     build_promoted_action_preview_rows,
@@ -126,19 +125,21 @@ from trading_bot.research.promoted_preview import (
     write_promoted_preview,
 )
 from trading_bot.research.promoted_consensus import run_promoted_consensus_preview_files
-from trading_bot.research.promoted_decision import run_promoted_decision_preview_files, show_promoted_decision_file
+from trading_bot.research.promoted_decision import run_promoted_decision_preview_files
 from trading_bot.research.promoted_risk import run_promoted_risk_preview_files, show_promoted_risk_file
-from trading_bot.research.promoted_review_refresh import PromotedReviewStep, refresh_promoted_review
 from trading_bot.research.promotion import generate_strategy_promotion_report
 from trading_bot.research.reporting import generate_research_report
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
     run_defensive_candidate_comparison_command,
+    run_deployment_readiness_report_command,
     run_drawdown_period_report_command,
     run_etf_defensive_drawdown_comparison_command,
     run_etf_rotation_robustness_command,
     run_plot_etf_defensive_comparison_command,
+    run_refresh_promoted_review_command,
     run_refresh_defensive_research_command,
+    run_show_promoted_decision_command,
     run_short_hedge_backtest_command,
     run_short_selling_readiness_report_command,
     run_short_strategy_lab_command,
@@ -2332,61 +2333,6 @@ def run_promoted_decision_preview() -> int:
     return status_code
 
 
-def run_show_promoted_decision() -> int:
-    status_code, lines = show_promoted_decision_file(Path("data") / "promoted_decision_preview.csv")
-    for line in lines:
-        print(line)
-    return status_code
-
-
-def run_refresh_promoted_review(config: AppConfig, logger: logging.Logger) -> int:
-    result = refresh_promoted_review(
-        steps=[
-            PromotedReviewStep(
-                "preview_promoted_strategies",
-                "python bot.py --preview-promoted-strategies",
-                Path("data") / "promoted_strategy_preview.csv",
-                lambda: run_promoted_strategy_preview(config, logger),
-            ),
-            PromotedReviewStep(
-                "preview_promoted_actions_readonly",
-                "python bot.py --preview-promoted-actions --use-paper-positions-readonly",
-                Path("data") / "promoted_strategy_action_preview.csv",
-                lambda: run_promoted_action_preview(config, logger, use_paper_positions_readonly=True),
-            ),
-            PromotedReviewStep(
-                "promoted_risk_preview",
-                "python bot.py --promoted-risk-preview",
-                Path("data") / "promoted_risk_preview.csv",
-                run_promoted_risk_preview,
-            ),
-            PromotedReviewStep(
-                "promoted_consensus_preview",
-                "python bot.py --promoted-consensus-preview",
-                Path("data") / "promoted_consensus_preview.csv",
-                run_promoted_consensus_preview,
-            ),
-            PromotedReviewStep(
-                "promoted_decision_preview",
-                "python bot.py --promoted-decision-preview",
-                Path("data") / "promoted_decision_preview.csv",
-                run_promoted_decision_preview,
-            ),
-            PromotedReviewStep(
-                "show_promoted_decision",
-                "python bot.py --show-promoted-decision",
-                Path("data") / "promoted_decision_preview.csv",
-                run_show_promoted_decision,
-            ),
-        ],
-        decision_path=Path("data") / "promoted_decision_preview.csv",
-        output_path=Path("data") / "promoted_review_refresh_summary.csv",
-    )
-    for line in result.summary_lines:
-        print(line)
-    return result.status_code
-
-
 def run_show_promoted_risk() -> int:
     status_code, lines = show_promoted_risk_file(Path("data") / "promoted_risk_preview.csv")
     for line in lines:
@@ -4103,16 +4049,9 @@ def main() -> int:
     if args.promoted_decision_preview:
         return run_promoted_decision_preview()
     if args.show_promoted_decision:
-        return run_show_promoted_decision()
+        return run_show_promoted_decision_command()
     if args.deployment_readiness_report:
-        try:
-            result = generate_deployment_readiness_report()
-        except Exception as exc:
-            print(f"Deployment readiness report failed: {exc}", file=sys.stderr)
-            return 1
-        for line in result.summary_lines:
-            print(line)
-        return 0
+        return run_deployment_readiness_report_command()
     if args.show_promoted_risk:
         return run_show_promoted_risk()
 
@@ -4155,7 +4094,17 @@ def main() -> int:
                 use_paper_positions_readonly=args.use_paper_positions_readonly,
             )
         if args.refresh_promoted_review:
-            return run_refresh_promoted_review(config, logger)
+            return run_refresh_promoted_review_command(
+                lambda: run_promoted_strategy_preview(config, logger),
+                lambda: run_promoted_action_preview(
+                    config,
+                    logger,
+                    use_paper_positions_readonly=True,
+                ),
+                run_promoted_risk_preview,
+                run_promoted_consensus_preview,
+                run_promoted_decision_preview,
+            )
         if args.preview_slow_sma_signals:
             return run_slow_sma_signal_preview(
                 config,

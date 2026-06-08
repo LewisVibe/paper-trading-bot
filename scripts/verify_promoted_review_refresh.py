@@ -16,6 +16,7 @@ if str(ROOT) not in sys.path:
 import bot
 import trading_bot.research.promoted_review_refresh as refresh
 from trading_bot.research.promoted_review_refresh import PromotedReviewStep, refresh_promoted_review
+from trading_bot.runners import research_reports
 
 
 FORBIDDEN_SOURCE_TOKENS = [
@@ -120,15 +121,18 @@ def verify_missing_prerequisite(failures: list[str]) -> None:
 
 def verify_no_forbidden_source_paths(failures: list[str]) -> None:
     helper_source = inspect.getsource(refresh)
-    command_source = inspect.getsource(bot.run_refresh_promoted_review)
+    command_source = inspect.getsource(research_reports.run_refresh_promoted_review_command)
     for token in FORBIDDEN_SOURCE_TOKENS:
         if token in helper_source:
             failures.append(f"promoted review refresh helper should not reference {token}")
         if token in command_source:
-            failures.append(f"run_refresh_promoted_review should not reference {token}")
+            failures.append(f"run_refresh_promoted_review_command should not reference {token}")
     command_source_lower = command_source.lower()
-    if "use_paper_positions_readonly=true" not in command_source_lower:
-        failures.append("refresh command should use the existing read-only paper-position action preview path")
+    bot_source_lower = inspect.getsource(bot.main).lower()
+    if "--use-paper-positions-readonly" not in command_source_lower:
+        failures.append("refresh command summary should show the read-only paper-position action preview command")
+    if "use_paper_positions_readonly=true" not in bot_source_lower:
+        failures.append("bot routing should pass the existing read-only paper-position action preview path")
     if "force_dry_run=false" in command_source_lower or "dry_run = false" in command_source_lower:
         failures.append("refresh command must not change dry_run behavior")
 

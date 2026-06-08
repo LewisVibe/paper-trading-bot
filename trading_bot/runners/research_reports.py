@@ -7,18 +7,25 @@ underlying saved-data-only report behavior.
 from __future__ import annotations
 
 import sys
+from pathlib import Path
+from typing import Callable
 
 from trading_bot.research.defensive_comparison import generate_defensive_candidate_comparison
 from trading_bot.research.defensive_refresh import refresh_defensive_research
+from trading_bot.research.deployment_readiness import generate_deployment_readiness_report
 from trading_bot.research.drawdown_periods import generate_drawdown_period_report
 from trading_bot.research.etf_defensive_charts import plot_etf_defensive_comparison_charts
 from trading_bot.research.etf_defensive_drawdowns import generate_etf_defensive_drawdown_comparison
 from trading_bot.research.etf_rotation_robustness import generate_etf_rotation_robustness_report
+from trading_bot.research.promoted_decision import show_promoted_decision_file
+from trading_bot.research.promoted_review_refresh import PromotedReviewStep, refresh_promoted_review
 from trading_bot.research.short_hedge import run_short_hedge_backtest_files
 from trading_bot.research.short_selling_readiness import generate_short_selling_readiness_report
 from trading_bot.research.short_strategy_lab import run_short_strategy_lab_files
 from trading_bot.research.vol_managed_etf import run_vol_managed_etf_backtest_files
 from trading_bot.research.vol_managed_etf_robustness import generate_vol_managed_etf_robustness_report
+
+CommandCallback = Callable[[], int]
 
 
 def run_defensive_candidate_comparison_command() -> int:
@@ -40,6 +47,78 @@ def run_refresh_defensive_research_command() -> int:
         result = refresh_defensive_research()
     except Exception as exc:
         print(f"Defensive research refresh failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
+
+
+def run_show_promoted_decision_command() -> int:
+    status_code, lines = show_promoted_decision_file(Path("data") / "promoted_decision_preview.csv")
+    for line in lines:
+        print(line)
+    return status_code
+
+
+def run_refresh_promoted_review_command(
+    run_promoted_strategy_preview: CommandCallback,
+    run_promoted_action_preview_readonly: CommandCallback,
+    run_promoted_risk_preview: CommandCallback,
+    run_promoted_consensus_preview: CommandCallback,
+    run_promoted_decision_preview: CommandCallback,
+) -> int:
+    result = refresh_promoted_review(
+        steps=[
+            PromotedReviewStep(
+                "preview_promoted_strategies",
+                "python bot.py --preview-promoted-strategies",
+                Path("data") / "promoted_strategy_preview.csv",
+                run_promoted_strategy_preview,
+            ),
+            PromotedReviewStep(
+                "preview_promoted_actions_readonly",
+                "python bot.py --preview-promoted-actions --use-paper-positions-readonly",
+                Path("data") / "promoted_strategy_action_preview.csv",
+                run_promoted_action_preview_readonly,
+            ),
+            PromotedReviewStep(
+                "promoted_risk_preview",
+                "python bot.py --promoted-risk-preview",
+                Path("data") / "promoted_risk_preview.csv",
+                run_promoted_risk_preview,
+            ),
+            PromotedReviewStep(
+                "promoted_consensus_preview",
+                "python bot.py --promoted-consensus-preview",
+                Path("data") / "promoted_consensus_preview.csv",
+                run_promoted_consensus_preview,
+            ),
+            PromotedReviewStep(
+                "promoted_decision_preview",
+                "python bot.py --promoted-decision-preview",
+                Path("data") / "promoted_decision_preview.csv",
+                run_promoted_decision_preview,
+            ),
+            PromotedReviewStep(
+                "show_promoted_decision",
+                "python bot.py --show-promoted-decision",
+                Path("data") / "promoted_decision_preview.csv",
+                run_show_promoted_decision_command,
+            ),
+        ],
+        decision_path=Path("data") / "promoted_decision_preview.csv",
+        output_path=Path("data") / "promoted_review_refresh_summary.csv",
+    )
+    for line in result.summary_lines:
+        print(line)
+    return result.status_code
+
+
+def run_deployment_readiness_report_command() -> int:
+    try:
+        result = generate_deployment_readiness_report()
+    except Exception as exc:
+        print(f"Deployment readiness report failed: {exc}", file=sys.stderr)
         return 1
     for line in result.summary_lines:
         print(line)
