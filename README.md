@@ -512,7 +512,7 @@ Build a static saved-CSV research dashboard:
 python bot.py --build-research-dashboard
 ```
 
-This writes `data/dashboard/research_dashboard.html` from existing saved CSV reports and optional existing chart PNGs. It is a static HTML file only: no Flask, Streamlit, Dash, FastAPI, localhost server, network port, market-data refresh, Alpaca call, order action, SQLite `trade_log` write, Discord alert, risk enforcement, or execution approval is added.
+This writes `data/dashboard/research_dashboard.html` from existing saved CSV reports and optional existing chart PNGs. When available, it also displays `data/defensive_research_state_report.csv` as an optional defensive state section. It is a static HTML file only: no Flask, Streamlit, Dash, FastAPI, localhost server, network port, market-data refresh, Alpaca call, order action, SQLite `trade_log` write, Discord alert, risk enforcement, or execution approval is added.
 
 The initial `trading_bot/` package skeleton now exists for V2 refactoring, but `bot.py` still owns the current behaviour for now.
 

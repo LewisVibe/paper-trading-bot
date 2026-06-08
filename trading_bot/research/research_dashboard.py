@@ -50,6 +50,10 @@ DASHBOARD_INPUTS = {
 }
 
 OPTIONAL_DASHBOARD_INPUTS = {
+    "defensive_research_state_report": (
+        "data/defensive_research_state_report.csv",
+        "python bot.py --defensive-research-state-report",
+    ),
     "etf_breadth_regime_backtest": (
         "data/etf_breadth_regime_backtest.csv",
         "python bot.py --etf-breadth-regime-backtest",
@@ -137,6 +141,7 @@ def build_dashboard_html(
         render_cards(cards),
         render_meaning(data),
         render_next_commands(),
+        render_defensive_research_state(data),
         render_defensive_comparison(data),
         render_etf_breadth_regime(data),
         render_promoted_decisions(data),
@@ -273,6 +278,29 @@ def render_defensive_comparison(data: dict[str, dict[str, Any]]) -> str:
         "comparison_reason",
     ]
     return section("Defensive Strategy Comparison", render_table(rows, columns))
+
+
+def render_defensive_research_state(data: dict[str, dict[str, Any]]) -> str:
+    rows = data["defensive_research_state_report"]["rows"]
+    columns = [
+        "component",
+        "category",
+        "state_label",
+        "headline_metric",
+        "headline_value",
+        "interpretation",
+        "required_next_step",
+        "execution_approved",
+    ]
+    body = tag("p", "Saved-data only. Research/display only. No execution approval.")
+    if rows and any(column not in rows[0] for column in columns):
+        body += tag(
+            "p",
+            "Optional defensive research state CSV is present but does not include all expected display columns.",
+            class_="muted",
+        )
+    body += render_table(rows, columns)
+    return section("Defensive Research State", body)
 
 
 def render_etf_breadth_regime(data: dict[str, dict[str, Any]]) -> str:
