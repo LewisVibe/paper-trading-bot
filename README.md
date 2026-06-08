@@ -506,6 +506,14 @@ python bot.py --execution-eligibility-report
 
 This writes `data/execution_eligibility_report.csv` and combines saved promoted decision, portfolio risk policy, paper kill-switch readiness, and deployment readiness reports into a final non-executable eligibility view. It does not refresh previews, enforce risk policy, implement a kill switch, create order instructions, call Alpaca, read positions, submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
 
+Build a static saved-CSV research dashboard:
+
+```powershell
+python bot.py --build-research-dashboard
+```
+
+This writes `data/dashboard/research_dashboard.html` from existing saved CSV reports and optional existing chart PNGs. It is a static HTML file only: no Flask, Streamlit, Dash, FastAPI, localhost server, network port, market-data refresh, Alpaca call, order action, SQLite `trade_log` write, Discord alert, risk enforcement, or execution approval is added.
+
 The initial `trading_bot/` package skeleton now exists for V2 refactoring, but `bot.py` still owns the current behaviour for now.
 
 See `docs/V2_REFACTOR_INVENTORY.md` for the current extraction inventory and recommended next refactor order.

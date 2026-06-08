@@ -32,6 +32,7 @@ from trading_bot.research.promoted_decision import show_promoted_decision_file
 from trading_bot.research.promoted_actions import show_promoted_actions_file
 from trading_bot.research.promoted_risk import show_promoted_risk_file
 from trading_bot.research.promoted_review_refresh import PromotedReviewStep, refresh_promoted_review
+from trading_bot.research.research_dashboard import build_research_dashboard
 from trading_bot.research.short_hedge import run_short_hedge_backtest_files
 from trading_bot.research.short_selling_readiness import generate_short_selling_readiness_report
 from trading_bot.research.short_strategy_lab import run_short_strategy_lab_files
@@ -175,6 +176,17 @@ def run_execution_eligibility_report_command() -> int:
         result = generate_execution_eligibility_report()
     except Exception as exc:
         print(f"Execution eligibility report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
+
+
+def run_build_research_dashboard_command() -> int:
+    try:
+        result = build_research_dashboard()
+    except Exception as exc:
+        print(f"Research dashboard build failed: {exc}", file=sys.stderr)
         return 1
     for line in result.summary_lines:
         print(line)

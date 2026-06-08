@@ -125,6 +125,7 @@ from trading_bot.research.promotion import generate_strategy_promotion_report
 from trading_bot.research.reporting import generate_research_report
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
+    run_build_research_dashboard_command,
     run_crypto_period_diagnostics_command,
     run_crypto_research_state_report_command,
     run_crypto_strategy_decision_report_command,
@@ -3853,6 +3854,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a saved-data-only execution eligibility report without approving execution.",
     )
     parser.add_argument(
+        "--build-research-dashboard",
+        action="store_true",
+        help="Build a static saved-CSV research dashboard HTML file without running a server.",
+    )
+    parser.add_argument(
         "--show-promoted-risk",
         action="store_true",
         help="Display the saved promoted risk preview CSV without trading.",
@@ -4037,6 +4043,8 @@ def main() -> int:
         return run_paper_kill_switch_readiness_report_command()
     if args.execution_eligibility_report:
         return run_execution_eligibility_report_command()
+    if args.build_research_dashboard:
+        return run_build_research_dashboard_command()
     if args.show_promoted_risk:
         return run_show_promoted_risk_command()
 
