@@ -11,9 +11,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import bot
 import trading_bot.research.crypto_lab as crypto_lab
 import trading_bot.research.crypto_monitor as monitor
+from trading_bot.runners import research_reports
 
 
 FORBIDDEN_TERMS = [
@@ -184,9 +184,9 @@ def main() -> int:
     if "generate_crypto_signal_preview" in inspect.getsource(monitor):
         failures.append("crypto monitor helper should not call preview refresh")
 
-    command_source = inspect.getsource(bot.main)
+    command_source = inspect.getsource(research_reports.run_show_crypto_monitor_command)
     if "show_crypto_monitor_file" not in command_source:
-        failures.append("bot command routing should call show_crypto_monitor_file")
+        failures.append("crypto monitor command runner should call show_crypto_monitor_file")
 
     if failures:
         print("Show crypto monitor verification failed.")

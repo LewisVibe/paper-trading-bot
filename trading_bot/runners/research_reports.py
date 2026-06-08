@@ -10,6 +10,8 @@ import sys
 from pathlib import Path
 from typing import Callable
 
+from trading_bot.research.crypto_monitor import show_crypto_monitor_file
+from trading_bot.research.crypto_state import generate_crypto_research_state_report
 from trading_bot.research.defensive_comparison import generate_defensive_candidate_comparison
 from trading_bot.research.defensive_refresh import refresh_defensive_research
 from trading_bot.research.deployment_readiness import generate_deployment_readiness_report
@@ -18,6 +20,8 @@ from trading_bot.research.etf_defensive_charts import plot_etf_defensive_compari
 from trading_bot.research.etf_defensive_drawdowns import generate_etf_defensive_drawdown_comparison
 from trading_bot.research.etf_rotation_robustness import generate_etf_rotation_robustness_report
 from trading_bot.research.promoted_decision import show_promoted_decision_file
+from trading_bot.research.promoted_actions import show_promoted_actions_file
+from trading_bot.research.promoted_risk import show_promoted_risk_file
 from trading_bot.research.promoted_review_refresh import PromotedReviewStep, refresh_promoted_review
 from trading_bot.research.short_hedge import run_short_hedge_backtest_files
 from trading_bot.research.short_selling_readiness import generate_short_selling_readiness_report
@@ -58,6 +62,38 @@ def run_show_promoted_decision_command() -> int:
     for line in lines:
         print(line)
     return status_code
+
+
+def run_show_promoted_actions_command() -> int:
+    status_code, lines = show_promoted_actions_file(Path("data") / "promoted_strategy_action_preview.csv")
+    for line in lines:
+        print(line)
+    return status_code
+
+
+def run_show_promoted_risk_command() -> int:
+    status_code, lines = show_promoted_risk_file(Path("data") / "promoted_risk_preview.csv")
+    for line in lines:
+        print(line)
+    return status_code
+
+
+def run_show_crypto_monitor_command() -> int:
+    status_code, lines = show_crypto_monitor_file()
+    for line in lines:
+        print(line)
+    return status_code
+
+
+def run_crypto_research_state_report_command() -> int:
+    try:
+        result = generate_crypto_research_state_report()
+    except Exception as exc:
+        print(f"Crypto research state report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
 
 
 def run_refresh_promoted_review_command(

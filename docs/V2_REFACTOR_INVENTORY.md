@@ -274,12 +274,14 @@ This inventory captures the current V2 refactor state before moving any more pro
 ## Crypto Monitor Display Status
 
 - `--show-crypto-monitor` reads saved crypto CSVs only, starting with `data/crypto_signal_preview.csv`.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the display logic lives in `trading_bot/research/crypto_monitor.py`.
 - It prints a terminal summary of current desired positions, signal reasons, saved decision status, saved robustness status, and saved period diagnostics.
 - It does not refresh market data, call yfinance, call Alpaca, read positions, create/submit/cancel orders, write files, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, enable leverage, or approve execution.
 
 ## Crypto Research State Report Status
 
 - `--crypto-research-state-report` reads saved crypto CSVs only and writes `data/crypto_research_state_report.csv`.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/crypto_state.py`.
 - It summarizes universe status, saved decision status, saved current signal, selected-candidate robustness and cost stress, separately labelled all-strategy robustness and cost stress, and period diagnostics across `BTC/USD`, `ETH/USD`, and `LTC/USD`.
 - It is a checkpoint report only and does not refresh market data, call yfinance, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, add symbols, add strategies, enable shorting, enable margin, enable leverage, or approve execution.
 
@@ -306,6 +308,7 @@ This inventory captures the current V2 refactor state before moving any more pro
 ## Promoted Action Display Status
 
 - `--show-promoted-actions` reads `data/promoted_strategy_action_preview.csv`.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the display logic lives in `trading_bot/research/promoted_actions.py`.
 - It is only a terminal display helper for the CSV produced by `python bot.py --preview-promoted-actions`.
 - It does not refresh market data, call Alpaca, read positions, submit or cancel orders, write SQLite rows, send Discord alerts, or approve execution.
 
@@ -328,6 +331,7 @@ This inventory captures the current V2 refactor state before moving any more pro
 ## Promoted Risk Display Status
 
 - `--show-promoted-risk` reads `data/promoted_risk_preview.csv`.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the display logic lives in `trading_bot/research/promoted_risk.py`.
 - It is only a terminal display helper for the CSV produced by `python bot.py --promoted-risk-preview`.
 - It does not refresh market data, call yfinance, call Alpaca, read live/current positions, submit/cancel/create orders, write files, write SQLite `trade_log` rows, send Discord alerts, or approve execution.
 - It displays count by `risk_status`, count by `risk_check`, count by `desired_position`, estimated desired notional by strategy, duplicated desired notional by ticker, unique desired notional by ticker, unique account-style desired notional total, blocked-for-review rows, warning rows, and a compact table of risk rows.

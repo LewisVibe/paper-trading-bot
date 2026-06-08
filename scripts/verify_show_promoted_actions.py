@@ -13,13 +13,13 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import bot
 from trading_bot.research import promoted_actions
 from trading_bot.research.promoted_actions import (
     PROMOTED_ACTION_COLUMNS,
     build_show_promoted_actions_lines,
     show_promoted_actions_file,
 )
+from trading_bot.runners import research_reports
 
 
 FORBIDDEN_SOURCE_TOKENS = [
@@ -83,13 +83,13 @@ def verify_no_forbidden_source_paths(failures: list[str]) -> None:
             inspect.getsource(promoted_actions.read_promoted_action_preview),
         ]
     )
-    command_source = inspect.getsource(bot.run_show_promoted_actions)
+    command_source = inspect.getsource(research_reports.run_show_promoted_actions_command)
 
     for token in FORBIDDEN_SOURCE_TOKENS:
         if token in helper_source:
             add_failure(failures, f"show promoted-actions helpers should not reference {token}")
         if token in command_source:
-            add_failure(failures, f"run_show_promoted_actions should not reference {token}")
+            add_failure(failures, f"run_show_promoted_actions_command should not reference {token}")
 
 
 def verify_missing_csv(failures: list[str]) -> None:
@@ -202,7 +202,7 @@ def verify_line_builder(failures: list[str]) -> None:
 def verify_command_output_warning(failures: list[str]) -> None:
     buffer = io.StringIO()
     with redirect_stdout(buffer):
-        bot.run_show_promoted_actions()
+        research_reports.run_show_promoted_actions_command()
     output = buffer.getvalue()
     first_line = output.splitlines()[0] if output.splitlines() else ""
     if first_line != "READ-ONLY DISPLAY. NOT EXECUTION.":

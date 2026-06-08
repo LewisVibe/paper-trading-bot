@@ -102,19 +102,16 @@ from trading_bot.research.crypto import run_crypto_research_preview_files
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_decision import generate_crypto_strategy_decision_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
-from trading_bot.research.crypto_monitor import show_crypto_monitor_file
 from trading_bot.research.crypto_period_diagnostics import generate_crypto_period_diagnostics
 from trading_bot.research.crypto_report import generate_crypto_strategy_report
 from trading_bot.research.crypto_robustness import generate_crypto_robustness_report
 from trading_bot.research.crypto_signal_preview import generate_crypto_signal_preview
-from trading_bot.research.crypto_state import generate_crypto_research_state_report
 from trading_bot.research.defensive import generate_defensive_strategy_report
 from trading_bot.research.plotting import plot_strategy_results
 from trading_bot.research.promoted_actions import (
     build_promoted_action_preview_rows,
     build_promoted_action_summary,
     read_promoted_strategy_preview,
-    show_promoted_actions_file,
     write_promoted_action_preview,
 )
 from trading_bot.research.promoted_preview import (
@@ -126,11 +123,12 @@ from trading_bot.research.promoted_preview import (
 )
 from trading_bot.research.promoted_consensus import run_promoted_consensus_preview_files
 from trading_bot.research.promoted_decision import run_promoted_decision_preview_files
-from trading_bot.research.promoted_risk import run_promoted_risk_preview_files, show_promoted_risk_file
+from trading_bot.research.promoted_risk import run_promoted_risk_preview_files
 from trading_bot.research.promotion import generate_strategy_promotion_report
 from trading_bot.research.reporting import generate_research_report
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
+    run_crypto_research_state_report_command,
     run_defensive_candidate_comparison_command,
     run_deployment_readiness_report_command,
     run_drawdown_period_report_command,
@@ -140,6 +138,9 @@ from trading_bot.runners.research_reports import (
     run_refresh_promoted_review_command,
     run_refresh_defensive_research_command,
     run_show_promoted_decision_command,
+    run_show_crypto_monitor_command,
+    run_show_promoted_actions_command,
+    run_show_promoted_risk_command,
     run_short_hedge_backtest_command,
     run_short_selling_readiness_report_command,
     run_short_strategy_lab_command,
@@ -2293,13 +2294,6 @@ def run_promoted_action_preview(
     return 0
 
 
-def run_show_promoted_actions() -> int:
-    status_code, lines = show_promoted_actions_file(Path("data") / "promoted_strategy_action_preview.csv")
-    for line in lines:
-        print(line)
-    return status_code
-
-
 def run_promoted_risk_preview() -> int:
     status_code, lines = run_promoted_risk_preview_files(
         Path("data") / "promoted_strategy_preview.csv",
@@ -2328,13 +2322,6 @@ def run_promoted_decision_preview() -> int:
         Path("data") / "promoted_risk_preview.csv",
         Path("data") / "promoted_decision_preview.csv",
     )
-    for line in lines:
-        print(line)
-    return status_code
-
-
-def run_show_promoted_risk() -> int:
-    status_code, lines = show_promoted_risk_file(Path("data") / "promoted_risk_preview.csv")
     for line in lines:
         print(line)
     return status_code
@@ -4027,21 +4014,11 @@ def main() -> int:
             print(line)
         return 0
     if args.show_crypto_monitor:
-        status_code, lines = show_crypto_monitor_file()
-        for line in lines:
-            print(line)
-        return status_code
+        return run_show_crypto_monitor_command()
     if args.crypto_research_state_report:
-        try:
-            result = generate_crypto_research_state_report()
-        except Exception as exc:
-            print(f"Crypto research state report failed: {exc}", file=sys.stderr)
-            return 1
-        for line in result.summary_lines:
-            print(line)
-        return 0
+        return run_crypto_research_state_report_command()
     if args.show_promoted_actions:
-        return run_show_promoted_actions()
+        return run_show_promoted_actions_command()
     if args.promoted_risk_preview:
         return run_promoted_risk_preview()
     if args.promoted_consensus_preview:
@@ -4053,7 +4030,7 @@ def main() -> int:
     if args.deployment_readiness_report:
         return run_deployment_readiness_report_command()
     if args.show_promoted_risk:
-        return run_show_promoted_risk()
+        return run_show_promoted_risk_command()
 
     config_path = Path(args.config).resolve()
 
