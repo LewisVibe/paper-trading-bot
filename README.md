@@ -446,6 +446,14 @@ python scripts\verify_v2_baseline.py
 
 The script runs safe command checks only. It does not run `--paper-order-test` or `--execute-slow-sma-paper`, so it does not submit Alpaca orders.
 
+Before GitHub commits or pushes, run the repository safety verifier:
+
+```powershell
+python scripts\verify_repo_safety.py
+```
+
+It checks that private files, generated CSVs, database files, logs, charts, virtual environments, and obvious secret-like filenames are not tracked or staged.
+
 The initial `trading_bot/` package skeleton now exists for V2 refactoring, but `bot.py` still owns the current behaviour for now.
 
 See `docs/V2_REFACTOR_INVENTORY.md` for the current extraction inventory and recommended next refactor order.

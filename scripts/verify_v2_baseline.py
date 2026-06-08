@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
 
 CHECKS = [
     ["-m", "py_compile", "bot.py"],
+    ["scripts/verify_repo_safety.py"],
     ["scripts/verify_command_inventory.py"],
     ["scripts/verify_promoted_decision_preview.py"],
     ["scripts/verify_promoted_consensus_preview.py"],
