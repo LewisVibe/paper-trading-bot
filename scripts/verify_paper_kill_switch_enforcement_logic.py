@@ -48,7 +48,7 @@ def main() -> int:
     failures: list[str] = []
     verify_gate_cases(failures)
     verify_helper_is_pure(failures)
-    verify_not_wired_into_order_paths(failures)
+    verify_wiring_limited_to_manual_paper_order_test(failures)
     verify_no_new_execution_command(failures)
     verify_high_risk_commands_still_gated(failures)
     verify_no_order_instruction_schema(failures)
@@ -111,10 +111,14 @@ def verify_helper_is_pure(failures: list[str]) -> None:
             failures.append(f"isolated helper references forbidden execution term: {term}")
 
 
-def verify_not_wired_into_order_paths(failures: list[str]) -> None:
-    helper_import = "trading_bot.safety.paper_kill_switch"
+def verify_wiring_limited_to_manual_paper_order_test(failures: list[str]) -> None:
+    bot_source = read_text(ROOT / "bot.py")
+    if "evaluate_paper_kill_switch_gate" not in bot_source:
+        failures.append("manual paper-order test should use isolated paper kill-switch helper")
+    elif not helper_call_is_limited_to_manual_paper_order(bot_source):
+        failures.append("helper wiring should be limited to run_paper_order_test before Alpaca/database/order work")
+
     high_risk_paths = [
-        ROOT / "bot.py",
         ROOT / "trading_bot" / "execution.py",
         ROOT / "trading_bot" / "alpaca_client.py",
         ROOT / "trading_bot" / "database.py",
@@ -122,7 +126,7 @@ def verify_not_wired_into_order_paths(failures: list[str]) -> None:
     ]
     for path in high_risk_paths:
         text = read_text(path)
-        if helper_import in text or "evaluate_paper_kill_switch_gate" in text:
+        if "trading_bot.safety.paper_kill_switch" in text or "evaluate_paper_kill_switch_gate" in text:
             failures.append(f"helper should not be wired into high-risk path: {path.relative_to(ROOT)}")
 
 
@@ -157,6 +161,27 @@ def bot_help_text() -> str:
         timeout=30,
     )
     return (result.stdout or "") + "\n" + (result.stderr or "")
+
+
+def helper_call_is_limited_to_manual_paper_order(bot_source: str) -> bool:
+    try:
+        start = bot_source.index("def run_paper_order_test(")
+        end = bot_source.index("def estimate_manual_position_after(", start)
+    except ValueError:
+        return False
+    manual_source = bot_source[start:end]
+    outside_source = bot_source[:start] + bot_source[end:]
+    if "evaluate_paper_kill_switch_gate(" in outside_source:
+        return False
+    required_terms = ["evaluate_paper_kill_switch_gate", "TradingClient(", "submit_alpaca_order(", "init_database("]
+    if any(term not in manual_source for term in required_terms):
+        return False
+    preflight_index = manual_source.index("evaluate_paper_kill_switch_gate")
+    return (
+        preflight_index < manual_source.index("TradingClient(")
+        and preflight_index < manual_source.index("submit_alpaca_order(")
+        and preflight_index < manual_source.index("init_database(")
+    )
 
 
 def read_text(path: Path) -> str:

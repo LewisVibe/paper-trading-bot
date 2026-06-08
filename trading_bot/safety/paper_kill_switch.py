@@ -1,7 +1,7 @@
 """Pure paper kill-switch gate evaluation helper.
 
-This module is intentionally isolated from execution paths. It accepts plain
-Python values only and returns a local decision object for tests/future design.
+This module is intentionally pure and isolated from order mechanics. It accepts
+plain Python values only and returns a local decision object for safety checks.
 """
 
 from __future__ import annotations

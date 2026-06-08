@@ -162,6 +162,7 @@ from trading_bot.runners.research_reports import (
     run_vol_managed_etf_backtest_command,
     run_vol_managed_etf_robustness_command,
 )
+from trading_bot.safety.paper_kill_switch import evaluate_paper_kill_switch_gate
 from trading_bot.strategies.adaptive import select_adaptive_momentum_assets
 from trading_bot.strategies.rotation import (
     buy_and_hold_equity_curve,
@@ -604,9 +605,7 @@ def run_paper_order_test(
     quantity_text: str,
     confirm_paper_order: bool,
 ) -> int:
-    conn = init_database(config.database_path)
-    order_config = replace(config, dry_run=False)
-
+    conn = None
     try:
         ticker = ticker.strip().upper()
         side = side.strip().lower()
@@ -633,8 +632,36 @@ def run_paper_order_test(
                 "config.json has dry_run=true. Re-run with --confirm-paper-order to submit one paper order."
             )
 
+        kill_switch_decision = evaluate_paper_kill_switch_gate(
+            alpaca_paper=config.alpaca_paper,
+            dry_run=config.dry_run,
+            explicit_paper_execution_requested=confirm_paper_order,
+            allow_shorting=config.allow_shorting,
+            paper_kill_switch_enabled=getattr(config, "paper_kill_switch_enabled", None),
+            execution_eligibility_blocked=manual_paper_order_execution_eligibility_blocked(),
+            defensive_decision_blocked=manual_paper_order_defensive_decision_blocked(),
+            explicit_confirmation=confirm_paper_order,
+            command_name="paper_order_test",
+        )
+        if not kill_switch_decision.allowed:
+            print("PAPER ORDER TEST BLOCKED BY PAPER KILL-SWITCH PREFLIGHT.")
+            print("No orders were created, submitted, or cancelled.")
+            print("Reasons:")
+            for reason in kill_switch_decision.reasons:
+                print(f"- {reason}")
+            print(kill_switch_decision.required_next_step)
+            print("No execution approval was granted.")
+            logger.warning(
+                "Manual paper-order test blocked by paper kill-switch preflight: %s",
+                "; ".join(kill_switch_decision.reasons),
+            )
+            return 2
+
         if not config.alpaca_api_key or not config.alpaca_secret_key:
             raise ManualOrderError("Alpaca paper API key and secret key are required.")
+
+        conn = init_database(config.database_path)
+        order_config = replace(config, dry_run=False)
 
         alpaca_client = TradingClient(
             config.alpaca_api_key,
@@ -717,7 +744,39 @@ def run_paper_order_test(
         send_discord_alert(config, logger, f"Error: {message}")
         return 1
     finally:
-        conn.close()
+        if conn is not None:
+            conn.close()
+
+
+def manual_paper_order_execution_eligibility_blocked(
+    path: Path = Path("data") / "execution_eligibility_report.csv",
+) -> bool:
+    rows = read_saved_csv_rows(path)
+    final = next((row for row in rows if row.get("eligibility_check_name") == "final_execution_eligibility"), None)
+    if not final:
+        return True
+    if any(str(row.get("execution_approved", "")).strip().lower() != "false" for row in rows):
+        return True
+    return final.get("eligibility_status") not in {"pass", "eligible", "not_blocked"}
+
+
+def manual_paper_order_defensive_decision_blocked(
+    path: Path = Path("data") / "defensive_allocation_decision_report.csv",
+) -> bool:
+    rows = read_saved_csv_rows(path)
+    overall = next((row for row in rows if row.get("decision_area") == "overall_decision"), None)
+    if not overall:
+        return True
+    if any(str(row.get("execution_approved", "")).strip().lower() != "false" for row in rows):
+        return True
+    return str(overall.get("can_progress_to_execution_design", "")).strip().lower() != "true"
+
+
+def read_saved_csv_rows(path: Path) -> list[dict[str, str]]:
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as file:
+        return list(csv.DictReader(file))
 
 
 def estimate_manual_position_after(

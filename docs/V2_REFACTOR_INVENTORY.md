@@ -264,18 +264,19 @@ This inventory captures the current V2 refactor state before moving any more pro
 
 ## Paper Kill-Switch Enforcement Contract Verifier Status
 
-- `scripts/verify_paper_kill_switch_enforcement_contract.py` defines and verifies the future enforcement contract without implementing enforcement.
+- `scripts/verify_paper_kill_switch_enforcement_contract.py` defines and verifies the enforcement contract and the limited manual preflight wiring.
 - It checks the required prerequisites for any future defensive paper-execution command: paper-only mode, safe defaults, shorting disabled, future kill-switch setting/state, unblocked eligibility/decision reports, explicit confirmation, separation from normal bot behavior, and exclusion from report/preview/dashboard modes.
 - It confirms high-risk commands remain confirmation-gated and that the current paper kill-switch gate remains blocked/future-work-required.
-- It does not add a bot command, add enforcement to order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+- It does not add a bot command, change order submission mechanics, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
 ## Isolated Paper Kill-Switch Helper Status
 
 - `trading_bot/safety/paper_kill_switch.py` provides pure no-network helper logic for future paper kill-switch enforcement design tests.
 - It accepts plain Python safety context values and returns an allow/block decision object with reasons and a required next step.
-- `scripts/verify_paper_kill_switch_enforcement_logic.py` covers safe and blocked contexts and verifies the helper is not wired into high-risk order paths.
-- It is not imported by `bot.py`, `--paper-order-test`, `--execute-slow-sma-paper`, normal order/logging flow, open-order blocking, SQLite execution writes, or Discord sending.
-- It does not add a bot command, add enforcement to order paths, create/submit/cancel orders, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+- `--paper-order-test` consults the helper as an early refusal preflight before database initialization, Alpaca client creation, open-order checks, or order submission.
+- `scripts/verify_paper_kill_switch_enforcement_logic.py` covers safe and blocked contexts and verifies the helper wiring is limited to the manual paper-order preflight.
+- It remains separate from `--execute-slow-sma-paper`, normal order/logging flow, open-order blocking, SQLite execution writes, Discord sending, and lower-level order submission helpers.
+- It does not add a bot command, create/submit/cancel orders, call Alpaca by itself, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
 ## Defensive Execution Readiness Report Status
 

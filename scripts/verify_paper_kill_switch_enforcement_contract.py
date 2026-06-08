@@ -60,7 +60,7 @@ def main() -> int:
     verify_report_preview_no_execution_approval(failures)
     verify_contract_has_no_order_instruction_columns(failures)
     verify_gate_blocked_future_work(failures)
-    verify_isolated_helper_exists_without_order_path_wiring(failures)
+    verify_helper_wired_only_to_manual_paper_order_test(failures)
 
     if failures:
         print("Paper kill-switch enforcement contract verification failed.")
@@ -74,7 +74,7 @@ def main() -> int:
     print("Future defensive execution command absent: pass")
     print("Report/preview execution approval scan: pass")
     print("Current gate remains blocked/future-work-required: pass")
-    print("Isolated helper exists and is not wired into order paths: pass")
+    print("Isolated helper wiring is limited to manual paper-order preflight: pass")
     print("Result: passed")
     return 0
 
@@ -175,7 +175,7 @@ def verify_gate_blocked_future_work(failures: list[str]) -> None:
             break
 
 
-def verify_isolated_helper_exists_without_order_path_wiring(failures: list[str]) -> None:
+def verify_helper_wired_only_to_manual_paper_order_test(failures: list[str]) -> None:
     helper_path = ROOT / "trading_bot" / "safety" / "paper_kill_switch.py"
     if not helper_path.exists():
         failures.append("isolated paper kill-switch helper is missing")
@@ -183,8 +183,12 @@ def verify_isolated_helper_exists_without_order_path_wiring(failures: list[str])
     helper_text = read_text(helper_path)
     if "evaluate_paper_kill_switch_gate" not in helper_text:
         failures.append("isolated paper kill-switch helper must expose evaluate_paper_kill_switch_gate")
+    bot_source = read_text(ROOT / "bot.py")
+    if "evaluate_paper_kill_switch_gate" not in bot_source:
+        failures.append("manual paper-order test should use isolated paper kill-switch helper")
+    elif not helper_call_is_limited_to_manual_paper_order(bot_source):
+        failures.append("isolated helper must be limited to run_paper_order_test preflight in bot.py")
     high_risk_paths = [
-        ROOT / "bot.py",
         ROOT / "trading_bot" / "execution.py",
         ROOT / "trading_bot" / "alpaca_client.py",
         ROOT / "trading_bot" / "database.py",
@@ -194,6 +198,23 @@ def verify_isolated_helper_exists_without_order_path_wiring(failures: list[str])
         text = read_text(path)
         if "trading_bot.safety.paper_kill_switch" in text or "evaluate_paper_kill_switch_gate" in text:
             failures.append(f"isolated helper must not be wired into high-risk path: {path.relative_to(ROOT)}")
+
+
+def helper_call_is_limited_to_manual_paper_order(bot_source: str) -> bool:
+    try:
+        start = bot_source.index("def run_paper_order_test(")
+        end = bot_source.index("def estimate_manual_position_after(", start)
+    except ValueError:
+        return False
+    manual_source = bot_source[start:end]
+    outside_source = bot_source[:start] + bot_source[end:]
+    return (
+        "evaluate_paper_kill_switch_gate" in manual_source
+        and "evaluate_paper_kill_switch_gate(" not in outside_source
+        and manual_source.index("evaluate_paper_kill_switch_gate") < manual_source.index("TradingClient(")
+        and manual_source.index("evaluate_paper_kill_switch_gate") < manual_source.index("submit_alpaca_order(")
+        and manual_source.index("evaluate_paper_kill_switch_gate") < manual_source.index("init_database(")
+    )
 
 
 def iter_report_preview_sources() -> list[Path]:
