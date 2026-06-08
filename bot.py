@@ -148,6 +148,7 @@ from trading_bot.runners.research_reports import (
     run_paper_execution_protection_report_command,
     run_paper_kill_switch_gate_report_command,
     run_paper_kill_switch_readiness_report_command,
+    run_normal_bot_execution_policy_report_command,
     run_plot_etf_defensive_comparison_command,
     run_portfolio_risk_policy_report_command,
     run_refresh_promoted_review_command,
@@ -4006,6 +4007,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a saved-data/static paper execution protection checkpoint without execution.",
     )
     parser.add_argument(
+        "--normal-bot-execution-policy-report",
+        action="store_true",
+        help="Create a saved-data/static Option A normal bot execution policy report without execution.",
+    )
+    parser.add_argument(
         "--execution-eligibility-report",
         action="store_true",
         help="Create a saved-data-only execution eligibility report without approving execution.",
@@ -4218,6 +4224,8 @@ def main() -> int:
         return run_paper_kill_switch_gate_report_command()
     if args.paper_execution_protection_report:
         return run_paper_execution_protection_report_command()
+    if args.normal_bot_execution_policy_report:
+        return run_normal_bot_execution_policy_report_command()
     if args.execution_eligibility_report:
         return run_execution_eligibility_report_command()
     if args.build_research_dashboard:

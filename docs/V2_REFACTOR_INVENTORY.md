@@ -278,6 +278,15 @@ This inventory captures the current V2 refactor state before moving any more pro
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not add execution design, wire additional order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
+## Normal Bot Execution Policy Report Status
+
+- `--normal-bot-execution-policy-report` creates a saved-data/static-source checkpoint for Option A normal bot execution policy.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/normal_bot_execution_policy.py`.
+- It writes `data/normal_bot_execution_policy_report.csv`.
+- It documents that normal `python bot.py` remains deliberately separate from defensive paper execution, explicit paper execution commands must stay separate/confirmation-gated/kill-switch-gated, future defensive execution requires a separate scoped command, and no execution approval exists.
+- Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
+- It does not add execution design, wire additional order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+
 ## Isolated Paper Kill-Switch Helper Status
 
 - `trading_bot/safety/paper_kill_switch.py` provides pure no-network helper logic for future paper kill-switch enforcement design tests.

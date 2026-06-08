@@ -65,6 +65,7 @@ REQUIRED_COMMANDS = [
     "--paper-kill-switch-readiness-report",
     "--paper-kill-switch-gate-report",
     "--paper-execution-protection-report",
+    "--normal-bot-execution-policy-report",
     "--execution-eligibility-report",
     "--build-research-dashboard",
     "--preview-slow-sma-signals",

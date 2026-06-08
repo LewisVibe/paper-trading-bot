@@ -518,6 +518,14 @@ python bot.py --paper-execution-protection-report
 
 This writes `data/paper_execution_protection_report.csv` and summarizes which paper execution paths have kill-switch preflight, which path remains deliberately unchanged, and whether execution remains blocked. It recognizes the manual paper-order and slow SMA preflights, keeps normal `python bot.py` as future work, and does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
+Create a saved-data/static normal bot execution policy checkpoint:
+
+```powershell
+python bot.py --normal-bot-execution-policy-report
+```
+
+This writes `data/normal_bot_execution_policy_report.csv` and documents Option A: normal `python bot.py` stays original/dry-run-first and deliberately separate from defensive paper execution. Explicit paper execution stays in separate confirmation-gated and kill-switch-gated commands such as `--paper-order-test` and `--execute-slow-sma-paper`. The report does not add execution design, wire additional order paths, create order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+
 Verify the paper kill-switch enforcement contract and the limited manual preflight wiring:
 
 ```powershell
