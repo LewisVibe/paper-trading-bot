@@ -25,6 +25,7 @@ REQUIRED_COMMANDS = [
     "--strategy-promotion-report",
     "--defensive-strategy-report",
     "--defensive-candidate-comparison",
+    "--defensive-research-state-report",
     "--drawdown-period-report",
     "--etf-defensive-drawdown-comparison",
     "--plot-etf-defensive-comparison",

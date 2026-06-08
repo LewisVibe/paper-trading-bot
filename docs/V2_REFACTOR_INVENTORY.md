@@ -120,6 +120,15 @@ This inventory captures the current V2 refactor state before moving any more pro
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not rerun backtests, download market data, call Alpaca, send Discord alerts, write to SQLite, tune strategies, or approve execution.
 
+## Defensive Research State Status
+
+- `--defensive-research-state-report` reads saved defensive comparison, ETF breadth, short research, promoted decision, portfolio risk, and execution eligibility CSVs where available.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/defensive_state.py`.
+- It writes `data/defensive_research_state_report.csv`.
+- It consolidates the current defensive checkpoint across ETF rotation, vol-managed ETF, adaptive momentum, ETF breadth diagnostics, paused short research, and execution state.
+- Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
+- It does not rerun backtests, download market data, call Alpaca, send Discord alerts, write to SQLite, tune strategies, promote strategies, or approve execution.
+
 ## ETF Defensive Drawdown Comparison Status
 
 - `--etf-defensive-drawdown-comparison` reads saved ETF rotation and vol-managed ETF equity curves plus fixed-split robustness reports.

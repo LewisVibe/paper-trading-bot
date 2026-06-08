@@ -132,6 +132,7 @@ from trading_bot.runners.research_reports import (
     run_crypto_strategy_decision_report_command,
     run_crypto_strategy_report_command,
     run_defensive_candidate_comparison_command,
+    run_defensive_research_state_report_command,
     run_deployment_readiness_report_command,
     run_drawdown_period_report_command,
     run_etf_breadth_regime_backtest_command,
@@ -3713,6 +3714,11 @@ def parse_args() -> argparse.Namespace:
         help="Compare ETF rotation and adaptive momentum as research-only defensive candidates.",
     )
     parser.add_argument(
+        "--defensive-research-state-report",
+        action="store_true",
+        help="Create a saved-data-only defensive research state checkpoint report.",
+    )
+    parser.add_argument(
         "--drawdown-period-report",
         action="store_true",
         help="Create a research-only drawdown period analysis report from saved equity curves.",
@@ -3982,6 +3988,8 @@ def main() -> int:
         return 0
     if args.defensive_candidate_comparison:
         return run_defensive_candidate_comparison_command()
+    if args.defensive_research_state_report:
+        return run_defensive_research_state_report_command()
     if args.drawdown_period_report:
         return run_drawdown_period_report_command()
     if args.etf_defensive_drawdown_comparison:

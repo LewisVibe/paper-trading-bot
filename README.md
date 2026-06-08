@@ -750,6 +750,20 @@ Output:
 data/defensive_candidate_comparison.csv
 ```
 
+Defensive research state report mode reads saved defensive comparison, ETF breadth, short research, promoted decision, portfolio risk, and execution eligibility CSVs where available. It consolidates the current stock/ETF defensive checkpoint into one saved report without rerunning backtests, refreshing market data, calling Alpaca, creating orders, writing SQLite `trade_log`, sending Discord alerts, promoting strategies, or approving execution.
+
+Command:
+
+```text
+python bot.py --defensive-research-state-report
+```
+
+Output:
+
+```text
+data/defensive_research_state_report.csv
+```
+
 ETF defensive drawdown comparison mode reads saved monthly ETF rotation and vol-managed ETF equity curves plus fixed-split robustness reports. It compares worst drawdown periods and the `split_80_20` out-of-sample drawdown tradeoff, including whether lower drawdown came with weaker CAGR/Sharpe/Calmar context. It is research-only and does not rerun backtests, refresh market data, call Alpaca, write SQLite `trade_log`, send Discord alerts, change strategy rules, or approve execution.
 
 Command:

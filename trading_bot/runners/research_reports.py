@@ -17,6 +17,7 @@ from trading_bot.research.crypto_report import generate_crypto_strategy_report
 from trading_bot.research.crypto_state import generate_crypto_research_state_report
 from trading_bot.research.defensive_comparison import generate_defensive_candidate_comparison
 from trading_bot.research.defensive_refresh import refresh_defensive_research
+from trading_bot.research.defensive_state import generate_defensive_research_state_report
 from trading_bot.research.deployment_readiness import generate_deployment_readiness_report
 from trading_bot.research.drawdown_periods import generate_drawdown_period_report
 from trading_bot.research.execution_eligibility import generate_execution_eligibility_report
@@ -59,6 +60,17 @@ def run_defensive_candidate_comparison_command() -> int:
     for line in result.summary_lines:
         print(line)
     print(f"Saved defensive candidate comparison to {result.output_path}")
+    return 0
+
+
+def run_defensive_research_state_report_command() -> int:
+    try:
+        result = generate_defensive_research_state_report()
+    except Exception as exc:
+        print(f"Defensive research state report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
     return 0
 
 
