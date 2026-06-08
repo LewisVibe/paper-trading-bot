@@ -74,7 +74,7 @@ def main() -> int:
     print("Future defensive execution command absent: pass")
     print("Report/preview execution approval scan: pass")
     print("Current gate remains blocked/future-work-required: pass")
-    print("Isolated helper wiring is limited to manual paper-order preflight: pass")
+    print("Isolated helper wiring is limited to manual and slow SMA paper preflights: pass")
     print("Result: passed")
     return 0
 
@@ -186,8 +186,8 @@ def verify_helper_wired_only_to_manual_paper_order_test(failures: list[str]) -> 
     bot_source = read_text(ROOT / "bot.py")
     if "evaluate_paper_kill_switch_gate" not in bot_source:
         failures.append("manual paper-order test should use isolated paper kill-switch helper")
-    elif not helper_call_is_limited_to_manual_paper_order(bot_source):
-        failures.append("isolated helper must be limited to run_paper_order_test preflight in bot.py")
+    elif not helper_call_is_limited_to_scoped_paper_commands(bot_source):
+        failures.append("isolated helper must be limited to manual and slow SMA paper preflights in bot.py")
     high_risk_paths = [
         ROOT / "trading_bot" / "execution.py",
         ROOT / "trading_bot" / "alpaca_client.py",
@@ -200,21 +200,41 @@ def verify_helper_wired_only_to_manual_paper_order_test(failures: list[str]) -> 
             failures.append(f"isolated helper must not be wired into high-risk path: {path.relative_to(ROOT)}")
 
 
-def helper_call_is_limited_to_manual_paper_order(bot_source: str) -> bool:
+def helper_call_is_limited_to_scoped_paper_commands(bot_source: str) -> bool:
     try:
-        start = bot_source.index("def run_paper_order_test(")
-        end = bot_source.index("def estimate_manual_position_after(", start)
+        manual_start = bot_source.index("def run_paper_order_test(")
+        manual_end = bot_source.index("def estimate_manual_position_after(", manual_start)
+        slow_start = bot_source.index("def run_slow_sma_paper_execution(")
+        slow_end = bot_source.index("def validate_slow_sma_execution_safety(", slow_start)
     except ValueError:
         return False
-    manual_source = bot_source[start:end]
-    outside_source = bot_source[:start] + bot_source[end:]
-    return (
-        "evaluate_paper_kill_switch_gate" in manual_source
-        and "evaluate_paper_kill_switch_gate(" not in outside_source
-        and manual_source.index("evaluate_paper_kill_switch_gate") < manual_source.index("TradingClient(")
-        and manual_source.index("evaluate_paper_kill_switch_gate") < manual_source.index("submit_alpaca_order(")
-        and manual_source.index("evaluate_paper_kill_switch_gate") < manual_source.index("init_database(")
+    manual_source = bot_source[manual_start:manual_end]
+    slow_source = bot_source[slow_start:slow_end]
+    outside_source = (
+        bot_source[:manual_start]
+        + bot_source[manual_end:slow_start]
+        + bot_source[slow_end:]
     )
+    if "evaluate_paper_kill_switch_gate(" in outside_source:
+        return False
+    return preflight_before_terms(
+        manual_source,
+        ["TradingClient(", "submit_alpaca_order(", "init_database("],
+    ) and preflight_before_terms(
+        slow_source,
+        ["configure_yfinance_cache(", "init_database(", "send_discord_alert(", "TradingClient(", "get_alpaca_positions("],
+    )
+
+
+def preflight_before_terms(source: str, terms: list[str]) -> bool:
+    helper_call = "evaluate_paper_kill_switch_gate("
+    if helper_call not in source:
+        return False
+    preflight_index = source.index(helper_call)
+    for term in terms:
+        if term not in source or preflight_index > source.index(term):
+            return False
+    return True
 
 
 def iter_report_preview_sources() -> list[Path]:

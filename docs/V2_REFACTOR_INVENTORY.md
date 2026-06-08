@@ -258,13 +258,13 @@ This inventory captures the current V2 refactor state before moving any more pro
 - `--paper-kill-switch-gate-report` creates a design/report-only scaffold for future paper kill-switch prerequisites.
 - Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/paper_kill_switch_gate.py`.
 - It writes `data/paper_kill_switch_gate_report.csv`.
-- It checks static/saved prerequisites such as safe config example defaults, confirmation-gated high-risk commands, isolated helper availability, the manual `--paper-order-test` preflight, missing slow SMA/normal bot preflight work, saved readiness/eligibility reports, blocked defensive allocation decision state, and the fact that broad kill-switch enforcement is still future work.
+- It checks static/saved prerequisites such as safe config example defaults, confirmation-gated high-risk commands, isolated helper availability, the manual `--paper-order-test` preflight, slow SMA paper-execution preflight, missing normal bot preflight work, saved readiness/eligibility reports, blocked defensive allocation decision state, and the fact that broad kill-switch enforcement is still future work.
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not add enforcement to additional order paths, add config settings, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
 ## Paper Kill-Switch Enforcement Contract Verifier Status
 
-- `scripts/verify_paper_kill_switch_enforcement_contract.py` defines and verifies the enforcement contract and the limited manual preflight wiring.
+- `scripts/verify_paper_kill_switch_enforcement_contract.py` defines and verifies the enforcement contract and limited explicit-command preflight wiring.
 - It checks the required prerequisites for any future defensive paper-execution command: paper-only mode, safe defaults, shorting disabled, future kill-switch setting/state, unblocked eligibility/decision reports, explicit confirmation, separation from normal bot behavior, and exclusion from report/preview/dashboard modes.
 - It confirms high-risk commands remain confirmation-gated and that the current paper kill-switch gate remains blocked/future-work-required.
 - It does not add a bot command, change order submission mechanics, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
@@ -274,8 +274,9 @@ This inventory captures the current V2 refactor state before moving any more pro
 - `trading_bot/safety/paper_kill_switch.py` provides pure no-network helper logic for future paper kill-switch enforcement design tests.
 - It accepts plain Python safety context values and returns an allow/block decision object with reasons and a required next step.
 - `--paper-order-test` consults the helper as an early refusal preflight before database initialization, Alpaca client creation, open-order checks, or order submission.
-- `scripts/verify_paper_kill_switch_enforcement_logic.py` covers safe and blocked contexts and verifies the helper wiring is limited to the manual paper-order preflight.
-- It remains separate from `--execute-slow-sma-paper`, normal order/logging flow, open-order blocking, SQLite execution writes, Discord sending, and lower-level order submission helpers.
+- `--execute-slow-sma-paper` consults the helper as an early refusal preflight before cache setup, database initialization, Discord startup alert, Alpaca client creation, paper position reads, open-order checks, SQLite execution writes, or order submission.
+- `scripts/verify_paper_kill_switch_enforcement_logic.py` covers safe and blocked contexts and verifies the helper wiring is limited to the manual paper-order and slow SMA paper-execution preflights.
+- It remains separate from normal order/logging flow, open-order blocking, SQLite execution writes, Discord sending, and lower-level order submission helpers.
 - It does not add a bot command, create/submit/cancel orders, call Alpaca by itself, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
 ## Defensive Execution Readiness Report Status
@@ -283,7 +284,7 @@ This inventory captures the current V2 refactor state before moving any more pro
 - `--defensive-execution-readiness-report` combines saved defensive allocation, kill-switch, execution eligibility, and portfolio risk policy artefacts into a final non-executable readiness report.
 - Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/defensive_execution_readiness.py`.
 - It writes `data/defensive_execution_readiness_report.csv`.
-- It answers what still blocks future paper execution design for the defensive allocation path, recognizes the isolated helper as no-order safety logic, recognizes the manual `--paper-order-test` preflight as partial progress, and keeps slow SMA/normal bot preflight work blocked/future-work.
+- It answers what still blocks future paper execution design for the defensive allocation path, recognizes the isolated helper as no-order safety logic, recognizes the manual `--paper-order-test` and slow SMA paper-execution preflights as partial progress, and keeps normal bot preflight work blocked/future-work.
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not start execution design, add enforcement to additional order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 

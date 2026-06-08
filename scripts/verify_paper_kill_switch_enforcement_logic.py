@@ -115,8 +115,8 @@ def verify_wiring_limited_to_manual_paper_order_test(failures: list[str]) -> Non
     bot_source = read_text(ROOT / "bot.py")
     if "evaluate_paper_kill_switch_gate" not in bot_source:
         failures.append("manual paper-order test should use isolated paper kill-switch helper")
-    elif not helper_call_is_limited_to_manual_paper_order(bot_source):
-        failures.append("helper wiring should be limited to run_paper_order_test before Alpaca/database/order work")
+    elif not helper_call_is_limited_to_scoped_paper_commands(bot_source):
+        failures.append("helper wiring should be limited to manual and slow SMA paper preflights before Alpaca/database/order work")
 
     high_risk_paths = [
         ROOT / "trading_bot" / "execution.py",
@@ -163,25 +163,40 @@ def bot_help_text() -> str:
     return (result.stdout or "") + "\n" + (result.stderr or "")
 
 
-def helper_call_is_limited_to_manual_paper_order(bot_source: str) -> bool:
+def helper_call_is_limited_to_scoped_paper_commands(bot_source: str) -> bool:
     try:
-        start = bot_source.index("def run_paper_order_test(")
-        end = bot_source.index("def estimate_manual_position_after(", start)
+        manual_start = bot_source.index("def run_paper_order_test(")
+        manual_end = bot_source.index("def estimate_manual_position_after(", manual_start)
+        slow_start = bot_source.index("def run_slow_sma_paper_execution(")
+        slow_end = bot_source.index("def validate_slow_sma_execution_safety(", slow_start)
     except ValueError:
         return False
-    manual_source = bot_source[start:end]
-    outside_source = bot_source[:start] + bot_source[end:]
+    manual_source = bot_source[manual_start:manual_end]
+    slow_source = bot_source[slow_start:slow_end]
+    outside_source = (
+        bot_source[:manual_start]
+        + bot_source[manual_end:slow_start]
+        + bot_source[slow_end:]
+    )
     if "evaluate_paper_kill_switch_gate(" in outside_source:
         return False
-    required_terms = ["evaluate_paper_kill_switch_gate", "TradingClient(", "submit_alpaca_order(", "init_database("]
-    if any(term not in manual_source for term in required_terms):
+    if not preflight_before_terms(manual_source, ["TradingClient(", "submit_alpaca_order(", "init_database("]):
         return False
-    preflight_index = manual_source.index("evaluate_paper_kill_switch_gate")
-    return (
-        preflight_index < manual_source.index("TradingClient(")
-        and preflight_index < manual_source.index("submit_alpaca_order(")
-        and preflight_index < manual_source.index("init_database(")
+    return preflight_before_terms(
+        slow_source,
+        ["configure_yfinance_cache(", "init_database(", "send_discord_alert(", "TradingClient(", "get_alpaca_positions("],
     )
+
+
+def preflight_before_terms(source: str, terms: list[str]) -> bool:
+    helper_call = "evaluate_paper_kill_switch_gate("
+    if helper_call not in source:
+        return False
+    preflight_index = source.index(helper_call)
+    for term in terms:
+        if term not in source or preflight_index > source.index(term):
+            return False
+    return True
 
 
 def read_text(path: Path) -> str:

@@ -29,7 +29,7 @@ EXPECTED_GATE_CHECKS = {
     "isolated_kill_switch_helper_available",
     "kill_switch_enforcement_not_implemented",
     "manual_paper_order_test_kill_switch_preflight",
-    "slow_sma_paper_execution_kill_switch_preflight_missing",
+    "slow_sma_paper_execution_kill_switch_preflight",
     "normal_bot_order_path_kill_switch_preflight_missing",
     "kill_switch_enforcement_not_wired_to_order_paths",
     "defensive_allocation_decision_blocks_execution_design",
@@ -108,8 +108,8 @@ def verify_fixture_report(failures: list[str]) -> None:
             failures.append("kill-switch enforcement should be marked future_work_required")
         if statuses.get("manual_paper_order_test_kill_switch_preflight") != "pass":
             failures.append("manual paper-order preflight should be marked pass")
-        if statuses.get("slow_sma_paper_execution_kill_switch_preflight_missing") != "future_work_required":
-            failures.append("slow SMA preflight should remain future_work_required")
+        if statuses.get("slow_sma_paper_execution_kill_switch_preflight") != "pass":
+            failures.append("slow SMA preflight should be marked pass")
         if statuses.get("normal_bot_order_path_kill_switch_preflight_missing") != "future_work_required":
             failures.append("normal bot preflight should remain future_work_required")
         if statuses.get("kill_switch_enforcement_not_wired_to_order_paths") != "future_work_required":
@@ -191,6 +191,11 @@ def write_fixture_files(root: Path) -> None:
                 "    pass",
                 "",
                 "def run_slow_sma_paper_execution():",
+                "    evaluate_paper_kill_switch_gate()",
+                "    init_database()",
+                "    TradingClient()",
+                "",
+                "def validate_slow_sma_execution_safety():",
                 "    pass",
                 "",
                 "def save_slow_sma_execution_preview():",

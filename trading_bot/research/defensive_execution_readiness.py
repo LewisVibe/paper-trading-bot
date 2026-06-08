@@ -73,7 +73,7 @@ def build_readiness_rows(
         kill_switch_contract_verifier_row(created_at, script_path),
         isolated_kill_switch_helper_row(created_at, script_path.parent),
         manual_paper_order_preflight_row(created_at, data_path, inputs["kill_switch_gate"]),
-        slow_sma_preflight_missing_row(created_at, data_path, inputs["kill_switch_gate"]),
+        slow_sma_preflight_row(created_at, data_path, inputs["kill_switch_gate"]),
         normal_bot_preflight_missing_row(created_at, data_path, inputs["kill_switch_gate"]),
         execution_eligibility_row(created_at, data_path, inputs["execution_eligibility"]),
         portfolio_risk_policy_row(created_at, data_path, inputs["portfolio_policy"]),
@@ -436,32 +436,32 @@ def manual_paper_order_preflight_row(
     )
 
 
-def slow_sma_preflight_missing_row(
+def slow_sma_preflight_row(
     created_at: str,
     data_path: Path,
     gate_rows: list[dict[str, str]],
 ) -> dict[str, Any]:
     source = data_path / "paper_kill_switch_gate_report.csv"
-    row = first_by_key(gate_rows, "gate_check", "slow_sma_paper_execution_kill_switch_preflight_missing") or {}
-    if row.get("gate_status") in {"blocked", "future_work_required"} and all_execution_false(gate_rows):
+    row = first_by_key(gate_rows, "gate_check", "slow_sma_paper_execution_kill_switch_preflight") or {}
+    if row.get("gate_status") == "pass" and all_execution_false(gate_rows):
         return readiness_row(
             created_at,
-            "slow_sma_paper_execution_kill_switch_preflight_missing",
-            "future_work_required",
-            "high",
+            "slow_sma_paper_execution_kill_switch_preflight",
+            "pass",
+            "info",
             source,
-            "--execute-slow-sma-paper remains missing kill-switch preflight.",
-            True,
+            "--execute-slow-sma-paper has kill-switch preflight and refuses before execution work when prerequisites are blocked.",
             False,
-            "Do not wire slow SMA in this report; require a future scoped safety task.",
+            False,
+            "Keep slow SMA paper execution blocked until all saved prerequisites explicitly pass.",
         )
     return readiness_row(
         created_at,
-        "slow_sma_paper_execution_kill_switch_preflight_missing",
+        "slow_sma_paper_execution_kill_switch_preflight",
         "missing_input" if not gate_rows else "warning",
         "high",
         source,
-        "Slow SMA kill-switch preflight status is not clearly blocked/future-work in the saved gate report.",
+        "Slow SMA kill-switch preflight status is not clearly passing in the saved gate report.",
         True,
         False,
         "Review slow SMA safety status before any execution design discussion.",

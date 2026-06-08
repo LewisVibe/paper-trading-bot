@@ -104,10 +104,10 @@ def build_gate_rows(root: Path, created_at: str) -> list[dict[str, Any]]:
             "source inspection",
             "Broad paper kill-switch enforcement remains future work; only the manual paper-order smoke test has a preflight.",
             True,
-            "Keep broad enforcement blocked until slow SMA and normal bot order paths have separately reviewed no-network tests.",
+            "Keep broad enforcement blocked until the normal bot order path has separately reviewed no-network tests.",
         ),
         manual_paper_order_preflight_row(created_at, bot_path, bot_source),
-        slow_sma_preflight_missing_row(created_at, bot_path, bot_source),
+        slow_sma_preflight_row(created_at, bot_path, bot_source),
         normal_bot_preflight_missing_row(created_at, bot_path, bot_source),
         broad_kill_switch_enforcement_row(created_at, root, helper_path),
         defensive_allocation_decision_row(created_at, decision_path, decision_rows),
@@ -207,20 +207,30 @@ def manual_paper_order_preflight_row(created_at: str, source: Path, bot_source: 
     )
 
 
-def slow_sma_preflight_missing_row(created_at: str, source: Path, bot_source: str) -> dict[str, Any]:
-    slow_source = function_block(bot_source, "def run_slow_sma_paper_execution(", "def save_slow_sma_execution_preview(")
-    missing = "evaluate_paper_kill_switch_gate(" not in slow_source
+def slow_sma_preflight_row(created_at: str, source: Path, bot_source: str) -> dict[str, Any]:
+    slow_source = function_block(bot_source, "def run_slow_sma_paper_execution(", "def validate_slow_sma_execution_safety(")
+    helper_call = "evaluate_paper_kill_switch_gate("
+    alpaca_client_term = "Trading" + "Client("
+    passed = (
+        helper_call in slow_source
+        and "init_database(" in slow_source
+        and alpaca_client_term in slow_source
+        and slow_source.index(helper_call) < slow_source.index("init_database(")
+        and slow_source.index(helper_call) < slow_source.index(alpaca_client_term)
+    )
     return gate_row(
         created_at,
-        "slow_sma_paper_execution_kill_switch_preflight_missing",
-        "future_work_required" if missing else "warning",
-        "high",
+        "slow_sma_paper_execution_kill_switch_preflight",
+        "pass" if passed else "blocked",
+        "info" if passed else "critical",
         str(source),
-        "--execute-slow-sma-paper is not yet wired to kill-switch preflight."
-        if missing
-        else "--execute-slow-sma-paper appears to contain kill-switch helper wiring; review separately before trusting it.",
-        True,
-        "Do not change slow SMA execution in this reporting task; require a future scoped safety task before any wiring.",
+        "--execute-slow-sma-paper has kill-switch preflight and currently refuses before execution work when prerequisites are blocked."
+        if passed
+        else "--execute-slow-sma-paper kill-switch preflight was not confirmed before database/order work.",
+        False if passed else True,
+        "Keep this limited to slow SMA paper execution; it does not approve broader execution."
+        if passed
+        else "Restore slow SMA preflight before any slow SMA paper execution.",
     )
 
 

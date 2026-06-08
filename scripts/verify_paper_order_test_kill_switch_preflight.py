@@ -40,7 +40,7 @@ def main() -> int:
     print("PAPER ORDER TEST KILL-SWITCH PREFLIGHT VERIFICATION")
     print("Command gates: pass")
     print("Preflight before Alpaca/database/order work: pass")
-    print("Slow SMA and normal bot paths unchanged by helper: pass")
+    print("Normal bot path unchanged by helper: pass")
     print("Blocked helper context: pass")
     print("Result: passed")
     return 0
@@ -106,14 +106,6 @@ def verify_preflight_wiring(bot_source: str, failures: list[str]) -> None:
     for term in forbidden_blocked_terms:
         if term in blocked_segment:
             failures.append(f"blocked preflight segment must not call {term}")
-
-    outside_manual = bot_source.replace(manual_source, "")
-    if "evaluate_paper_kill_switch_gate(" in outside_manual:
-        failures.append("evaluate_paper_kill_switch_gate must only be called inside run_paper_order_test")
-
-    slow_source = function_block(bot_source, "def run_slow_sma_paper_execution(", "def save_slow_sma_execution_preview(")
-    if slow_source and "evaluate_paper_kill_switch_gate" in slow_source:
-        failures.append("slow SMA paper execution must not use manual paper-order kill-switch preflight")
 
     normal_source = function_block(bot_source, "def run_bot(", "def run_paper_order_test(")
     if normal_source and "evaluate_paper_kill_switch_gate" in normal_source:

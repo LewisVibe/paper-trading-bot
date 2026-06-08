@@ -28,7 +28,7 @@ EXPECTED_AREAS = {
     "kill_switch_contract_verifier",
     "isolated_kill_switch_helper",
     "manual_paper_order_test_kill_switch_preflight",
-    "slow_sma_paper_execution_kill_switch_preflight_missing",
+    "slow_sma_paper_execution_kill_switch_preflight",
     "normal_bot_order_path_kill_switch_preflight_missing",
     "execution_eligibility",
     "portfolio_risk_policy",
@@ -123,9 +123,9 @@ def verify_fixture_report(failures: list[str]) -> None:
         manual_preflight = find_row(result.rows, "manual_paper_order_test_kill_switch_preflight")
         if manual_preflight.get("readiness_status") != "pass":
             failures.append("manual paper-order preflight should pass in readiness report")
-        slow_missing = find_row(result.rows, "slow_sma_paper_execution_kill_switch_preflight_missing")
-        if slow_missing.get("readiness_status") != "future_work_required":
-            failures.append("slow SMA missing preflight should remain future_work_required")
+        slow_preflight = find_row(result.rows, "slow_sma_paper_execution_kill_switch_preflight")
+        if slow_preflight.get("readiness_status") != "pass":
+            failures.append("slow SMA preflight should pass in readiness report")
         normal_missing = find_row(result.rows, "normal_bot_order_path_kill_switch_preflight_missing")
         if normal_missing.get("readiness_status") != "future_work_required":
             failures.append("normal bot missing preflight should remain future_work_required")
@@ -233,9 +233,9 @@ def write_fixture_csvs(data_dir: Path) -> None:
                 "execution_approved": "False",
             },
             {
-                "gate_check": "slow_sma_paper_execution_kill_switch_preflight_missing",
-                "gate_status": "future_work_required",
-                "blocks_future_execution_design": "True",
+                "gate_check": "slow_sma_paper_execution_kill_switch_preflight",
+                "gate_status": "pass",
+                "blocks_future_execution_design": "False",
                 "execution_approved": "False",
             },
             {

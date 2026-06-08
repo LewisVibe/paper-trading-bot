@@ -226,7 +226,7 @@ Run the manual paper-order smoke test:
 python bot.py --paper-order-test MSFT buy 1 --confirm-paper-order
 ```
 
-The manual paper-order smoke test is explicitly confirmation-gated and now performs an early paper kill-switch preflight before opening the database, creating an Alpaca client, checking open orders, or submitting an order. If the saved execution-eligibility/defensive-decision prerequisites or the explicit future kill-switch setting are not satisfied, it refuses before order work begins. This preflight is limited to `--paper-order-test`; it does not change slow SMA paper execution, normal `python bot.py` behavior, open-order blocking, SQLite execution writes, or Discord alerts.
+The manual paper-order smoke test is explicitly confirmation-gated and performs an early paper kill-switch preflight before opening the database, creating an Alpaca client, checking open orders, or submitting an order. If the saved execution-eligibility/defensive-decision prerequisites or the explicit future kill-switch setting are not satisfied, it refuses before order work begins. This preflight does not change normal `python bot.py` behavior, open-order blocking, SQLite execution writes, or Discord alerts.
 
 Run the regime-filtered SMA volatility backtest:
 
@@ -444,6 +444,8 @@ python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper --research-unive
 python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper --etf-universe
 ```
 
+Slow SMA paper execution is explicitly confirmation-gated and performs paper kill-switch preflight before cache setup, database initialization, Discord startup alert, Alpaca client creation, paper position reads, open-order checks, SQLite execution writes, or order submission. With the current saved prerequisites, it refuses early and does not create/submit/cancel orders, write execution `trade_log` rows, or send Discord alerts.
+
 Create simple PNG charts from saved strategy comparison CSV files:
 
 ```powershell
@@ -506,7 +508,7 @@ Create a design/report-only paper kill-switch gate scaffold:
 python bot.py --paper-kill-switch-gate-report
 ```
 
-This writes `data/paper_kill_switch_gate_report.csv` and checks static/saved prerequisites for a future paper kill-switch gate, including safe config example defaults, confirmation-gated high-risk commands, isolated helper availability, the manual `--paper-order-test` preflight, missing slow SMA/normal bot preflight work, existing readiness/eligibility reports, and whether defensive allocation remains blocked. It does not add order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+This writes `data/paper_kill_switch_gate_report.csv` and checks static/saved prerequisites for a future paper kill-switch gate, including safe config example defaults, confirmation-gated high-risk commands, isolated helper availability, the manual `--paper-order-test` preflight, the slow SMA paper-execution preflight, missing normal bot preflight work, existing readiness/eligibility reports, and whether defensive allocation remains blocked. It does not add order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
 Verify the paper kill-switch enforcement contract and the limited manual preflight wiring:
 
@@ -514,9 +516,9 @@ Verify the paper kill-switch enforcement contract and the limited manual preflig
 python scripts\verify_paper_kill_switch_enforcement_contract.py
 ```
 
-This no-network verifier defines the contract that any future defensive paper-execution command would have to satisfy before execution design can continue. It checks paper-only/default boundaries, confirmation gates, report/preview non-approval, that the current gate remains blocked/future-work-required, and that the helper is wired only to the manual paper-order smoke-test preflight. It does not add a bot command, change order submission mechanics, or approve execution.
+This no-network verifier defines the contract that any future defensive paper-execution command would have to satisfy before execution design can continue. It checks paper-only/default boundaries, confirmation gates, report/preview non-approval, that the current gate remains blocked/future-work-required, and that the helper is wired only to the manual paper-order and slow SMA paper-execution preflights. It does not add a bot command, change order submission mechanics, or approve execution.
 
-An isolated pure helper also exists at `trading_bot/safety/paper_kill_switch.py`. It can evaluate plain Python safety context values for paper kill-switch design tests. `--paper-order-test` consults it as an early refusal preflight only; the helper remains separate from `--execute-slow-sma-paper`, normal `python bot.py` behavior, open-order blocking, SQLite execution writes, Discord sending, and the lower-level order submission helper.
+An isolated pure helper also exists at `trading_bot/safety/paper_kill_switch.py`. It can evaluate plain Python safety context values for paper kill-switch design tests. `--paper-order-test` and `--execute-slow-sma-paper` consult it as early refusal preflights only; the helper remains separate from normal `python bot.py` behavior, open-order blocking, SQLite execution writes, Discord sending, and the lower-level order submission helper.
 
 Create a saved-data-only defensive execution readiness report:
 
@@ -524,7 +526,7 @@ Create a saved-data-only defensive execution readiness report:
 python bot.py --defensive-execution-readiness-report
 ```
 
-This writes `data/defensive_execution_readiness_report.csv` and summarizes what still blocks future paper execution design for the defensive allocation path. It combines saved defensive allocation, kill-switch gate, contract-verifier presence, execution eligibility, and portfolio risk policy state. It recognizes that manual `--paper-order-test` now has preflight, while slow SMA and normal bot paths remain blocked/future work. It does not start execution design, add enforcement to additional order paths, create order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+This writes `data/defensive_execution_readiness_report.csv` and summarizes what still blocks future paper execution design for the defensive allocation path. It combines saved defensive allocation, kill-switch gate, contract-verifier presence, execution eligibility, and portfolio risk policy state. It recognizes that manual `--paper-order-test` and slow SMA paper execution now have preflight, while the normal bot path remains blocked/future work. It does not start execution design, add enforcement to additional order paths, create order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
 Create a saved-data-only execution eligibility view:
 
@@ -1082,7 +1084,7 @@ Outputs:
 data/slow_sma_action_preview.csv
 ```
 
-Slow SMA paper execution is a separate explicit command. It requires `--confirm-slow-sma-paper`, requires Alpaca paper mode, refuses `allow_shorting: true`, checks assets and open orders before submitting, and logs every submitted or skipped target-position action to SQLite.
+Slow SMA paper execution is a separate explicit command. It requires `--confirm-slow-sma-paper`, requires Alpaca paper mode, refuses `allow_shorting: true`, and runs paper kill-switch preflight before any Alpaca, position, open-order, SQLite execution-write, Discord, or order-submission work. If future prerequisites pass, it checks assets and open orders before submitting and logs every submitted or skipped target-position action to SQLite.
 
 It submits market DAY paper orders only. It is not connected to normal `python bot.py` behaviour.
 

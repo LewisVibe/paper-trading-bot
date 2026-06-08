@@ -2948,6 +2948,34 @@ def run_slow_sma_paper_execution(
         )
         return 2
 
+    validate_slow_sma_execution_preflight_safety(config)
+    kill_switch_decision = evaluate_paper_kill_switch_gate(
+        alpaca_paper=config.alpaca_paper,
+        dry_run=config.dry_run,
+        explicit_paper_execution_requested=confirm_slow_sma_paper,
+        allow_shorting=config.allow_shorting,
+        paper_kill_switch_enabled=getattr(config, "paper_kill_switch_enabled", None),
+        execution_eligibility_blocked=manual_paper_order_execution_eligibility_blocked(),
+        defensive_decision_blocked=manual_paper_order_defensive_decision_blocked(),
+        explicit_confirmation=confirm_slow_sma_paper,
+        command_name="execute_slow_sma_paper",
+    )
+    if not kill_switch_decision.allowed:
+        print("SLOW SMA PAPER EXECUTION BLOCKED BY PAPER KILL-SWITCH PREFLIGHT.")
+        print("No orders were created, submitted, or cancelled.")
+        print("No SQLite execution trade_log rows were written.")
+        print("No Discord alerts were sent.")
+        print("Reasons:")
+        for reason in kill_switch_decision.reasons:
+            print(f"- {reason}")
+        print(kill_switch_decision.required_next_step)
+        print("No execution approval was granted.")
+        logger.warning(
+            "Slow SMA paper execution blocked by paper kill-switch preflight: %s",
+            "; ".join(kill_switch_decision.reasons),
+        )
+        return 2
+
     validate_slow_sma_execution_safety(config)
     configure_yfinance_cache(config, logger)
     universe_name, tickers, short_window, long_window = get_slow_sma_preview_settings(
@@ -3037,11 +3065,15 @@ def run_slow_sma_paper_execution(
 
 
 def validate_slow_sma_execution_safety(config: AppConfig) -> None:
-    if not config.alpaca_paper:
-        raise ConfigError("alpaca.paper must be true for slow SMA paper execution.")
+    validate_slow_sma_execution_preflight_safety(config)
 
     if not config.alpaca_api_key or not config.alpaca_secret_key:
         raise ConfigError("Alpaca paper API key and secret key are required for slow SMA paper execution.")
+
+
+def validate_slow_sma_execution_preflight_safety(config: AppConfig) -> None:
+    if not config.alpaca_paper:
+        raise ConfigError("alpaca.paper must be true for slow SMA paper execution.")
 
     if config.allow_shorting:
         raise ConfigError("allow_shorting must be false because the slow SMA strategy is long-only.")
