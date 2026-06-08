@@ -19,6 +19,7 @@ from trading_bot.research.defensive_comparison import generate_defensive_candida
 from trading_bot.research.defensive_refresh import refresh_defensive_research
 from trading_bot.research.deployment_readiness import generate_deployment_readiness_report
 from trading_bot.research.drawdown_periods import generate_drawdown_period_report
+from trading_bot.research.execution_eligibility import generate_execution_eligibility_report
 from trading_bot.research.etf_defensive_charts import plot_etf_defensive_comparison_charts
 from trading_bot.research.etf_defensive_drawdowns import generate_etf_defensive_drawdown_comparison
 from trading_bot.research.etf_rotation_robustness import generate_etf_rotation_robustness_report
@@ -163,6 +164,17 @@ def run_paper_kill_switch_readiness_report_command() -> int:
         result = generate_paper_kill_switch_readiness_report()
     except Exception as exc:
         print(f"Paper kill-switch readiness report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
+
+
+def run_execution_eligibility_report_command() -> int:
+    try:
+        result = generate_execution_eligibility_report()
+    except Exception as exc:
+        print(f"Execution eligibility report failed: {exc}", file=sys.stderr)
         return 1
     for line in result.summary_lines:
         print(line)

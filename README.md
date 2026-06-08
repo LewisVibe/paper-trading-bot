@@ -498,6 +498,14 @@ python bot.py --paper-kill-switch-readiness-report
 
 This writes `data/paper_kill_switch_readiness_report.csv` and audits what would be required for a future paper-only kill switch. It does not add a config setting, enforce a kill switch, change order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
 
+Create a saved-data-only execution eligibility view:
+
+```powershell
+python bot.py --execution-eligibility-report
+```
+
+This writes `data/execution_eligibility_report.csv` and combines saved promoted decision, portfolio risk policy, paper kill-switch readiness, and deployment readiness reports into a final non-executable eligibility view. It does not refresh previews, enforce risk policy, implement a kill switch, create order instructions, call Alpaca, read positions, submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
+
 The initial `trading_bot/` package skeleton now exists for V2 refactoring, but `bot.py` still owns the current behaviour for now.
 
 See `docs/V2_REFACTOR_INVENTORY.md` for the current extraction inventory and recommended next refactor order.

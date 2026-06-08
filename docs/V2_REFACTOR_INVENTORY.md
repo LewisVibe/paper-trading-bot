@@ -202,6 +202,15 @@ This inventory captures the current V2 refactor state before moving any more pro
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not add a config setting, enforce a kill switch, change order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
 
+## Execution Eligibility Report Status
+
+- `--execution-eligibility-report` combines saved promoted decision, portfolio risk policy, paper kill-switch readiness, and deployment readiness reports into a final non-executable eligibility view.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/execution_eligibility.py`.
+- It writes `data/execution_eligibility_report.csv`.
+- It answers whether anything is execution-approved, what blocks execution discussion, which saved reports are missing, and what future work remains before any paper execution workflow can be considered.
+- Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
+- It does not refresh previews, enforce risk policy, implement a kill switch, create order instructions, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
+
 ## Short Hedge Backtest Status
 
 - `--short-hedge-backtest` runs a synthetic SPY-only short hedge backtest for research.
