@@ -466,6 +466,14 @@ python scripts\verify_repo_safety.py
 
 It checks that private files, generated CSVs, database files, logs, charts, virtual environments, and obvious secret-like filenames are not tracked or staged.
 
+Create a local deployment readiness audit before any future VPS/server handoff:
+
+```powershell
+python bot.py --deployment-readiness-report
+```
+
+This is a reporting-only check for future Windows Server VPS use. It may inspect local files and Git metadata, but it does not deploy, create Windows Task Scheduler tasks, refresh market data, call Alpaca, submit orders, send Discord alerts, or approve execution. Any future Windows Task Scheduler setup must start with report/display commands only and is not execution approval.
+
 The initial `trading_bot/` package skeleton now exists for V2 refactoring, but `bot.py` still owns the current behaviour for now.
 
 See `docs/V2_REFACTOR_INVENTORY.md` for the current extraction inventory and recommended next refactor order.

@@ -109,6 +109,7 @@ from trading_bot.research.crypto_robustness import generate_crypto_robustness_re
 from trading_bot.research.crypto_signal_preview import generate_crypto_signal_preview
 from trading_bot.research.crypto_state import generate_crypto_research_state_report
 from trading_bot.research.defensive import generate_defensive_strategy_report
+from trading_bot.research.deployment_readiness import generate_deployment_readiness_report
 from trading_bot.research.plotting import plot_strategy_results
 from trading_bot.research.promoted_actions import (
     build_promoted_action_preview_rows,
@@ -3890,6 +3891,11 @@ def parse_args() -> argparse.Namespace:
         help="Refresh the promoted strategy review chain without execution.",
     )
     parser.add_argument(
+        "--deployment-readiness-report",
+        action="store_true",
+        help="Create a local VPS/server deployment readiness audit without deploying or executing.",
+    )
+    parser.add_argument(
         "--show-promoted-risk",
         action="store_true",
         help="Display the saved promoted risk preview CSV without trading.",
@@ -4098,6 +4104,15 @@ def main() -> int:
         return run_promoted_decision_preview()
     if args.show_promoted_decision:
         return run_show_promoted_decision()
+    if args.deployment_readiness_report:
+        try:
+            result = generate_deployment_readiness_report()
+        except Exception as exc:
+            print(f"Deployment readiness report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
     if args.show_promoted_risk:
         return run_show_promoted_risk()
 

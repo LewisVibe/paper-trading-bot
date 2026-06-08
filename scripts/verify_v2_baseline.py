@@ -75,6 +75,7 @@ MODULE_IMPORT_CHECKS = [
     "trading_bot.research.crypto_signal_preview",
     "trading_bot.research.crypto_state",
     "trading_bot.research.defensive",
+    "trading_bot.research.deployment_readiness",
     "trading_bot.research.plotting",
     "trading_bot.research.promoted_actions",
     "trading_bot.research.promoted_consensus",

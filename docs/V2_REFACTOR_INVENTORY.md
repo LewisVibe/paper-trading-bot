@@ -167,6 +167,16 @@ This inventory captures the current V2 refactor state before moving any more pro
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not enable shorting, add short strategies, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
 
+## Deployment Readiness Report Status
+
+- `--deployment-readiness-report` performs a local readiness audit for possible future VPS/server use.
+- The report logic lives in `trading_bot/research/deployment_readiness.py`.
+- It writes `data/deployment_readiness_report.csv`.
+- It checks local Python/package readiness, required files, Git ignore/safety status, paper-only/dry-run/shorting defaults, gated execution commands, safe scheduling candidates, must-not-schedule commands, and handoff docs.
+- It reports whether `config.json` exists locally but does not read or print its contents.
+- Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
+- It does not deploy, add loop mode, create Windows Task Scheduler tasks, call Alpaca, refresh market data, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
+
 ## Short Hedge Backtest Status
 
 - `--short-hedge-backtest` runs a synthetic SPY-only short hedge backtest for research.
