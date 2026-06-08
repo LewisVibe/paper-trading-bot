@@ -20,6 +20,11 @@ from trading_bot.research.defensive_refresh import refresh_defensive_research
 from trading_bot.research.deployment_readiness import generate_deployment_readiness_report
 from trading_bot.research.drawdown_periods import generate_drawdown_period_report
 from trading_bot.research.execution_eligibility import generate_execution_eligibility_report
+from trading_bot.research.etf_breadth_regime import (
+    build_etf_breadth_price_history,
+    generate_etf_breadth_regime_backtest,
+    generate_etf_breadth_regime_decision_report,
+)
 from trading_bot.research.etf_defensive_charts import plot_etf_defensive_comparison_charts
 from trading_bot.research.etf_defensive_drawdowns import generate_etf_defensive_drawdown_comparison
 from trading_bot.research.etf_rotation_robustness import generate_etf_rotation_robustness_report
@@ -357,6 +362,39 @@ def run_etf_rotation_robustness_command() -> int:
         result = generate_etf_rotation_robustness_report()
     except Exception as exc:
         print(f"ETF rotation robustness report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
+
+
+def run_etf_breadth_regime_backtest_command() -> int:
+    try:
+        result = generate_etf_breadth_regime_backtest()
+    except Exception as exc:
+        print(f"ETF breadth regime backtest failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
+
+
+def run_etf_breadth_regime_decision_report_command() -> int:
+    try:
+        result = generate_etf_breadth_regime_decision_report()
+    except Exception as exc:
+        print(f"ETF breadth regime decision report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
+
+
+def run_build_etf_breadth_price_history_command(config, logger) -> int:
+    try:
+        result = build_etf_breadth_price_history(config, logger)
+    except Exception as exc:
+        print(f"ETF breadth price history builder failed: {exc}", file=sys.stderr)
         return 1
     for line in result.summary_lines:
         print(line)

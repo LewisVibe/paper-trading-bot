@@ -125,6 +125,7 @@ from trading_bot.research.promotion import generate_strategy_promotion_report
 from trading_bot.research.reporting import generate_research_report
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
+    run_build_etf_breadth_price_history_command,
     run_build_research_dashboard_command,
     run_crypto_period_diagnostics_command,
     run_crypto_research_state_report_command,
@@ -133,6 +134,8 @@ from trading_bot.runners.research_reports import (
     run_defensive_candidate_comparison_command,
     run_deployment_readiness_report_command,
     run_drawdown_period_report_command,
+    run_etf_breadth_regime_backtest_command,
+    run_etf_breadth_regime_decision_report_command,
     run_etf_defensive_drawdown_comparison_command,
     run_etf_rotation_robustness_command,
     run_execution_eligibility_report_command,
@@ -3659,6 +3662,21 @@ def parse_args() -> argparse.Namespace:
         help="Create a saved-data-only fixed-split robustness report for ETF rotation.",
     )
     parser.add_argument(
+        "--etf-breadth-regime-backtest",
+        action="store_true",
+        help="Run a research-only saved-data ETF breadth regime backtest without execution.",
+    )
+    parser.add_argument(
+        "--etf-breadth-regime-decision-report",
+        action="store_true",
+        help="Create a saved-data-only decision report for ETF breadth regime research.",
+    )
+    parser.add_argument(
+        "--build-etf-breadth-price-history",
+        action="store_true",
+        help="Build saved ETF close-history input for the ETF breadth regime backtest.",
+    )
+    parser.add_argument(
         "--adaptive-momentum-backtest",
         action="store_true",
         help="Run a research-only adaptive risk-on/off momentum backtest.",
@@ -3970,6 +3988,10 @@ def main() -> int:
         return run_short_selling_readiness_report_command()
     if args.etf_rotation_robustness:
         return run_etf_rotation_robustness_command()
+    if args.etf_breadth_regime_backtest:
+        return run_etf_breadth_regime_backtest_command()
+    if args.etf_breadth_regime_decision_report:
+        return run_etf_breadth_regime_decision_report_command()
     if args.crypto_research_preview:
         result = run_crypto_research_preview_files()
         for line in result.summary_lines:
@@ -4058,6 +4080,7 @@ def main() -> int:
                 args.preview_slow_sma_actions
                 or args.preview_promoted_strategies
                 or args.preview_promoted_actions
+                or args.build_etf_breadth_price_history
                 or args.refresh_promoted_review
                 or (args.execute_slow_sma_paper and not args.confirm_slow_sma_paper)
             ),
@@ -4114,6 +4137,8 @@ def main() -> int:
             )
         if args.etf_rotation_backtest:
             return run_etf_rotation_backtest(config, logger)
+        if args.build_etf_breadth_price_history:
+            return run_build_etf_breadth_price_history_command(config, logger)
         if args.adaptive_momentum_backtest:
             return run_adaptive_momentum_backtest(config, logger)
         if args.short_hedge_backtest:

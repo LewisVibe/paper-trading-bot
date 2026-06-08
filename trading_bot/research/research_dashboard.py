@@ -49,6 +49,21 @@ DASHBOARD_INPUTS = {
     ),
 }
 
+OPTIONAL_DASHBOARD_INPUTS = {
+    "etf_breadth_regime_backtest": (
+        "data/etf_breadth_regime_backtest.csv",
+        "python bot.py --etf-breadth-regime-backtest",
+    ),
+    "etf_breadth_regime_summary": (
+        "data/etf_breadth_regime_summary.csv",
+        "python bot.py --etf-breadth-regime-backtest",
+    ),
+    "etf_breadth_regime_decision_report": (
+        "data/etf_breadth_regime_decision_report.csv",
+        "python bot.py --etf-breadth-regime-decision-report",
+    ),
+}
+
 CHART_INPUTS = [
     "data/charts/etf_defensive_equity_comparison.png",
     "data/charts/etf_defensive_drawdown_comparison.png",
@@ -97,6 +112,15 @@ def read_dashboard_inputs(root: Path) -> dict[str, dict[str, Any]]:
             "rows": read_csv_rows(path),
             "exists": path.exists(),
         }
+    for name, (relative_path, command) in OPTIONAL_DASHBOARD_INPUTS.items():
+        path = root / relative_path
+        data[name] = {
+            "path": path,
+            "relative_path": relative_path,
+            "command": command,
+            "rows": read_csv_rows(path),
+            "exists": path.exists(),
+        }
     return data
 
 
@@ -114,6 +138,7 @@ def build_dashboard_html(
         render_meaning(data),
         render_next_commands(),
         render_defensive_comparison(data),
+        render_etf_breadth_regime(data),
         render_promoted_decisions(data),
         render_portfolio_risk_and_eligibility(data),
         render_drawdown_comparison(root, output_path, data),
@@ -250,6 +275,31 @@ def render_defensive_comparison(data: dict[str, dict[str, Any]]) -> str:
     return section("Defensive Strategy Comparison", render_table(rows, columns))
 
 
+def render_etf_breadth_regime(data: dict[str, dict[str, Any]]) -> str:
+    result_rows = data["etf_breadth_regime_backtest"]["rows"]
+    summary_rows = data["etf_breadth_regime_summary"]["rows"]
+    decision_rows = data["etf_breadth_regime_decision_report"]["rows"]
+    headline_columns = [
+        "period",
+        "cagr_pct",
+        "sharpe_ratio",
+        "max_drawdown_pct",
+        "calmar_ratio",
+        "exposure_pct",
+        "robustness_status",
+    ]
+    regime_columns = ["regime", "pct_of_days", "average_breadth_pct"]
+    decision_columns = ["decision_label", "comparison_status", "finding", "required_next_step"]
+    body = tag("p", "ETF breadth regime is research-only. It is not promoted and does not approve execution.")
+    body += tag("h3", "Headline metrics")
+    body += render_table(result_rows, headline_columns)
+    body += tag("h3", "Time in regimes")
+    body += render_table(summary_rows, regime_columns)
+    body += tag("h3", "Decision")
+    body += render_table(decision_rows[:3], decision_columns)
+    return section("ETF Breadth Regime", body)
+
+
 def render_drawdown_comparison(root: Path, output_path: Path, data: dict[str, dict[str, Any]]) -> str:
     rows = data["etf_defensive_drawdown_comparison"]["rows"]
     columns = [
@@ -347,10 +397,11 @@ def render_table(rows: list[dict[str, Any]], columns: list[str]) -> str:
 
 
 def missing_dashboard_inputs(data: dict[str, dict[str, Any]]) -> list[tuple[str, str]]:
+    required_paths = {relative_path for relative_path, _ in DASHBOARD_INPUTS.values()}
     return [
         (entry["relative_path"], entry["command"])
         for entry in data.values()
-        if not entry["exists"]
+        if not entry["exists"] and entry["relative_path"] in required_paths
     ]
 
 

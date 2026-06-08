@@ -88,6 +88,8 @@ def verify_fixture_dashboard(failures: list[str]) -> None:
         "SPY",
         "MSFT",
         "Crypto remains research/monitoring only. Crypto execution is disabled.",
+        "ETF Breadth Regime",
+        "useful_diagnostic_not_strategy",
         "No localhost server was started. No execution approval was granted.",
         "python bot.py --refresh-promoted-review",
         "python bot.py --build-research-dashboard",
@@ -195,6 +197,28 @@ def write_fixture_data(root: Path) -> None:
     )
     write_csv(data_dir / "deployment_readiness_report.csv", [{"check_name": "repo_safety_verifier", "check_status": "pass", "execution_approved": "False"}])
     write_csv(data_dir / "paper_kill_switch_readiness_report.csv", [{"check_name": "no_existing_kill_switch_enforcement", "check_status": "not_implemented_future_work", "execution_approved": "False"}])
+    write_csv(
+        data_dir / "etf_breadth_regime_backtest.csv",
+        [
+            {"period": "full_period", "cagr_pct": "5.2231", "sharpe_ratio": "0.4274", "max_drawdown_pct": "25.5851", "calmar_ratio": "0.2041", "exposure_pct": "75.0", "robustness_status": "research_only_pending_comparison"},
+            {"period": "split_70_30_out_of_sample", "cagr_pct": "10.8791", "sharpe_ratio": "0.8343", "max_drawdown_pct": "10.7156", "calmar_ratio": "1.0153", "exposure_pct": "80.0", "robustness_status": "single_oos_split_initial_research"},
+        ],
+    )
+    write_csv(
+        data_dir / "etf_breadth_regime_summary.csv",
+        [
+            {"regime": "risk_on", "pct_of_days": "71.8377", "average_breadth_pct": "80.0"},
+            {"regime": "neutral", "pct_of_days": "3.7788", "average_breadth_pct": "50.0"},
+            {"regime": "defensive", "pct_of_days": "10.2625", "average_breadth_pct": "35.0"},
+            {"regime": "cash_protection", "pct_of_days": "14.1209", "average_breadth_pct": "15.0"},
+        ],
+    )
+    write_csv(
+        data_dir / "etf_breadth_regime_decision_report.csv",
+        [
+            {"decision_label": "useful_diagnostic_not_strategy", "comparison_status": "compared_to_saved_defensive_candidates", "finding": "Breadth is useful as a diagnostic.", "required_next_step": "Keep research-only."}
+        ],
+    )
 
 
 def defensive_row(strategy_name: str, metric_rank: str, policy_rank: str, status: str) -> dict[str, str]:

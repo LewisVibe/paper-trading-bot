@@ -612,6 +612,43 @@ Output:
 data/etf_rotation_robustness_report.csv
 ```
 
+ETF breadth regime backtest mode reads a saved ETF close-history CSV only and tests a fixed research-only breadth regime allocation. The expected saved input is `data/etf_breadth_price_history.csv` with `date,ticker,close` columns. It classifies regimes from ETF breadth versus 200-day SMA and SPY trend, then writes research CSVs without downloading market data, calling Alpaca, creating orders, writing SQLite `trade_log`, sending Discord alerts, changing existing strategy logic, or approving execution.
+
+Build the saved ETF close-history input first when it is missing:
+
+```text
+python bot.py --build-etf-breadth-price-history
+```
+
+The builder uses the existing research market-data/yfinance pattern to write `data/etf_breadth_price_history.csv`. It is research data-prep only; it does not call Alpaca, read positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, change strategy logic, or approve execution.
+
+Command:
+
+```text
+python bot.py --etf-breadth-regime-backtest
+```
+
+Outputs:
+
+```text
+data/etf_breadth_regime_backtest.csv
+data/etf_breadth_regime_summary.csv
+```
+
+ETF breadth regime decision mode reads saved breadth backtest/summary rows and saved defensive comparison/robustness rows when available. It compares breadth regime metrics against `monthly_etf_momentum_rotation` and `volatility_managed_dual_momentum_etf`, then labels the idea conservatively as underperforming, diagnostic-only, promising-needs-robustness, or insufficient-data. It does not download market data, call Alpaca, create orders, change promotion logic, or approve execution.
+
+Command:
+
+```text
+python bot.py --etf-breadth-regime-decision-report
+```
+
+Output:
+
+```text
+data/etf_breadth_regime_decision_report.csv
+```
+
 Vol-managed ETF backtest mode tests the first advanced long-only ETF research idea from the deep research shortlist. The fixed strategy, `volatility_managed_dual_momentum_etf`, uses the ETF rotation universe, monthly rebalance, top 3 momentum selection, 200-day SMA asset and SPY regime filters, 63-day realised volatility, inverse-volatility sizing, and a 10% annual target-volatility cap with gross exposure capped at 100%. It does not use leverage, margin, shorting, Alpaca, SQLite `trade_log`, Discord alerts, or execution approval.
 
 Command:
