@@ -506,6 +506,14 @@ python bot.py --paper-kill-switch-gate-report
 
 This writes `data/paper_kill_switch_gate_report.csv` and checks static/saved prerequisites for a future paper kill-switch gate, including safe config example defaults, confirmation-gated high-risk commands, existing readiness/eligibility reports, and whether defensive allocation remains blocked. It explicitly does not add enforcement to order paths, create order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
+Verify the future paper kill-switch enforcement contract without wiring enforcement into order paths:
+
+```powershell
+python scripts\verify_paper_kill_switch_enforcement_contract.py
+```
+
+This no-network verifier defines the contract that any future defensive paper-execution command would have to satisfy before execution design can continue. It checks paper-only/default boundaries, confirmation gates, report/preview non-approval, and that the current gate remains blocked/future-work-required. It does not add a bot command, enforce a kill switch, touch order paths, or approve execution.
+
 Create a saved-data-only execution eligibility view:
 
 ```powershell

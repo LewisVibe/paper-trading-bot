@@ -262,6 +262,13 @@ This inventory captures the current V2 refactor state before moving any more pro
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not add enforcement to order paths, add config settings, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
+## Paper Kill-Switch Enforcement Contract Verifier Status
+
+- `scripts/verify_paper_kill_switch_enforcement_contract.py` defines and verifies the future enforcement contract without implementing enforcement.
+- It checks the required prerequisites for any future defensive paper-execution command: paper-only mode, safe defaults, shorting disabled, future kill-switch setting/state, unblocked eligibility/decision reports, explicit confirmation, separation from normal bot behavior, and exclusion from report/preview/dashboard modes.
+- It confirms high-risk commands remain confirmation-gated and that the current paper kill-switch gate remains blocked/future-work-required.
+- It does not add a bot command, add enforcement to order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+
 ## Execution Eligibility Report Status
 
 - `--execution-eligibility-report` combines saved promoted decision, portfolio risk policy, paper kill-switch readiness, and deployment readiness reports into a final non-executable eligibility view.
