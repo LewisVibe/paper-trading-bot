@@ -24,6 +24,16 @@ PORTFOLIO_RISK_POLICY_COLUMNS = [
     "execution_approved",
 ]
 
+PORTFOLIO_RISK_POLICY_DISPLAY_COLUMNS = [
+    "risk_policy_name",
+    "risk_policy_status",
+    "risk_level",
+    "current_value_or_limit",
+    "finding",
+    "required_next_step",
+    "execution_approved",
+]
+
 DEFAULT_MAX_OPEN_POSITIONS = 2
 
 
@@ -502,6 +512,60 @@ def read_csv_rows(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(file))
 
 
+def show_portfolio_risk_policy_file(input_path: Path) -> tuple[int, list[str]]:
+    if not input_path.exists():
+        return 1, build_missing_portfolio_risk_policy_lines(input_path)
+    return 0, build_show_portfolio_risk_policy_lines(input_path, read_csv_rows(input_path))
+
+
+def build_missing_portfolio_risk_policy_lines(input_path: Path) -> list[str]:
+    return [
+        "READ-ONLY DISPLAY. NOT EXECUTION.",
+        "This command only reads data/portfolio_risk_policy_report.csv and does not refresh data, read positions, enforce risk, or submit orders.",
+        f"Missing portfolio risk policy report file: {input_path}",
+        "Run this first:",
+        "python bot.py --portfolio-risk-policy-report",
+        "Then rerun: python bot.py --show-portfolio-risk-policy",
+        "No risk policy was enforced by this display command.",
+    ]
+
+
+def build_show_portfolio_risk_policy_lines(input_path: Path, rows: list[dict[str, str]]) -> list[str]:
+    status_counts = Counter(row.get("risk_policy_status", "") or "blank" for row in rows)
+    level_counts = Counter(row.get("risk_level", "") or "blank" for row in rows)
+    blocked = [row for row in rows if row.get("risk_policy_status") == "blocked_for_review"]
+    future_work = [row for row in rows if row.get("risk_policy_status") == "not_implemented_future_work"]
+    has_execution_approved = any(is_truthy(row.get("execution_approved", "")) for row in rows)
+    final_line = (
+        "WARNING: at least one row has execution_approved=True; manual review required."
+        if has_execution_approved
+        else "Execution approved: False for all rows."
+    )
+    return [
+        "READ-ONLY DISPLAY. NOT EXECUTION.",
+        "This command only reads data/portfolio_risk_policy_report.csv and does not refresh data, read positions, enforce risk, or submit orders.",
+        f"Input file: {input_path}",
+        f"Rows: {len(rows)}",
+        "",
+        "Count by risk_policy_status:",
+        *_format_display_counts(status_counts),
+        "",
+        "Count by risk_level:",
+        *_format_display_counts(level_counts),
+        "",
+        "Blocked-for-review rows:",
+        *_format_policy_list(blocked),
+        "",
+        "Future-work rows:",
+        *_format_policy_list(future_work),
+        "",
+        *_format_portfolio_risk_policy_table(rows),
+        "",
+        final_line,
+        "No risk policy was enforced by this display command.",
+    ]
+
+
 def read_json(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
@@ -538,3 +602,64 @@ def format_value(value: object) -> str:
     if value is None:
         return "not_available"
     return str(value)
+
+
+def _format_display_counts(counts: Counter[str]) -> list[str]:
+    if not counts:
+        return ["- none"]
+    return [f"- {name}: {count}" for name, count in sorted(counts.items())]
+
+
+def _format_policy_list(rows: list[dict[str, str]]) -> list[str]:
+    if not rows:
+        return ["- none"]
+    return [
+        f"- {row.get('risk_policy_name', '')}: {row.get('finding', '')}"
+        for row in rows
+    ]
+
+
+def _format_portfolio_risk_policy_table(rows: list[dict[str, str]]) -> list[str]:
+    if not rows:
+        return ["No portfolio risk policy rows found."]
+    display_rows = [
+        {
+            column: _truncate(str(row.get(column, "")), _column_width(column))
+            for column in PORTFOLIO_RISK_POLICY_DISPLAY_COLUMNS
+        }
+        for row in rows
+    ]
+    widths = {
+        column: min(
+            _column_width(column),
+            max(len(column), *(len(row[column]) for row in display_rows)),
+        )
+        for column in PORTFOLIO_RISK_POLICY_DISPLAY_COLUMNS
+    }
+    header = " | ".join(column.ljust(widths[column]) for column in PORTFOLIO_RISK_POLICY_DISPLAY_COLUMNS)
+    separator = "-+-".join("-" * widths[column] for column in PORTFOLIO_RISK_POLICY_DISPLAY_COLUMNS)
+    lines = [header, separator]
+    for row in display_rows:
+        lines.append(" | ".join(row[column].ljust(widths[column]) for column in PORTFOLIO_RISK_POLICY_DISPLAY_COLUMNS))
+    return lines
+
+
+def _column_width(column: str) -> int:
+    widths = {
+        "risk_policy_name": 36,
+        "risk_policy_status": 28,
+        "risk_level": 12,
+        "current_value_or_limit": 42,
+        "finding": 68,
+        "required_next_step": 68,
+        "execution_approved": 18,
+    }
+    return widths.get(column, 20)
+
+
+def _truncate(value: str, width: int) -> str:
+    if len(value) <= width:
+        return value
+    if width <= 3:
+        return value[:width]
+    return f"{value[: width - 3]}..."

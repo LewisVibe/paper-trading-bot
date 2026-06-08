@@ -140,6 +140,7 @@ from trading_bot.runners.research_reports import (
     run_refresh_defensive_research_command,
     run_show_promoted_decision_command,
     run_show_crypto_monitor_command,
+    run_show_portfolio_risk_policy_command,
     run_show_promoted_actions_command,
     run_show_promoted_risk_command,
     run_short_hedge_backtest_command,
@@ -3835,6 +3836,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a research-only portfolio risk policy audit without enforcing execution gates.",
     )
     parser.add_argument(
+        "--show-portfolio-risk-policy",
+        action="store_true",
+        help="Display the saved portfolio risk policy report CSV without enforcing risk or trading.",
+    )
+    parser.add_argument(
         "--show-promoted-risk",
         action="store_true",
         help="Display the saved promoted risk preview CSV without trading.",
@@ -4013,6 +4019,8 @@ def main() -> int:
         return run_deployment_readiness_report_command()
     if args.portfolio_risk_policy_report:
         return run_portfolio_risk_policy_report_command()
+    if args.show_portfolio_risk_policy:
+        return run_show_portfolio_risk_policy_command()
     if args.show_promoted_risk:
         return run_show_promoted_risk_command()
 

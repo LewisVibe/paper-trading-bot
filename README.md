@@ -482,6 +482,14 @@ python bot.py --portfolio-risk-policy-report
 
 This reads saved CSVs and `config.example.json` only, writes `data/portfolio_risk_policy_report.csv`, and documents conservative report-only policies such as paper-only mode, dry-run default, shorting disabled, proposed max open positions, desired notional review, duplicate ticker exposure, strategy disagreement, execution approval status, future kill switch work, and future daily summary work. It does not enforce risk checks, change order sizing, read live positions/account equity, call Alpaca, submit orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
 
+Display the saved portfolio risk policy report without rerunning it:
+
+```powershell
+python bot.py --show-portfolio-risk-policy
+```
+
+This is a read-only terminal display helper for `data/portfolio_risk_policy_report.csv`. It does not refresh data, read positions, enforce risk policy, submit orders, write files, or approve execution.
+
 The initial `trading_bot/` package skeleton now exists for V2 refactoring, but `bot.py` still owns the current behaviour for now.
 
 See `docs/V2_REFACTOR_INVENTORY.md` for the current extraction inventory and recommended next refactor order.

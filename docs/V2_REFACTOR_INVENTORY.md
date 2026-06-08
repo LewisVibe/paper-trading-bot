@@ -186,6 +186,13 @@ This inventory captures the current V2 refactor state before moving any more pro
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not enforce risk checks, change order sizing, call Alpaca, read positions/account equity, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
 
+## Portfolio Risk Policy Display Status
+
+- `--show-portfolio-risk-policy` reads `data/portfolio_risk_policy_report.csv`.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the display logic lives in `trading_bot/research/portfolio_risk_policy.py`.
+- It displays counts by `risk_policy_status` and `risk_level`, blocked-for-review rows, future-work rows, compact policy rows, and execution-approved status.
+- It does not rerun the policy report, refresh market data, call Alpaca, read positions, enforce risk checks, create/submit/cancel orders, write files, write SQLite `trade_log`, send Discord alerts, or approve execution.
+
 ## Short Hedge Backtest Status
 
 - `--short-hedge-backtest` runs a synthetic SPY-only short hedge backtest for research.
