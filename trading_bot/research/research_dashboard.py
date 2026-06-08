@@ -66,6 +66,14 @@ OPTIONAL_DASHBOARD_INPUTS = {
         "data/etf_breadth_regime_decision_report.csv",
         "python bot.py --etf-breadth-regime-decision-report",
     ),
+    "paper_execution_protection_report": (
+        "data/paper_execution_protection_report.csv",
+        "python bot.py --paper-execution-protection-report",
+    ),
+    "normal_bot_execution_policy_report": (
+        "data/normal_bot_execution_policy_report.csv",
+        "python bot.py --normal-bot-execution-policy-report",
+    ),
 }
 
 CHART_INPUTS = [
@@ -141,6 +149,7 @@ def build_dashboard_html(
         render_cards(cards),
         render_meaning(data),
         render_next_commands(),
+        render_execution_safety_state(data),
         render_defensive_research_state(data),
         render_defensive_comparison(data),
         render_etf_breadth_regime(data),
@@ -256,6 +265,41 @@ def render_next_commands() -> str:
         "Next Useful Commands",
         tag("div", "".join(tag("code", escape(command)) for command in commands), class_="command-grid"),
     )
+
+
+def render_execution_safety_state(data: dict[str, dict[str, Any]]) -> str:
+    protection_rows = data["paper_execution_protection_report"]["rows"]
+    policy_rows = data["normal_bot_execution_policy_report"]["rows"]
+    body = tag(
+        "p",
+        "Static saved-CSV display only. No execution approval, no order actions, and normal bot remains separate from defensive paper execution.",
+        class_="safety-strip danger",
+    )
+    body += tag("p", "Optional section: missing safety CSVs do not block dashboard generation.", class_="meta")
+    body += tag("h3", "Paper Execution Protection")
+    body += render_table(
+        protection_rows,
+        [
+            "execution_path",
+            "protection_status",
+            "finding",
+            "currently_blocks_execution",
+            "required_next_step",
+            "execution_approved",
+        ],
+    )
+    body += tag("h3", "Normal Bot Execution Policy")
+    body += render_table(
+        policy_rows,
+        [
+            "policy_area",
+            "policy_status",
+            "finding",
+            "required_next_step",
+            "execution_approved",
+        ],
+    )
+    return section("Execution Safety State", body)
 
 
 def render_defensive_comparison(data: dict[str, dict[str, Any]]) -> str:

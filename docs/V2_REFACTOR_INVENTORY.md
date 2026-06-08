@@ -320,8 +320,8 @@ This inventory captures the current V2 refactor state before moving any more pro
 - `--build-research-dashboard` builds a static HTML dashboard from saved CSV reports.
 - Its command orchestration lives in `trading_bot/runners/research_reports.py`; the dashboard builder lives in `trading_bot/research/research_dashboard.py`.
 - It writes `data/dashboard/research_dashboard.html`.
-- It optionally displays `data/defensive_research_state_report.csv` when present; that CSV is not a required dashboard input.
-- It summarizes safety state, defensive candidates, ETF drawdowns/charts, promoted decisions, portfolio risk, execution eligibility, crypto research state, and missing saved inputs.
+- It optionally displays `data/defensive_research_state_report.csv`, `data/paper_execution_protection_report.csv`, and `data/normal_bot_execution_policy_report.csv` when present; those CSVs are not required dashboard inputs.
+- It summarizes safety state, execution protection/policy checkpoints, defensive candidates, ETF drawdowns/charts, promoted decisions, portfolio risk, execution eligibility, crypto research state, and missing saved inputs.
 - It is static saved-CSV display only: no localhost server, external CDN, market-data refresh, Alpaca call, order action, SQLite `trade_log` write, Discord alert, risk enforcement, or execution approval is added.
 
 ## Short Hedge Backtest Status

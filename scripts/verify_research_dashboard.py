@@ -74,6 +74,14 @@ def verify_fixture_dashboard(failures: list[str]) -> None:
         "No execution approval. No orders. No Alpaca calls. No market-data refresh.",
         "What This Means",
         "Next Useful Commands",
+        "Execution Safety State",
+        "Paper Execution Protection",
+        "Normal Bot Execution Policy",
+        "Static saved-CSV display only. No execution approval, no order actions, and normal bot remains separate from defensive paper execution.",
+        "Optional section: missing safety CSVs do not block dashboard generation.",
+        "protected_by_kill_switch_preflight",
+        "option_a_keep_normal_bot_dry_run_first",
+        "separate_command_required",
         "Execution eligible",
         "Main blocker",
         "AAPL/SPY strategy disagreement",
@@ -123,6 +131,12 @@ def verify_missing_inputs(failures: list[str]) -> None:
             failures.append(f"missing-input section should mention {expected_command}")
     if "No saved rows available." not in html_text:
         failures.append("dashboard should handle missing CSVs without crashing")
+    for optional_path in [
+        "data/paper_execution_protection_report.csv",
+        "data/normal_bot_execution_policy_report.csv",
+    ]:
+        if optional_path in {path for path, _ in result.missing_inputs}:
+            failures.append(f"{optional_path} should remain optional, not required")
 
 
 def verify_source_safety(failures: list[str]) -> None:
@@ -246,6 +260,61 @@ def write_fixture_data(root: Path) -> None:
     )
     write_csv(data_dir / "deployment_readiness_report.csv", [{"check_name": "repo_safety_verifier", "check_status": "pass", "execution_approved": "False"}])
     write_csv(data_dir / "paper_kill_switch_readiness_report.csv", [{"check_name": "no_existing_kill_switch_enforcement", "check_status": "not_implemented_future_work", "execution_approved": "False"}])
+    write_csv(
+        data_dir / "paper_execution_protection_report.csv",
+        [
+            {
+                "execution_path": "manual_paper_order_test",
+                "protection_status": "protected_by_kill_switch_preflight",
+                "finding": "--paper-order-test has preflight and is blocked.",
+                "currently_blocks_execution": "True",
+                "required_next_step": "Keep blocked.",
+                "execution_approved": "False",
+            },
+            {
+                "execution_path": "slow_sma_paper_execution",
+                "protection_status": "protected_by_kill_switch_preflight",
+                "finding": "--execute-slow-sma-paper has preflight and is blocked.",
+                "currently_blocks_execution": "True",
+                "required_next_step": "Keep blocked.",
+                "execution_approved": "False",
+            },
+            {
+                "execution_path": "normal_bot_order_path",
+                "protection_status": "deliberately_unchanged_future_work",
+                "finding": "Normal bot remains separate.",
+                "currently_blocks_execution": "True",
+                "required_next_step": "Future scoped task only.",
+                "execution_approved": "False",
+            },
+        ],
+    )
+    write_csv(
+        data_dir / "normal_bot_execution_policy_report.csv",
+        [
+            {
+                "policy_area": "normal_bot_path_policy",
+                "policy_status": "deliberately_non_defensive_execution_path",
+                "finding": "Normal bot remains separate from defensive paper execution.",
+                "required_next_step": "Keep separate.",
+                "execution_approved": "False",
+            },
+            {
+                "policy_area": "future_defensive_execution_policy",
+                "policy_status": "separate_command_required",
+                "finding": "Future defensive execution must use a separate scoped command.",
+                "required_next_step": "Do not use normal bot.",
+                "execution_approved": "False",
+            },
+            {
+                "policy_area": "overall_policy",
+                "policy_status": "option_a_keep_normal_bot_dry_run_first",
+                "finding": "Option A is active.",
+                "required_next_step": "Keep dry-run-first.",
+                "execution_approved": "False",
+            },
+        ],
+    )
     write_csv(
         data_dir / "etf_breadth_regime_backtest.csv",
         [
