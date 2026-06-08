@@ -506,7 +506,7 @@ Create a design/report-only paper kill-switch gate scaffold:
 python bot.py --paper-kill-switch-gate-report
 ```
 
-This writes `data/paper_kill_switch_gate_report.csv` and checks static/saved prerequisites for a future paper kill-switch gate, including safe config example defaults, confirmation-gated high-risk commands, isolated helper availability, existing readiness/eligibility reports, and whether defensive allocation remains blocked. It does not add order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+This writes `data/paper_kill_switch_gate_report.csv` and checks static/saved prerequisites for a future paper kill-switch gate, including safe config example defaults, confirmation-gated high-risk commands, isolated helper availability, the manual `--paper-order-test` preflight, missing slow SMA/normal bot preflight work, existing readiness/eligibility reports, and whether defensive allocation remains blocked. It does not add order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
 Verify the paper kill-switch enforcement contract and the limited manual preflight wiring:
 
@@ -524,7 +524,7 @@ Create a saved-data-only defensive execution readiness report:
 python bot.py --defensive-execution-readiness-report
 ```
 
-This writes `data/defensive_execution_readiness_report.csv` and summarizes what still blocks future paper execution design for the defensive allocation path. It combines saved defensive allocation, kill-switch gate, contract-verifier presence, execution eligibility, and portfolio risk policy state. It does not start execution design, add enforcement to order paths, create order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+This writes `data/defensive_execution_readiness_report.csv` and summarizes what still blocks future paper execution design for the defensive allocation path. It combines saved defensive allocation, kill-switch gate, contract-verifier presence, execution eligibility, and portfolio risk policy state. It recognizes that manual `--paper-order-test` now has preflight, while slow SMA and normal bot paths remain blocked/future work. It does not start execution design, add enforcement to additional order paths, create order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
 Create a saved-data-only execution eligibility view:
 

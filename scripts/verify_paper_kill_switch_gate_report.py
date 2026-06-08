@@ -28,6 +28,9 @@ EXPECTED_GATE_CHECKS = {
     "existing_kill_switch_readiness_available",
     "isolated_kill_switch_helper_available",
     "kill_switch_enforcement_not_implemented",
+    "manual_paper_order_test_kill_switch_preflight",
+    "slow_sma_paper_execution_kill_switch_preflight_missing",
+    "normal_bot_order_path_kill_switch_preflight_missing",
     "kill_switch_enforcement_not_wired_to_order_paths",
     "defensive_allocation_decision_blocks_execution_design",
     "execution_eligibility_blocks_execution",
@@ -103,8 +106,14 @@ def verify_fixture_report(failures: list[str]) -> None:
             failures.append("isolated kill-switch helper should be detected as available")
         if statuses.get("kill_switch_enforcement_not_implemented") != "future_work_required":
             failures.append("kill-switch enforcement should be marked future_work_required")
-        if statuses.get("kill_switch_enforcement_not_wired_to_order_paths") != "blocked":
-            failures.append("kill-switch helper should remain not wired to order paths")
+        if statuses.get("manual_paper_order_test_kill_switch_preflight") != "pass":
+            failures.append("manual paper-order preflight should be marked pass")
+        if statuses.get("slow_sma_paper_execution_kill_switch_preflight_missing") != "future_work_required":
+            failures.append("slow SMA preflight should remain future_work_required")
+        if statuses.get("normal_bot_order_path_kill_switch_preflight_missing") != "future_work_required":
+            failures.append("normal bot preflight should remain future_work_required")
+        if statuses.get("kill_switch_enforcement_not_wired_to_order_paths") != "future_work_required":
+            failures.append("broad kill-switch helper wiring should remain future_work_required")
         if statuses.get("future_execution_requires_kill_switch_gate") != "blocked":
             failures.append("future execution should remain blocked by kill-switch gate")
         blockers = [
@@ -119,7 +128,8 @@ def verify_fixture_report(failures: list[str]) -> None:
         summary = "\n".join(result.summary_lines)
         for expected in [
             "PAPER KILL-SWITCH GATE REPORT. DESIGN/REPORT ONLY. NOT EXECUTION.",
-            "No enforcement was added to order paths.",
+            "No execution design was added.",
+            "No enforcement was added to additional order paths.",
             "No strategy was promoted.",
             "No orders were created, submitted, or cancelled.",
             "No execution approval was granted.",
@@ -164,6 +174,29 @@ def write_fixture_files(root: Path) -> None:
                 "allow_shorting": False,
                 "alpaca": {"paper": True, "api_key": "", "secret_key": ""},
             }
+        ),
+        encoding="utf-8",
+    )
+    (root / "bot.py").write_text(
+        "\n".join(
+            [
+                "def run_bot():",
+                "    pass",
+                "",
+                "def run_paper_order_test():",
+                "    evaluate_paper_kill_switch_gate()",
+                "    init_database()",
+                "",
+                "def estimate_manual_position_after():",
+                "    pass",
+                "",
+                "def run_slow_sma_paper_execution():",
+                "    pass",
+                "",
+                "def save_slow_sma_execution_preview():",
+                "    pass",
+                "",
+            ]
         ),
         encoding="utf-8",
     )

@@ -59,6 +59,8 @@ def build_gate_rows(root: Path, created_at: str) -> list[dict[str, Any]]:
     decision_path = root / "data" / "defensive_allocation_decision_report.csv"
     eligibility_path = root / "data" / "execution_eligibility_report.csv"
     helper_path = root / "trading_bot" / "safety" / "paper_kill_switch.py"
+    bot_path = root / "bot.py"
+    bot_source = read_text(bot_path)
     readiness_rows = read_csv_rows(readiness_path)
     decision_rows = read_csv_rows(decision_path)
     eligibility_rows = read_csv_rows(eligibility_path)
@@ -100,11 +102,14 @@ def build_gate_rows(root: Path, created_at: str) -> list[dict[str, Any]]:
             "future_work_required",
             "high",
             "source inspection",
-            "Runtime paper kill-switch enforcement is intentionally not implemented by this design/report scaffold.",
+            "Broad paper kill-switch enforcement remains future work; only the manual paper-order smoke test has a preflight.",
             True,
-            "Design a real kill-switch setting and no-network tests before touching any order path.",
+            "Keep broad enforcement blocked until slow SMA and normal bot order paths have separately reviewed no-network tests.",
         ),
-        kill_switch_enforcement_not_wired_row(created_at, root, helper_path),
+        manual_paper_order_preflight_row(created_at, bot_path, bot_source),
+        slow_sma_preflight_missing_row(created_at, bot_path, bot_source),
+        normal_bot_preflight_missing_row(created_at, bot_path, bot_source),
+        broad_kill_switch_enforcement_row(created_at, root, helper_path),
         defensive_allocation_decision_row(created_at, decision_path, decision_rows),
         execution_eligibility_row(created_at, eligibility_path, eligibility_rows),
         gate_row(
@@ -168,19 +173,76 @@ def isolated_kill_switch_helper_available_row(created_at: str, helper_path: Path
         "pass" if available else "missing_input",
         "info" if available else "high",
         str(helper_path),
-        "Isolated paper kill-switch helper exists but is not wired into order paths."
+        "Isolated paper kill-switch helper exists as pure safety logic."
         if available
         else "Isolated paper kill-switch helper is missing.",
         False if available else True,
-        "Keep helper isolated until a future scoped enforcement task."
+        "Keep helper limited to explicitly reviewed preflight checks."
         if available
         else "Add isolated no-order helper logic before enforcement design continues.",
     )
 
 
-def kill_switch_enforcement_not_wired_row(created_at: str, root: Path, helper_path: Path) -> dict[str, Any]:
+def manual_paper_order_preflight_row(created_at: str, source: Path, bot_source: str) -> dict[str, Any]:
+    manual_source = function_block(bot_source, "def run_paper_order_test(", "def estimate_manual_position_after(")
+    helper_call = "evaluate_paper_kill_switch_gate("
+    passed = (
+        helper_call in manual_source
+        and "init_database(" in manual_source
+        and manual_source.index(helper_call) < manual_source.index("init_database(")
+    )
+    return gate_row(
+        created_at,
+        "manual_paper_order_test_kill_switch_preflight",
+        "pass" if passed else "blocked",
+        "info" if passed else "critical",
+        str(source),
+        "--paper-order-test has kill-switch preflight and currently refuses before order submission when prerequisites are blocked."
+        if passed
+        else "--paper-order-test kill-switch preflight was not confirmed before database/order work.",
+        False if passed else True,
+        "Keep this limited to the manual paper-order smoke test until broader execution paths receive separate review."
+        if passed
+        else "Restore manual paper-order preflight before any paper-order smoke testing.",
+    )
+
+
+def slow_sma_preflight_missing_row(created_at: str, source: Path, bot_source: str) -> dict[str, Any]:
+    slow_source = function_block(bot_source, "def run_slow_sma_paper_execution(", "def save_slow_sma_execution_preview(")
+    missing = "evaluate_paper_kill_switch_gate(" not in slow_source
+    return gate_row(
+        created_at,
+        "slow_sma_paper_execution_kill_switch_preflight_missing",
+        "future_work_required" if missing else "warning",
+        "high",
+        str(source),
+        "--execute-slow-sma-paper is not yet wired to kill-switch preflight."
+        if missing
+        else "--execute-slow-sma-paper appears to contain kill-switch helper wiring; review separately before trusting it.",
+        True,
+        "Do not change slow SMA execution in this reporting task; require a future scoped safety task before any wiring.",
+    )
+
+
+def normal_bot_preflight_missing_row(created_at: str, source: Path, bot_source: str) -> dict[str, Any]:
+    normal_source = function_block(bot_source, "def run_bot(", "def run_paper_order_test(")
+    missing = "evaluate_paper_kill_switch_gate(" not in normal_source
+    return gate_row(
+        created_at,
+        "normal_bot_order_path_kill_switch_preflight_missing",
+        "future_work_required" if missing else "warning",
+        "high",
+        str(source),
+        "Normal bot order path is not yet wired to kill-switch preflight."
+        if missing
+        else "Normal bot order path appears to contain kill-switch helper wiring; review separately before trusting it.",
+        True,
+        "Do not change normal bot behavior in this reporting task; require a future scoped safety task before any wiring.",
+    )
+
+
+def broad_kill_switch_enforcement_row(created_at: str, root: Path, helper_path: Path) -> dict[str, Any]:
     high_risk_paths = [
-        root / "bot.py",
         root / "trading_bot" / "execution.py",
         root / "trading_bot" / "alpaca_client.py",
         root / "trading_bot" / "database.py",
@@ -207,12 +269,12 @@ def kill_switch_enforcement_not_wired_row(created_at: str, root: Path, helper_pa
     return gate_row(
         created_at,
         "kill_switch_enforcement_not_wired_to_order_paths",
-        "blocked",
+        "future_work_required",
         "high",
         str(helper_path),
-        "Isolated paper kill-switch helper is not wired into order paths; execution design remains blocked.",
+        "Helper is not broadly wired into shared order helpers, database writes, or alert paths; broad enforcement remains future work.",
         True,
-        "Future scoped work must add reviewed enforcement tests before any order-path integration.",
+        "Keep broad order-path enforcement blocked until a future scoped task adds reviewed tests.",
     )
 
 
@@ -410,7 +472,8 @@ def build_summary(rows: list[dict[str, Any]], output_path: Path) -> list[str]:
         f"Gate status counts: {status_counts}",
         f"Current gate conclusion: {conclusion}",
         f"Future execution-design blockers: {blockers}",
-        "No enforcement was added to order paths.",
+        "No execution design was added.",
+        "No enforcement was added to additional order paths.",
         "No strategy was promoted.",
         "No orders were created, submitted, or cancelled.",
         "No execution approval was granted.",
@@ -477,6 +540,15 @@ def first_by_key(rows: list[dict[str, str]], key: str, expected: str) -> dict[st
         if row.get(key) == expected:
             return row
     return None
+
+
+def function_block(source: str, start_marker: str, end_marker: str) -> str:
+    try:
+        start = source.index(start_marker)
+        end = source.index(end_marker, start)
+    except ValueError:
+        return ""
+    return source[start:end]
 
 
 def bool_from_any(value: Any) -> bool:

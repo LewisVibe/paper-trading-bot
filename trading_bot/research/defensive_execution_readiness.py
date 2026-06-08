@@ -72,6 +72,9 @@ def build_readiness_rows(
         paper_kill_switch_gate_row(created_at, data_path, inputs["kill_switch_gate"]),
         kill_switch_contract_verifier_row(created_at, script_path),
         isolated_kill_switch_helper_row(created_at, script_path.parent),
+        manual_paper_order_preflight_row(created_at, data_path, inputs["kill_switch_gate"]),
+        slow_sma_preflight_missing_row(created_at, data_path, inputs["kill_switch_gate"]),
+        normal_bot_preflight_missing_row(created_at, data_path, inputs["kill_switch_gate"]),
         execution_eligibility_row(created_at, data_path, inputs["execution_eligibility"]),
         portfolio_risk_policy_row(created_at, data_path, inputs["portfolio_policy"]),
     ]
@@ -383,10 +386,10 @@ def isolated_kill_switch_helper_row(
             "pass",
             "info",
             source,
-            "Isolated paper kill-switch helper exists as no-order safety logic, but it is not wired into execution paths.",
+            "Isolated paper kill-switch helper exists as no-order safety logic; manual paper-order preflight is recognized separately.",
             False,
             False,
-            "Keep helper isolated until a future scoped enforcement task.",
+            "Keep helper limited to explicitly reviewed preflight checks.",
         )
     return readiness_row(
         created_at,
@@ -398,6 +401,102 @@ def isolated_kill_switch_helper_row(
         True,
         False,
         "Add isolated no-order helper logic before execution-readiness can improve.",
+    )
+
+
+def manual_paper_order_preflight_row(
+    created_at: str,
+    data_path: Path,
+    gate_rows: list[dict[str, str]],
+) -> dict[str, Any]:
+    source = data_path / "paper_kill_switch_gate_report.csv"
+    row = first_by_key(gate_rows, "gate_check", "manual_paper_order_test_kill_switch_preflight") or {}
+    if row.get("gate_status") == "pass" and all_execution_false(gate_rows):
+        return readiness_row(
+            created_at,
+            "manual_paper_order_test_kill_switch_preflight",
+            "pass",
+            "info",
+            source,
+            "--paper-order-test has kill-switch preflight and refuses before order submission when prerequisites are blocked.",
+            False,
+            False,
+            "Keep this scoped to manual paper-order smoke testing; it does not approve broader execution.",
+        )
+    return readiness_row(
+        created_at,
+        "manual_paper_order_test_kill_switch_preflight",
+        "missing_input" if not gate_rows else "blocked",
+        "high",
+        source,
+        "Manual paper-order kill-switch preflight is not confirmed by the saved gate report.",
+        True,
+        False,
+        "Run python bot.py --paper-kill-switch-gate-report and verify the manual preflight row.",
+    )
+
+
+def slow_sma_preflight_missing_row(
+    created_at: str,
+    data_path: Path,
+    gate_rows: list[dict[str, str]],
+) -> dict[str, Any]:
+    source = data_path / "paper_kill_switch_gate_report.csv"
+    row = first_by_key(gate_rows, "gate_check", "slow_sma_paper_execution_kill_switch_preflight_missing") or {}
+    if row.get("gate_status") in {"blocked", "future_work_required"} and all_execution_false(gate_rows):
+        return readiness_row(
+            created_at,
+            "slow_sma_paper_execution_kill_switch_preflight_missing",
+            "future_work_required",
+            "high",
+            source,
+            "--execute-slow-sma-paper remains missing kill-switch preflight.",
+            True,
+            False,
+            "Do not wire slow SMA in this report; require a future scoped safety task.",
+        )
+    return readiness_row(
+        created_at,
+        "slow_sma_paper_execution_kill_switch_preflight_missing",
+        "missing_input" if not gate_rows else "warning",
+        "high",
+        source,
+        "Slow SMA kill-switch preflight status is not clearly blocked/future-work in the saved gate report.",
+        True,
+        False,
+        "Review slow SMA safety status before any execution design discussion.",
+    )
+
+
+def normal_bot_preflight_missing_row(
+    created_at: str,
+    data_path: Path,
+    gate_rows: list[dict[str, str]],
+) -> dict[str, Any]:
+    source = data_path / "paper_kill_switch_gate_report.csv"
+    row = first_by_key(gate_rows, "gate_check", "normal_bot_order_path_kill_switch_preflight_missing") or {}
+    if row.get("gate_status") in {"blocked", "future_work_required"} and all_execution_false(gate_rows):
+        return readiness_row(
+            created_at,
+            "normal_bot_order_path_kill_switch_preflight_missing",
+            "future_work_required",
+            "high",
+            source,
+            "Normal bot order path remains missing kill-switch preflight.",
+            True,
+            False,
+            "Do not wire normal bot behavior in this report; require a future scoped safety task.",
+        )
+    return readiness_row(
+        created_at,
+        "normal_bot_order_path_kill_switch_preflight_missing",
+        "missing_input" if not gate_rows else "warning",
+        "high",
+        source,
+        "Normal bot kill-switch preflight status is not clearly blocked/future-work in the saved gate report.",
+        True,
+        False,
+        "Review normal bot safety status before any execution design discussion.",
     )
 
 
@@ -631,7 +730,7 @@ def build_summary(rows: list[dict[str, Any]], output_path: Path) -> list[str]:
         f"Can progress to execution design: {overall.get('can_progress_to_execution_design', False)}",
         f"Saved defensive execution readiness report to {output_path}",
         "No execution design was added.",
-        "No enforcement was added to order paths.",
+        "No enforcement was added to additional order paths.",
         "No strategy was promoted.",
         "No orders were created, submitted, or cancelled.",
         "No execution approval was granted.",

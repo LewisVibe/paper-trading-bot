@@ -27,6 +27,9 @@ EXPECTED_AREAS = {
     "paper_kill_switch_gate",
     "kill_switch_contract_verifier",
     "isolated_kill_switch_helper",
+    "manual_paper_order_test_kill_switch_preflight",
+    "slow_sma_paper_execution_kill_switch_preflight_missing",
+    "normal_bot_order_path_kill_switch_preflight_missing",
     "execution_eligibility",
     "portfolio_risk_policy",
     "overall_readiness",
@@ -117,13 +120,22 @@ def verify_fixture_report(failures: list[str]) -> None:
         helper = find_row(result.rows, "isolated_kill_switch_helper")
         if helper.get("readiness_status") != "pass":
             failures.append("isolated kill-switch helper presence should pass as no-order safety logic")
+        manual_preflight = find_row(result.rows, "manual_paper_order_test_kill_switch_preflight")
+        if manual_preflight.get("readiness_status") != "pass":
+            failures.append("manual paper-order preflight should pass in readiness report")
+        slow_missing = find_row(result.rows, "slow_sma_paper_execution_kill_switch_preflight_missing")
+        if slow_missing.get("readiness_status") != "future_work_required":
+            failures.append("slow SMA missing preflight should remain future_work_required")
+        normal_missing = find_row(result.rows, "normal_bot_order_path_kill_switch_preflight_missing")
+        if normal_missing.get("readiness_status") != "future_work_required":
+            failures.append("normal bot missing preflight should remain future_work_required")
         verify_safety_flags(result.rows, failures)
 
         summary = "\n".join(result.summary_lines)
         for expected in [
             "DEFENSIVE EXECUTION READINESS REPORT. SAVED-DATA ONLY. NOT EXECUTION.",
             "No execution design was added.",
-            "No enforcement was added to order paths.",
+            "No enforcement was added to additional order paths.",
             "No strategy was promoted.",
             "No orders were created, submitted, or cancelled.",
             "No execution approval was granted.",
@@ -214,6 +226,24 @@ def write_fixture_csvs(data_dir: Path) -> None:
     write_csv(
         data_dir / "paper_kill_switch_gate_report.csv",
         [
+            {
+                "gate_check": "manual_paper_order_test_kill_switch_preflight",
+                "gate_status": "pass",
+                "blocks_future_execution_design": "False",
+                "execution_approved": "False",
+            },
+            {
+                "gate_check": "slow_sma_paper_execution_kill_switch_preflight_missing",
+                "gate_status": "future_work_required",
+                "blocks_future_execution_design": "True",
+                "execution_approved": "False",
+            },
+            {
+                "gate_check": "normal_bot_order_path_kill_switch_preflight_missing",
+                "gate_status": "future_work_required",
+                "blocks_future_execution_design": "True",
+                "execution_approved": "False",
+            },
             {
                 "gate_check": "kill_switch_enforcement_not_implemented",
                 "gate_status": "future_work_required",
