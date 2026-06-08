@@ -36,6 +36,7 @@ from trading_bot.research.etf_defensive_drawdowns import generate_etf_defensive_
 from trading_bot.research.etf_rotation_robustness import generate_etf_rotation_robustness_report
 from trading_bot.research.paper_kill_switch_gate import generate_paper_kill_switch_gate_report
 from trading_bot.research.paper_kill_switch import generate_paper_kill_switch_readiness_report
+from trading_bot.research.paper_execution_protection import generate_paper_execution_protection_report
 from trading_bot.research.portfolio_risk_policy import (
     generate_portfolio_risk_policy_report,
     show_portfolio_risk_policy_file,
@@ -243,6 +244,17 @@ def run_paper_kill_switch_gate_report_command() -> int:
         result = generate_paper_kill_switch_gate_report()
     except Exception as exc:
         print(f"Paper kill-switch gate report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
+
+
+def run_paper_execution_protection_report_command() -> int:
+    try:
+        result = generate_paper_execution_protection_report()
+    except Exception as exc:
+        print(f"Paper execution protection report failed: {exc}", file=sys.stderr)
         return 1
     for line in result.summary_lines:
         print(line)

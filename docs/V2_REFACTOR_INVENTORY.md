@@ -269,6 +269,15 @@ This inventory captures the current V2 refactor state before moving any more pro
 - It confirms high-risk commands remain confirmation-gated and that the current paper kill-switch gate remains blocked/future-work-required.
 - It does not add a bot command, change order submission mechanics, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
+## Paper Execution Protection Report Status
+
+- `--paper-execution-protection-report` creates a saved-data/static-source checkpoint for current paper execution protection boundaries.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/paper_execution_protection.py`.
+- It writes `data/paper_execution_protection_report.csv`.
+- It summarizes that `--paper-order-test` and `--execute-slow-sma-paper` have kill-switch preflight, normal `python bot.py` order behavior remains deliberately unchanged/future work, execution readiness remains blocked, and no execution approval exists.
+- Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
+- It does not add execution design, wire additional order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+
 ## Isolated Paper Kill-Switch Helper Status
 
 - `trading_bot/safety/paper_kill_switch.py` provides pure no-network helper logic for future paper kill-switch enforcement design tests.

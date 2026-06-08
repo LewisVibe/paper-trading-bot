@@ -510,6 +510,14 @@ python bot.py --paper-kill-switch-gate-report
 
 This writes `data/paper_kill_switch_gate_report.csv` and checks static/saved prerequisites for a future paper kill-switch gate, including safe config example defaults, confirmation-gated high-risk commands, isolated helper availability, the manual `--paper-order-test` preflight, the slow SMA paper-execution preflight, missing normal bot preflight work, existing readiness/eligibility reports, and whether defensive allocation remains blocked. It does not add order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
+Create a saved-data/static paper execution protection checkpoint:
+
+```powershell
+python bot.py --paper-execution-protection-report
+```
+
+This writes `data/paper_execution_protection_report.csv` and summarizes which paper execution paths have kill-switch preflight, which path remains deliberately unchanged, and whether execution remains blocked. It recognizes the manual paper-order and slow SMA preflights, keeps normal `python bot.py` as future work, and does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+
 Verify the paper kill-switch enforcement contract and the limited manual preflight wiring:
 
 ```powershell

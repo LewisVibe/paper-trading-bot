@@ -64,6 +64,7 @@ REQUIRED_COMMANDS = [
     "--show-portfolio-risk-policy",
     "--paper-kill-switch-readiness-report",
     "--paper-kill-switch-gate-report",
+    "--paper-execution-protection-report",
     "--execution-eligibility-report",
     "--build-research-dashboard",
     "--preview-slow-sma-signals",
