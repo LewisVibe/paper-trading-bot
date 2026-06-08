@@ -50,6 +50,11 @@ FIXED_SPLITS = [
     ("full_period", Decimal("0")),
     ("split_70_30_out_of_sample", Decimal("0.70")),
 ]
+ROBUSTNESS_SPLITS = [
+    ("split_60_40", Decimal("0.60")),
+    ("split_70_30", Decimal("0.70")),
+    ("split_80_20", Decimal("0.80")),
+]
 
 ETF_BREADTH_RESULT_COLUMNS = [
     "created_at",
@@ -109,6 +114,28 @@ ETF_BREADTH_DECISION_COLUMNS = [
     "execution_approved",
 ]
 
+ETF_BREADTH_ROBUSTNESS_COLUMNS = [
+    "created_at",
+    "strategy_name",
+    "split_label",
+    "split_fraction",
+    "in_sample_start",
+    "in_sample_end",
+    "out_of_sample_start",
+    "out_of_sample_end",
+    "out_of_sample_cagr_pct",
+    "out_of_sample_sharpe_ratio",
+    "out_of_sample_max_drawdown_pct",
+    "out_of_sample_calmar_ratio",
+    "out_of_sample_trade_count",
+    "robustness_label",
+    "research_only",
+    "preview_only",
+    "execution_approved",
+    "finding",
+    "required_next_step",
+]
+
 
 @dataclass
 class EtfBreadthRegimeResult:
@@ -131,6 +158,13 @@ class EtfBreadthPriceHistoryResult:
 
 @dataclass
 class EtfBreadthDecisionResult:
+    output_path: Path
+    rows: list[dict[str, Any]]
+    summary_lines: list[str]
+
+
+@dataclass
+class EtfBreadthRobustnessResult:
     output_path: Path
     rows: list[dict[str, Any]]
     summary_lines: list[str]
@@ -227,6 +261,24 @@ def generate_etf_breadth_regime_decision_report(
     )
 
 
+def generate_etf_breadth_regime_robustness_report(
+    data_dir: Path | str = "data",
+    created_at: str | None = None,
+) -> EtfBreadthRobustnessResult:
+    data_path = Path(data_dir)
+    created = created_at or datetime.now(timezone.utc).isoformat()
+    price_rows = read_price_history(data_path / ETF_BREADTH_PRICE_INPUT)
+    benchmark_rows = load_benchmark_rows(data_path)
+    rows = build_robustness_rows(created, price_rows, benchmark_rows)
+    output_path = data_path / "etf_breadth_regime_robustness_report.csv"
+    write_rows(output_path, ETF_BREADTH_ROBUSTNESS_COLUMNS, rows)
+    return EtfBreadthRobustnessResult(
+        output_path=output_path,
+        rows=rows,
+        summary_lines=build_robustness_summary(rows, output_path),
+    )
+
+
 def build_etf_breadth_outputs(
     price_rows: list[dict[str, Any]],
     created_at: str,
@@ -265,6 +317,174 @@ def load_benchmark_rows(data_path: Path) -> list[dict[str, Any]]:
     rows.extend(read_price_history(data_path / "etf_rotation_robustness_report.csv"))
     rows.extend(read_price_history(data_path / "vol_managed_etf_robustness_report.csv"))
     return rows
+
+
+def build_robustness_rows(
+    created_at: str,
+    price_rows: list[dict[str, Any]],
+    benchmark_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    aligned_rows = align_price_rows(price_rows)
+    if len(aligned_rows) < SMA_WINDOW + 2:
+        return [
+            insufficient_robustness_row(
+                created_at,
+                split_label,
+                split_fraction,
+                "Saved ETF breadth price history is missing or too short.",
+                "Run python bot.py --build-etf-breadth-price-history, then python bot.py --etf-breadth-regime-robustness.",
+            )
+            for split_label, split_fraction in ROBUSTNESS_SPLITS
+        ]
+    daily_rows = build_daily_regime_rows(aligned_rows)
+    equity_rows = simulate_breadth_regime_equity(daily_rows)
+    rows = [
+        robustness_row(created_at, equity_rows, split_label, split_fraction)
+        for split_label, split_fraction in ROBUSTNESS_SPLITS
+    ]
+    label = overall_robustness_label(rows, benchmark_rows)
+    finding, next_step = robustness_finding_and_next_step(label)
+    for row in rows:
+        row["robustness_label"] = label
+        row["finding"] = finding
+        row["required_next_step"] = next_step
+    return rows
+
+
+def robustness_row(
+    created_at: str,
+    equity_rows: list[dict[str, Any]],
+    split_label: str,
+    split_fraction: Decimal,
+) -> dict[str, Any]:
+    split_index = fixed_split_index(equity_rows, split_fraction)
+    in_sample = equity_rows[:split_index]
+    out_of_sample = equity_rows[split_index:]
+    if len(in_sample) < 2 or len(out_of_sample) < 2:
+        return insufficient_robustness_row(
+            created_at,
+            split_label,
+            split_fraction,
+            "Not enough saved breadth regime rows for this split.",
+            "Rebuild ETF breadth price history with more saved daily rows before reviewing robustness.",
+        )
+    curve = [float(row["equity"]) for row in out_of_sample]
+    cagr = calculate_cagr_pct(curve[0], curve[-1], len(curve))
+    max_drawdown = calculate_max_drawdown(curve) * 100
+    sharpe = calculate_sharpe_ratio(curve)
+    calmar = cagr / abs(max_drawdown) if max_drawdown else 0.0
+    return {
+        "created_at": created_at,
+        "strategy_name": ETF_BREADTH_STRATEGY_NAME,
+        "split_label": split_label,
+        "split_fraction": split_fraction,
+        "in_sample_start": in_sample[0]["date"],
+        "in_sample_end": in_sample[-1]["date"],
+        "out_of_sample_start": out_of_sample[0]["date"],
+        "out_of_sample_end": out_of_sample[-1]["date"],
+        "out_of_sample_cagr_pct": round(cagr, 4),
+        "out_of_sample_sharpe_ratio": round(sharpe, 4),
+        "out_of_sample_max_drawdown_pct": round(max_drawdown, 4),
+        "out_of_sample_calmar_ratio": round(calmar, 4),
+        "out_of_sample_trade_count": int(out_of_sample[-1]["turnover_count"]) - int(out_of_sample[0]["turnover_count"]),
+        "robustness_label": "",
+        "research_only": True,
+        "preview_only": True,
+        "execution_approved": False,
+        "finding": "",
+        "required_next_step": "",
+    }
+
+
+def fixed_split_index(rows: list[dict[str, Any]], split_fraction: Decimal) -> int:
+    index = int(len(rows) * float(split_fraction))
+    return min(max(index, 1), len(rows) - 1)
+
+
+def insufficient_robustness_row(
+    created_at: str,
+    split_label: str,
+    split_fraction: Decimal,
+    finding: str,
+    required_next_step: str,
+) -> dict[str, Any]:
+    return {
+        "created_at": created_at,
+        "strategy_name": ETF_BREADTH_STRATEGY_NAME,
+        "split_label": split_label,
+        "split_fraction": split_fraction,
+        "robustness_label": "insufficient_data",
+        "research_only": True,
+        "preview_only": True,
+        "execution_approved": False,
+        "finding": finding,
+        "required_next_step": required_next_step,
+    }
+
+
+def overall_robustness_label(rows: list[dict[str, Any]], benchmark_rows: list[dict[str, Any]]) -> str:
+    if any(row.get("robustness_label") == "insufficient_data" for row in rows):
+        return "insufficient_data"
+    if any(parse_float(row.get("out_of_sample_sharpe_ratio")) < 0 or parse_float(row.get("out_of_sample_calmar_ratio")) < 0 for row in rows):
+        return "not_robust"
+    if any(parse_float(row.get("out_of_sample_sharpe_ratio")) <= 0 or parse_float(row.get("out_of_sample_calmar_ratio")) <= 0 for row in rows):
+        return "split_sensitive_diagnostic"
+    benchmark_drawdown = best_saved_defensive_drawdown(benchmark_rows)
+    if benchmark_drawdown is not None:
+        materially_worse = any(abs(parse_float(row.get("out_of_sample_max_drawdown_pct"))) > benchmark_drawdown + 5.0 for row in rows)
+        if materially_worse:
+            return "split_sensitive_diagnostic"
+    return "robust_diagnostic_candidate"
+
+
+def best_saved_defensive_drawdown(rows: list[dict[str, Any]]) -> float | None:
+    drawdowns: list[float] = []
+    for row in rows:
+        if row.get("strategy_name") not in {"monthly_etf_momentum_rotation", "volatility_managed_dual_momentum_etf"}:
+            continue
+        value = benchmark_metric_value(row, "max_drawdown_pct")
+        if value is not None:
+            drawdowns.append(abs(value))
+    return min(drawdowns) if drawdowns else None
+
+
+def robustness_finding_and_next_step(label: str) -> tuple[str, str]:
+    if label == "robust_diagnostic_candidate":
+        return (
+            "Breadth regime OOS Sharpe and Calmar are positive across all fixed splits without materially worse drawdown versus saved defensive candidates.",
+            "Keep as a research diagnostic/filter candidate; compare against ETF rotation and vol-managed ETF before any strategy discussion.",
+        )
+    if label == "not_robust":
+        return (
+            "Breadth regime has negative OOS Sharpe or Calmar on at least one fixed split.",
+            "Do not promote; keep breadth as diagnostic context unless a new fixed research hypothesis is proposed.",
+        )
+    if label == "insufficient_data":
+        return (
+            "Saved ETF breadth data is missing or too short for fixed-split robustness.",
+            "Build saved breadth price history and rerun the robustness report.",
+        )
+    return (
+        "Breadth regime has positive evidence in some splits but weakens materially across the fixed-split set.",
+        "Keep as useful_diagnostic_not_strategy; review split sensitivity before any further strategy discussion.",
+    )
+
+
+def build_robustness_summary(rows: list[dict[str, Any]], output_path: Path) -> list[str]:
+    label = rows[0].get("robustness_label", "insufficient_data") if rows else "insufficient_data"
+    split_summary = ", ".join(
+        f"{row.get('split_label')}: Sharpe={row.get('out_of_sample_sharpe_ratio', '')}, Calmar={row.get('out_of_sample_calmar_ratio', '')}, DD={row.get('out_of_sample_max_drawdown_pct', '')}%"
+        for row in rows
+    )
+    return [
+        "ETF BREADTH REGIME ROBUSTNESS REPORT. RESEARCH ONLY. NOT EXECUTION.",
+        f"Robustness label: {label}",
+        "Fixed splits: " + split_summary,
+        f"Saved ETF breadth regime robustness report to {output_path}",
+        "No strategy was promoted.",
+        "No orders were created, submitted, or cancelled.",
+        "No execution approval was granted.",
+    ]
 
 
 def build_decision_rows(

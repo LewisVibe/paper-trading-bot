@@ -649,6 +649,20 @@ Output:
 data/etf_breadth_regime_decision_report.csv
 ```
 
+ETF breadth regime robustness mode reads the saved ETF breadth price history and evaluates the fixed breadth allocation across `split_60_40`, `split_70_30`, and `split_80_20` out-of-sample periods. It labels the idea conservatively as `robust_diagnostic_candidate`, `split_sensitive_diagnostic`, `not_robust`, or `insufficient_data`. It remains research/reporting only and does not download market data, call Alpaca, create orders, promote the strategy, or approve execution.
+
+Command:
+
+```text
+python bot.py --etf-breadth-regime-robustness
+```
+
+Output:
+
+```text
+data/etf_breadth_regime_robustness_report.csv
+```
+
 Vol-managed ETF backtest mode tests the first advanced long-only ETF research idea from the deep research shortlist. The fixed strategy, `volatility_managed_dual_momentum_etf`, uses the ETF rotation universe, monthly rebalance, top 3 momentum selection, 200-day SMA asset and SPY regime filters, 63-day realised volatility, inverse-volatility sizing, and a 10% annual target-volatility cap with gross exposure capped at 100%. It does not use leverage, margin, shorting, Alpaca, SQLite `trade_log`, Discord alerts, or execution approval.
 
 Command:

@@ -18,6 +18,7 @@ REQUIRED_COMMANDS = [
     "--build-etf-breadth-price-history",
     "--etf-breadth-regime-backtest",
     "--etf-breadth-regime-decision-report",
+    "--etf-breadth-regime-robustness",
     "--adaptive-momentum-backtest",
     "--research-report",
     "--walk-forward-report",

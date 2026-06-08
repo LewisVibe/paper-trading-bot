@@ -136,10 +136,12 @@ This inventory captures the current V2 refactor state before moving any more pro
 - The builder uses the existing research market-data/yfinance helper pattern and remains research data-prep only.
 - `--etf-breadth-regime-backtest` reads saved ETF close-history data from `data/etf_breadth_price_history.csv`.
 - `--etf-breadth-regime-decision-report` reads saved breadth backtest/summary rows and saved defensive comparison/robustness rows.
+- `--etf-breadth-regime-robustness` reads saved breadth price history and writes fixed-split OOS rows for `split_60_40`, `split_70_30`, and `split_80_20`.
 - Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/etf_breadth_regime.py`.
-- It writes `data/etf_breadth_regime_backtest.csv`, `data/etf_breadth_regime_summary.csv`, and `data/etf_breadth_regime_decision_report.csv`.
+- It writes `data/etf_breadth_regime_backtest.csv`, `data/etf_breadth_regime_summary.csv`, `data/etf_breadth_regime_decision_report.csv`, and `data/etf_breadth_regime_robustness_report.csv`.
 - It classifies `risk_on`, `neutral`, `defensive`, and `cash_protection` regimes using ETF breadth versus SMA200 plus SPY trend.
 - The decision report labels breadth regime conservatively and does not automatically promote it.
+- The robustness report labels breadth regime conservatively and does not automatically promote it.
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - The backtest does not download market data. Neither command calls Alpaca, sends Discord alerts, writes to SQLite, tunes strategies, or approves execution.
 

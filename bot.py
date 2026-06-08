@@ -136,6 +136,7 @@ from trading_bot.runners.research_reports import (
     run_drawdown_period_report_command,
     run_etf_breadth_regime_backtest_command,
     run_etf_breadth_regime_decision_report_command,
+    run_etf_breadth_regime_robustness_command,
     run_etf_defensive_drawdown_comparison_command,
     run_etf_rotation_robustness_command,
     run_execution_eligibility_report_command,
@@ -3672,6 +3673,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a saved-data-only decision report for ETF breadth regime research.",
     )
     parser.add_argument(
+        "--etf-breadth-regime-robustness",
+        action="store_true",
+        help="Create a saved-data-only fixed-split robustness report for ETF breadth regime research.",
+    )
+    parser.add_argument(
         "--build-etf-breadth-price-history",
         action="store_true",
         help="Build saved ETF close-history input for the ETF breadth regime backtest.",
@@ -3992,6 +3998,8 @@ def main() -> int:
         return run_etf_breadth_regime_backtest_command()
     if args.etf_breadth_regime_decision_report:
         return run_etf_breadth_regime_decision_report_command()
+    if args.etf_breadth_regime_robustness:
+        return run_etf_breadth_regime_robustness_command()
     if args.crypto_research_preview:
         result = run_crypto_research_preview_files()
         for line in result.summary_lines:
