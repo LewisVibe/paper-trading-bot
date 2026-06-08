@@ -498,6 +498,14 @@ python bot.py --paper-kill-switch-readiness-report
 
 This writes `data/paper_kill_switch_readiness_report.csv` and audits what would be required for a future paper-only kill switch. It does not add a config setting, enforce a kill switch, change order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
 
+Create a design/report-only paper kill-switch gate scaffold:
+
+```powershell
+python bot.py --paper-kill-switch-gate-report
+```
+
+This writes `data/paper_kill_switch_gate_report.csv` and checks static/saved prerequisites for a future paper kill-switch gate, including safe config example defaults, confirmation-gated high-risk commands, existing readiness/eligibility reports, and whether defensive allocation remains blocked. It explicitly does not add enforcement to order paths, create order instructions, call Alpaca, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+
 Create a saved-data-only execution eligibility view:
 
 ```powershell

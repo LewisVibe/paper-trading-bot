@@ -253,6 +253,15 @@ This inventory captures the current V2 refactor state before moving any more pro
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not add a config setting, enforce a kill switch, change order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve execution.
 
+## Paper Kill-Switch Gate Report Status
+
+- `--paper-kill-switch-gate-report` creates a design/report-only scaffold for future paper kill-switch prerequisites.
+- Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/paper_kill_switch_gate.py`.
+- It writes `data/paper_kill_switch_gate_report.csv`.
+- It checks static/saved prerequisites such as safe config example defaults, confirmation-gated high-risk commands, saved readiness/eligibility reports, blocked defensive allocation decision state, and the fact that real kill-switch enforcement is still future work.
+- Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
+- It does not add enforcement to order paths, add config settings, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
+
 ## Execution Eligibility Report Status
 
 - `--execution-eligibility-report` combines saved promoted decision, portfolio risk policy, paper kill-switch readiness, and deployment readiness reports into a final non-executable eligibility view.
