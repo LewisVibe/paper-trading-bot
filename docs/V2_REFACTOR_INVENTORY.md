@@ -258,7 +258,7 @@ This inventory captures the current V2 refactor state before moving any more pro
 - `--paper-kill-switch-gate-report` creates a design/report-only scaffold for future paper kill-switch prerequisites.
 - Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/paper_kill_switch_gate.py`.
 - It writes `data/paper_kill_switch_gate_report.csv`.
-- It checks static/saved prerequisites such as safe config example defaults, confirmation-gated high-risk commands, saved readiness/eligibility reports, blocked defensive allocation decision state, and the fact that real kill-switch enforcement is still future work.
+- It checks static/saved prerequisites such as safe config example defaults, confirmation-gated high-risk commands, isolated helper availability, saved readiness/eligibility reports, blocked defensive allocation decision state, and the fact that real kill-switch enforcement is still not wired into order paths.
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not add enforcement to order paths, add config settings, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 
@@ -282,7 +282,7 @@ This inventory captures the current V2 refactor state before moving any more pro
 - `--defensive-execution-readiness-report` combines saved defensive allocation, kill-switch, execution eligibility, and portfolio risk policy artefacts into a final non-executable readiness report.
 - Its command orchestration lives in `trading_bot/runners/research_reports.py`; the report logic lives in `trading_bot/research/defensive_execution_readiness.py`.
 - It writes `data/defensive_execution_readiness_report.csv`.
-- It answers what still blocks future paper execution design for the defensive allocation path and identifies the next gate as real paper kill-switch enforcement design/tests.
+- It answers what still blocks future paper execution design for the defensive allocation path, recognizes the isolated helper as no-order safety logic, and identifies the next gate as real paper kill-switch enforcement design/tests.
 - Every row is marked `research_only=True`, `preview_only=True`, and `execution_approved=False`.
 - It does not start execution design, add enforcement to order paths, call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, promote strategies, or approve execution.
 

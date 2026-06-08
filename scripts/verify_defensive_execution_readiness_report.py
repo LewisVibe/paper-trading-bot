@@ -26,6 +26,7 @@ EXPECTED_AREAS = {
     "defensive_allocation_decision",
     "paper_kill_switch_gate",
     "kill_switch_contract_verifier",
+    "isolated_kill_switch_helper",
     "execution_eligibility",
     "portfolio_risk_policy",
     "overall_readiness",
@@ -83,6 +84,9 @@ def verify_fixture_report(failures: list[str]) -> None:
         data_dir.mkdir(parents=True, exist_ok=True)
         script_dir.mkdir(parents=True, exist_ok=True)
         (script_dir / "verify_paper_kill_switch_enforcement_contract.py").write_text("# fixture\n", encoding="utf-8")
+        helper_path = root / "trading_bot" / "safety" / "paper_kill_switch.py"
+        helper_path.parent.mkdir(parents=True, exist_ok=True)
+        helper_path.write_text("def evaluate_paper_kill_switch_gate():\n    pass\n", encoding="utf-8")
         write_fixture_csvs(data_dir)
         result = generate_defensive_execution_readiness_report(
             data_dir=data_dir,
@@ -110,6 +114,9 @@ def verify_fixture_report(failures: list[str]) -> None:
         contract = find_row(result.rows, "kill_switch_contract_verifier")
         if contract.get("readiness_status") != "pass":
             failures.append("contract verifier presence should pass as spec coverage only")
+        helper = find_row(result.rows, "isolated_kill_switch_helper")
+        if helper.get("readiness_status") != "pass":
+            failures.append("isolated kill-switch helper presence should pass as no-order safety logic")
         verify_safety_flags(result.rows, failures)
 
         summary = "\n".join(result.summary_lines)

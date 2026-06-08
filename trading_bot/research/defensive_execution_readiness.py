@@ -71,6 +71,7 @@ def build_readiness_rows(
         defensive_allocation_decision_row(created_at, data_path, inputs["allocation_decision"]),
         paper_kill_switch_gate_row(created_at, data_path, inputs["kill_switch_gate"]),
         kill_switch_contract_verifier_row(created_at, script_path),
+        isolated_kill_switch_helper_row(created_at, script_path.parent),
         execution_eligibility_row(created_at, data_path, inputs["execution_eligibility"]),
         portfolio_risk_policy_row(created_at, data_path, inputs["portfolio_policy"]),
     ]
@@ -369,6 +370,37 @@ def kill_switch_contract_verifier_row(
     )
 
 
+def isolated_kill_switch_helper_row(
+    created_at: str,
+    root_path: Path,
+) -> dict[str, Any]:
+    source = root_path / "trading_bot" / "safety" / "paper_kill_switch.py"
+    helper_source = read_text(source)
+    if source.exists() and "evaluate_paper_kill_switch_gate" in helper_source:
+        return readiness_row(
+            created_at,
+            "isolated_kill_switch_helper",
+            "pass",
+            "info",
+            source,
+            "Isolated paper kill-switch helper exists as no-order safety logic, but it is not wired into execution paths.",
+            False,
+            False,
+            "Keep helper isolated until a future scoped enforcement task.",
+        )
+    return readiness_row(
+        created_at,
+        "isolated_kill_switch_helper",
+        "missing_input",
+        "high",
+        source,
+        "Isolated paper kill-switch helper is missing.",
+        True,
+        False,
+        "Add isolated no-order helper logic before execution-readiness can improve.",
+    )
+
+
 def execution_eligibility_row(
     created_at: str,
     data_path: Path,
@@ -568,6 +600,12 @@ def read_csv_rows(path: Path) -> list[dict[str, str]]:
         return []
     with path.open(newline="", encoding="utf-8") as file:
         return list(csv.DictReader(file))
+
+
+def read_text(path: Path) -> str:
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf-8")
 
 
 def write_rows(path: Path, rows: list[dict[str, Any]]) -> None:

@@ -26,7 +26,9 @@ EXPECTED_GATE_CHECKS = {
     "config_example_allow_shorting_default_false",
     "high_risk_commands_confirmation_gated",
     "existing_kill_switch_readiness_available",
+    "isolated_kill_switch_helper_available",
     "kill_switch_enforcement_not_implemented",
+    "kill_switch_enforcement_not_wired_to_order_paths",
     "defensive_allocation_decision_blocks_execution_design",
     "execution_eligibility_blocks_execution",
     "future_execution_requires_kill_switch_gate",
@@ -97,8 +99,12 @@ def verify_fixture_report(failures: list[str]) -> None:
         if checks != EXPECTED_GATE_CHECKS:
             failures.append(f"expected gate checks changed: {sorted(str(check) for check in checks)}")
         statuses = {row.get("gate_check"): row.get("gate_status") for row in result.rows}
+        if statuses.get("isolated_kill_switch_helper_available") != "pass":
+            failures.append("isolated kill-switch helper should be detected as available")
         if statuses.get("kill_switch_enforcement_not_implemented") != "future_work_required":
             failures.append("kill-switch enforcement should be marked future_work_required")
+        if statuses.get("kill_switch_enforcement_not_wired_to_order_paths") != "blocked":
+            failures.append("kill-switch helper should remain not wired to order paths")
         if statuses.get("future_execution_requires_kill_switch_gate") != "blocked":
             failures.append("future execution should remain blocked by kill-switch gate")
         blockers = [
@@ -148,6 +154,9 @@ def verify_safety_flags(rows: list[dict[str, object]], failures: list[str]) -> N
 
 def write_fixture_files(root: Path) -> None:
     (root / "data").mkdir(parents=True, exist_ok=True)
+    helper_path = root / "trading_bot" / "safety" / "paper_kill_switch.py"
+    helper_path.parent.mkdir(parents=True, exist_ok=True)
+    helper_path.write_text("def evaluate_paper_kill_switch_gate():\n    pass\n", encoding="utf-8")
     (root / "config.example.json").write_text(
         json.dumps(
             {

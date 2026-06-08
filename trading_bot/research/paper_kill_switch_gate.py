@@ -58,6 +58,7 @@ def build_gate_rows(root: Path, created_at: str) -> list[dict[str, Any]]:
     readiness_path = root / "data" / "paper_kill_switch_readiness_report.csv"
     decision_path = root / "data" / "defensive_allocation_decision_report.csv"
     eligibility_path = root / "data" / "execution_eligibility_report.csv"
+    helper_path = root / "trading_bot" / "safety" / "paper_kill_switch.py"
     readiness_rows = read_csv_rows(readiness_path)
     decision_rows = read_csv_rows(decision_path)
     eligibility_rows = read_csv_rows(eligibility_path)
@@ -92,6 +93,7 @@ def build_gate_rows(root: Path, created_at: str) -> list[dict[str, Any]]:
         ),
         high_risk_commands_confirmation_gated_row(created_at, help_text),
         existing_readiness_available_row(created_at, readiness_path, readiness_rows),
+        isolated_kill_switch_helper_available_row(created_at, helper_path),
         gate_row(
             created_at,
             "kill_switch_enforcement_not_implemented",
@@ -102,6 +104,7 @@ def build_gate_rows(root: Path, created_at: str) -> list[dict[str, Any]]:
             True,
             "Design a real kill-switch setting and no-network tests before touching any order path.",
         ),
+        kill_switch_enforcement_not_wired_row(created_at, root, helper_path),
         defensive_allocation_decision_row(created_at, decision_path, decision_rows),
         execution_eligibility_row(created_at, eligibility_path, eligibility_rows),
         gate_row(
@@ -153,6 +156,63 @@ def high_risk_commands_confirmation_gated_row(created_at: str, help_text: str) -
         else "Could not confirm high-risk paper commands are explicitly confirmation-gated.",
         not passed,
         "Keep high-risk paper commands behind explicit confirmation.",
+    )
+
+
+def isolated_kill_switch_helper_available_row(created_at: str, helper_path: Path) -> dict[str, Any]:
+    helper_source = read_text(helper_path)
+    available = helper_path.exists() and "evaluate_paper_kill_switch_gate" in helper_source
+    return gate_row(
+        created_at,
+        "isolated_kill_switch_helper_available",
+        "pass" if available else "missing_input",
+        "info" if available else "high",
+        str(helper_path),
+        "Isolated paper kill-switch helper exists but is not wired into order paths."
+        if available
+        else "Isolated paper kill-switch helper is missing.",
+        False if available else True,
+        "Keep helper isolated until a future scoped enforcement task."
+        if available
+        else "Add isolated no-order helper logic before enforcement design continues.",
+    )
+
+
+def kill_switch_enforcement_not_wired_row(created_at: str, root: Path, helper_path: Path) -> dict[str, Any]:
+    high_risk_paths = [
+        root / "bot.py",
+        root / "trading_bot" / "execution.py",
+        root / "trading_bot" / "alpaca_client.py",
+        root / "trading_bot" / "database.py",
+        root / "trading_bot" / "discord_alerts.py",
+    ]
+    helper_import = "trading_bot.safety.paper_kill_switch"
+    helper_call = "evaluate_paper_kill_switch_gate"
+    wired_paths = [
+        str(path)
+        for path in high_risk_paths
+        if helper_import in read_text(path) or helper_call in read_text(path)
+    ]
+    if wired_paths:
+        return gate_row(
+            created_at,
+            "kill_switch_enforcement_not_wired_to_order_paths",
+            "fail",
+            "critical",
+            str(helper_path),
+            "Isolated paper kill-switch helper appears wired into high-risk paths: " + ", ".join(wired_paths),
+            True,
+            "Remove unexpected wiring and review before continuing.",
+        )
+    return gate_row(
+        created_at,
+        "kill_switch_enforcement_not_wired_to_order_paths",
+        "blocked",
+        "high",
+        str(helper_path),
+        "Isolated paper kill-switch helper is not wired into order paths; execution design remains blocked.",
+        True,
+        "Future scoped work must add reviewed enforcement tests before any order-path integration.",
     )
 
 
@@ -373,6 +433,12 @@ def read_csv_rows(path: Path) -> list[dict[str, str]]:
         return []
     with path.open(newline="", encoding="utf-8") as file:
         return list(csv.DictReader(file))
+
+
+def read_text(path: Path) -> str:
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf-8")
 
 
 def bot_help_text(root: Path) -> str:
