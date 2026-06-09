@@ -51,6 +51,7 @@ REQUIRED_COMMANDS = [
     "--crypto-research-state-report",
     "--ticker-universe-readiness-report",
     "--market-monitor-snapshot",
+    "--show-market-monitor",
     "--preview-promoted-strategies",
     "--preview-promoted-actions",
     "--use-paper-positions-readonly",

@@ -486,6 +486,14 @@ python bot.py --market-monitor-snapshot
 
 This writes `data/market_monitor_snapshot.csv` using yfinance intraday data for the fixed ticker universe from the ticker universe readiness report. It does not load `config.json`, call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, schedule anything, or approve execution. More frequent price checks do not mean more frequent trades, and daily strategies should not become intraday trading strategies without separate research.
 
+Display the saved market monitor snapshot without refreshing market data:
+
+```powershell
+python bot.py --show-market-monitor
+```
+
+This reads `data/market_monitor_snapshot.csv` only and prints a compact terminal summary of row counts, data status counts, strongest positive/negative intraday moves, and recorded data errors. It does not call yfinance, load `config.json`, call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, schedule anything, or approve execution.
+
 Create a research-only portfolio risk policy audit before any future execution discussion:
 
 ```powershell

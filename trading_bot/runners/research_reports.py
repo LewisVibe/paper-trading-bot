@@ -34,7 +34,10 @@ from trading_bot.research.etf_breadth_regime import (
 from trading_bot.research.etf_defensive_charts import plot_etf_defensive_comparison_charts
 from trading_bot.research.etf_defensive_drawdowns import generate_etf_defensive_drawdown_comparison
 from trading_bot.research.etf_rotation_robustness import generate_etf_rotation_robustness_report
-from trading_bot.research.market_monitor_snapshot import generate_market_monitor_snapshot
+from trading_bot.research.market_monitor_snapshot import (
+    generate_market_monitor_snapshot,
+    show_market_monitor_file,
+)
 from trading_bot.research.paper_kill_switch_gate import generate_paper_kill_switch_gate_report
 from trading_bot.research.paper_kill_switch import generate_paper_kill_switch_readiness_report
 from trading_bot.research.paper_execution_protection import generate_paper_execution_protection_report
@@ -306,6 +309,13 @@ def run_market_monitor_snapshot_command() -> int:
     for line in result.summary_lines:
         print(line)
     return 0
+
+
+def run_show_market_monitor_command() -> int:
+    status_code, lines = show_market_monitor_file()
+    for line in lines:
+        print(line)
+    return status_code
 
 
 def run_build_research_dashboard_command() -> int:

@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import csv
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from trading_bot.market_data import configure_yfinance_cache_location
 from trading_bot.research.ticker_universe_readiness import DEFAULT_TICKER_UNIVERSE_CANDIDATES
 
 
@@ -46,6 +46,8 @@ def generate_market_monitor_snapshot(
     root_dir: Path | str = ".",
     output_filename: str = "data/market_monitor_snapshot.csv",
 ) -> MarketMonitorSnapshotResult:
+    from trading_bot.market_data import configure_yfinance_cache_location
+
     root = Path(root_dir)
     configure_yfinance_cache_location(root / "data" / "yfinance_cache")
     created_at = datetime.now(timezone.utc).isoformat()
@@ -255,3 +257,93 @@ def format_extreme_change(rows: list[dict[str, Any]], *, highest: bool) -> str:
     if not highest:
         selected = min(usable_rows, key=lambda row: row["intraday_change_pct"])
     return f"{selected['ticker']} {selected['intraday_change_pct']}%"
+
+
+def show_market_monitor_file(
+    path: Path = Path("data") / "market_monitor_snapshot.csv",
+) -> tuple[int, list[str]]:
+    if not path.exists():
+        return (
+            1,
+            [
+                f"Market monitor snapshot CSV not found: {path}",
+                "Run `python bot.py --market-monitor-snapshot` first.",
+            ],
+        )
+
+    with path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+
+    data_status_counts = Counter(row.get("data_status", "") or "blank" for row in rows)
+    rows_with_data = [row for row in rows if row.get("data_status") == "ok"]
+    rows_with_errors = [row for row in rows if row.get("data_status") != "ok"]
+    unsafe_rows = [
+        row
+        for row in rows
+        if not is_false_flag(row.get("execution_approved"))
+        or not is_false_flag(row.get("paper_execution_approved"))
+    ]
+
+    lines = [
+        f"Market monitor snapshot rows: {len(rows)}",
+        "Data status counts:",
+        *format_status_counts(data_status_counts),
+        f"Tickers with data: {len(rows_with_data)}",
+        f"Tickers with errors: {len(rows_with_errors)}",
+        "Top 5 positive intraday_change_pct:",
+        *format_change_rows(rows, highest=True),
+        "Top 5 negative intraday_change_pct:",
+        *format_change_rows(rows, highest=False),
+        "Rows with data_error:",
+        *format_error_rows(rows),
+    ]
+    if unsafe_rows:
+        lines.append(
+            f"Warning: {len(unsafe_rows)} rows have execution approval flags that are not false."
+        )
+    lines.append("Warning: this is monitoring/display only and does not approve orders.")
+    return 0, lines
+
+
+def format_status_counts(counts: Counter[str]) -> list[str]:
+    if not counts:
+        return ["- none"]
+    return [f"- {status}: {count}" for status, count in sorted(counts.items())]
+
+
+def format_change_rows(rows: list[dict[str, Any]], *, highest: bool) -> list[str]:
+    usable_rows = []
+    for row in rows:
+        try:
+            change = float(row.get("intraday_change_pct", ""))
+        except (TypeError, ValueError):
+            continue
+        if highest and change <= 0:
+            continue
+        if not highest and change >= 0:
+            continue
+        usable_rows.append((change, row))
+
+    if not usable_rows:
+        return ["- n/a"]
+
+    selected_rows = sorted(usable_rows, key=lambda item: item[0], reverse=highest)[:5]
+    return [
+        f"- {row.get('ticker', '')}: {round(change, 4)}% "
+        f"close={row.get('latest_close', '')} timestamp={row.get('latest_timestamp', '')}"
+        for change, row in selected_rows
+    ]
+
+
+def format_error_rows(rows: list[dict[str, Any]]) -> list[str]:
+    error_rows = [row for row in rows if row.get("data_error")]
+    if not error_rows:
+        return ["- none"]
+    return [
+        f"- {row.get('ticker', '')}: {row.get('data_status', '')} - {row.get('data_error', '')}"
+        for row in error_rows
+    ]
+
+
+def is_false_flag(value: Any) -> bool:
+    return str(value).strip().lower() == "false"

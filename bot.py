@@ -151,6 +151,7 @@ from trading_bot.runners.research_reports import (
     run_normal_bot_execution_policy_report_command,
     run_market_monitor_snapshot_command,
     run_plot_etf_defensive_comparison_command,
+    run_show_market_monitor_command,
     run_portfolio_risk_policy_report_command,
     run_refresh_promoted_review_command,
     run_refresh_defensive_research_command,
@@ -3944,6 +3945,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a research-only intraday market monitoring snapshot without execution.",
     )
     parser.add_argument(
+        "--show-market-monitor",
+        action="store_true",
+        help="Display the saved market monitor snapshot CSV without refreshing data.",
+    )
+    parser.add_argument(
         "--preview-promoted-strategies",
         action="store_true",
         help="Preview current signals for promoted research candidates without trading.",
@@ -4218,6 +4224,8 @@ def main() -> int:
         return run_ticker_universe_readiness_report_command()
     if args.market_monitor_snapshot:
         return run_market_monitor_snapshot_command()
+    if args.show_market_monitor:
+        return run_show_market_monitor_command()
     if args.show_promoted_actions:
         return run_show_promoted_actions_command()
     if args.promoted_risk_preview:
