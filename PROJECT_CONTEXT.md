@@ -115,7 +115,7 @@ python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper --etf-universe
 Project path:
 
 ```text
-C:\Users\lewis\OneDrive\Documents\Paper Trading Bot
+C:\dev\paper-trading-bot
 ```
 
 Python version:

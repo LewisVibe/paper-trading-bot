@@ -77,7 +77,7 @@ During installation, select **Add python.exe to PATH**.
 Open PowerShell in this project folder:
 
 ```powershell
-cd "C:\Users\lewis\OneDrive\Documents\Paper Trading Bot"
+cd "C:\dev\paper-trading-bot"
 ```
 
 Create a virtual environment:
@@ -1165,7 +1165,7 @@ Version 1 runs once and exits. To run it repeatedly:
 5. Program/script:
 
 ```text
-C:\Users\lewis\OneDrive\Documents\Paper Trading Bot\.venv\Scripts\python.exe
+C:\dev\paper-trading-bot\.venv\Scripts\python.exe
 ```
 
 6. Add arguments:
@@ -1177,7 +1177,7 @@ bot.py
 7. Start in:
 
 ```text
-C:\Users\lewis\OneDrive\Documents\Paper Trading Bot
+C:\dev\paper-trading-bot
 ```
 
 Run the task manually once to confirm logs appear in `logs/bot.log`.
