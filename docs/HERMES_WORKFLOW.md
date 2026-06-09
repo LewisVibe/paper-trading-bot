@@ -185,6 +185,47 @@ Hermes must also never schedule:
 
 Safe-looking report, preview, display, or verifier commands should still only be scheduled after a separate user-approved scheduling review.
 
+## 6A. Future Hermes Cron Plan For Market Monitor Only
+
+Once Hermes is running on the VPS, Hermes cron is preferred for
+monitoring-only, chat-delivered market monitor refresh reports. Windows Task
+Scheduler may still be used only to start or keep the Hermes gateway running on
+boot, not for execution-capable trading commands.
+
+Use no-agent mode for deterministic commands where possible. The candidate
+future scheduled command is:
+
+```bat
+cd /d C:\dev\paper-trading-bot
+.venv\Scripts\python.exe bot.py --refresh-market-monitor
+```
+
+This is a candidate plan only. Hermes must not create the cron job yet, and the
+plan does not approve scheduling, orders, or paper execution.
+
+Prerequisites before any future scheduling review:
+
+```powershell
+python scripts\verify_repo_safety.py
+python bot.py --market-monitor-scheduling-readiness-report
+python bot.py --refresh-market-monitor
+```
+
+The manual `--refresh-market-monitor` run must succeed on the VPS, and generated
+CSV/cache files must remain ignored by git.
+
+Stop if any candidate schedule tries to load `config.json`, call Alpaca, read
+positions, write SQLite `trade_log`, send Discord alerts, create orders, or
+approve execution.
+
+Never schedule:
+
+```powershell
+python bot.py
+python bot.py --paper-order-test ...
+python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper
+```
+
 ## 7. How Hermes Should Report Back After Tasks
 
 Hermes should report concisely and explicitly.

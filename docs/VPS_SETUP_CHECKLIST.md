@@ -101,11 +101,45 @@ python scripts\verify_repo_safety.py
 Scheduling any command should be treated as a separate reviewed task. A command
 being listed here does not mean it is approved for automatic scheduling today.
 
+## Hermes Cron Plan For Market Monitor Only
+
+Once Hermes is running on the VPS, Hermes cron is preferred for
+monitoring-only, chat-delivered market monitor reports. Windows Task Scheduler
+may still be used only to start or keep the Hermes gateway running on boot, not
+for execution-capable trading commands.
+
+Use no-agent mode for deterministic commands where possible. The candidate
+future scheduled command is:
+
+```bat
+cd /d C:\dev\paper-trading-bot
+.venv\Scripts\python.exe bot.py --refresh-market-monitor
+```
+
+This command is a future scheduling candidate only. It is not approved for
+scheduling yet, and it does not approve orders or paper execution.
+
+Prerequisites before any scheduling review:
+
+```powershell
+python scripts\verify_repo_safety.py
+python bot.py --market-monitor-scheduling-readiness-report
+python bot.py --refresh-market-monitor
+```
+
+Only continue to a separate scheduling review after the manual VPS refresh run
+succeeds and generated CSV/cache files remain ignored by git.
+
+Stop if any candidate schedule tries to load `config.json`, call Alpaca, read
+positions, write SQLite `trade_log`, send Discord alerts, create orders, or
+approve execution.
+
 ## Commands Never To Schedule Automatically
 
 Do not schedule:
 
 ```powershell
+python bot.py
 python bot.py --paper-order-test ... --confirm-paper-order
 python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper
 ```

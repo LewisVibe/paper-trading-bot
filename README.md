@@ -2,7 +2,7 @@
 
 This is a beginner-friendly Python bot for monitoring U.S. stocks and ETFs, researching daily strategies, recording activity in SQLite, sending Discord alerts, and optionally placing Alpaca paper trading orders.
 
-It runs once and exits. To run it repeatedly, use Windows Task Scheduler.
+It runs once and exits. Repeated runs require a separate scheduling review; for future market monitor reports, Hermes cron is preferred once Hermes runs on the VPS.
 
 For the current V2 project checkpoint, see [docs/CURRENT_STATE.md](docs/CURRENT_STATE.md).
 
@@ -517,6 +517,25 @@ python bot.py --market-monitor-scheduling-readiness-report
 ```
 
 This writes `data/market_monitor_scheduling_readiness_report.csv` and checks whether the existing refresh chain is safe to consider for a future manual scheduling review. It does not create Windows Task Scheduler tasks, add cron/loop execution, approve scheduling, load `config.json`, call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, connect monitoring output to strategy execution, or approve execution.
+
+Future Hermes cron plan for market monitor reports only:
+
+```bat
+cd /d C:\dev\paper-trading-bot
+.venv\Scripts\python.exe bot.py --refresh-market-monitor
+```
+
+This is a candidate future Hermes cron command only after Hermes is running on the VPS. Hermes cron is preferred for monitoring-only, chat-delivered reports because it keeps the report workflow visible in chat. Windows Task Scheduler may still be used only to start or keep the Hermes gateway running on boot, not for execution-capable trading commands. Use no-agent mode for deterministic commands where possible. Scheduling is not approved yet, and this does not approve orders or paper execution.
+
+Before any future scheduling review, run `python scripts\verify_repo_safety.py`, run `python bot.py --market-monitor-scheduling-readiness-report`, manually run `python bot.py --refresh-market-monitor` successfully on the VPS, and confirm generated CSV/cache files remain ignored. Stop if any scheduled candidate tries to load `config.json`, call Alpaca, read positions, write SQLite `trade_log`, send Discord alerts, create orders, or approve execution.
+
+Never schedule:
+
+```powershell
+python bot.py
+python bot.py --paper-order-test ...
+python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper
+```
 
 Create a research-only portfolio risk policy audit before any future execution discussion:
 
@@ -1194,33 +1213,43 @@ Get-Content data\backtest_results.csv
 Get-Content data\strategy_comparison_results.csv
 ```
 
-## Run Repeatedly With Windows Task Scheduler
+## Repeated Runs And Scheduling
 
-Version 1 runs once and exits. To run it repeatedly:
+The bot runs once and exits. Repeated runs are not approved by default.
 
-1. Open **Task Scheduler**.
-2. Choose **Create Basic Task**.
-3. Pick a schedule, for example once per weekday after market close.
-4. Choose **Start a program**.
-5. Program/script:
+For future monitoring-only, chat-delivered market monitor reports, prefer Hermes
+cron once Hermes runs on the VPS. Windows Task Scheduler may be used only to
+start or keep the Hermes gateway running on boot, not for execution-capable
+trading commands.
 
-```text
-C:\dev\paper-trading-bot\.venv\Scripts\python.exe
+Do not schedule:
+
+```powershell
+python bot.py
+python bot.py --paper-order-test ...
+python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper
 ```
 
-6. Add arguments:
+Candidate future Hermes cron command for market monitor reports only:
 
-```text
-bot.py
+```bat
+cd /d C:\dev\paper-trading-bot
+.venv\Scripts\python.exe bot.py --refresh-market-monitor
 ```
 
-7. Start in:
+This candidate is not approved for scheduling yet and does not approve orders or
+paper execution. Before any future scheduling review, run:
 
-```text
-C:\dev\paper-trading-bot
+```powershell
+python scripts\verify_repo_safety.py
+python bot.py --market-monitor-scheduling-readiness-report
+python bot.py --refresh-market-monitor
 ```
 
-Run the task manually once to confirm logs appear in `logs/bot.log`.
+The manual VPS refresh must succeed, generated CSV/cache files must remain
+ignored, and work must stop if any candidate tries to load `config.json`, call
+Alpaca, read positions, write SQLite `trade_log`, send Discord alerts, create
+orders, or approve execution.
 
 ## Troubleshooting
 

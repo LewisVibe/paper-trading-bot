@@ -353,6 +353,39 @@ Cross-references:
 - **Allowed commands:** None.
 - **Stop condition:** Refuse to schedule paper-order tests, slow SMA paper execution, normal bot execution, or any future order-capable command.
 
+### Task: Plan Hermes cron for market monitor reports
+- **Purpose:** Document a future Hermes cron path for monitoring-only, chat-delivered market monitor refresh reports on the VPS.
+- **Risk level:** Medium docs/report planning only; scheduling is not approved.
+- **Allowed files:**
+  - `README.md`
+  - `docs/CURRENT_STATE.md`
+  - `docs/VPS_SETUP_CHECKLIST.md`
+  - `docs/HERMES_WORKFLOW.md`
+  - `docs/HERMES_TASK_BOARD.md`
+- **Forbidden files/areas:**
+  - Python code
+  - Task Scheduler changes
+  - Hermes cron job creation
+  - config/secrets/logs/databases/generated outputs
+  - Alpaca/order/position/SQLite `trade_log`/Discord alert logic
+- **Candidate future command only:**
+  ```bat
+  cd /d C:\dev\paper-trading-bot
+  .venv\Scripts\python.exe bot.py --refresh-market-monitor
+  ```
+- **Preferred scheduler:** Hermes cron once Hermes runs on the VPS. Windows Task Scheduler may be used only to start or keep the Hermes gateway running on boot, not for execution-capable trading commands.
+- **Mode:** Prefer no-agent mode for deterministic commands where possible.
+- **Prerequisites before scheduling review:**
+  - `python scripts\verify_repo_safety.py`
+  - `python bot.py --market-monitor-scheduling-readiness-report`
+  - Manual successful VPS run of `python bot.py --refresh-market-monitor`
+  - Confirmation generated CSV/cache files remain ignored
+- **Never schedule:**
+  - `python bot.py`
+  - `python bot.py --paper-order-test ...`
+  - `python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper`
+- **Stop condition:** Stop if the plan creates schedules, approves scheduling, approves execution, or any candidate command tries to load `config.json`, call Alpaca, read positions, write SQLite `trade_log`, send Discord alerts, or create orders.
+
 ### Task: Move high-risk execution code out of `bot.py`
 - **Purpose:** Refactor high-risk execution internals.
 - **Risk level:** High; explicitly "should not move yet" in refactor inventory.
