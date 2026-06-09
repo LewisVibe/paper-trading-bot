@@ -12,14 +12,16 @@ Cross-references:
 ## 1. Safe now
 
 ### Task: Documentation safety alignment review
-- **Purpose:** Compare `HERMES_WORKFLOW.md`, `CODEX_WORKFLOW.md`, `CURRENT_STATE.md`, and VPS/refactor docs for inconsistent safety wording.
+- **Purpose:** Compare the workflow and safety docs explicitly named by the user for inconsistent safety wording. Common candidates are `HERMES_WORKFLOW.md`, `HERMES_TASK_BOARD.md`, `CODEX_WORKFLOW.md`, `CURRENT_STATE.md`, VPS checklist docs, and refactor inventory docs.
 - **Risk level:** Low / docs-only.
 - **Allowed files:**
+  - The docs explicitly named by the user.
   - `docs/HERMES_WORKFLOW.md`
+  - `docs/HERMES_TASK_BOARD.md`
   - `docs/CODEX_WORKFLOW.md`
   - `docs/CURRENT_STATE.md`
-  - `docs/V2_REFACTOR_INVENTORY.md`
-  - `docs/VPS_SETUP_CHECKLIST.md`
+  - `docs/V2_REFACTOR_INVENTORY.md` only if explicitly scoped.
+  - `docs/VPS_SETUP_CHECKLIST.md` only if explicitly scoped.
 - **Forbidden files:**
   - `config.json`
   - `.env`
@@ -59,10 +61,11 @@ Cross-references:
 - **Stop condition:** Stop if asked to create schedules, cron jobs, Task Scheduler entries, or automation.
 
 ### Task: Report-back template standardization
-- **Purpose:** Make Hermes/Codex report-back formats consistent: files changed, verification, Python changed, execution paths changed, secrets touched.
+- **Purpose:** Make Hermes/Codex report-back formats consistent: files changed, verification, commands or execution paths changed, Python changed, and secrets/generated artefacts touched.
 - **Risk level:** Low / docs-only.
 - **Allowed files:**
   - `docs/HERMES_WORKFLOW.md`
+  - `docs/HERMES_TASK_BOARD.md`
   - `docs/CODEX_WORKFLOW.md`
 - **Forbidden files:**
   - Source code
@@ -70,6 +73,42 @@ Cross-references:
   - secrets/config/logs/databases
 - **Allowed commands:** None by default.
 - **Stop condition:** Stop if implementation changes are requested as part of wording cleanup.
+
+### Task: Codex auto-commit policy update
+- **Purpose:** Document when Codex may commit and push small low-risk changes by itself, and when it must stop for review.
+- **Risk level:** Low / docs-only.
+- **Allowed files:**
+  - `docs/CODEX_WORKFLOW.md`
+  - `docs/HERMES_WORKFLOW.md`
+  - `docs/HERMES_TASK_BOARD.md`
+  - `docs/CURRENT_STATE.md`
+  - `docs/V2_ROADMAP.md`
+- **Forbidden files:**
+  - Python code
+  - `config.json`
+  - `.env`
+  - generated CSV/log/database/chart outputs
+  - auth/token/key files
+- **Allowed commands:** `python scripts\verify_repo_safety.py` before any commit or push.
+- **Stop condition:** Stop instead of committing or pushing if Python code changes, generated files appear, repo safety fails, execution/scheduling/config defaults are touched, or secrets/config are encountered.
+
+### Task: Staged paper-monitoring roadmap
+- **Purpose:** Plan movement toward more operational paper monitoring with more liquid U.S. stocks/ETFs and more frequent checks, while keeping execution separate and manually reviewed.
+- **Risk level:** Low / docs-only planning.
+- **Allowed files:**
+  - `docs/CODEX_WORKFLOW.md`
+  - `docs/HERMES_WORKFLOW.md`
+  - `docs/HERMES_TASK_BOARD.md`
+  - `docs/CURRENT_STATE.md`
+  - `docs/V2_ROADMAP.md`
+- **Forbidden files:**
+  - Python code
+  - `config.json`
+  - scheduling files
+  - generated outputs
+  - logs/databases/secrets
+- **Allowed commands:** None by default. If committing or handing off, run `python scripts\verify_repo_safety.py`.
+- **Stop condition:** Stop if the plan starts adding loops, cron jobs, order workflows, config default changes, or execution-capable automation.
 
 ## 2. Needs ChatGPT review
 

@@ -135,6 +135,8 @@ Repository safety:
 - `python scripts\verify_repo_safety.py` checks tracked and staged dangerous files, required `.gitignore` patterns, and repository hygiene before commits or pushes.
 - It is included in the baseline verifier.
 - Local repo safety passed.
+- Codex may auto-commit and push only small low-risk changes after repo safety passes and after confirming no Python execution paths, generated artefacts, secrets, config defaults, scheduling, or execution behaviour changed.
+- Codex must not auto-push medium/high-risk trading changes, order-path changes, normal bot runtime changes, execution command-routing changes, risk/kill-switch enforcement changes, generated outputs, or anything involving credentials/secrets.
 
 Deployment readiness and VPS planning:
 
@@ -222,23 +224,42 @@ Any future execution work must require preview, risk checks, consensus/decision 
 
 Current promoted review and portfolio risk policy both show no execution approval. AAPL and SPY remain blocked by strategy disagreement; MSFT remains no-action/unanimous flat.
 
+## Staged Paper Monitoring Direction
+
+The next operational direction is to improve paper monitoring without approving automated order execution.
+
+A. Expand ticker universe in research/preview only.
+B. Add or improve ticker-universe validation/reporting.
+C. Add more frequent market monitoring as preview/display/report only.
+D. Add loop/cron support only after single-run commands are stable.
+E. Add lockfile/no-overlap protection before any repeated run.
+F. Add portfolio risk controls before expanded paper execution.
+G. Keep paper execution separate, explicit, confirmation-gated, and manually reviewed.
+H. Do not treat monitoring signals as execution approval.
+
+More frequent price checks do not mean more frequent trades. Daily strategies should not overtrade intraday noise unless a separate intraday strategy is researched and validated. For now, frequent monitoring should mean observe/report/preview, not submit orders. Any execution-capable loop or scheduled order workflow remains not approved.
+
+More tickers should start with liquid U.S. stocks and ETFs only. Add universe expansion to research/preview first. Add liquidity, price, and duplicate validation before any execution review. More tickers require portfolio risk limits, max open positions, max notional exposure, and concentration checks before paper execution.
+
 ## Recommended Next Steps
 
 A. Keep the current research state stable and avoid adding more strategy complexity.
 
-B. Improve reporting/charting around drawdown periods if useful.
+B. Expand liquid U.S. stock/ETF monitoring only through research/preview and ticker-universe validation first.
 
-C. Consider small refactors only after focused verifiers exist.
+C. Improve reporting/charting around drawdown periods if useful.
 
-D. Only later consider paper execution for one conservative strategy after preview, risk checks, consensus/decision review, portfolio risk policy review, and explicit confirmation.
+D. Consider small refactors only after focused verifiers exist.
 
-E. Crypto: keep monitoring BTC and ETH; do not add execution.
+E. Only later consider paper execution for one conservative strategy after preview, risk checks, consensus/decision review, portfolio risk policy review, and explicit confirmation.
 
-F. If adding new crypto symbols later, add one at a time and label each as research-only.
+F. Crypto: keep monitoring BTC and ETH; do not add execution.
 
-G. Run repo safety before commits/pushes and deployment readiness before any future VPS handoff.
+G. If adding new crypto symbols later, add one at a time and label each as research-only.
 
-H. Do not schedule execution-capable commands. Use `docs/VPS_SETUP_CHECKLIST.md` only as future setup guidance.
+H. Run repo safety before commits/pushes and deployment readiness before any future VPS handoff.
+
+I. Do not schedule execution-capable commands. Use `docs/VPS_SETUP_CHECKLIST.md` only as future setup guidance.
 
 ## Useful Command Groups
 

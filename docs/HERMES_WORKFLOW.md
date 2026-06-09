@@ -63,6 +63,8 @@ Account IDs are secret/sensitive and must not be read, printed, committed, paste
 
 Hermes should avoid generated CSV and chart outputs by default. Hermes may inspect specific generated outputs only when the user explicitly scopes a report, preview, display, charting, or analysis task that requires those exact outputs. Generated research, preview, report, dashboard, CSV, or chart outputs must never be treated as execution approval.
 
+For documentation and command-safety reviews, Hermes should follow the user's explicit file scope. If a task names specific docs, read only those docs unless the user separately expands the scope.
+
 Before any commit or handoff, Hermes should ensure private configs, generated data, logs, charts, databases, and secret-like files are not tracked or staged.
 
 ## 4. Lower-Risk Command Categories
@@ -191,8 +193,8 @@ For docs-only tasks, report:
 
 - Files changed.
 - Verification run and result, if any.
+- Whether commands or execution paths changed.
 - Whether Python code changed.
-- Whether execution paths changed.
 - Whether secrets or generated artefacts were touched.
 
 For code or refactor tasks, also report:
@@ -235,7 +237,41 @@ For execution-related tasks, Hermes should stop and ask the user before proceedi
 
 Codex/ChatGPT output should be treated as a proposal until verified locally with safe, scoped checks.
 
-## 9. Recommended Staged Workflow
+## 9. Codex Commit/Push Policy
+
+Hermes may ask Codex to commit and push small low-risk changes by itself only when the task remains low risk. Examples include docs-only updates, typo or formatting fixes, workflow notes, README or documentation clarifications, non-execution report text changes, and small verifier-script or documentation changes that do not touch trading logic.
+
+Before Codex auto-commits or pushes, it must:
+
+- Run `python scripts\verify_repo_safety.py`.
+- Run any focused verifier relevant to the task if code changed.
+- Confirm no Python execution paths changed unless explicitly scoped.
+- Confirm no secrets or generated artefacts were touched.
+- Show a `git status` summary in its report.
+- Use a clear commit message.
+
+Codex must not auto-push Alpaca/order submission changes, normal `python bot.py` runtime behaviour changes, slow SMA paper execution changes, paper-order smoke test changes, command-routing changes touching execution paths, config default changes, scheduling/cron/loop changes, risk or kill-switch enforcement changes, generated CSV/log/database/chart changes, or anything involving credentials or secrets.
+
+For medium/high-risk changes, Codex may make a local branch or local commit only if explicitly asked, but must not push until the user reviews the diff and approves.
+
+## 10. Staged Paper-Monitoring Roadmap
+
+Hermes should steer operational paper-trading work through these stages:
+
+A. Expand ticker universe in research/preview only.
+B. Add or improve ticker-universe validation and reporting.
+C. Add more frequent market monitoring as preview/display/report only.
+D. Add loop/cron support only after single-run commands are stable.
+E. Add lockfile/no-overlap protection before any repeated run.
+F. Add portfolio risk controls before expanded paper execution.
+G. Keep paper execution separate, explicit, confirmation-gated, and manually reviewed.
+H. Do not treat monitoring signals as execution approval.
+
+More frequent price checks do not mean more frequent trades. Daily strategies should not overtrade intraday noise unless a separate intraday strategy is researched and validated. For now, frequent monitoring should mean observe/report/preview, not submit orders. Any execution-capable loop or scheduled order workflow remains not approved.
+
+More tickers should start with liquid U.S. stocks and ETFs only. Add universe expansion to research/preview first, and add liquidity, price, and duplicate validation before execution. More tickers require portfolio risk limits, max open positions, max notional exposure, and concentration checks before paper execution.
+
+## 11. Recommended Staged Workflow
 
 Use this staged workflow by default:
 
@@ -266,7 +302,7 @@ Use this staged workflow by default:
    - Do not run normal `python bot.py` unless the user explicitly confirms the exact command and scope.
    - Do not schedule any execution-capable command.
 
-## 10. Stop Conditions
+## 12. Stop Conditions
 
 Hermes should stop and ask before continuing if it encounters:
 
