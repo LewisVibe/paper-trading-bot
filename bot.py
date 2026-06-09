@@ -149,6 +149,7 @@ from trading_bot.runners.research_reports import (
     run_paper_kill_switch_gate_report_command,
     run_paper_kill_switch_readiness_report_command,
     run_normal_bot_execution_policy_report_command,
+    run_market_monitor_snapshot_command,
     run_plot_etf_defensive_comparison_command,
     run_portfolio_risk_policy_report_command,
     run_refresh_promoted_review_command,
@@ -3938,6 +3939,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a research-only larger ticker universe readiness report without execution.",
     )
     parser.add_argument(
+        "--market-monitor-snapshot",
+        action="store_true",
+        help="Create a research-only intraday market monitoring snapshot without execution.",
+    )
+    parser.add_argument(
         "--preview-promoted-strategies",
         action="store_true",
         help="Preview current signals for promoted research candidates without trading.",
@@ -4210,6 +4216,8 @@ def main() -> int:
         return run_crypto_research_state_report_command()
     if args.ticker_universe_readiness_report:
         return run_ticker_universe_readiness_report_command()
+    if args.market_monitor_snapshot:
+        return run_market_monitor_snapshot_command()
     if args.show_promoted_actions:
         return run_show_promoted_actions_command()
     if args.promoted_risk_preview:
