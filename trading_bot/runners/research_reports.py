@@ -39,6 +39,7 @@ from trading_bot.research.market_monitor_snapshot import (
     generate_market_monitor_quality_report,
     show_market_monitor_file,
 )
+from trading_bot.research.market_monitor_scheduling import generate_market_monitor_scheduling_readiness_report
 from trading_bot.research.paper_kill_switch_gate import generate_paper_kill_switch_gate_report
 from trading_bot.research.paper_kill_switch import generate_paper_kill_switch_readiness_report
 from trading_bot.research.paper_execution_protection import generate_paper_execution_protection_report
@@ -380,6 +381,17 @@ def print_market_monitor_refresh_summary(step_rows: list[tuple[str, str, str]]) 
     for step_name, status, output_path in step_rows:
         print(f"- {step_name}: {status} ({output_path})")
     print("Warning: market monitor refresh is monitoring/report/display only and does not approve orders.")
+
+
+def run_market_monitor_scheduling_readiness_report_command() -> int:
+    try:
+        result = generate_market_monitor_scheduling_readiness_report()
+    except Exception as exc:
+        print(f"Market monitor scheduling readiness report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
 
 
 def run_build_research_dashboard_command() -> int:

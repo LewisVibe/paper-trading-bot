@@ -150,6 +150,7 @@ from trading_bot.runners.research_reports import (
     run_paper_kill_switch_readiness_report_command,
     run_normal_bot_execution_policy_report_command,
     run_market_monitor_snapshot_command,
+    run_market_monitor_scheduling_readiness_report_command,
     run_market_monitor_quality_report_command,
     run_plot_etf_defensive_comparison_command,
     run_refresh_market_monitor_command,
@@ -3962,6 +3963,11 @@ def parse_args() -> argparse.Namespace:
         help="Refresh the safe market monitor report/display chain without execution.",
     )
     parser.add_argument(
+        "--market-monitor-scheduling-readiness-report",
+        action="store_true",
+        help="Create a report-only scheduling readiness audit for market monitor refresh.",
+    )
+    parser.add_argument(
         "--preview-promoted-strategies",
         action="store_true",
         help="Preview current signals for promoted research candidates without trading.",
@@ -4242,6 +4248,8 @@ def main() -> int:
         return run_market_monitor_quality_report_command()
     if args.refresh_market_monitor:
         return run_refresh_market_monitor_command()
+    if args.market_monitor_scheduling_readiness_report:
+        return run_market_monitor_scheduling_readiness_report_command()
     if args.show_promoted_actions:
         return run_show_promoted_actions_command()
     if args.promoted_risk_preview:

@@ -248,6 +248,7 @@ Ticker universe readiness reporting:
 - `python bot.py --show-market-monitor` reads `data/market_monitor_snapshot.csv` only and displays a compact terminal summary without refreshing market data.
 - `python bot.py --market-monitor-quality-report` reads `data/market_monitor_snapshot.csv` only and writes `data/market_monitor_quality_report.csv`.
 - `python bot.py --refresh-market-monitor` runs the safe monitoring chain in order: ticker universe readiness, market monitor snapshot, saved display, and quality report.
+- `python bot.py --market-monitor-scheduling-readiness-report` writes `data/market_monitor_scheduling_readiness_report.csv` for future manual scheduling review only.
 - It uses a fixed research/report-only candidate universe of broad ETFs, sector ETFs, and large liquid U.S. stocks; it does not read `config.json`.
 - It labels obvious ETFs/stocks, validates duplicate tickers, includes conservative readiness gates, and marks `execution_approved=False` and `paper_execution_approved=False` for all rows.
 - It may attempt recent daily yfinance data enrichment for latest close/volume, but market-data failures are captured in report rows instead of approving or blocking execution.
@@ -255,6 +256,7 @@ Ticker universe readiness reporting:
 - The saved display command does not call yfinance, Alpaca, paper positions, SQLite `trade_log`, or Discord alerts; it only reads the saved CSV and warns if execution approval flags are not false.
 - The saved quality report checks required columns, row count, duplicates, missing prices/timestamps, stale timestamps, data errors, abnormal intraday moves, and monitoring/research/preview/execution approval flags. It does not refresh yfinance data.
 - The refresh command is a convenience wrapper for the same report/display paths. It prints a step summary, stops conservatively on failure, and does not connect monitoring outputs to strategies or execution.
+- The scheduling readiness report statically audits the refresh command, command inventory, ignored generated outputs, and safety boundaries. It does not create Windows Task Scheduler tasks, add cron/loop execution, approve scheduling, or approve execution.
 - It does not call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, change strategy rules, or approve execution.
 - More tickers and more frequent price checks do not mean more trades. Frequent monitoring should start as preview/display/report only, and daily strategies should not become intraday trading strategies without separate research.
 
@@ -324,6 +326,7 @@ python bot.py --market-monitor-snapshot
 python bot.py --show-market-monitor
 python bot.py --market-monitor-quality-report
 python bot.py --refresh-market-monitor
+python bot.py --market-monitor-scheduling-readiness-report
 python bot.py --deployment-readiness-report
 python bot.py --portfolio-risk-policy-report
 python bot.py --show-portfolio-risk-policy

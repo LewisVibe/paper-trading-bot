@@ -510,6 +510,14 @@ python bot.py --refresh-market-monitor
 
 This runs the ticker universe readiness report, market monitor snapshot, saved market monitor display, and market monitor quality report in order. It prints a compact step summary and writes the same generated CSV outputs as the individual report commands. It does not change normal `python bot.py` behavior, load `config.json`, call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, schedule anything, connect monitoring to strategies, or approve execution.
 
+Create a report-only scheduling readiness audit for the market monitor refresh chain:
+
+```powershell
+python bot.py --market-monitor-scheduling-readiness-report
+```
+
+This writes `data/market_monitor_scheduling_readiness_report.csv` and checks whether the existing refresh chain is safe to consider for a future manual scheduling review. It does not create Windows Task Scheduler tasks, add cron/loop execution, approve scheduling, load `config.json`, call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, connect monitoring output to strategy execution, or approve execution.
+
 Create a research-only portfolio risk policy audit before any future execution discussion:
 
 ```powershell
