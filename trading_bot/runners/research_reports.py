@@ -330,6 +330,58 @@ def run_market_monitor_quality_report_command() -> int:
     return 0
 
 
+def run_refresh_market_monitor_command() -> int:
+    from trading_bot.market_data import configure_yfinance_cache_location
+
+    configure_yfinance_cache_location(Path("data") / "yfinance_cache")
+    step_rows: list[tuple[str, str, str]] = []
+
+    try:
+        readiness_result = generate_ticker_universe_readiness_report()
+    except Exception as exc:
+        step_rows.append(("ticker_universe_readiness_report", "failed", "data/ticker_universe_readiness_report.csv"))
+        print_market_monitor_refresh_summary(step_rows)
+        print(f"Market monitor refresh failed: ticker universe readiness report failed: {exc}", file=sys.stderr)
+        return 1
+    step_rows.append(("ticker_universe_readiness_report", "ok", str(readiness_result.output_path)))
+
+    try:
+        snapshot_result = generate_market_monitor_snapshot()
+    except Exception as exc:
+        step_rows.append(("market_monitor_snapshot", "failed", "data/market_monitor_snapshot.csv"))
+        print_market_monitor_refresh_summary(step_rows)
+        print(f"Market monitor refresh failed: market monitor snapshot failed: {exc}", file=sys.stderr)
+        return 1
+    step_rows.append(("market_monitor_snapshot", "ok", str(snapshot_result.output_path)))
+
+    show_status, _show_lines = show_market_monitor_file()
+    if show_status != 0:
+        step_rows.append(("show_market_monitor", "failed", "data/market_monitor_snapshot.csv"))
+        print_market_monitor_refresh_summary(step_rows)
+        print("Market monitor refresh failed: saved snapshot display failed.", file=sys.stderr)
+        return 1
+    step_rows.append(("show_market_monitor", "ok", "data/market_monitor_snapshot.csv"))
+
+    try:
+        quality_result = generate_market_monitor_quality_report()
+    except Exception as exc:
+        step_rows.append(("market_monitor_quality_report", "failed", "data/market_monitor_quality_report.csv"))
+        print_market_monitor_refresh_summary(step_rows)
+        print(f"Market monitor refresh failed: quality report failed: {exc}", file=sys.stderr)
+        return 1
+    step_rows.append(("market_monitor_quality_report", "ok", str(quality_result.output_path)))
+
+    print_market_monitor_refresh_summary(step_rows)
+    return 0
+
+
+def print_market_monitor_refresh_summary(step_rows: list[tuple[str, str, str]]) -> None:
+    print("Market monitor refresh step summary:")
+    for step_name, status, output_path in step_rows:
+        print(f"- {step_name}: {status} ({output_path})")
+    print("Warning: market monitor refresh is monitoring/report/display only and does not approve orders.")
+
+
 def run_build_research_dashboard_command() -> int:
     try:
         result = build_research_dashboard()

@@ -53,6 +53,7 @@ REQUIRED_COMMANDS = [
     "--market-monitor-snapshot",
     "--show-market-monitor",
     "--market-monitor-quality-report",
+    "--refresh-market-monitor",
     "--preview-promoted-strategies",
     "--preview-promoted-actions",
     "--use-paper-positions-readonly",
