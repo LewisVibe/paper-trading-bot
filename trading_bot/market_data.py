@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import yfinance as yf
 
@@ -11,11 +12,17 @@ from trading_bot.config import AppConfig
 
 def configure_yfinance_cache(config: AppConfig, logger: logging.Logger) -> None:
     cache_dir = config.database_path.parent / "yfinance_cache"
+    configure_yfinance_cache_location(cache_dir, logger)
+
+
+def configure_yfinance_cache_location(cache_dir: Path | str, logger: logging.Logger | None = None) -> None:
+    cache_dir = Path(cache_dir)
     cache_dir.mkdir(parents=True, exist_ok=True)
     try:
         yf.set_tz_cache_location(str(cache_dir))
     except AttributeError:
-        logger.warning("Installed yfinance version does not support custom cache location.")
+        if logger is not None:
+            logger.warning("Installed yfinance version does not support custom cache location.")
 
 
 def download_close_prices(config: AppConfig, ticker: str):

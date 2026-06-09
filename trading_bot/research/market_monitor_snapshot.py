@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from trading_bot.market_data import configure_yfinance_cache_location
 from trading_bot.research.ticker_universe_readiness import DEFAULT_TICKER_UNIVERSE_CANDIDATES
 
 
@@ -46,6 +47,7 @@ def generate_market_monitor_snapshot(
     output_filename: str = "data/market_monitor_snapshot.csv",
 ) -> MarketMonitorSnapshotResult:
     root = Path(root_dir)
+    configure_yfinance_cache_location(root / "data" / "yfinance_cache")
     created_at = datetime.now(timezone.utc).isoformat()
     market_data = fetch_intraday_market_data(
         [ticker for ticker, _, _ in DEFAULT_TICKER_UNIVERSE_CANDIDATES]
