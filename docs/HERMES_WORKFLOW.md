@@ -14,7 +14,7 @@ The project can:
 - Build saved reports, previews, displays, and dashboards from research outputs.
 - Log normal bot activity to SQLite when normal bot paths run.
 - Send optional Discord alerts in normal alert paths.
-- Submit Alpaca paper orders only through explicitly reviewed paper-execution paths.
+- Alpaca paper orders can only be submitted through explicitly reviewed, manually confirmed, high-risk paper-execution paths; this document does not approve running them.
 
 Hermes should treat the repo as paper-only, dry-run-first, and safety-critical even when a task is described as simple.
 
@@ -25,14 +25,17 @@ The project is paper-only.
 Hermes must preserve these boundaries:
 
 - Never add, suggest, or enable live trading.
-- Keep `dry_run` defaulting to `true`.
-- Keep `alpaca.paper` defaulting to `true`.
-- Keep `allow_shorting` defaulting to `false`.
+- `dry_run` defaults to `true` and must not be weakened.
+- `alpaca.paper` must remain `true`; the bot refuses non-paper Alpaca mode.
+- `allow_shorting` defaults to `false` and must not be weakened.
 - Never weaken paper-only checks.
 - Never connect research strategies directly to execution.
-- Never treat research, report, preview, display, or dashboard rows as execution approval.
+- Never treat research, preview, report, display, dashboard, generated CSV, or generated chart outputs as execution approval.
 - Never schedule execution-capable commands.
 - Treat Alpaca order submission, paper-order smoke tests, slow SMA paper execution, and normal bot order/logging paths as high risk.
+- Deployment readiness and VPS checklist docs are audits/planning aids only; they do not deploy, schedule, or approve execution.
+- Portfolio risk policy reporting is not runtime enforcement and does not approve execution.
+- Short execution, short preview, crypto shorting, margin, leverage, and Alpaca crypto orders are not approved.
 
 Any execution-related work requires explicit user confirmation, narrow scope, and a reviewed safety plan before action.
 
@@ -48,19 +51,23 @@ Hermes must not read, print, summarize, inspect, commit, upload, or expose:
 - Discord bot tokens
 - Telegram bot tokens
 - OpenAI, Codex, Hermes, or other auth files
-- Account IDs
+- Account IDs, which are secret/sensitive
 - Logs that may contain secrets
 - SQLite database files, including trade databases
-- Generated CSV outputs unless the user explicitly asks later
-- Generated chart outputs unless the user explicitly asks later
+- Generated CSV outputs by default, unless the user explicitly scopes a report, preview, display, charting, or analysis task that requires specific generated outputs
+- Generated chart outputs by default, unless the user explicitly scopes a report, preview, display, charting, or analysis task that requires specific generated outputs
 - Virtual environment files
 - Any file with secret-like names or auth/token/key material
 
+Account IDs are secret/sensitive and must not be read, printed, committed, pasted, or exposed.
+
+Hermes should avoid generated CSV and chart outputs by default. Hermes may inspect specific generated outputs only when the user explicitly scopes a report, preview, display, charting, or analysis task that requires those exact outputs. Generated research, preview, report, dashboard, CSV, or chart outputs must never be treated as execution approval.
+
 Before any commit or handoff, Hermes should ensure private configs, generated data, logs, charts, databases, and secret-like files are not tracked or staged.
 
-## 4. Safe Command Categories
+## 4. Lower-Risk Command Categories
 
-Safe does not mean automatic. These categories are generally lower risk when the user permits commands, but Hermes should still check task scope first.
+Lower risk does not mean automatic or approved for scheduling. These categories are generally lower risk when the user permits commands, but Hermes should still check task scope first.
 
 ### Research Commands
 
