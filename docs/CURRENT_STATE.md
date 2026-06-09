@@ -241,6 +241,15 @@ More frequent price checks do not mean more frequent trades. Daily strategies sh
 
 More tickers should start with liquid U.S. stocks and ETFs only. Add universe expansion to research/preview first. Add liquidity, price, and duplicate validation before any execution review. More tickers require portfolio risk limits, max open positions, max notional exposure, and concentration checks before paper execution.
 
+Ticker universe readiness reporting:
+
+- `python bot.py --ticker-universe-readiness-report` writes `data/ticker_universe_readiness_report.csv`.
+- It uses a fixed research/report-only candidate universe of broad ETFs, sector ETFs, and large liquid U.S. stocks; it does not read `config.json`.
+- It labels obvious ETFs/stocks, validates duplicate tickers, includes conservative readiness gates, and marks `execution_approved=False` and `paper_execution_approved=False` for all rows.
+- It may attempt recent daily yfinance data enrichment for latest close/volume, but market-data failures are captured in report rows instead of approving or blocking execution.
+- It does not call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, change strategy rules, or approve execution.
+- More tickers do not mean more trades. Frequent monitoring should start as preview/display/report only.
+
 ## Recommended Next Steps
 
 A. Keep the current research state stable and avoid adding more strategy complexity.
@@ -302,6 +311,7 @@ Workflow, deployment, and risk policy checks:
 
 ```text
 python scripts\verify_repo_safety.py
+python bot.py --ticker-universe-readiness-report
 python bot.py --deployment-readiness-report
 python bot.py --portfolio-risk-policy-report
 python bot.py --show-portfolio-risk-policy

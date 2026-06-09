@@ -49,6 +49,7 @@ REQUIRED_COMMANDS = [
     "--preview-crypto-signals",
     "--show-crypto-monitor",
     "--crypto-research-state-report",
+    "--ticker-universe-readiness-report",
     "--preview-promoted-strategies",
     "--preview-promoted-actions",
     "--use-paper-positions-readonly",

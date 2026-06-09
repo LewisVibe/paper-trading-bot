@@ -50,6 +50,7 @@ from trading_bot.research.research_dashboard import build_research_dashboard
 from trading_bot.research.short_hedge import run_short_hedge_backtest_files
 from trading_bot.research.short_selling_readiness import generate_short_selling_readiness_report
 from trading_bot.research.short_strategy_lab import run_short_strategy_lab_files
+from trading_bot.research.ticker_universe_readiness import generate_ticker_universe_readiness_report
 from trading_bot.research.vol_managed_etf import run_vol_managed_etf_backtest_files
 from trading_bot.research.vol_managed_etf_robustness import generate_vol_managed_etf_robustness_report
 
@@ -278,6 +279,17 @@ def run_execution_eligibility_report_command() -> int:
         result = generate_execution_eligibility_report()
     except Exception as exc:
         print(f"Execution eligibility report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
+
+
+def run_ticker_universe_readiness_report_command() -> int:
+    try:
+        result = generate_ticker_universe_readiness_report()
+    except Exception as exc:
+        print(f"Ticker universe readiness report failed: {exc}", file=sys.stderr)
         return 1
     for line in result.summary_lines:
         print(line)

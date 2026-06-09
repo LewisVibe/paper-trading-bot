@@ -161,6 +161,7 @@ from trading_bot.runners.research_reports import (
     run_short_hedge_backtest_command,
     run_short_selling_readiness_report_command,
     run_short_strategy_lab_command,
+    run_ticker_universe_readiness_report_command,
     run_vol_managed_etf_backtest_command,
     run_vol_managed_etf_robustness_command,
 )
@@ -3932,6 +3933,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a saved-data-only crypto research checkpoint report.",
     )
     parser.add_argument(
+        "--ticker-universe-readiness-report",
+        action="store_true",
+        help="Create a research-only larger ticker universe readiness report without execution.",
+    )
+    parser.add_argument(
         "--preview-promoted-strategies",
         action="store_true",
         help="Preview current signals for promoted research candidates without trading.",
@@ -4202,6 +4208,8 @@ def main() -> int:
         return run_show_crypto_monitor_command()
     if args.crypto_research_state_report:
         return run_crypto_research_state_report_command()
+    if args.ticker_universe_readiness_report:
+        return run_ticker_universe_readiness_report_command()
     if args.show_promoted_actions:
         return run_show_promoted_actions_command()
     if args.promoted_risk_preview:
