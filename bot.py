@@ -150,6 +150,7 @@ from trading_bot.runners.research_reports import (
     run_paper_kill_switch_readiness_report_command,
     run_normal_bot_execution_policy_report_command,
     run_market_monitor_snapshot_command,
+    run_market_monitor_quality_report_command,
     run_plot_etf_defensive_comparison_command,
     run_show_market_monitor_command,
     run_portfolio_risk_policy_report_command,
@@ -3950,6 +3951,11 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved market monitor snapshot CSV without refreshing data.",
     )
     parser.add_argument(
+        "--market-monitor-quality-report",
+        action="store_true",
+        help="Create a saved-CSV quality report for the market monitor snapshot without refreshing data.",
+    )
+    parser.add_argument(
         "--preview-promoted-strategies",
         action="store_true",
         help="Preview current signals for promoted research candidates without trading.",
@@ -4226,6 +4232,8 @@ def main() -> int:
         return run_market_monitor_snapshot_command()
     if args.show_market_monitor:
         return run_show_market_monitor_command()
+    if args.market_monitor_quality_report:
+        return run_market_monitor_quality_report_command()
     if args.show_promoted_actions:
         return run_show_promoted_actions_command()
     if args.promoted_risk_preview:

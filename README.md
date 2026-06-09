@@ -494,6 +494,14 @@ python bot.py --show-market-monitor
 
 This reads `data/market_monitor_snapshot.csv` only and prints a compact terminal summary of row counts, data status counts, strongest positive/negative intraday moves, and recorded data errors. It does not call yfinance, load `config.json`, call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, schedule anything, or approve execution.
 
+Create a saved-CSV quality report for the market monitor snapshot:
+
+```powershell
+python bot.py --market-monitor-quality-report
+```
+
+This reads `data/market_monitor_snapshot.csv` only and writes `data/market_monitor_quality_report.csv`. It checks required columns, row count, duplicate tickers, missing prices or timestamps, stale timestamps, data errors, abnormal intraday moves, and the non-execution safety flags. It does not refresh yfinance data, load `config.json`, call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, schedule anything, or approve execution.
+
 Create a research-only portfolio risk policy audit before any future execution discussion:
 
 ```powershell

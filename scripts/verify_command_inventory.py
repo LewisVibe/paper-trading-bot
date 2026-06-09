@@ -52,6 +52,7 @@ REQUIRED_COMMANDS = [
     "--ticker-universe-readiness-report",
     "--market-monitor-snapshot",
     "--show-market-monitor",
+    "--market-monitor-quality-report",
     "--preview-promoted-strategies",
     "--preview-promoted-actions",
     "--use-paper-positions-readonly",

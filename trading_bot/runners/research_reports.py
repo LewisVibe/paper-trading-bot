@@ -36,6 +36,7 @@ from trading_bot.research.etf_defensive_drawdowns import generate_etf_defensive_
 from trading_bot.research.etf_rotation_robustness import generate_etf_rotation_robustness_report
 from trading_bot.research.market_monitor_snapshot import (
     generate_market_monitor_snapshot,
+    generate_market_monitor_quality_report,
     show_market_monitor_file,
 )
 from trading_bot.research.paper_kill_switch_gate import generate_paper_kill_switch_gate_report
@@ -316,6 +317,17 @@ def run_show_market_monitor_command() -> int:
     for line in lines:
         print(line)
     return status_code
+
+
+def run_market_monitor_quality_report_command() -> int:
+    try:
+        result = generate_market_monitor_quality_report()
+    except Exception as exc:
+        print(f"Market monitor quality report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
 
 
 def run_build_research_dashboard_command() -> int:

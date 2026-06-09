@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 from collections import Counter
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -31,12 +31,36 @@ MARKET_MONITOR_SNAPSHOT_COLUMNS = [
     "notes",
 ]
 
+MARKET_MONITOR_QUALITY_COLUMNS = [
+    "created_at",
+    "check_name",
+    "check_status",
+    "ticker",
+    "value",
+    "blocked",
+    "details",
+    "monitoring_only",
+    "research_only",
+    "preview_only",
+    "execution_approved",
+    "paper_execution_approved",
+]
+
 INTRADAY_PERIOD = "5d"
 INTRADAY_INTERVAL = "15m"
+STALE_TIMESTAMP_MINUTES = 60
+ABNORMAL_INTRADAY_MOVE_PCT = 5.0
 
 
 @dataclass
 class MarketMonitorSnapshotResult:
+    output_path: Path
+    rows: list[dict[str, Any]]
+    summary_lines: list[str]
+
+
+@dataclass
+class MarketMonitorQualityReportResult:
     output_path: Path
     rows: list[dict[str, Any]]
     summary_lines: list[str]
@@ -62,6 +86,85 @@ def generate_market_monitor_snapshot(
         rows=rows,
         summary_lines=build_market_monitor_snapshot_summary(rows, output_path),
     )
+
+
+def generate_market_monitor_quality_report(
+    root_dir: Path | str = ".",
+    snapshot_filename: str = "data/market_monitor_snapshot.csv",
+    output_filename: str = "data/market_monitor_quality_report.csv",
+) -> MarketMonitorQualityReportResult:
+    root = Path(root_dir)
+    created_at = datetime.now(timezone.utc).isoformat()
+    snapshot_path = root / snapshot_filename
+    output_path = root / output_filename
+    rows = build_market_monitor_quality_rows(created_at, snapshot_path)
+    write_market_monitor_quality_report(output_path, rows)
+    return MarketMonitorQualityReportResult(
+        output_path=output_path,
+        rows=rows,
+        summary_lines=build_market_monitor_quality_summary(rows, output_path),
+    )
+
+
+def build_market_monitor_quality_rows(created_at: str, snapshot_path: Path) -> list[dict[str, Any]]:
+    quality_rows: list[dict[str, Any]] = []
+    if not snapshot_path.exists():
+        quality_rows.append(
+            quality_row(
+                created_at,
+                "csv_exists",
+                "error",
+                "",
+                str(snapshot_path),
+                True,
+                "Snapshot CSV is missing. Run `python bot.py --market-monitor-snapshot` first.",
+            )
+        )
+        return quality_rows
+
+    quality_rows.append(
+        quality_row(created_at, "csv_exists", "pass", "", str(snapshot_path), False, "Snapshot CSV exists.")
+    )
+    with snapshot_path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        snapshot_rows = list(reader)
+        fieldnames = reader.fieldnames or []
+
+    missing_columns = [column for column in MARKET_MONITOR_SNAPSHOT_COLUMNS if column not in fieldnames]
+    if missing_columns:
+        quality_rows.append(
+            quality_row(
+                created_at,
+                "required_columns",
+                "error",
+                "",
+                ", ".join(missing_columns),
+                True,
+                "Snapshot CSV is missing required columns.",
+            )
+        )
+    else:
+        quality_rows.append(
+            quality_row(
+                created_at,
+                "required_columns",
+                "pass",
+                "",
+                str(len(MARKET_MONITOR_SNAPSHOT_COLUMNS)),
+                False,
+                "All required snapshot columns are present.",
+            )
+        )
+
+    quality_rows.extend(row_count_quality_rows(created_at, snapshot_rows))
+    quality_rows.extend(duplicate_ticker_quality_rows(created_at, snapshot_rows))
+    quality_rows.extend(missing_value_quality_rows(created_at, snapshot_rows, "latest_close"))
+    quality_rows.extend(missing_value_quality_rows(created_at, snapshot_rows, "latest_timestamp"))
+    quality_rows.extend(stale_timestamp_quality_rows(created_at, snapshot_rows))
+    quality_rows.extend(data_error_quality_rows(created_at, snapshot_rows))
+    quality_rows.extend(abnormal_move_quality_rows(created_at, snapshot_rows))
+    quality_rows.extend(boolean_flag_quality_rows(created_at, snapshot_rows))
+    return quality_rows
 
 
 def build_market_monitor_snapshot_rows(
@@ -97,6 +200,211 @@ def build_market_monitor_snapshot_rows(
             }
         )
     return rows
+
+
+def row_count_quality_rows(created_at: str, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    status = "pass" if rows else "warning"
+    details = "Snapshot contains rows." if rows else "Snapshot CSV has no data rows."
+    return [quality_row(created_at, "row_count", status, "", str(len(rows)), False, details)]
+
+
+def duplicate_ticker_quality_rows(created_at: str, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    ticker_counts = Counter(row.get("ticker", "") for row in rows if row.get("ticker"))
+    duplicate_tickers = [ticker for ticker, count in sorted(ticker_counts.items()) if count > 1]
+    if not duplicate_tickers:
+        return [
+            quality_row(
+                created_at,
+                "duplicate_tickers",
+                "pass",
+                "",
+                "0",
+                False,
+                "No duplicate ticker rows found.",
+            )
+        ]
+    return [
+        quality_row(
+            created_at,
+            "duplicate_tickers",
+            "warning",
+            ticker,
+            str(ticker_counts[ticker]),
+            False,
+            "Duplicate ticker rows should be reviewed before relying on monitoring output.",
+        )
+        for ticker in duplicate_tickers
+    ]
+
+
+def missing_value_quality_rows(
+    created_at: str,
+    rows: list[dict[str, Any]],
+    column_name: str,
+) -> list[dict[str, Any]]:
+    missing_rows = [row for row in rows if not str(row.get(column_name, "")).strip()]
+    if not missing_rows:
+        return [
+            quality_row(
+                created_at,
+                f"missing_{column_name}",
+                "pass",
+                "",
+                "0",
+                False,
+                f"No rows are missing {column_name}.",
+            )
+        ]
+    return [
+        quality_row(
+            created_at,
+            f"missing_{column_name}",
+            "warning",
+            row.get("ticker", ""),
+            "",
+            False,
+            f"Ticker row is missing {column_name}.",
+        )
+        for row in missing_rows
+    ]
+
+
+def stale_timestamp_quality_rows(created_at: str, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    parsed_rows = [
+        (row, parse_timestamp(row.get("latest_timestamp", "")))
+        for row in rows
+        if str(row.get("latest_timestamp", "")).strip()
+    ]
+    parsed_rows = [(row, timestamp) for row, timestamp in parsed_rows if timestamp is not None]
+    if not parsed_rows:
+        return [
+            quality_row(
+                created_at,
+                "stale_timestamps",
+                "warning",
+                "",
+                "no_parseable_timestamps",
+                False,
+                "No parseable timestamps were available for stale-row review.",
+            )
+        ]
+
+    newest_timestamp = max(timestamp for _row, timestamp in parsed_rows)
+    stale_cutoff = newest_timestamp - timedelta(minutes=STALE_TIMESTAMP_MINUTES)
+    stale_rows = [(row, timestamp) for row, timestamp in parsed_rows if timestamp < stale_cutoff]
+    if not stale_rows:
+        return [
+            quality_row(
+                created_at,
+                "stale_timestamps",
+                "pass",
+                "",
+                newest_timestamp.isoformat(),
+                False,
+                f"No timestamps are more than {STALE_TIMESTAMP_MINUTES} minutes older than the newest timestamp.",
+            )
+        ]
+    return [
+        quality_row(
+            created_at,
+            "stale_timestamps",
+            "warning",
+            row.get("ticker", ""),
+            timestamp.isoformat(),
+            False,
+            f"Timestamp is more than {STALE_TIMESTAMP_MINUTES} minutes older than the newest timestamp {newest_timestamp.isoformat()}.",
+        )
+        for row, timestamp in stale_rows
+    ]
+
+
+def data_error_quality_rows(created_at: str, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    error_rows = [row for row in rows if str(row.get("data_error", "")).strip()]
+    if not error_rows:
+        return [quality_row(created_at, "data_error_rows", "pass", "", "0", False, "No data_error rows found.")]
+    return [
+        quality_row(
+            created_at,
+            "data_error_rows",
+            "warning",
+            row.get("ticker", ""),
+            row.get("data_status", ""),
+            False,
+            str(row.get("data_error", "")),
+        )
+        for row in error_rows
+    ]
+
+
+def abnormal_move_quality_rows(created_at: str, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    abnormal_rows: list[tuple[dict[str, Any], float]] = []
+    for row in rows:
+        change = parse_float(row.get("intraday_change_pct", ""))
+        if change is not None and abs(change) > ABNORMAL_INTRADAY_MOVE_PCT:
+            abnormal_rows.append((row, change))
+    if not abnormal_rows:
+        return [
+            quality_row(
+                created_at,
+                "abnormal_intraday_moves",
+                "pass",
+                "",
+                f"threshold={ABNORMAL_INTRADAY_MOVE_PCT}%",
+                False,
+                "No rows exceeded the abnormal intraday move threshold.",
+            )
+        ]
+    return [
+        quality_row(
+            created_at,
+            "abnormal_intraday_moves",
+            "warning",
+            row.get("ticker", ""),
+            f"{change}%",
+            False,
+            f"Absolute intraday move is above {ABNORMAL_INTRADAY_MOVE_PCT}%; review before relying on monitoring output.",
+        )
+        for row, change in abnormal_rows
+    ]
+
+
+def boolean_flag_quality_rows(created_at: str, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    checks = [
+        ("execution_approved_false", "execution_approved", False),
+        ("paper_execution_approved_false", "paper_execution_approved", False),
+        ("monitoring_only_true", "monitoring_only", True),
+        ("research_only_true", "research_only", True),
+        ("preview_only_true", "preview_only", True),
+    ]
+    quality_rows: list[dict[str, Any]] = []
+    for check_name, column_name, expected in checks:
+        bad_rows = [row for row in rows if parse_bool(row.get(column_name)) is not expected]
+        if not bad_rows:
+            quality_rows.append(
+                quality_row(
+                    created_at,
+                    check_name,
+                    "pass",
+                    "",
+                    str(expected),
+                    False,
+                    f"All rows have {column_name}={expected}.",
+                )
+            )
+            continue
+        quality_rows.extend(
+            quality_row(
+                created_at,
+                check_name,
+                "error",
+                row.get("ticker", ""),
+                str(row.get(column_name, "")),
+                True,
+                f"Expected {column_name}={expected}; review snapshot safety flags.",
+            )
+            for row in bad_rows
+        )
+    return quality_rows
 
 
 def fetch_intraday_market_data(tickers: list[str]) -> dict[str, dict[str, Any]]:
@@ -235,6 +543,14 @@ def write_market_monitor_snapshot(path: Path, rows: list[dict[str, Any]]) -> Non
         writer.writerows(rows)
 
 
+def write_market_monitor_quality_report(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=MARKET_MONITOR_QUALITY_COLUMNS)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def build_market_monitor_snapshot_summary(rows: list[dict[str, Any]], output_path: Path) -> list[str]:
     rows_with_data = [row for row in rows if row["data_status"] == "ok"]
     rows_with_errors = [row for row in rows if row["data_status"] != "ok"]
@@ -257,6 +573,27 @@ def format_extreme_change(rows: list[dict[str, Any]], *, highest: bool) -> str:
     if not highest:
         selected = min(usable_rows, key=lambda row: row["intraday_change_pct"])
     return f"{selected['ticker']} {selected['intraday_change_pct']}%"
+
+
+def build_market_monitor_quality_summary(rows: list[dict[str, Any]], output_path: Path) -> list[str]:
+    counts = Counter(row.get("check_status", "unknown") for row in rows)
+    blocked_rows = [row for row in rows if parse_bool(row.get("blocked")) is True]
+    return [
+        f"Market monitor quality checks: {len(rows)}",
+        f"Pass: {counts['pass']}, warning: {counts['warning']}, error: {counts['error']}",
+        "Blocked rows: " + format_blocked_rows(blocked_rows),
+        "Warning: this quality report does not approve execution or orders.",
+        f"Saved market monitor quality report to {output_path}",
+    ]
+
+
+def format_blocked_rows(rows: list[dict[str, Any]]) -> str:
+    if not rows:
+        return "none"
+    return "; ".join(
+        f"{row.get('check_name', '')}:{row.get('ticker', '') or 'snapshot'}"
+        for row in rows[:10]
+    )
 
 
 def show_market_monitor_file(
@@ -347,3 +684,57 @@ def format_error_rows(rows: list[dict[str, Any]]) -> list[str]:
 
 def is_false_flag(value: Any) -> bool:
     return str(value).strip().lower() == "false"
+
+
+def quality_row(
+    created_at: str,
+    check_name: str,
+    check_status: str,
+    ticker: str,
+    value: str,
+    blocked: bool,
+    details: str,
+) -> dict[str, Any]:
+    return {
+        "created_at": created_at,
+        "check_name": check_name,
+        "check_status": check_status,
+        "ticker": ticker,
+        "value": value,
+        "blocked": blocked,
+        "details": details,
+        "monitoring_only": True,
+        "research_only": True,
+        "preview_only": True,
+        "execution_approved": False,
+        "paper_execution_approved": False,
+    }
+
+
+def parse_bool(value: Any) -> bool | None:
+    normalized = str(value).strip().lower()
+    if normalized == "true":
+        return True
+    if normalized == "false":
+        return False
+    return None
+
+
+def parse_float(value: Any) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def parse_timestamp(value: Any) -> datetime | None:
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed
