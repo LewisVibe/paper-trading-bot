@@ -463,6 +463,7 @@ Cross-references:
 - **Helper verifier:** `python scripts\verify_monitor_lockfile_helper.py` checks temp-directory acquire/release cleanup, fresh-lock blocking, malformed-lock blocking, and stale-lock manual review in `trading_bot/safety/monitor_lockfile.py`.
 - **Integration checkpoint:** `python scripts\verify_monitor_lockfile_integration_readiness.py` verifies exactly `--monitor-lockfile-readiness-report` and `--refresh-promoted-review` are lock-wrapped, `bot.py` is not using the helper directly, no other command is lock-wrapped, and future safe report/display/monitor refresh commands remain manual-review only.
 - **Promoted refresh checkpoint:** `python scripts\verify_refresh_promoted_review_lock_readiness.py` verifies `--refresh-promoted-review` is lock-wrapped only for no-overlap protection, remains preview/report/display only, unscheduled, and separate from execution approval.
+- **Defensive refresh checkpoint:** `python scripts\verify_refresh_defensive_research_lock_readiness.py` verifies `--refresh-defensive-research` remains unwrapped, research/report/chart only, unscheduled, non-execution, and only a future manual-review candidate for no-overlap protection.
 - **Stop condition:** Stop if the plan creates a lockfile implementation, creates schedules, adds loop mode, changes Python source, changes config defaults, approves scheduling, approves execution, or touches private/generated files.
 
 ### Task: Move high-risk execution code out of `bot.py`

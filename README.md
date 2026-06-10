@@ -969,6 +969,11 @@ data/charts/etf_defensive_drawdown_comparison.png
 
 Defensive research refresh mode runs the current defensive saved-report/dashboard chain in order and writes a small step summary. It refreshes saved-data reports/charts where safe, checks the saved vol-managed robustness report as a prerequisite, and does not rerun market-data-backed backtests. It does not call Alpaca, read positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, change strategy rules, or approve execution.
 
+The static verifier `python scripts\verify_refresh_defensive_research_lock_readiness.py`
+checks whether `--refresh-defensive-research` is suitable to consider for a future
+manual no-overlap lock review. It does not run or lock the command, approve scheduling,
+or approve execution.
+
 Command:
 
 ```text

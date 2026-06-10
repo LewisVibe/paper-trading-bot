@@ -128,6 +128,8 @@ Current promoted interpretation:
 
 `python scripts\verify_refresh_promoted_review_lock_readiness.py` statically checks that `--refresh-promoted-review` remains preview/report/display only, lock-wrapped only for no-overlap protection, unscheduled, and separate from execution approval.
 
+`python scripts\verify_refresh_defensive_research_lock_readiness.py` statically checks whether `--refresh-defensive-research` is suitable to consider for a future manual no-overlap lock review. It does not run or lock the command, approve scheduling, or approve execution.
+
 ## Workflow / Deployment / Risk Policy State
 
 Today's workflow and risk-management additions are safety and reporting only. No deployment, scheduling, strategy change, risk enforcement, or execution approval was added.
@@ -343,6 +345,7 @@ python scripts\verify_monitor_lockfile_contract.py
 python scripts\verify_monitor_lockfile_helper.py
 python scripts\verify_monitor_lockfile_integration_readiness.py
 python scripts\verify_refresh_promoted_review_lock_readiness.py
+python scripts\verify_refresh_defensive_research_lock_readiness.py
 python bot.py --ticker-universe-readiness-report
 python bot.py --market-monitor-snapshot
 python bot.py --show-market-monitor
