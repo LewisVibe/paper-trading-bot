@@ -77,6 +77,14 @@ The first possible tools should be limited to `repo_safety_check` and
 `refresh_market_monitor` only after VPS readiness reports are stable and
 no-overlap or lockfile protection exists.
 
+A future market/financial news layer may be researched only as a risk veto. It
+may label tickers with `block_new_entries_today`, `manual_review_required`, or
+`no_news_block`, and may block or flag new long entries for major negative or
+event-risk news. It must not generate buy signals, sell signals, order
+instructions, position sizing, or execution approval. News output must include
+source, observed time, confidence, and reason, and stale vetoes must expire
+automatically.
+
 ## More Tickers Rule
 
 More tickers should start with liquid U.S. stocks and ETFs only. Universe expansion must land in research/preview first, with liquidity, price, and duplicate validation before any execution review.

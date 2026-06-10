@@ -146,6 +146,7 @@ Deployment readiness and VPS planning:
 - It audits whether the repo is ready for VPS/Hermes monitoring/report/display operations only, including repo path, `.venv` expectation, command availability, ignored generated outputs, untracked private files, Hermes market-monitor candidate docs, and never-schedule command boundaries.
 - It does not deploy, schedule, create services, load `config.json`, call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, approve scheduling, or approve execution.
 - `docs/HERMES_WORKFLOW.md` documents MCP as a possible future safe operations adapter only for whitelisted report/display/monitor commands. MCP is not approved for implementation yet and must remain separate from trading execution.
+- A future news workflow is only worth exploring as a risk veto. It may block or flag new long entries for major negative/event-risk news, but must never generate buy/sell signals, order instructions, position sizing, scheduling approval, or execution approval.
 - `docs/VPS_SETUP_CHECKLIST.md` documents future Windows Server VPS setup, safe commands for future scheduling review, commands never to schedule, and secrets/config handling.
 - The VPS checklist is future setup documentation only.
 

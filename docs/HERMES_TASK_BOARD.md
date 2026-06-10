@@ -410,6 +410,9 @@ Cross-references:
   - `market_monitor_scheduling_readiness`
   - `vps_operations_readiness`
   - `deployment_readiness_report`
+  - `fetch_news_risk_report`
+  - `write_news_risk_veto_report`
+  - `show_news_risk_veto`
   - `show_safe_command_list`
 - **Forbidden MCP tools:**
   - `submit_order`
@@ -417,6 +420,9 @@ Cross-references:
   - `run_normal_bot`
   - `run_paper_order_test`
   - `run_slow_sma_paper_execution`
+  - `generate_buy_signal_from_news`
+  - `generate_sell_signal_from_news`
+  - `approve_trade_from_news`
   - `read_config`
   - `read_env`
   - `read_logs`
@@ -424,9 +430,10 @@ Cross-references:
   - `expose_tokens`
   - `schedule_execution`
   - `approve_execution`
-- **Security rules:** Use a tiny local/custom MCP server only if implemented later, no third-party MCP servers by default, hardcoded allowlist, deny by default, fixed working directory `C:\dev\paper-trading-bot`, no arbitrary shell tool, no secrets/generated data access, and return `execution_approved=False` and `scheduling_approved=False` where applicable.
-- **Recommended order:** Stabilize VPS readiness/report chain, add no-overlap or lockfile protection for monitor refresh, then consider a minimal proof of concept exposing only `repo_safety_check` and `refresh_market_monitor`.
-- **Stop condition:** Stop if the plan starts implementing MCP, installing packages, creating services, creating schedules, approving execution, or exposing any order, config, secret, log, database, token, or arbitrary shell access.
+- **News risk-veto concept:** Future news support may fetch market and financial news only to write ticker-level risk-veto labels such as `block_new_entries_today`, `manual_review_required`, or `no_news_block`. It may block or flag new long entries for major negative or event-risk news, but must never generate buy/sell signals, order instructions, position sizing, or execution approval.
+- **Security rules:** Use a tiny local/custom MCP server only if implemented later, no third-party MCP servers by default, hardcoded allowlist, deny by default, fixed working directory `C:\dev\paper-trading-bot`, no arbitrary shell tool, no secrets/generated data access, news output includes source/time/confidence/reason, stale news expires automatically, and return `execution_approved=False` and `scheduling_approved=False` where applicable.
+- **Recommended order:** Stabilize VPS readiness/report chain, add no-overlap or lockfile protection for monitor refresh, add docs/report-only news-veto design, add saved-data-only news-veto report command, then consider a minimal proof of concept exposing only `repo_safety_check` and `refresh_market_monitor`.
+- **Stop condition:** Stop if the plan starts implementing MCP, adding news API calls, installing packages, creating services, creating schedules, approving execution, generating buy/sell signals from news, or exposing any order, config, secret, log, database, token, or arbitrary shell access.
 
 ### Task: Move high-risk execution code out of `bot.py`
 - **Purpose:** Refactor high-risk execution internals.

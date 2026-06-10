@@ -146,13 +146,23 @@ approved for implementation yet.
 Any future MCP proof of concept must expose only whitelisted report, display,
 monitoring, and maintenance tools such as `repo_safety_check`,
 `refresh_market_monitor`, `market_monitor_scheduling_readiness`,
-`vps_operations_readiness`, `deployment_readiness_report`, and
-`show_safe_command_list`.
+`vps_operations_readiness`, `deployment_readiness_report`,
+`fetch_news_risk_report`, `write_news_risk_veto_report`,
+`show_news_risk_veto`, and `show_safe_command_list`.
 
 It must not expose tools for `submit_order`, `cancel_order`, `run_normal_bot`,
-`run_paper_order_test`, `run_slow_sma_paper_execution`, `read_config`,
-`read_env`, `read_logs`, `read_database`, `expose_tokens`,
-`schedule_execution`, or `approve_execution`.
+`run_paper_order_test`, `run_slow_sma_paper_execution`,
+`generate_buy_signal_from_news`, `generate_sell_signal_from_news`,
+`approve_trade_from_news`, `read_config`, `read_env`, `read_logs`,
+`read_database`, `expose_tokens`, `schedule_execution`, or
+`approve_execution`.
+
+Future news support must be a risk veto only. It may fetch market and financial
+news to write ticker-level report labels such as `block_new_entries_today`,
+`manual_review_required`, or `no_news_block`. It may block or flag new long
+entries for major negative or event-risk news, but it must not generate buy
+signals, sell signals, order instructions, position sizing, or execution
+approval.
 
 Security boundary:
 
@@ -162,12 +172,16 @@ Security boundary:
 - Use fixed working directory `C:\dev\paper-trading-bot`.
 - Do not expose arbitrary shell access.
 - Do not access secrets or generated data by default.
+- News output must include source, observed time, confidence, and reason.
+- Stale news vetoes must expire automatically.
 - Return `execution_approved=False` and `scheduling_approved=False` where
   applicable.
 
 Do not consider MCP until the VPS readiness/report chain is stable and
-no-overlap or lockfile protection exists for monitor refresh. A first proof of
-concept should expose only `repo_safety_check` and `refresh_market_monitor`.
+no-overlap or lockfile protection exists for monitor refresh. Add a
+docs/report-only news-veto design and saved-data-only news-veto report command
+before considering news in MCP. A first MCP proof of concept should expose only
+`repo_safety_check` and `refresh_market_monitor`.
 
 ## Commands Never To Schedule Automatically
 

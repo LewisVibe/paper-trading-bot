@@ -238,6 +238,17 @@ MCP is not a trading interface for this project. It must remain separate from
 Alpaca, order submission, paper execution, position reads, `trade_log` writes,
 Discord trade alerts, scheduling approval, and execution approval.
 
+News risk-veto concept:
+
+- A future MCP or cron-supported news workflow may fetch market and financial
+  news only to produce ticker-level risk veto/report output.
+- Example report labels include `block_new_entries_today`,
+  `manual_review_required`, and `no_news_block`.
+- A veto may block or flag new long entries for a ticker with major negative or
+  event-risk news.
+- A veto must never approve buys or sells, create order instructions, size
+  positions, generate trading signals, or approve execution.
+
 Candidate future MCP tools:
 
 - `repo_safety_check`
@@ -245,6 +256,9 @@ Candidate future MCP tools:
 - `market_monitor_scheduling_readiness`
 - `vps_operations_readiness`
 - `deployment_readiness_report`
+- `fetch_news_risk_report`
+- `write_news_risk_veto_report`
+- `show_news_risk_veto`
 - `show_safe_command_list`
 
 Explicitly forbidden MCP tools:
@@ -254,6 +268,9 @@ Explicitly forbidden MCP tools:
 - `run_normal_bot`
 - `run_paper_order_test`
 - `run_slow_sma_paper_execution`
+- `generate_buy_signal_from_news`
+- `generate_sell_signal_from_news`
+- `approve_trade_from_news`
 - `read_config`
 - `read_env`
 - `read_logs`
@@ -271,6 +288,8 @@ Security rules for any future MCP proof of concept:
 - Do not expose an arbitrary shell command tool.
 - Do not allow secrets, config files, logs, databases, generated CSV contents,
   auth files, or tokens by default.
+- News output must include source, observed time, confidence, and reason.
+- Stale news vetoes must expire automatically.
 - Return `execution_approved=False` and `scheduling_approved=False` from tools
   where those flags apply.
 
@@ -279,14 +298,17 @@ Recommended implementation order:
 1. Finish and stabilize the VPS readiness/report chain.
 2. Add no-overlap or lockfile protection for monitor refresh before any
    repeated-run design.
-3. Only then consider a minimal MCP proof of concept.
-4. Start that proof of concept with only `repo_safety_check` and
+3. Add docs/report-only news-veto design.
+4. Add a saved-data-only news-veto report command.
+5. Only then consider a minimal MCP proof of concept.
+6. Start that proof of concept with only `repo_safety_check` and
    `refresh_market_monitor`.
 
 Current conclusion: MCP is potentially useful later as a safer wrapper around
-known-good report/display/monitor commands. It is not worth implementing before
-the VPS monitor/report workflow is stable, and it must remain separate from
-trading execution.
+known-good report/display/monitor commands. The news use case is worth exploring
+as a risk veto, but it is not a trading signal engine. It is not worth
+implementing before the VPS monitor/report workflow is stable, and it must
+remain separate from trading execution.
 
 ## 7. How Hermes Should Report Back After Tasks
 
