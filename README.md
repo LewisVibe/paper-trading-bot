@@ -536,6 +536,8 @@ This writes `data/monitor_lockfile_readiness_report.csv` and classifies future s
 
 The pure no-network contract verifier, `python scripts\verify_monitor_lockfile_contract.py`, defines what a future lock helper must satisfy before implementation. It does not implement locking, create lockfiles, schedule anything, run bot commands, and does not create schedules.
 
+The pure helper verifier, `python scripts\verify_monitor_lockfile_helper.py`, checks the isolated in-memory helper in `trading_bot/safety/monitor_lockfile.py`. The helper is not wired into runtime commands and does not create real lockfiles.
+
 Future Hermes cron plan for market monitor reports only:
 
 ```bat
