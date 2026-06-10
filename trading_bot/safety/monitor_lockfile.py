@@ -23,7 +23,12 @@ SAFE_LOCK_COMMAND_NAMES = frozenset(
     }
 )
 
-LOCK_WRAPPED_COMMAND_NAMES = frozenset({"--monitor-lockfile-readiness-report"})
+LOCK_WRAPPED_COMMAND_NAMES = frozenset(
+    {
+        "--monitor-lockfile-readiness-report",
+        "--refresh-promoted-review",
+    }
+)
 DEFAULT_MONITOR_LOCK_STALE_AFTER_SECONDS = 60 * 60
 
 ALLOWED_LOCK_METADATA_FIELDS = frozenset(
@@ -126,10 +131,12 @@ def build_lock_metadata(
 
 
 def default_monitor_lock_path(root: Path, command_name: str) -> Path:
-    if command_name != "--monitor-lockfile-readiness-report":
-        safe_name = "unsupported_monitor_command"
-    else:
+    if command_name == "--monitor-lockfile-readiness-report":
         safe_name = "monitor_lockfile_readiness"
+    elif command_name == "--refresh-promoted-review":
+        safe_name = "refresh_promoted_review"
+    else:
+        safe_name = "unsupported_monitor_command"
     return root / "data" / "runtime_locks" / f"{safe_name}.lock"
 
 

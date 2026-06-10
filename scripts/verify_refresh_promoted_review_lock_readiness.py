@@ -19,7 +19,11 @@ DOC_PATHS = [
 ]
 
 PROMOTED_REVIEW_COMMAND = "--refresh-promoted-review"
-LOCKED_COMMAND = "--monitor-lockfile-readiness-report"
+READINESS_COMMAND = "--monitor-lockfile-readiness-report"
+EXPECTED_LOCKED_COMMANDS = {
+    "run_monitor_lockfile_readiness_report_command": READINESS_COMMAND,
+    "run_refresh_promoted_review_command": PROMOTED_REVIEW_COMMAND,
+}
 
 BLOCKED_COMMANDS = [
     "python bot.py",
@@ -68,10 +72,10 @@ def main() -> int:
     verify_generated_outputs_are_ignored(failures)
     verify_outputs_are_not_execution_approval(failures)
     verify_not_scheduled(failures)
-    verify_not_currently_lock_wrapped(failures)
-    verify_future_candidate_only(failures)
+    verify_refresh_promoted_review_is_lock_wrapped(failures)
+    verify_locking_does_not_approve_scheduling_or_execution(failures)
     verify_blocked_commands_remain_blocked(failures)
-    verify_current_lock_wrapper_remains_limited(failures)
+    verify_lock_wrappers_remain_limited(failures)
 
     if failures:
         print("Refresh promoted review lock readiness verification failed:")
@@ -80,7 +84,7 @@ def main() -> int:
         return 1
 
     print("Refresh promoted review lock readiness verification passed.")
-    print("Verified --refresh-promoted-review is a future-only no-overlap candidate, remains unwrapped, non-execution, unscheduled, and separate from current lock wrapping.")
+    print("Verified --refresh-promoted-review is lock-wrapped, behavior-preserving, non-execution, unscheduled, and the only additional command using the monitor lock helper.")
     return 0
 
 
@@ -173,25 +177,30 @@ def verify_not_scheduled(failures: list[str]) -> None:
                 failures.append(f"--refresh-promoted-review appears scheduled: {line}")
 
 
-def verify_not_currently_lock_wrapped(failures: list[str]) -> None:
+def verify_refresh_promoted_review_is_lock_wrapped(failures: list[str]) -> None:
     runner_source = read_text(RUNNER_PATH)
     refresh_body = extract_function_body(runner_source, "run_refresh_promoted_review_command")
-    for token in LOCK_TOKENS:
-        if token in refresh_body:
-            failures.append(f"--refresh-promoted-review must not be lock-wrapped yet; found {token}")
+    if PROMOTED_REVIEW_COMMAND not in refresh_body:
+        failures.append("--refresh-promoted-review lock wrapper must name the promoted refresh command")
+    if refresh_body.count("acquire_monitor_lock(") != 1:
+        failures.append("--refresh-promoted-review should have exactly one lock acquire call")
+    if refresh_body.count("release_monitor_lock(") != 1:
+        failures.append("--refresh-promoted-review should have exactly one lock release call")
+    if "finally:" not in refresh_body:
+        failures.append("--refresh-promoted-review lock release should be attempted in a finally block")
 
 
-def verify_future_candidate_only(failures: list[str]) -> None:
+def verify_locking_does_not_approve_scheduling_or_execution(failures: list[str]) -> None:
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
-    from trading_bot.safety.monitor_lockfile import SAFE_LOCK_COMMAND_NAMES  # noqa: PLC0415
+    from trading_bot.safety.monitor_lockfile import LOCK_WRAPPED_COMMAND_NAMES  # noqa: PLC0415
 
     docs_lower = docs_text().lower()
-    if PROMOTED_REVIEW_COMMAND not in SAFE_LOCK_COMMAND_NAMES:
-        failures.append("--refresh-promoted-review should remain only a helper allowlist candidate")
+    if PROMOTED_REVIEW_COMMAND not in LOCK_WRAPPED_COMMAND_NAMES:
+        failures.append("--refresh-promoted-review should be in the wrapped-command allowlist")
+    if READINESS_COMMAND not in LOCK_WRAPPED_COMMAND_NAMES:
+        failures.append("--monitor-lockfile-readiness-report should remain in the wrapped-command allowlist")
     required_phrases = [
-        "future",
-        "manual review",
         "lock",
         "does not approve scheduling",
         "does not approve execution",
@@ -214,19 +223,21 @@ def verify_blocked_commands_remain_blocked(failures: list[str]) -> None:
             failures.append(f"blocked command is missing from docs: {command}")
 
 
-def verify_current_lock_wrapper_remains_limited(failures: list[str]) -> None:
+def verify_lock_wrappers_remain_limited(failures: list[str]) -> None:
     runner_source = read_text(RUNNER_PATH)
-    readiness_body = extract_function_body(runner_source, "run_monitor_lockfile_readiness_report_command")
-    if LOCKED_COMMAND not in readiness_body:
-        failures.append("current lock wrapper should remain limited to --monitor-lockfile-readiness-report")
-    if readiness_body.count("acquire_monitor_lock(") != 1:
-        failures.append("current lock-wrapped command should have exactly one acquire call")
-    if readiness_body.count("release_monitor_lock(") != 1:
-        failures.append("current lock-wrapped command should have exactly one release call")
-    runner_without_readiness = runner_source.replace(readiness_body, "")
+    runner_without_expected_wrappers = runner_source
+    for function_name, command_name in EXPECTED_LOCKED_COMMANDS.items():
+        function_body = extract_function_body(runner_source, function_name)
+        if command_name not in function_body:
+            failures.append(f"{function_name} should only lock-wrap {command_name}")
+        if function_body.count("acquire_monitor_lock(") != 1:
+            failures.append(f"{command_name} should have exactly one acquire call")
+        if function_body.count("release_monitor_lock(") != 1:
+            failures.append(f"{command_name} should have exactly one release call")
+        runner_without_expected_wrappers = runner_without_expected_wrappers.replace(function_body, "")
     for token in LOCK_TOKENS:
-        if token in runner_without_readiness:
-            failures.append(f"no command other than readiness report should use monitor lock helper: {token}")
+        if token in runner_without_expected_wrappers:
+            failures.append(f"no command other than expected safe report commands should use monitor lock helper: {token}")
 
 
 def docs_text() -> str:

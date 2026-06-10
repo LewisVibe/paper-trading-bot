@@ -52,7 +52,7 @@ BLOCKED_COMMAND_PHRASES = [
 
 FUTURE_ONLY_PHRASES = [
     "future",
-    "only command protected by the monitor lockfile helper",
+    "only commands protected by the monitor lockfile helper",
     "does not approve scheduling",
     "does not approve execution",
     "report/preview/display/monitor",
@@ -64,6 +64,11 @@ OUTPUT_APPROVAL_REFUSALS = [
     "does not approve execution",
     "does not approve orders",
 ]
+
+EXPECTED_LOCK_WRAPPED_FUNCTIONS = {
+    "run_monitor_lockfile_readiness_report_command": "--monitor-lockfile-readiness-report",
+    "run_refresh_promoted_review_command": "--refresh-promoted-review",
+}
 
 SCHEDULING_FILE_FRAGMENTS = [
     "task scheduler",
@@ -81,7 +86,7 @@ def main() -> int:
 
     verify_required_files_exist(failures)
     verify_bot_is_not_using_helper(failures)
-    verify_lock_wrapping_is_limited_to_readiness_report(failures)
+    verify_lock_wrapping_is_limited_to_safe_report_commands(failures)
     verify_future_only_docs(failures)
     verify_blocked_commands_documented(failures)
     verify_helper_decision_flags(failures)
@@ -95,7 +100,7 @@ def main() -> int:
         return 1
 
     print("Monitor lockfile integration readiness verification passed.")
-    print("Verified helper/test presence, no bot.py helper wiring, single-command lock wrapping, future-only docs for other commands, blocked commands, false approval flags, and no scheduler/service additions.")
+    print("Verified helper/test presence, no bot.py helper wiring, two-command lock wrapping, future-only docs for other commands, blocked commands, false approval flags, and no scheduler/service additions.")
     return 0
 
 
@@ -112,24 +117,29 @@ def verify_bot_is_not_using_helper(failures: list[str]) -> None:
             failures.append(f"bot.py must not use monitor lock helper yet; found {token}")
 
 
-def verify_lock_wrapping_is_limited_to_readiness_report(failures: list[str]) -> None:
+def verify_lock_wrapping_is_limited_to_safe_report_commands(failures: list[str]) -> None:
     runner_source = read_text(ROOT / "trading_bot" / "runners" / "research_reports.py")
-    function_body = extract_function_body(runner_source, "run_monitor_lockfile_readiness_report_command")
-    if "acquire_monitor_lock(" not in function_body:
-        failures.append("monitor lockfile readiness report command should acquire the monitor lock")
-    if "release_monitor_lock(" not in function_body:
-        failures.append("monitor lockfile readiness report command should release the monitor lock")
-    if function_body.count("acquire_monitor_lock(") != 1:
-        failures.append("monitor lockfile readiness report command should have exactly one acquire call")
-    if function_body.count("release_monitor_lock(") != 1:
-        failures.append("monitor lockfile readiness report command should have exactly one release call")
-    if '"--monitor-lockfile-readiness-report"' not in function_body:
-        failures.append("lock wrapping must name only --monitor-lockfile-readiness-report")
+    wrapped_bodies = []
+    for function_name, command_name in EXPECTED_LOCK_WRAPPED_FUNCTIONS.items():
+        function_body = extract_function_body(runner_source, function_name)
+        wrapped_bodies.append(function_body)
+        if "acquire_monitor_lock(" not in function_body:
+            failures.append(f"{command_name} should acquire the monitor lock")
+        if "release_monitor_lock(" not in function_body:
+            failures.append(f"{command_name} should release the monitor lock")
+        if function_body.count("acquire_monitor_lock(") != 1:
+            failures.append(f"{command_name} should have exactly one acquire call")
+        if function_body.count("release_monitor_lock(") != 1:
+            failures.append(f"{command_name} should have exactly one release call")
+        if f'"{command_name}"' not in function_body:
+            failures.append(f"lock wrapping must name only {command_name} in {function_name}")
 
-    runner_without_readiness = runner_source.replace(function_body, "")
+    runner_without_expected_wrappers = runner_source
+    for function_body in wrapped_bodies:
+        runner_without_expected_wrappers = runner_without_expected_wrappers.replace(function_body, "")
     forbidden_tokens = ["acquire_monitor_lock(", "release_monitor_lock("]
     for token in forbidden_tokens:
-        if token in runner_without_readiness:
+        if token in runner_without_expected_wrappers:
             failures.append(f"monitor lock helper must not wrap any other report command; found {token}")
 
     other_sources = [

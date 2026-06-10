@@ -124,9 +124,9 @@ Current promoted interpretation:
 - MSFT remains no-action/unanimous flat.
 - All promoted strategy outputs remain preview-only or research-only.
 
-`--refresh-promoted-review` writes `data/promoted_review_refresh_summary.csv` and runs the promoted review chain in order. It remains preview/report/display only. It does not connect promoted candidates to execution.
+`--refresh-promoted-review` writes `data/promoted_review_refresh_summary.csv` and runs the promoted review chain in order. It remains preview/report/display only and is protected by the monitor lockfile helper to prevent overlapping refresh runs. The lock does not connect promoted candidates to execution, approve scheduling, or approve execution.
 
-`python scripts\verify_refresh_promoted_review_lock_readiness.py` statically checks whether `--refresh-promoted-review` is suitable to consider for a future manual no-overlap lock review. It does not run or lock the command, approve scheduling, or approve execution.
+`python scripts\verify_refresh_promoted_review_lock_readiness.py` statically checks that `--refresh-promoted-review` remains preview/report/display only, lock-wrapped only for no-overlap protection, unscheduled, and separate from execution approval.
 
 ## Workflow / Deployment / Risk Policy State
 
@@ -270,10 +270,10 @@ Ticker universe readiness reporting:
 - Before any future scheduling review, run `python scripts\verify_repo_safety.py`, run `python bot.py --market-monitor-scheduling-readiness-report`, manually run `python bot.py --refresh-market-monitor` successfully on the VPS, and confirm generated CSV/cache files remain ignored.
 - Stop if any scheduled candidate tries to load `config.json`, call Alpaca, read positions, write SQLite `trade_log`, send Discord alerts, create orders, or approve execution.
 - No repeated market-monitor refresh should be scheduled before no-overlap/lockfile protection exists. A future lockfile may prevent two safe refresh/report/display commands from running at once, but stale lock handling must be conservative and the lock must not contain secrets, account IDs, config contents, order IDs, webhook URLs, API keys, generated trading data, positions, or report contents.
-- The monitor lockfile readiness report is the first and only command protected by the monitor lockfile helper. It remains a static report-only design scaffold, classifies future safe candidates and blocked commands, and uses a transient no-overlap lock that does not approve scheduling or execution.
+- The monitor lockfile readiness report and promoted review refresh are the only commands protected by the monitor lockfile helper. Both use transient no-overlap locks that do not approve scheduling or execution.
 - `python scripts\verify_monitor_lockfile_contract.py` is a pure no-network contract verifier for future lock helper requirements. It does not implement locking, create lockfiles, schedule anything, or run bot commands.
 - `python scripts\verify_monitor_lockfile_helper.py` verifies the helper in `trading_bot/safety/monitor_lockfile.py`, including temp-directory lock acquire/release cleanup, fresh-lock blocking, malformed-lock blocking, and stale-lock manual review.
-- `python scripts\verify_monitor_lockfile_integration_readiness.py` is a static checkpoint for the next manual-review stage. It verifies exactly `--monitor-lockfile-readiness-report` is lock-wrapped, `bot.py` is not using the helper directly, no other command is lock-wrapped, and future safe report/display/monitor refresh commands remain manual-review only.
+- `python scripts\verify_monitor_lockfile_integration_readiness.py` is a static checkpoint for the next manual-review stage. It verifies exactly `--monitor-lockfile-readiness-report` and `--refresh-promoted-review` are lock-wrapped, `bot.py` is not using the helper directly, no other command is lock-wrapped, and future safe report/display/monitor refresh commands remain manual-review only.
 - Lockfile planning applies only to report/preview/display/monitor refresh commands. Execution-capable commands must never be scheduled and must not be treated as safe merely because a lockfile exists. A lockfile does not approve scheduling, execution, or paper orders.
 - It does not call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, change strategy rules, or approve execution.
 - More tickers and more frequent price checks do not mean more trades. Frequent monitoring should start as preview/display/report only, and daily strategies should not become intraday trading strategies without separate research.

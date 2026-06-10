@@ -464,50 +464,83 @@ def run_refresh_promoted_review_command(
     run_promoted_consensus_preview: CommandCallback,
     run_promoted_decision_preview: CommandCallback,
 ) -> int:
-    result = refresh_promoted_review(
-        steps=[
-            PromotedReviewStep(
-                "preview_promoted_strategies",
-                "python bot.py --preview-promoted-strategies",
-                Path("data") / "promoted_strategy_preview.csv",
-                run_promoted_strategy_preview,
-            ),
-            PromotedReviewStep(
-                "preview_promoted_actions_readonly",
-                "python bot.py --preview-promoted-actions --use-paper-positions-readonly",
-                Path("data") / "promoted_strategy_action_preview.csv",
-                run_promoted_action_preview_readonly,
-            ),
-            PromotedReviewStep(
-                "promoted_risk_preview",
-                "python bot.py --promoted-risk-preview",
-                Path("data") / "promoted_risk_preview.csv",
-                run_promoted_risk_preview,
-            ),
-            PromotedReviewStep(
-                "promoted_consensus_preview",
-                "python bot.py --promoted-consensus-preview",
-                Path("data") / "promoted_consensus_preview.csv",
-                run_promoted_consensus_preview,
-            ),
-            PromotedReviewStep(
-                "promoted_decision_preview",
-                "python bot.py --promoted-decision-preview",
-                Path("data") / "promoted_decision_preview.csv",
-                run_promoted_decision_preview,
-            ),
-            PromotedReviewStep(
-                "show_promoted_decision",
-                "python bot.py --show-promoted-decision",
-                Path("data") / "promoted_decision_preview.csv",
-                run_show_promoted_decision_command,
-            ),
-        ],
-        decision_path=Path("data") / "promoted_decision_preview.csv",
-        output_path=Path("data") / "promoted_review_refresh_summary.csv",
-    )
+    command_name = "--refresh-promoted-review"
+    lock_path = default_monitor_lock_path(Path(__file__).resolve().parents[2], command_name)
+    lock_result = acquire_monitor_lock(lock_path, command_name)
+    if not lock_result.acquired:
+        print(f"Promoted review refresh blocked by lock: {lock_result.decision.status}", file=sys.stderr)
+        for reason in lock_result.decision.reasons:
+            print(f"- {reason}", file=sys.stderr)
+        print(f"Required next step: {lock_result.decision.required_next_step}", file=sys.stderr)
+        print("Lock protection is report-only and does not approve scheduling or execution.", file=sys.stderr)
+        return 1
+
+    result = None
+    error: Exception | None = None
+    release_decision = None
+    try:
+        result = refresh_promoted_review(
+            steps=[
+                PromotedReviewStep(
+                    "preview_promoted_strategies",
+                    "python bot.py --preview-promoted-strategies",
+                    Path("data") / "promoted_strategy_preview.csv",
+                    run_promoted_strategy_preview,
+                ),
+                PromotedReviewStep(
+                    "preview_promoted_actions_readonly",
+                    "python bot.py --preview-promoted-actions --use-paper-positions-readonly",
+                    Path("data") / "promoted_strategy_action_preview.csv",
+                    run_promoted_action_preview_readonly,
+                ),
+                PromotedReviewStep(
+                    "promoted_risk_preview",
+                    "python bot.py --promoted-risk-preview",
+                    Path("data") / "promoted_risk_preview.csv",
+                    run_promoted_risk_preview,
+                ),
+                PromotedReviewStep(
+                    "promoted_consensus_preview",
+                    "python bot.py --promoted-consensus-preview",
+                    Path("data") / "promoted_consensus_preview.csv",
+                    run_promoted_consensus_preview,
+                ),
+                PromotedReviewStep(
+                    "promoted_decision_preview",
+                    "python bot.py --promoted-decision-preview",
+                    Path("data") / "promoted_decision_preview.csv",
+                    run_promoted_decision_preview,
+                ),
+                PromotedReviewStep(
+                    "show_promoted_decision",
+                    "python bot.py --show-promoted-decision",
+                    Path("data") / "promoted_decision_preview.csv",
+                    run_show_promoted_decision_command,
+                ),
+            ],
+            decision_path=Path("data") / "promoted_decision_preview.csv",
+            output_path=Path("data") / "promoted_review_refresh_summary.csv",
+        )
+    except Exception as exc:
+        error = exc
+    finally:
+        if lock_result.metadata is not None:
+            release_decision = release_monitor_lock(lock_path, lock_result.metadata)
+
+    if error is not None:
+        print(f"Promoted review refresh failed: {error}", file=sys.stderr)
+        if release_decision is not None and not release_decision.allowed:
+            print(f"Promoted review lock release requires manual review: {release_decision.status}", file=sys.stderr)
+            print(f"Required next step: {release_decision.required_next_step}", file=sys.stderr)
+        return 1
+    if release_decision is not None and not release_decision.allowed:
+        print(f"Promoted review lock release requires manual review: {release_decision.status}", file=sys.stderr)
+        print(f"Required next step: {release_decision.required_next_step}", file=sys.stderr)
+        return 1
+
     for line in result.summary_lines:
         print(line)
+    print("Lock protection is report-only and does not approve scheduling or execution.")
     return result.status_code
 
 

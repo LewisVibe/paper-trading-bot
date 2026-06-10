@@ -175,26 +175,27 @@ def verify_no_existing_lock_decision_is_non_executing(failures: list[str]) -> No
 
 
 def verify_lock_acquire_release_uses_temp_files_and_cleans_up(failures: list[str]) -> None:
-    with tempfile.TemporaryDirectory() as tmpdir:
-        lock_path = Path(tmpdir) / "monitor.lock"
-        acquire_result = acquire_monitor_lock(
-            lock_path,
-            "--monitor-lockfile-readiness-report",
-            now=NOW,
-            hostname="vps-host",
-            pid=1234,
-            stale_after_seconds=900,
-        )
-        expect_decision(acquire_result.decision, True, "lock_acquired", failures, "lock acquire")
-        if not acquire_result.acquired:
-            failures.append("lock acquire should mark acquired=True")
-            return
-        if not lock_path.exists():
-            failures.append("lock acquire should create a temp lock file")
-        release_decision = release_monitor_lock(lock_path, acquire_result.metadata)
-        expect_decision(release_decision, True, "lock_released", failures, "lock release")
-        if lock_path.exists():
-            failures.append("lock release should clean up the temp lock file")
+    for command_name in ["--monitor-lockfile-readiness-report", "--refresh-promoted-review"]:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            lock_path = Path(tmpdir) / "monitor.lock"
+            acquire_result = acquire_monitor_lock(
+                lock_path,
+                command_name,
+                now=NOW,
+                hostname="vps-host",
+                pid=1234,
+                stale_after_seconds=900,
+            )
+            expect_decision(acquire_result.decision, True, "lock_acquired", failures, f"lock acquire {command_name}")
+            if not acquire_result.acquired:
+                failures.append(f"lock acquire should mark acquired=True for {command_name}")
+                continue
+            if not lock_path.exists():
+                failures.append(f"lock acquire should create a temp lock file for {command_name}")
+            release_decision = release_monitor_lock(lock_path, acquire_result.metadata)
+            expect_decision(release_decision, True, "lock_released", failures, f"lock release {command_name}")
+            if lock_path.exists():
+                failures.append(f"lock release should clean up the temp lock file for {command_name}")
 
 
 def verify_lock_acquire_blocks_fresh_existing_file(failures: list[str]) -> None:

@@ -418,12 +418,12 @@ This convenience command runs the promoted review chain in order, including the
 read-only paper-position action preview path, then prints a compact decision summary.
 It writes `data/promoted_review_refresh_summary.csv`. It does not change `dry_run`,
 create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve
-execution.
+execution. The command is protected by the monitor lockfile helper to prevent overlapping
+promoted review refresh runs; that lock does not approve scheduling or execution.
 
 The static verifier `python scripts\verify_refresh_promoted_review_lock_readiness.py`
-checks whether `--refresh-promoted-review` is suitable to consider for a future
-manual no-overlap lock review. It does not run or lock the command, does not approve
-scheduling, and does not approve execution.
+checks that `--refresh-promoted-review` remains preview/report/display only, lock-wrapped
+only for no-overlap protection, unscheduled, and separate from execution approval.
 
 Preview slow SMA signals without trading:
 
@@ -537,13 +537,13 @@ Create a static no-overlap/lockfile readiness design report:
 python bot.py --monitor-lockfile-readiness-report
 ```
 
-This writes `data/monitor_lockfile_readiness_report.csv` and classifies future safe refresh/report/display candidates, blocked execution-capable commands, stale-lock policy requirements, metadata constraints, no-secret lock contents, future lock helper tests, and manual scheduling review requirements. This is the only command currently protected by the monitor lockfile helper; the lock is a report-only no-overlap guard and does not refresh market data, call yfinance, call Alpaca, read positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, create schedules, create services, approve scheduling, or approve execution.
+This writes `data/monitor_lockfile_readiness_report.csv` and classifies future safe refresh/report/display candidates, blocked execution-capable commands, stale-lock policy requirements, metadata constraints, no-secret lock contents, future lock helper tests, and manual scheduling review requirements. This command and `--refresh-promoted-review` are the only commands currently protected by the monitor lockfile helper; the lock is a report-only no-overlap guard and does not refresh market data, call yfinance, call Alpaca, read positions beyond existing read-only preview paths, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, create schedules, create services, approve scheduling, or approve execution.
 
 The pure no-network contract verifier, `python scripts\verify_monitor_lockfile_contract.py`, defines what a future lock helper must satisfy before implementation. It does not implement locking, create lockfiles, schedule anything, run bot commands, and does not create schedules.
 
 The pure helper verifier, `python scripts\verify_monitor_lockfile_helper.py`, checks the helper in `trading_bot/safety/monitor_lockfile.py`, including temp-directory lock acquire/release cleanup, fresh-lock blocking, malformed-lock blocking, and stale-lock manual review.
 
-The integration-readiness checkpoint, `python scripts\verify_monitor_lockfile_integration_readiness.py`, verifies that exactly `--monitor-lockfile-readiness-report` is lock-wrapped, `bot.py` is not using the helper directly, no other command is lock-wrapped, and future safe report/display/monitor refresh commands remain manual-review only.
+The integration-readiness checkpoint, `python scripts\verify_monitor_lockfile_integration_readiness.py`, verifies that exactly `--monitor-lockfile-readiness-report` and `--refresh-promoted-review` are lock-wrapped, `bot.py` is not using the helper directly, no other command is lock-wrapped, and future safe report/display/monitor refresh commands remain manual-review only.
 
 Future Hermes cron plan for market monitor reports only:
 

@@ -114,7 +114,7 @@ def verify_no_network_imports(failures: list[str]) -> None:
 
 def verify_no_runtime_locking_claims(docs_lower: str, failures: list[str]) -> None:
     required_refusals = [
-        "only command protected by the monitor lockfile helper",
+        "only commands protected by the monitor lockfile helper",
         "future safe report/display/monitor refresh commands remain manual-review only",
         "does not create schedules",
         "execution-capable commands must never be scheduled",
