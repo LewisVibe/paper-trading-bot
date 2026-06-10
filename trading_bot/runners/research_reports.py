@@ -59,6 +59,7 @@ from trading_bot.research.short_strategy_lab import run_short_strategy_lab_files
 from trading_bot.research.ticker_universe_readiness import generate_ticker_universe_readiness_report
 from trading_bot.research.vol_managed_etf import run_vol_managed_etf_backtest_files
 from trading_bot.research.vol_managed_etf_robustness import generate_vol_managed_etf_robustness_report
+from trading_bot.research.vps_operations_readiness import generate_vps_operations_readiness_report
 
 CommandCallback = Callable[[], int]
 
@@ -464,6 +465,17 @@ def run_deployment_readiness_report_command() -> int:
         result = generate_deployment_readiness_report()
     except Exception as exc:
         print(f"Deployment readiness report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
+
+
+def run_vps_operations_readiness_report_command() -> int:
+    try:
+        result = generate_vps_operations_readiness_report()
+    except Exception as exc:
+        print(f"VPS operations readiness report failed: {exc}", file=sys.stderr)
         return 1
     for line in result.summary_lines:
         print(line)

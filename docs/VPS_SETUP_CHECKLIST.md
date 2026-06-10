@@ -73,6 +73,7 @@ Run these manually after setup:
 ```powershell
 python scripts\verify_repo_safety.py
 python bot.py --deployment-readiness-report
+python bot.py --vps-operations-readiness-report
 python scripts\verify_v2_baseline.py --timeout-seconds 180
 ```
 
@@ -95,6 +96,7 @@ python bot.py --refresh-promoted-review
 python bot.py --show-promoted-decision
 python bot.py --show-crypto-monitor
 python bot.py --deployment-readiness-report
+python bot.py --vps-operations-readiness-report
 python scripts\verify_repo_safety.py
 ```
 
@@ -124,6 +126,7 @@ Prerequisites before any scheduling review:
 ```powershell
 python scripts\verify_repo_safety.py
 python bot.py --market-monitor-scheduling-readiness-report
+python bot.py --vps-operations-readiness-report
 python bot.py --refresh-market-monitor
 ```
 

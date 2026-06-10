@@ -478,6 +478,14 @@ python bot.py --deployment-readiness-report
 
 This is a reporting-only check for future Windows Server VPS use. It may inspect local files and Git metadata, but it does not deploy, create Windows Task Scheduler tasks, refresh market data, call Alpaca, submit orders, send Discord alerts, or approve execution. Any future Windows Task Scheduler setup must start with report/display commands only and is not execution approval.
 
+Create a VPS/Hermes operations readiness audit for monitoring/report/display commands only:
+
+```powershell
+python bot.py --vps-operations-readiness-report
+```
+
+This writes `data/vps_operations_readiness_report.csv` and checks static readiness for operating safe monitoring/report/display commands from the VPS/Hermes setup. It verifies the repo path, virtual-environment expectation, required project files, repo safety verifier, market monitor and deployment-readiness command availability, ignored generated outputs, untracked private files, Hermes market-monitor candidate documentation, and never-schedule command boundaries. It does not deploy, schedule, create Windows Task Scheduler tasks, create Hermes cron jobs, create services, load `config.json`, read secrets, call Alpaca, read positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, approve scheduling, or approve execution.
+
 Create a research-only intraday monitoring snapshot for the fixed ticker universe:
 
 ```powershell

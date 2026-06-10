@@ -169,6 +169,7 @@ from trading_bot.runners.research_reports import (
     run_ticker_universe_readiness_report_command,
     run_vol_managed_etf_backtest_command,
     run_vol_managed_etf_robustness_command,
+    run_vps_operations_readiness_report_command,
 )
 from trading_bot.safety.paper_kill_switch import evaluate_paper_kill_switch_gate
 from trading_bot.strategies.adaptive import select_adaptive_momentum_assets
@@ -4018,6 +4019,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a local VPS/server deployment readiness audit without deploying or executing.",
     )
     parser.add_argument(
+        "--vps-operations-readiness-report",
+        action="store_true",
+        help="Create a report-only VPS/Hermes operations readiness audit without scheduling or execution.",
+    )
+    parser.add_argument(
         "--portfolio-risk-policy-report",
         action="store_true",
         help="Create a research-only portfolio risk policy audit without enforcing execution gates.",
@@ -4262,6 +4268,8 @@ def main() -> int:
         return run_show_promoted_decision_command()
     if args.deployment_readiness_report:
         return run_deployment_readiness_report_command()
+    if args.vps_operations_readiness_report:
+        return run_vps_operations_readiness_report_command()
     if args.portfolio_risk_policy_report:
         return run_portfolio_risk_policy_report_command()
     if args.show_portfolio_risk_policy:
