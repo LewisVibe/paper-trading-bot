@@ -137,6 +137,38 @@ Stop if any candidate schedule tries to load `config.json`, call Alpaca, read
 positions, write SQLite `trade_log`, send Discord alerts, create orders, or
 approve execution.
 
+## Future MCP Feasibility
+
+MCP may be useful later as a tiny local/custom safe operations adapter for
+Hermes or Desktop, but it is not part of the initial VPS setup and is not
+approved for implementation yet.
+
+Any future MCP proof of concept must expose only whitelisted report, display,
+monitoring, and maintenance tools such as `repo_safety_check`,
+`refresh_market_monitor`, `market_monitor_scheduling_readiness`,
+`vps_operations_readiness`, `deployment_readiness_report`, and
+`show_safe_command_list`.
+
+It must not expose tools for `submit_order`, `cancel_order`, `run_normal_bot`,
+`run_paper_order_test`, `run_slow_sma_paper_execution`, `read_config`,
+`read_env`, `read_logs`, `read_database`, `expose_tokens`,
+`schedule_execution`, or `approve_execution`.
+
+Security boundary:
+
+- Use a tiny local/custom MCP server only if implemented later.
+- Do not use third-party MCP servers by default.
+- Use a hardcoded allowlist of exact commands and deny by default.
+- Use fixed working directory `C:\dev\paper-trading-bot`.
+- Do not expose arbitrary shell access.
+- Do not access secrets or generated data by default.
+- Return `execution_approved=False` and `scheduling_approved=False` where
+  applicable.
+
+Do not consider MCP until the VPS readiness/report chain is stable and
+no-overlap or lockfile protection exists for monitor refresh. A first proof of
+concept should expose only `repo_safety_check` and `refresh_market_monitor`.
+
 ## Commands Never To Schedule Automatically
 
 Do not schedule:

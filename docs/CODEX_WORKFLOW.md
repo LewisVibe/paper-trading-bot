@@ -63,6 +63,20 @@ H. Do not treat monitoring signals as execution approval.
 
 More frequent price checks do not mean more frequent trades. Daily strategies should not overtrade intraday noise unless a separate intraday strategy is researched and validated. For now, frequent monitoring means observe, report, and preview; it does not mean submit orders. Any execution-capable loop or scheduled order workflow remains not approved.
 
+## MCP Feasibility Boundary
+
+MCP may be considered later as a tiny local/custom safe operations adapter for
+VPS/Hermes report, display, and monitor commands only. It is not approved for
+implementation yet, and it must not become a trading execution interface.
+
+Any future MCP proof of concept must use a hardcoded allowlist, deny by default,
+use fixed working directory `C:\dev\paper-trading-bot`, avoid arbitrary shell
+access, avoid secrets and generated data by default, and return
+`execution_approved=False` and `scheduling_approved=False` where applicable.
+The first possible tools should be limited to `repo_safety_check` and
+`refresh_market_monitor` only after VPS readiness reports are stable and
+no-overlap or lockfile protection exists.
+
 ## More Tickers Rule
 
 More tickers should start with liquid U.S. stocks and ETFs only. Universe expansion must land in research/preview first, with liquidity, price, and duplicate validation before any execution review.

@@ -386,6 +386,48 @@ Cross-references:
   - `python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper`
 - **Stop condition:** Stop if the plan creates schedules, approves scheduling, approves execution, or any candidate command tries to load `config.json`, call Alpaca, read positions, write SQLite `trade_log`, send Discord alerts, or create orders.
 
+### Task: Plan MCP safe operations adapter
+- **Purpose:** Document whether MCP could later wrap safe VPS/Hermes operations for whitelisted report/display/monitor commands only.
+- **Risk level:** Medium docs-only planning. MCP implementation is not approved.
+- **Allowed files:**
+  - `docs/CURRENT_STATE.md`
+  - `docs/HERMES_WORKFLOW.md`
+  - `docs/HERMES_TASK_BOARD.md`
+  - `docs/VPS_SETUP_CHECKLIST.md`
+  - `docs/CODEX_WORKFLOW.md`
+  - `README.md`
+- **Forbidden files/areas:**
+  - Python code
+  - MCP server implementation
+  - MCP package installation
+  - services
+  - schedules or Hermes cron jobs
+  - config/secrets/logs/databases/generated outputs
+  - Alpaca/order/position/SQLite `trade_log`/Discord alert logic
+- **Candidate future MCP tools:**
+  - `repo_safety_check`
+  - `refresh_market_monitor`
+  - `market_monitor_scheduling_readiness`
+  - `vps_operations_readiness`
+  - `deployment_readiness_report`
+  - `show_safe_command_list`
+- **Forbidden MCP tools:**
+  - `submit_order`
+  - `cancel_order`
+  - `run_normal_bot`
+  - `run_paper_order_test`
+  - `run_slow_sma_paper_execution`
+  - `read_config`
+  - `read_env`
+  - `read_logs`
+  - `read_database`
+  - `expose_tokens`
+  - `schedule_execution`
+  - `approve_execution`
+- **Security rules:** Use a tiny local/custom MCP server only if implemented later, no third-party MCP servers by default, hardcoded allowlist, deny by default, fixed working directory `C:\dev\paper-trading-bot`, no arbitrary shell tool, no secrets/generated data access, and return `execution_approved=False` and `scheduling_approved=False` where applicable.
+- **Recommended order:** Stabilize VPS readiness/report chain, add no-overlap or lockfile protection for monitor refresh, then consider a minimal proof of concept exposing only `repo_safety_check` and `refresh_market_monitor`.
+- **Stop condition:** Stop if the plan starts implementing MCP, installing packages, creating services, creating schedules, approving execution, or exposing any order, config, secret, log, database, token, or arbitrary shell access.
+
 ### Task: Move high-risk execution code out of `bot.py`
 - **Purpose:** Refactor high-risk execution internals.
 - **Risk level:** High; explicitly "should not move yet" in refactor inventory.

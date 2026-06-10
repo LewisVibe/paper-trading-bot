@@ -226,6 +226,68 @@ python bot.py --paper-order-test ...
 python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper
 ```
 
+## 6B. MCP Feasibility For Safe VPS Operations
+
+MCP could have a supporting role later as a tiny local/custom operations adapter
+for VPS/Hermes usage, but only after the current monitor/report workflow is
+stable. Its purpose would be to expose a small set of whitelisted maintenance,
+report, display, and monitoring actions so Hermes or Desktop do not need broad
+raw shell access for routine safe operations.
+
+MCP is not a trading interface for this project. It must remain separate from
+Alpaca, order submission, paper execution, position reads, `trade_log` writes,
+Discord trade alerts, scheduling approval, and execution approval.
+
+Candidate future MCP tools:
+
+- `repo_safety_check`
+- `refresh_market_monitor`
+- `market_monitor_scheduling_readiness`
+- `vps_operations_readiness`
+- `deployment_readiness_report`
+- `show_safe_command_list`
+
+Explicitly forbidden MCP tools:
+
+- `submit_order`
+- `cancel_order`
+- `run_normal_bot`
+- `run_paper_order_test`
+- `run_slow_sma_paper_execution`
+- `read_config`
+- `read_env`
+- `read_logs`
+- `read_database`
+- `expose_tokens`
+- `schedule_execution`
+- `approve_execution`
+
+Security rules for any future MCP proof of concept:
+
+- Use a tiny local/custom MCP server only if implemented later.
+- Do not use third-party MCP servers by default.
+- Use a hardcoded allowlist of exact commands and deny by default.
+- Use the fixed working directory `C:\dev\paper-trading-bot`.
+- Do not expose an arbitrary shell command tool.
+- Do not allow secrets, config files, logs, databases, generated CSV contents,
+  auth files, or tokens by default.
+- Return `execution_approved=False` and `scheduling_approved=False` from tools
+  where those flags apply.
+
+Recommended implementation order:
+
+1. Finish and stabilize the VPS readiness/report chain.
+2. Add no-overlap or lockfile protection for monitor refresh before any
+   repeated-run design.
+3. Only then consider a minimal MCP proof of concept.
+4. Start that proof of concept with only `repo_safety_check` and
+   `refresh_market_monitor`.
+
+Current conclusion: MCP is potentially useful later as a safer wrapper around
+known-good report/display/monitor commands. It is not worth implementing before
+the VPS monitor/report workflow is stable, and it must remain separate from
+trading execution.
+
 ## 7. How Hermes Should Report Back After Tasks
 
 Hermes should report concisely and explicitly.
