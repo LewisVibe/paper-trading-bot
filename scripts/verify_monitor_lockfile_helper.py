@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import inspect
+import json
 import sys
+import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -14,8 +16,10 @@ import trading_bot.safety.monitor_lockfile as monitor_lockfile
 from trading_bot.safety.monitor_lockfile import (
     LOCK_VERSION,
     SAFE_LOCK_COMMAND_NAMES,
+    acquire_monitor_lock,
     build_lock_metadata,
     evaluate_existing_lock,
+    release_monitor_lock,
     validate_lock_metadata,
 )
 
@@ -34,6 +38,10 @@ def main() -> int:
     verify_stale_existing_lock_requires_manual_review(failures)
     verify_malformed_metadata_blocks(failures)
     verify_no_existing_lock_decision_is_non_executing(failures)
+    verify_lock_acquire_release_uses_temp_files_and_cleans_up(failures)
+    verify_lock_acquire_blocks_fresh_existing_file(failures)
+    verify_lock_acquire_blocks_stale_existing_file(failures)
+    verify_lock_acquire_blocks_malformed_existing_file(failures)
 
     if failures:
         print("Monitor lockfile helper verification failed:")
@@ -55,13 +63,10 @@ def verify_helper_source_is_pure(failures: list[str]) -> None:
         "socket",
         "yfinance",
         "sqlite3",
-        "open(",
-        "Path(",
-        "os.",
     ]
     for term in forbidden_terms:
         if term in source:
-            failures.append(f"helper must remain pure/no-network/no-filesystem; found {term}")
+            failures.append(f"helper must remain no-network/no-trading/no-database; found {term}")
 
 
 def verify_safe_command_metadata_passes(failures: list[str]) -> None:
@@ -167,6 +172,97 @@ def verify_malformed_metadata_blocks(failures: list[str]) -> None:
 def verify_no_existing_lock_decision_is_non_executing(failures: list[str]) -> None:
     decision = evaluate_existing_lock(None, NOW)
     expect_decision(decision, True, "no_existing_lock", failures, "no existing lock")
+
+
+def verify_lock_acquire_release_uses_temp_files_and_cleans_up(failures: list[str]) -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        lock_path = Path(tmpdir) / "monitor.lock"
+        acquire_result = acquire_monitor_lock(
+            lock_path,
+            "--monitor-lockfile-readiness-report",
+            now=NOW,
+            hostname="vps-host",
+            pid=1234,
+            stale_after_seconds=900,
+        )
+        expect_decision(acquire_result.decision, True, "lock_acquired", failures, "lock acquire")
+        if not acquire_result.acquired:
+            failures.append("lock acquire should mark acquired=True")
+            return
+        if not lock_path.exists():
+            failures.append("lock acquire should create a temp lock file")
+        release_decision = release_monitor_lock(lock_path, acquire_result.metadata)
+        expect_decision(release_decision, True, "lock_released", failures, "lock release")
+        if lock_path.exists():
+            failures.append("lock release should clean up the temp lock file")
+
+
+def verify_lock_acquire_blocks_fresh_existing_file(failures: list[str]) -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        lock_path = Path(tmpdir) / "monitor.lock"
+        metadata = build_lock_metadata(
+            "--monitor-lockfile-readiness-report",
+            NOW - timedelta(seconds=120),
+            "vps-host",
+            1234,
+            stale_after_seconds=900,
+        )
+        lock_path.write_text(json.dumps(metadata.to_dict()), encoding="utf-8")
+        acquire_result = acquire_monitor_lock(lock_path, "--monitor-lockfile-readiness-report", now=NOW)
+        expect_decision(
+            acquire_result.decision,
+            False,
+            "fresh_existing_lock_blocks",
+            failures,
+            "fresh existing lock file",
+        )
+        if acquire_result.acquired:
+            failures.append("fresh existing lock file should not be acquired")
+        if not lock_path.exists():
+            failures.append("fresh existing lock file should not be removed")
+
+
+def verify_lock_acquire_blocks_stale_existing_file(failures: list[str]) -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        lock_path = Path(tmpdir) / "monitor.lock"
+        metadata = build_lock_metadata(
+            "--monitor-lockfile-readiness-report",
+            NOW - timedelta(seconds=1200),
+            "vps-host",
+            1234,
+            stale_after_seconds=900,
+        )
+        lock_path.write_text(json.dumps(metadata.to_dict()), encoding="utf-8")
+        acquire_result = acquire_monitor_lock(lock_path, "--monitor-lockfile-readiness-report", now=NOW)
+        expect_decision(
+            acquire_result.decision,
+            False,
+            "stale_requires_manual_review",
+            failures,
+            "stale existing lock file",
+        )
+        if acquire_result.acquired:
+            failures.append("stale existing lock file should not be acquired")
+        if not lock_path.exists():
+            failures.append("stale existing lock file should not be silently removed")
+
+
+def verify_lock_acquire_blocks_malformed_existing_file(failures: list[str]) -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        lock_path = Path(tmpdir) / "monitor.lock"
+        lock_path.write_text("not-json", encoding="utf-8")
+        acquire_result = acquire_monitor_lock(lock_path, "--monitor-lockfile-readiness-report", now=NOW)
+        expect_decision(
+            acquire_result.decision,
+            False,
+            "malformed_existing_lock_blocks",
+            failures,
+            "malformed existing lock file",
+        )
+        if acquire_result.acquired:
+            failures.append("malformed existing lock file should not be acquired")
+        if not lock_path.exists():
+            failures.append("malformed existing lock file should not be silently removed")
 
 
 def expect_decision(decision, allowed: bool, status: str, failures: list[str], label: str) -> None:

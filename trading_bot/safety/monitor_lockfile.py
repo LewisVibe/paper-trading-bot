@@ -1,9 +1,13 @@
-"""Pure no-network lockfile decisions for future monitor refresh protection."""
+"""No-network lockfile decisions for safe monitor/report refresh protection."""
 
 from __future__ import annotations
 
+import json
+import os
+import platform
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Mapping
 
 
@@ -18,6 +22,9 @@ SAFE_LOCK_COMMAND_NAMES = frozenset(
         "--show-crypto-monitor",
     }
 )
+
+LOCK_WRAPPED_COMMAND_NAMES = frozenset({"--monitor-lockfile-readiness-report"})
+DEFAULT_MONITOR_LOCK_STALE_AFTER_SECONDS = 60 * 60
 
 ALLOWED_LOCK_METADATA_FIELDS = frozenset(
     {
@@ -93,6 +100,14 @@ class LockDecision:
     scheduling_approved: bool = False
 
 
+@dataclass(frozen=True)
+class LockAcquireResult:
+    acquired: bool
+    decision: LockDecision
+    lock_path: Path
+    metadata: LockMetadata | None = None
+
+
 def build_lock_metadata(
     command_name: str,
     started_at: datetime | str,
@@ -107,6 +122,106 @@ def build_lock_metadata(
         hostname=hostname,
         pid=pid,
         stale_after_seconds=stale_after_seconds,
+    )
+
+
+def default_monitor_lock_path(root: Path, command_name: str) -> Path:
+    if command_name != "--monitor-lockfile-readiness-report":
+        safe_name = "unsupported_monitor_command"
+    else:
+        safe_name = "monitor_lockfile_readiness"
+    return root / "data" / "runtime_locks" / f"{safe_name}.lock"
+
+
+def acquire_monitor_lock(
+    lock_path: Path,
+    command_name: str,
+    now: datetime | None = None,
+    hostname: str | None = None,
+    pid: int | None = None,
+    stale_after_seconds: int = DEFAULT_MONITOR_LOCK_STALE_AFTER_SECONDS,
+    allowed_command_names: set[str] | frozenset[str] = LOCK_WRAPPED_COMMAND_NAMES,
+) -> LockAcquireResult:
+    started_at = now or datetime.now(timezone.utc)
+    metadata = build_lock_metadata(
+        command_name=command_name,
+        started_at=started_at,
+        hostname=hostname or platform.node() or "unknown-host",
+        pid=pid if pid is not None else os.getpid(),
+        stale_after_seconds=stale_after_seconds,
+    )
+    validation = validate_lock_metadata(metadata, allowed_command_names)
+    if not validation.allowed:
+        return LockAcquireResult(False, validation, lock_path, None)
+
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError:
+        existing_metadata = _read_lock_metadata(lock_path)
+        decision = evaluate_existing_lock(
+            existing_metadata,
+            started_at,
+            allowed_command_names=allowed_command_names,
+        )
+        return LockAcquireResult(False, decision, lock_path, None)
+
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            json.dump(metadata.to_dict(), handle, indent=2, sort_keys=True)
+            handle.write("\n")
+    except Exception:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        try:
+            lock_path.unlink()
+        except OSError:
+            pass
+        raise
+
+    return LockAcquireResult(
+        True,
+        _decision(
+            True,
+            "lock_acquired",
+            ["monitor lock acquired for report-only command"],
+            "Run only the approved report-only command and release the lock in a finally block.",
+        ),
+        lock_path,
+        metadata,
+    )
+
+
+def release_monitor_lock(lock_path: Path, metadata: LockMetadata) -> LockDecision:
+    existing_metadata = _read_lock_metadata(lock_path)
+    if existing_metadata is None:
+        return _decision(
+            True,
+            "lock_already_absent",
+            ["lock file was already absent during release"],
+            "No further action is required for this completed report-only command.",
+        )
+    existing_metadata_dict = (
+        existing_metadata.to_dict() if isinstance(existing_metadata, LockMetadata) else dict(existing_metadata)
+    )
+    if existing_metadata_dict != metadata.to_dict():
+        return _decision(
+            False,
+            "lock_metadata_mismatch_requires_manual_review",
+            ["current lock metadata does not match acquired metadata"],
+            "Stop and review the lock manually; do not delete a lock owned by another process.",
+        )
+    try:
+        lock_path.unlink()
+    except FileNotFoundError:
+        pass
+    return _decision(
+        True,
+        "lock_released",
+        ["monitor lock released for report-only command"],
+        "No scheduling or execution approval is implied by this release.",
     )
 
 
@@ -257,6 +372,20 @@ def _contains_forbidden_value(value: Any) -> bool:
         return False
     value_lower = str(value).lower()
     return any(fragment in value_lower for fragment in FORBIDDEN_LOCK_VALUE_FRAGMENTS)
+
+
+def _read_lock_metadata(lock_path: Path) -> LockMetadata | Mapping[str, Any] | None:
+    try:
+        raw = lock_path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return None
+    try:
+        loaded = json.loads(raw)
+    except json.JSONDecodeError:
+        return {"command_name": "", "started_at": "", "hostname": "", "pid": 0, "lock_version": "malformed"}
+    if not isinstance(loaded, dict):
+        return {"command_name": "", "started_at": "", "hostname": "", "pid": 0, "lock_version": "malformed"}
+    return loaded
 
 
 def _command_rejection_reasons(

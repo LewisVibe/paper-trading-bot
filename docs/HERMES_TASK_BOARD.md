@@ -458,10 +458,10 @@ Cross-references:
 - **Scope:** Applies only to future report, preview, display, and monitor refresh commands.
 - **Never schedule:** Normal `python bot.py`, paper-order tests, slow-SMA paper execution, or any future execution-capable command. Execution-capable commands must not be treated as safe merely because a lockfile exists.
 - **Recommended order:** Add report-only no-overlap/lockfile design or verifier, add isolated lock helper tests, apply only to safe refresh/report/display commands, then only after manual review consider scheduling safe monitor/report refresh commands.
-- **Current scaffold command:** `python bot.py --monitor-lockfile-readiness-report` writes `data/monitor_lockfile_readiness_report.csv` when run, but does not create a lockfile, wrap any command, approve scheduling, or approve execution.
+- **Current scaffold command:** `python bot.py --monitor-lockfile-readiness-report` writes `data/monitor_lockfile_readiness_report.csv` when run and is the only command protected by the monitor lockfile helper. The lock is a transient report-only no-overlap guard and does not approve scheduling or execution.
 - **Contract verifier:** `python scripts\verify_monitor_lockfile_contract.py` is pure/no-network and defines future helper requirements only.
-- **Helper verifier:** `python scripts\verify_monitor_lockfile_helper.py` checks the isolated helper in `trading_bot/safety/monitor_lockfile.py`; the helper is not wired into runtime commands and does not create real lockfiles.
-- **Integration checkpoint:** `python scripts\verify_monitor_lockfile_integration_readiness.py` verifies the helper scaffold exists, remains unwired from `bot.py`, has not wrapped commands with runtime lock acquisition or release, and remains future-only for safe report/display/monitor refresh commands.
+- **Helper verifier:** `python scripts\verify_monitor_lockfile_helper.py` checks temp-directory acquire/release cleanup, fresh-lock blocking, malformed-lock blocking, and stale-lock manual review in `trading_bot/safety/monitor_lockfile.py`.
+- **Integration checkpoint:** `python scripts\verify_monitor_lockfile_integration_readiness.py` verifies exactly `--monitor-lockfile-readiness-report` is lock-wrapped, `bot.py` is not using the helper directly, no other command is lock-wrapped, and future safe report/display/monitor refresh commands remain manual-review only.
 - **Stop condition:** Stop if the plan creates a lockfile implementation, creates schedules, adds loop mode, changes Python source, changes config defaults, approves scheduling, approves execution, or touches private/generated files.
 
 ### Task: Move high-risk execution code out of `bot.py`

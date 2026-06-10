@@ -52,10 +52,7 @@ BLOCKED_COMMAND_PHRASES = [
 
 FUTURE_ONLY_PHRASES = [
     "future",
-    "not wired",
-    "does not create real lockfiles",
-    "does not create a lockfile",
-    "does not acquire or release locks",
+    "only command protected by the monitor lockfile helper",
     "does not approve scheduling",
     "does not approve execution",
     "report/preview/display/monitor",
@@ -84,7 +81,7 @@ def main() -> int:
 
     verify_required_files_exist(failures)
     verify_bot_is_not_using_helper(failures)
-    verify_no_runtime_lock_wrapping(failures)
+    verify_lock_wrapping_is_limited_to_readiness_report(failures)
     verify_future_only_docs(failures)
     verify_blocked_commands_documented(failures)
     verify_helper_decision_flags(failures)
@@ -98,7 +95,7 @@ def main() -> int:
         return 1
 
     print("Monitor lockfile integration readiness verification passed.")
-    print("Verified helper/test presence, no bot.py helper wiring, no runtime lock wrapping, future-only docs, blocked commands, false approval flags, and no scheduler/service additions.")
+    print("Verified helper/test presence, no bot.py helper wiring, single-command lock wrapping, future-only docs for other commands, blocked commands, false approval flags, and no scheduler/service additions.")
     return 0
 
 
@@ -115,16 +112,34 @@ def verify_bot_is_not_using_helper(failures: list[str]) -> None:
             failures.append(f"bot.py must not use monitor lock helper yet; found {token}")
 
 
-def verify_no_runtime_lock_wrapping(failures: list[str]) -> None:
-    source_paths = [
+def verify_lock_wrapping_is_limited_to_readiness_report(failures: list[str]) -> None:
+    runner_source = read_text(ROOT / "trading_bot" / "runners" / "research_reports.py")
+    function_body = extract_function_body(runner_source, "run_monitor_lockfile_readiness_report_command")
+    if "acquire_monitor_lock(" not in function_body:
+        failures.append("monitor lockfile readiness report command should acquire the monitor lock")
+    if "release_monitor_lock(" not in function_body:
+        failures.append("monitor lockfile readiness report command should release the monitor lock")
+    if function_body.count("acquire_monitor_lock(") != 1:
+        failures.append("monitor lockfile readiness report command should have exactly one acquire call")
+    if function_body.count("release_monitor_lock(") != 1:
+        failures.append("monitor lockfile readiness report command should have exactly one release call")
+    if '"--monitor-lockfile-readiness-report"' not in function_body:
+        failures.append("lock wrapping must name only --monitor-lockfile-readiness-report")
+
+    runner_without_readiness = runner_source.replace(function_body, "")
+    forbidden_tokens = ["acquire_monitor_lock(", "release_monitor_lock("]
+    for token in forbidden_tokens:
+        if token in runner_without_readiness:
+            failures.append(f"monitor lock helper must not wrap any other report command; found {token}")
+
+    other_sources = [
         ROOT / "bot.py",
-        ROOT / "trading_bot" / "runners" / "research_reports.py",
         ROOT / "trading_bot" / "research" / "monitor_lockfile_readiness.py",
     ]
-    combined = "\n".join(read_text(path) for path in source_paths)
+    combined_other = "\n".join(read_text(path) for path in other_sources)
     for token in LOCK_RUNTIME_TOKENS:
-        if token in combined:
-            failures.append(f"No runtime lock acquisition/release should exist yet; found {token}")
+        if token in combined_other:
+            failures.append(f"Lock acquisition/release must stay out of bot.py and report generation code; found {token}")
 
 
 def verify_future_only_docs(failures: list[str]) -> None:
@@ -195,6 +210,17 @@ def read_text(path: Path) -> str:
         return path.read_text(encoding="utf-8")
     except FileNotFoundError:
         return ""
+
+
+def extract_function_body(source: str, function_name: str) -> str:
+    marker = f"def {function_name}("
+    start = source.find(marker)
+    if start == -1:
+        return ""
+    next_def = source.find("\ndef ", start + len(marker))
+    if next_def == -1:
+        return source[start:]
+    return source[start:next_def]
 
 
 def run_git_status() -> str:

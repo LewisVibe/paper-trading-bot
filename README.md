@@ -532,13 +532,13 @@ Create a static no-overlap/lockfile readiness design report:
 python bot.py --monitor-lockfile-readiness-report
 ```
 
-This writes `data/monitor_lockfile_readiness_report.csv` and classifies future safe refresh/report/display candidates, blocked execution-capable commands, stale-lock policy requirements, metadata constraints, no-secret lock contents, future lock helper tests, and manual scheduling review requirements. It does not acquire or release locks, wrap existing commands, refresh market data, call yfinance, call Alpaca, read positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, create schedules, create services, approve scheduling, or approve execution.
+This writes `data/monitor_lockfile_readiness_report.csv` and classifies future safe refresh/report/display candidates, blocked execution-capable commands, stale-lock policy requirements, metadata constraints, no-secret lock contents, future lock helper tests, and manual scheduling review requirements. This is the only command currently protected by the monitor lockfile helper; the lock is a report-only no-overlap guard and does not refresh market data, call yfinance, call Alpaca, read positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, create schedules, create services, approve scheduling, or approve execution.
 
 The pure no-network contract verifier, `python scripts\verify_monitor_lockfile_contract.py`, defines what a future lock helper must satisfy before implementation. It does not implement locking, create lockfiles, schedule anything, run bot commands, and does not create schedules.
 
-The pure helper verifier, `python scripts\verify_monitor_lockfile_helper.py`, checks the isolated in-memory helper in `trading_bot/safety/monitor_lockfile.py`. The helper is not wired into runtime commands and does not create real lockfiles.
+The pure helper verifier, `python scripts\verify_monitor_lockfile_helper.py`, checks the helper in `trading_bot/safety/monitor_lockfile.py`, including temp-directory lock acquire/release cleanup, fresh-lock blocking, malformed-lock blocking, and stale-lock manual review.
 
-The integration-readiness checkpoint, `python scripts\verify_monitor_lockfile_integration_readiness.py`, verifies that the helper and verifier scaffold exists, remains unwired from `bot.py`, has not wrapped commands with runtime lock acquisition or release, and is documented as future-only for safe report/display/monitor refresh commands.
+The integration-readiness checkpoint, `python scripts\verify_monitor_lockfile_integration_readiness.py`, verifies that exactly `--monitor-lockfile-readiness-report` is lock-wrapped, `bot.py` is not using the helper directly, no other command is lock-wrapped, and future safe report/display/monitor refresh commands remain manual-review only.
 
 Future Hermes cron plan for market monitor reports only:
 

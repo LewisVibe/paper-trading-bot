@@ -10,6 +10,11 @@ import sys
 from pathlib import Path
 from typing import Callable
 
+from trading_bot.safety.monitor_lockfile import (
+    acquire_monitor_lock,
+    default_monitor_lock_path,
+    release_monitor_lock,
+)
 from trading_bot.research.crypto_decision import generate_crypto_strategy_decision_report
 from trading_bot.research.crypto_monitor import show_crypto_monitor_file
 from trading_bot.research.crypto_period_diagnostics import generate_crypto_period_diagnostics
@@ -397,13 +402,47 @@ def run_market_monitor_scheduling_readiness_report_command() -> int:
 
 
 def run_monitor_lockfile_readiness_report_command() -> int:
+    command_name = "--monitor-lockfile-readiness-report"
+    lock_path = default_monitor_lock_path(Path(__file__).resolve().parents[2], command_name)
+    lock_result = acquire_monitor_lock(lock_path, command_name)
+    if not lock_result.acquired:
+        print(f"Monitor lockfile readiness report blocked by lock: {lock_result.decision.status}", file=sys.stderr)
+        for reason in lock_result.decision.reasons:
+            print(f"- {reason}", file=sys.stderr)
+        print(f"Required next step: {lock_result.decision.required_next_step}", file=sys.stderr)
+        print("Lock protection is report-only and does not approve scheduling or execution.", file=sys.stderr)
+        return 1
+
+    result = None
+    error: Exception | None = None
+    release_decision = None
     try:
         result = generate_monitor_lockfile_readiness_report()
     except Exception as exc:
-        print(f"Monitor lockfile readiness report failed: {exc}", file=sys.stderr)
+        error = exc
+    finally:
+        if lock_result.metadata is not None:
+            release_decision = release_monitor_lock(lock_path, lock_result.metadata)
+
+    if error is not None:
+        print(f"Monitor lockfile readiness report failed: {error}", file=sys.stderr)
+        if release_decision is not None and not release_decision.allowed:
+            print(f"Monitor lock release requires manual review: {release_decision.status}", file=sys.stderr)
+            print(f"Required next step: {release_decision.required_next_step}", file=sys.stderr)
         return 1
+    if release_decision is not None and not release_decision.allowed:
+        print(f"Monitor lock release requires manual review: {release_decision.status}", file=sys.stderr)
+        print(f"Required next step: {release_decision.required_next_step}", file=sys.stderr)
+        return 1
+
     for line in result.summary_lines:
-        print(line)
+        if "does not create locks" in line:
+            print(
+                "Warning: this is report-only design scaffolding; the transient no-overlap lock does not approve schedules or execution."
+            )
+        else:
+            print(line)
+    print("Lock protection is report-only and does not approve scheduling or execution.")
     return 0
 
 
