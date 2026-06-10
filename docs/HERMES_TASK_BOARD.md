@@ -452,13 +452,14 @@ Cross-references:
   - config default changes
   - config/secrets/logs/databases/generated outputs
   - Alpaca/order/position/SQLite `trade_log`/Discord alert logic
-- **Lockfile concept:** A future lock file may prevent two safe refresh/report/display commands from running at once. Stale lock handling must be conservative, and uncertain stale locks should stop for manual review.
-- **Allowed lock metadata:** command name, `started_at`, host, and pid if safe.
-- **Forbidden lock metadata:** secrets, account IDs, config contents, order IDs, webhook URLs, API keys, generated trading data, positions, and report contents.
+- **Lockfile contract:** A future lock helper must be pure and no-network. A future lock file may prevent two safe refresh/report/display commands from running at once. Stale lock handling must be conservative, and uncertain stale locks should stop for manual review.
+- **Allowed lock metadata:** command name, `started_at`, host, pid, `lock_version`, and optional `stale_after_seconds` if safe.
+- **Forbidden lock metadata:** secrets, account IDs, config contents, order IDs, webhook URLs, API keys, logs, database contents, generated CSV contents, generated trading data, trading history, positions, and report contents.
 - **Scope:** Applies only to future report, preview, display, and monitor refresh commands.
-- **Never schedule:** Normal `python bot.py`, paper-order tests, slow-SMA paper execution, or any execution-capable command. Execution-capable commands must not be treated as safe merely because a lockfile exists.
+- **Never schedule:** Normal `python bot.py`, paper-order tests, slow-SMA paper execution, or any future execution-capable command. Execution-capable commands must not be treated as safe merely because a lockfile exists.
 - **Recommended order:** Add report-only no-overlap/lockfile design or verifier, add isolated lock helper tests, apply only to safe refresh/report/display commands, then only after manual review consider scheduling safe monitor/report refresh commands.
 - **Current scaffold command:** `python bot.py --monitor-lockfile-readiness-report` writes `data/monitor_lockfile_readiness_report.csv` when run, but does not create a lockfile, wrap any command, approve scheduling, or approve execution.
+- **Contract verifier:** `python scripts\verify_monitor_lockfile_contract.py` is pure/no-network and defines future helper requirements only.
 - **Stop condition:** Stop if the plan creates a lockfile implementation, creates schedules, adds loop mode, changes Python source, changes config defaults, approves scheduling, approves execution, or touches private/generated files.
 
 ### Task: Move high-risk execution code out of `bot.py`

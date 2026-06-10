@@ -269,6 +269,7 @@ Ticker universe readiness reporting:
 - Stop if any scheduled candidate tries to load `config.json`, call Alpaca, read positions, write SQLite `trade_log`, send Discord alerts, create orders, or approve execution.
 - No repeated market-monitor refresh should be scheduled before no-overlap/lockfile protection exists. A future lockfile may prevent two safe refresh/report/display commands from running at once, but stale lock handling must be conservative and the lock must not contain secrets, account IDs, config contents, order IDs, webhook URLs, API keys, generated trading data, positions, or report contents.
 - The monitor lockfile readiness report is a static design scaffold only. It classifies future safe candidates, blocked commands, stale-lock policy, metadata constraints, no-secret lock contents, lock helper tests, and manual scheduling review; it does not create a lockfile or wrap commands.
+- `python scripts\verify_monitor_lockfile_contract.py` is a pure no-network contract verifier for future lock helper requirements. It does not implement locking, create lockfiles, schedule anything, or run bot commands.
 - Lockfile planning applies only to report/preview/display/monitor refresh commands. Execution-capable commands must never be scheduled and must not be treated as safe merely because a lockfile exists. A lockfile does not approve scheduling, execution, or paper orders.
 - It does not call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, change strategy rules, or approve execution.
 - More tickers and more frequent price checks do not mean more trades. Frequent monitoring should start as preview/display/report only, and daily strategies should not become intraday trading strategies without separate research.
@@ -334,6 +335,7 @@ Workflow, deployment, and risk policy checks:
 
 ```text
 python scripts\verify_repo_safety.py
+python scripts\verify_monitor_lockfile_contract.py
 python bot.py --ticker-universe-readiness-report
 python bot.py --market-monitor-snapshot
 python bot.py --show-market-monitor

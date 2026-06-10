@@ -224,15 +224,18 @@ operation, or quality report is still running when the next refresh starts. That
 could produce confusing reports or partially written files, even though the
 workflow is monitoring/report/display only.
 
-Future lockfile concept, planning only:
+Future lockfile helper contract, planning only:
 
 - A lock file should prevent two safe refresh/report/display commands from
   running at once.
+- The helper must be pure and no-network.
 - Stale lock handling must be conservative. When in doubt, stop and ask for
   manual review instead of deleting a lock automatically.
-- Lock metadata may include command name, `started_at`, host, and pid if safe.
+- Lock metadata may include command name, `started_at`, host, pid,
+  `lock_version`, and optional `stale_after_seconds` if safe.
 - The lock must not contain secrets, account IDs, config contents, order IDs,
-  webhook URLs, API keys, generated trading data, positions, or report contents.
+  webhook URLs, API keys, logs, database contents, generated CSV contents,
+  generated trading data, trading history, positions, or report contents.
 - Lockfile protection applies only to future report, preview, display, and
   monitor refresh commands.
 - Execution-capable commands must never be scheduled and must not be treated as
@@ -252,6 +255,10 @@ The current report-only design scaffold is
 `python bot.py --monitor-lockfile-readiness-report`. It writes
 `data/monitor_lockfile_readiness_report.csv` when run, but it does not create a
 lockfile, wrap any command, approve scheduling, or approve execution.
+
+The pure no-network contract verifier is
+`python scripts\verify_monitor_lockfile_contract.py`. It defines the future
+helper contract only; it does not implement locking or run bot commands.
 
 The usual paper-only boundaries still apply: no live trading, `dry_run` defaults
 to true, `alpaca.paper` remains true, `allow_shorting` remains false, and

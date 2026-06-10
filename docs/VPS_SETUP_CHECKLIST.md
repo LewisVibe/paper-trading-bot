@@ -147,14 +147,17 @@ cache, displaying the saved snapshot, or writing the quality report. Even
 without execution, overlapping report runs can create confusing or partially
 written monitoring outputs.
 
-Future lockfile concept, planning only:
+Future lockfile helper contract, planning only:
 
 - A lock file should prevent two refresh commands from running at once.
+- The helper must be pure and no-network.
 - Stale lock handling must be conservative; uncertain stale locks should stop
   the run and require manual review.
-- Lock metadata may include command name, `started_at`, host, and pid if safe.
+- Lock metadata may include command name, `started_at`, host, pid,
+  `lock_version`, and optional `stale_after_seconds` if safe.
 - The lock must not contain secrets, account IDs, config contents, order IDs,
-  webhook URLs, API keys, generated trading data, positions, or report contents.
+  webhook URLs, API keys, logs, database contents, generated CSV contents,
+  generated trading data, trading history, positions, or report contents.
 
 This plan applies only to future report, preview, display, and monitor refresh
 commands. Execution-capable commands must never be scheduled, and they must not
@@ -178,6 +181,15 @@ python bot.py --monitor-lockfile-readiness-report
 It writes `data/monitor_lockfile_readiness_report.csv` when run, but it does not
 create a lockfile, wrap an existing command, approve scheduling, or approve
 execution.
+
+The pure no-network contract verifier is:
+
+```powershell
+python scripts\verify_monitor_lockfile_contract.py
+```
+
+It defines future lock helper requirements only; it does not implement locking,
+create lockfiles, schedule anything, or run bot commands.
 
 Keep the project paper-only: no live trading, `dry_run=true`, `alpaca.paper=true`,
 and `allow_shorting=false`. Do not read or commit config, secrets, logs,

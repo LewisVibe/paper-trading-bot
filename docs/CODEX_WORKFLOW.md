@@ -70,11 +70,13 @@ protection as a separate reviewed effort. Overlapping report runs could collide
 while fetching data, writing CSVs, updating caches, or producing quality reports,
 so the future lockfile is for report integrity only.
 
-A future lock file may prevent two safe refresh/report/display commands from
-running at once. Stale lock handling must be conservative. Lock metadata may
-include command name, `started_at`, host, and pid if safe, but must not include
-secrets, account IDs, config contents, order IDs, webhook URLs, API keys,
-generated trading data, positions, or report contents.
+A future lock helper must be pure and no-network. A future lock file may prevent
+two safe refresh/report/display commands from running at once. Stale lock
+handling must be conservative. Lock metadata may include command name,
+`started_at`, host, pid, `lock_version`, and optional `stale_after_seconds` if
+safe, but must not include secrets, account IDs, config contents, order IDs,
+webhook URLs, API keys, logs, database contents, generated CSV contents,
+generated trading data, trading history, positions, or report contents.
 
 This applies only to report, preview, display, and monitor refresh commands.
 Execution-capable commands must never be scheduled and must not be protected
@@ -90,6 +92,10 @@ The current static scaffold command is
 `python bot.py --monitor-lockfile-readiness-report`. It writes a readiness report
 only and must not be mistaken for runtime locking, scheduling approval, or
 execution approval.
+
+The pure no-network contract verifier is
+`python scripts\verify_monitor_lockfile_contract.py`. It defines future helper
+requirements only and must not implement locking or run bot commands.
 
 ## MCP Feasibility Boundary
 

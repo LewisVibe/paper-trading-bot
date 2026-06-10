@@ -534,6 +534,8 @@ python bot.py --monitor-lockfile-readiness-report
 
 This writes `data/monitor_lockfile_readiness_report.csv` and classifies future safe refresh/report/display candidates, blocked execution-capable commands, stale-lock policy requirements, metadata constraints, no-secret lock contents, future lock helper tests, and manual scheduling review requirements. It does not acquire or release locks, wrap existing commands, refresh market data, call yfinance, call Alpaca, read positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, create schedules, create services, approve scheduling, or approve execution.
 
+The pure no-network contract verifier, `python scripts\verify_monitor_lockfile_contract.py`, defines what a future lock helper must satisfy before implementation. It does not implement locking, create lockfiles, schedule anything, run bot commands, and does not create schedules.
+
 Future Hermes cron plan for market monitor reports only:
 
 ```bat
