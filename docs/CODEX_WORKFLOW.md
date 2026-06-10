@@ -63,6 +63,29 @@ H. Do not treat monitoring signals as execution approval.
 
 More frequent price checks do not mean more frequent trades. Daily strategies should not overtrade intraday noise unless a separate intraday strategy is researched and validated. For now, frequent monitoring means observe, report, and preview; it does not mean submit orders. Any execution-capable loop or scheduled order workflow remains not approved.
 
+## No-Overlap / Lockfile Readiness Boundary
+
+Before any repeated market-monitor refresh is considered, add no-overlap
+protection as a separate reviewed effort. Overlapping report runs could collide
+while fetching data, writing CSVs, updating caches, or producing quality reports,
+so the future lockfile is for report integrity only.
+
+A future lock file may prevent two safe refresh/report/display commands from
+running at once. Stale lock handling must be conservative. Lock metadata may
+include command name, `started_at`, host, and pid if safe, but must not include
+secrets, account IDs, config contents, order IDs, webhook URLs, API keys,
+generated trading data, positions, or report contents.
+
+This applies only to report, preview, display, and monitor refresh commands.
+Execution-capable commands must never be scheduled and must not be protected
+merely by a lockfile. A lockfile does not approve scheduling, execution, or paper
+orders.
+
+Future order of work: first add a report-only no-overlap/lockfile design or
+verifier, then add isolated lock helper tests, then apply only to safe
+refresh/report/display commands, and only after manual review consider
+scheduling safe monitor/report refresh commands.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

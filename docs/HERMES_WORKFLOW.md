@@ -218,6 +218,41 @@ Stop if any candidate schedule tries to load `config.json`, call Alpaca, read
 positions, write SQLite `trade_log`, send Discord alerts, create orders, or
 approve execution.
 
+Before any repeated market-monitor refresh is considered, no-overlap protection
+must exist. Repeated runs can collide if a prior yfinance fetch, CSV write, cache
+operation, or quality report is still running when the next refresh starts. That
+could produce confusing reports or partially written files, even though the
+workflow is monitoring/report/display only.
+
+Future lockfile concept, planning only:
+
+- A lock file should prevent two safe refresh/report/display commands from
+  running at once.
+- Stale lock handling must be conservative. When in doubt, stop and ask for
+  manual review instead of deleting a lock automatically.
+- Lock metadata may include command name, `started_at`, host, and pid if safe.
+- The lock must not contain secrets, account IDs, config contents, order IDs,
+  webhook URLs, API keys, generated trading data, positions, or report contents.
+- Lockfile protection applies only to future report, preview, display, and
+  monitor refresh commands.
+- Execution-capable commands must never be scheduled and must not be treated as
+  safe merely because a lockfile exists.
+- A lockfile does not approve scheduling, execution, paper orders, or any
+  execution-capable workflow.
+
+Future implementation order:
+
+1. Add a report-only no-overlap/lockfile design or verifier.
+2. Add isolated lock helper tests.
+3. Apply the helper only to safe refresh/report/display commands.
+4. Only after manual review, consider scheduling safe monitor/report refresh
+   commands.
+
+The usual paper-only boundaries still apply: no live trading, `dry_run` defaults
+to true, `alpaca.paper` remains true, `allow_shorting` remains false, and
+config/secrets/logs/databases/generated outputs should not be read or committed
+unnecessarily.
+
 Never schedule:
 
 ```powershell

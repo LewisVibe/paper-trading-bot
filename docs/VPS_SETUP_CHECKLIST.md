@@ -137,6 +137,43 @@ Stop if any candidate schedule tries to load `config.json`, call Alpaca, read
 positions, write SQLite `trade_log`, send Discord alerts, create orders, or
 approve execution.
 
+## Future No-Overlap / Lockfile Readiness
+
+No repeated market-monitor refresh should be scheduled until no-overlap
+protection exists. A later scheduled refresh could start while the previous
+refresh is still fetching market data, writing CSVs, updating the yfinance
+cache, displaying the saved snapshot, or writing the quality report. Even
+without execution, overlapping report runs can create confusing or partially
+written monitoring outputs.
+
+Future lockfile concept, planning only:
+
+- A lock file should prevent two refresh commands from running at once.
+- Stale lock handling must be conservative; uncertain stale locks should stop
+  the run and require manual review.
+- Lock metadata may include command name, `started_at`, host, and pid if safe.
+- The lock must not contain secrets, account IDs, config contents, order IDs,
+  webhook URLs, API keys, generated trading data, positions, or report contents.
+
+This plan applies only to future report, preview, display, and monitor refresh
+commands. Execution-capable commands must never be scheduled, and they must not
+be considered acceptable simply because a lockfile exists. A lockfile does not
+approve scheduling, execution, or paper orders.
+
+Future implementation order:
+
+1. Add a report-only no-overlap/lockfile design or verifier.
+2. Add isolated lock helper tests.
+3. Apply the helper only to safe refresh/report/display commands.
+4. Only after manual review, consider scheduling safe monitor/report refresh
+   commands.
+
+Keep the project paper-only: no live trading, `dry_run=true`, `alpaca.paper=true`,
+and `allow_shorting=false`. Do not read or commit config, secrets, logs,
+databases, generated CSVs, generated charts, or other private/generated outputs
+unnecessarily. Normal `python bot.py`, paper-order tests, and slow-SMA paper
+execution must not be scheduled.
+
 ## Future MCP Feasibility
 
 MCP may be useful later as a tiny local/custom safe operations adapter for

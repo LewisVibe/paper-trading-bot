@@ -435,6 +435,31 @@ Cross-references:
 - **Recommended order:** Stabilize VPS readiness/report chain, add no-overlap or lockfile protection for monitor refresh, add docs/report-only news-veto design, add saved-data-only news-veto report command, then consider a minimal proof of concept exposing only `repo_safety_check` and `refresh_market_monitor`.
 - **Stop condition:** Stop if the plan starts implementing MCP, adding news API calls, installing packages, creating services, creating schedules, approving execution, generating buy/sell signals from news, or exposing any order, config, secret, log, database, token, or arbitrary shell access.
 
+### Task: Plan no-overlap protection for market monitor refresh
+- **Purpose:** Document a future no-overlap/lockfile plan before any repeated VPS/Hermes market-monitor refresh.
+- **Risk level:** Medium docs-only planning. Lockfile implementation and scheduling are not approved.
+- **Allowed files:**
+  - `docs/CURRENT_STATE.md`
+  - `docs/VPS_SETUP_CHECKLIST.md`
+  - `docs/HERMES_WORKFLOW.md`
+  - `docs/HERMES_TASK_BOARD.md`
+  - `docs/CODEX_WORKFLOW.md`
+- **Forbidden files/areas:**
+  - Python code
+  - Task Scheduler changes
+  - cron/Hermes scheduled jobs
+  - loop mode
+  - config default changes
+  - config/secrets/logs/databases/generated outputs
+  - Alpaca/order/position/SQLite `trade_log`/Discord alert logic
+- **Lockfile concept:** A future lock file may prevent two safe refresh/report/display commands from running at once. Stale lock handling must be conservative, and uncertain stale locks should stop for manual review.
+- **Allowed lock metadata:** command name, `started_at`, host, and pid if safe.
+- **Forbidden lock metadata:** secrets, account IDs, config contents, order IDs, webhook URLs, API keys, generated trading data, positions, and report contents.
+- **Scope:** Applies only to future report, preview, display, and monitor refresh commands.
+- **Never schedule:** Normal `python bot.py`, paper-order tests, slow-SMA paper execution, or any execution-capable command. Execution-capable commands must not be treated as safe merely because a lockfile exists.
+- **Recommended order:** Add report-only no-overlap/lockfile design or verifier, add isolated lock helper tests, apply only to safe refresh/report/display commands, then only after manual review consider scheduling safe monitor/report refresh commands.
+- **Stop condition:** Stop if the plan creates a lockfile implementation, creates schedules, adds loop mode, changes Python source, changes config defaults, approves scheduling, approves execution, or touches private/generated files.
+
 ### Task: Move high-risk execution code out of `bot.py`
 - **Purpose:** Refactor high-risk execution internals.
 - **Risk level:** High; explicitly "should not move yet" in refactor inventory.
