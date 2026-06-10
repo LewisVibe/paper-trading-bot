@@ -55,6 +55,7 @@ REQUIRED_COMMANDS = [
     "--market-monitor-quality-report",
     "--refresh-market-monitor",
     "--market-monitor-scheduling-readiness-report",
+    "--monitor-lockfile-readiness-report",
     "--preview-promoted-strategies",
     "--preview-promoted-actions",
     "--use-paper-positions-readonly",

@@ -126,6 +126,7 @@ Prerequisites before any scheduling review:
 ```powershell
 python scripts\verify_repo_safety.py
 python bot.py --market-monitor-scheduling-readiness-report
+python bot.py --monitor-lockfile-readiness-report
 python bot.py --vps-operations-readiness-report
 python bot.py --refresh-market-monitor
 ```
@@ -167,6 +168,16 @@ Future implementation order:
 3. Apply the helper only to safe refresh/report/display commands.
 4. Only after manual review, consider scheduling safe monitor/report refresh
    commands.
+
+The current design scaffold command is:
+
+```powershell
+python bot.py --monitor-lockfile-readiness-report
+```
+
+It writes `data/monitor_lockfile_readiness_report.csv` when run, but it does not
+create a lockfile, wrap an existing command, approve scheduling, or approve
+execution.
 
 Keep the project paper-only: no live trading, `dry_run=true`, `alpaca.paper=true`,
 and `allow_shorting=false`. Do not read or commit config, secrets, logs,

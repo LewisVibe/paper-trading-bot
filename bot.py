@@ -151,6 +151,7 @@ from trading_bot.runners.research_reports import (
     run_normal_bot_execution_policy_report_command,
     run_market_monitor_snapshot_command,
     run_market_monitor_scheduling_readiness_report_command,
+    run_monitor_lockfile_readiness_report_command,
     run_market_monitor_quality_report_command,
     run_plot_etf_defensive_comparison_command,
     run_refresh_market_monitor_command,
@@ -3969,6 +3970,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a report-only scheduling readiness audit for market monitor refresh.",
     )
     parser.add_argument(
+        "--monitor-lockfile-readiness-report",
+        action="store_true",
+        help="Create a static report-only no-overlap/lockfile readiness design audit.",
+    )
+    parser.add_argument(
         "--preview-promoted-strategies",
         action="store_true",
         help="Preview current signals for promoted research candidates without trading.",
@@ -4256,6 +4262,8 @@ def main() -> int:
         return run_refresh_market_monitor_command()
     if args.market_monitor_scheduling_readiness_report:
         return run_market_monitor_scheduling_readiness_report_command()
+    if args.monitor_lockfile_readiness_report:
+        return run_monitor_lockfile_readiness_report_command()
     if args.show_promoted_actions:
         return run_show_promoted_actions_command()
     if args.promoted_risk_preview:

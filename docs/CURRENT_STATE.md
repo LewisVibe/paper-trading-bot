@@ -254,6 +254,7 @@ Ticker universe readiness reporting:
 - `python bot.py --market-monitor-quality-report` reads `data/market_monitor_snapshot.csv` only and writes `data/market_monitor_quality_report.csv`.
 - `python bot.py --refresh-market-monitor` runs the safe monitoring chain in order: ticker universe readiness, market monitor snapshot, saved display, and quality report.
 - `python bot.py --market-monitor-scheduling-readiness-report` writes `data/market_monitor_scheduling_readiness_report.csv` for future manual scheduling review only.
+- `python bot.py --monitor-lockfile-readiness-report` writes `data/monitor_lockfile_readiness_report.csv` for future no-overlap/lockfile design readiness only.
 - It uses a fixed research/report-only candidate universe of broad ETFs, sector ETFs, and large liquid U.S. stocks; it does not read `config.json`.
 - It labels obvious ETFs/stocks, validates duplicate tickers, includes conservative readiness gates, and marks `execution_approved=False` and `paper_execution_approved=False` for all rows.
 - It may attempt recent daily yfinance data enrichment for latest close/volume, but market-data failures are captured in report rows instead of approving or blocking execution.
@@ -267,6 +268,7 @@ Ticker universe readiness reporting:
 - Before any future scheduling review, run `python scripts\verify_repo_safety.py`, run `python bot.py --market-monitor-scheduling-readiness-report`, manually run `python bot.py --refresh-market-monitor` successfully on the VPS, and confirm generated CSV/cache files remain ignored.
 - Stop if any scheduled candidate tries to load `config.json`, call Alpaca, read positions, write SQLite `trade_log`, send Discord alerts, create orders, or approve execution.
 - No repeated market-monitor refresh should be scheduled before no-overlap/lockfile protection exists. A future lockfile may prevent two safe refresh/report/display commands from running at once, but stale lock handling must be conservative and the lock must not contain secrets, account IDs, config contents, order IDs, webhook URLs, API keys, generated trading data, positions, or report contents.
+- The monitor lockfile readiness report is a static design scaffold only. It classifies future safe candidates, blocked commands, stale-lock policy, metadata constraints, no-secret lock contents, lock helper tests, and manual scheduling review; it does not create a lockfile or wrap commands.
 - Lockfile planning applies only to report/preview/display/monitor refresh commands. Execution-capable commands must never be scheduled and must not be treated as safe merely because a lockfile exists. A lockfile does not approve scheduling, execution, or paper orders.
 - It does not call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, change strategy rules, or approve execution.
 - More tickers and more frequent price checks do not mean more trades. Frequent monitoring should start as preview/display/report only, and daily strategies should not become intraday trading strategies without separate research.
@@ -338,6 +340,7 @@ python bot.py --show-market-monitor
 python bot.py --market-monitor-quality-report
 python bot.py --refresh-market-monitor
 python bot.py --market-monitor-scheduling-readiness-report
+python bot.py --monitor-lockfile-readiness-report
 python bot.py --deployment-readiness-report
 python bot.py --vps-operations-readiness-report
 python bot.py --portfolio-risk-policy-report

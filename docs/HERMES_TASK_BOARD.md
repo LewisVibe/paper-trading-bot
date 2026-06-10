@@ -458,6 +458,7 @@ Cross-references:
 - **Scope:** Applies only to future report, preview, display, and monitor refresh commands.
 - **Never schedule:** Normal `python bot.py`, paper-order tests, slow-SMA paper execution, or any execution-capable command. Execution-capable commands must not be treated as safe merely because a lockfile exists.
 - **Recommended order:** Add report-only no-overlap/lockfile design or verifier, add isolated lock helper tests, apply only to safe refresh/report/display commands, then only after manual review consider scheduling safe monitor/report refresh commands.
+- **Current scaffold command:** `python bot.py --monitor-lockfile-readiness-report` writes `data/monitor_lockfile_readiness_report.csv` when run, but does not create a lockfile, wrap any command, approve scheduling, or approve execution.
 - **Stop condition:** Stop if the plan creates a lockfile implementation, creates schedules, adds loop mode, changes Python source, changes config defaults, approves scheduling, approves execution, or touches private/generated files.
 
 ### Task: Move high-risk execution code out of `bot.py`

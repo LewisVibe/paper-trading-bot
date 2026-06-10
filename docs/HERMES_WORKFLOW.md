@@ -248,6 +248,11 @@ Future implementation order:
 4. Only after manual review, consider scheduling safe monitor/report refresh
    commands.
 
+The current report-only design scaffold is
+`python bot.py --monitor-lockfile-readiness-report`. It writes
+`data/monitor_lockfile_readiness_report.csv` when run, but it does not create a
+lockfile, wrap any command, approve scheduling, or approve execution.
+
 The usual paper-only boundaries still apply: no live trading, `dry_run` defaults
 to true, `alpaca.paper` remains true, `allow_shorting` remains false, and
 config/secrets/logs/databases/generated outputs should not be read or committed

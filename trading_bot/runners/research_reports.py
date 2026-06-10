@@ -40,6 +40,7 @@ from trading_bot.research.market_monitor_snapshot import (
     show_market_monitor_file,
 )
 from trading_bot.research.market_monitor_scheduling import generate_market_monitor_scheduling_readiness_report
+from trading_bot.research.monitor_lockfile_readiness import generate_monitor_lockfile_readiness_report
 from trading_bot.research.paper_kill_switch_gate import generate_paper_kill_switch_gate_report
 from trading_bot.research.paper_kill_switch import generate_paper_kill_switch_readiness_report
 from trading_bot.research.paper_execution_protection import generate_paper_execution_protection_report
@@ -389,6 +390,17 @@ def run_market_monitor_scheduling_readiness_report_command() -> int:
         result = generate_market_monitor_scheduling_readiness_report()
     except Exception as exc:
         print(f"Market monitor scheduling readiness report failed: {exc}", file=sys.stderr)
+        return 1
+    for line in result.summary_lines:
+        print(line)
+    return 0
+
+
+def run_monitor_lockfile_readiness_report_command() -> int:
+    try:
+        result = generate_monitor_lockfile_readiness_report()
+    except Exception as exc:
+        print(f"Monitor lockfile readiness report failed: {exc}", file=sys.stderr)
         return 1
     for line in result.summary_lines:
         print(line)

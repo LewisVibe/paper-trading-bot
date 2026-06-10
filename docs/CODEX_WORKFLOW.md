@@ -86,6 +86,11 @@ verifier, then add isolated lock helper tests, then apply only to safe
 refresh/report/display commands, and only after manual review consider
 scheduling safe monitor/report refresh commands.
 
+The current static scaffold command is
+`python bot.py --monitor-lockfile-readiness-report`. It writes a readiness report
+only and must not be mistaken for runtime locking, scheduling approval, or
+execution approval.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

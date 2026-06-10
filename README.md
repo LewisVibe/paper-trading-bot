@@ -526,6 +526,14 @@ python bot.py --market-monitor-scheduling-readiness-report
 
 This writes `data/market_monitor_scheduling_readiness_report.csv` and checks whether the existing refresh chain is safe to consider for a future manual scheduling review. It does not create Windows Task Scheduler tasks, add cron/loop execution, approve scheduling, load `config.json`, call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, connect monitoring output to strategy execution, or approve execution.
 
+Create a static no-overlap/lockfile readiness design report:
+
+```powershell
+python bot.py --monitor-lockfile-readiness-report
+```
+
+This writes `data/monitor_lockfile_readiness_report.csv` and classifies future safe refresh/report/display candidates, blocked execution-capable commands, stale-lock policy requirements, metadata constraints, no-secret lock contents, future lock helper tests, and manual scheduling review requirements. It does not acquire or release locks, wrap existing commands, refresh market data, call yfinance, call Alpaca, read positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, create schedules, create services, approve scheduling, or approve execution.
+
 Future Hermes cron plan for market monitor reports only:
 
 ```bat
