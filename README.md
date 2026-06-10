@@ -420,6 +420,11 @@ It writes `data/promoted_review_refresh_summary.csv`. It does not change `dry_ru
 create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, or approve
 execution.
 
+The static verifier `python scripts\verify_refresh_promoted_review_lock_readiness.py`
+checks whether `--refresh-promoted-review` is suitable to consider for a future
+manual no-overlap lock review. It does not run or lock the command, does not approve
+scheduling, and does not approve execution.
+
 Preview slow SMA signals without trading:
 
 ```powershell
