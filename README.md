@@ -538,6 +538,8 @@ The pure no-network contract verifier, `python scripts\verify_monitor_lockfile_c
 
 The pure helper verifier, `python scripts\verify_monitor_lockfile_helper.py`, checks the isolated in-memory helper in `trading_bot/safety/monitor_lockfile.py`. The helper is not wired into runtime commands and does not create real lockfiles.
 
+The integration-readiness checkpoint, `python scripts\verify_monitor_lockfile_integration_readiness.py`, verifies that the helper and verifier scaffold exists, remains unwired from `bot.py`, has not wrapped commands with runtime lock acquisition or release, and is documented as future-only for safe report/display/monitor refresh commands.
+
 Future Hermes cron plan for market monitor reports only:
 
 ```bat

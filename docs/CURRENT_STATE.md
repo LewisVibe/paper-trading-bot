@@ -271,6 +271,7 @@ Ticker universe readiness reporting:
 - The monitor lockfile readiness report is a static design scaffold only. It classifies future safe candidates, blocked commands, stale-lock policy, metadata constraints, no-secret lock contents, lock helper tests, and manual scheduling review; it does not create a lockfile or wrap commands.
 - `python scripts\verify_monitor_lockfile_contract.py` is a pure no-network contract verifier for future lock helper requirements. It does not implement locking, create lockfiles, schedule anything, or run bot commands.
 - `python scripts\verify_monitor_lockfile_helper.py` verifies the isolated pure helper in `trading_bot/safety/monitor_lockfile.py`. The helper is not wired into any runtime command and does not create real lockfiles.
+- `python scripts\verify_monitor_lockfile_integration_readiness.py` is a static checkpoint for the next manual-review stage. It verifies the helper and verifier scaffold exists, remains unwired from `bot.py`, has not wrapped commands with lock acquisition or release, and remains future-only for safe report/display/monitor refresh commands.
 - Lockfile planning applies only to report/preview/display/monitor refresh commands. Execution-capable commands must never be scheduled and must not be treated as safe merely because a lockfile exists. A lockfile does not approve scheduling, execution, or paper orders.
 - It does not call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, change strategy rules, or approve execution.
 - More tickers and more frequent price checks do not mean more trades. Frequent monitoring should start as preview/display/report only, and daily strategies should not become intraday trading strategies without separate research.
@@ -338,6 +339,7 @@ Workflow, deployment, and risk policy checks:
 python scripts\verify_repo_safety.py
 python scripts\verify_monitor_lockfile_contract.py
 python scripts\verify_monitor_lockfile_helper.py
+python scripts\verify_monitor_lockfile_integration_readiness.py
 python bot.py --ticker-universe-readiness-report
 python bot.py --market-monitor-snapshot
 python bot.py --show-market-monitor
