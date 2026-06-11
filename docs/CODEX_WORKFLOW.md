@@ -111,6 +111,11 @@ review. Scheduling cadence is a separate future decision; a future review must
 approve exact cadence, exact command list, enabled toolsets, output destination,
 and failure behaviour before any Hermes cron job is created.
 
+Use `docs/HERMES_CRON_JOB_DESIGN.md` and
+`python scripts\verify_hermes_cron_job_design.py` for the first-job checklist.
+That design keeps the first future Hermes cron job status-only and excludes
+refresh commands until a later separate review.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

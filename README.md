@@ -587,6 +587,13 @@ The initial future Hermes cron candidate command set is limited to
 cadence, exact command list, enabled toolsets, output destination, and failure
 behaviour before any Hermes cron job is created.
 
+The first-job checklist is in `docs/HERMES_CRON_JOB_DESIGN.md`. It defines the
+first future Hermes cron job as status-only: run repo safety, run Hermes cron
+readiness, run `--vps-monitoring-status`, and optionally run
+`--market-monitor-scheduling-readiness-report`. It explicitly excludes refresh
+commands from the first job until a later review approves them. Verify the
+checklist with `python scripts\verify_hermes_cron_job_design.py`.
+
 Before any future scheduling review, run `python scripts\verify_repo_safety.py`,
 run `python scripts\verify_hermes_cron_readiness.py`, run
 `python bot.py --market-monitor-scheduling-readiness-report`, and confirm

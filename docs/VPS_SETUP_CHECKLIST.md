@@ -134,10 +134,17 @@ future manual review must approve exact cadence, exact command list, enabled
 toolsets, output destination, and failure behaviour before any Hermes cron job
 is created.
 
+The first-job checklist is `docs/HERMES_CRON_JOB_DESIGN.md`. It keeps the first
+future Hermes cron job status-only: repo safety, Hermes cron readiness, VPS
+monitoring status, and optional market-monitor scheduling readiness. It excludes
+refresh commands until a later separate review. Verify it with
+`python scripts\verify_hermes_cron_job_design.py`.
+
 Prerequisites before any scheduling review:
 
 ```powershell
 python scripts\verify_repo_safety.py
+python scripts\verify_hermes_cron_job_design.py
 python scripts\verify_hermes_cron_readiness.py
 python bot.py --market-monitor-scheduling-readiness-report
 python bot.py --monitor-lockfile-readiness-report

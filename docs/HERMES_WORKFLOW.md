@@ -224,6 +224,14 @@ manual review must approve the exact cadence, exact command list, enabled
 toolsets, output destination, and failure behaviour before any Hermes cron job
 is created.
 
+The first-job design/checklist is `docs/HERMES_CRON_JOB_DESIGN.md`. It keeps the
+first future Hermes cron job status-only: repo safety, Hermes cron readiness,
+VPS monitoring status, and optional market-monitor scheduling readiness. It does
+not run `--refresh-promoted-review` or `--refresh-defensive-research`; refresh
+cron jobs require a later separate review after the status-only job proves
+stable. Verify the design with
+`python scripts\verify_hermes_cron_job_design.py`.
+
 Refresh jobs should remain protected by lockfile/no-overlap. The current
 lock-wrapped overlap-risk commands are `--monitor-lockfile-readiness-report`,
 `--refresh-promoted-review`, and `--refresh-defensive-research`. A stale lock
