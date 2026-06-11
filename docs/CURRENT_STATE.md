@@ -276,6 +276,9 @@ Ticker universe readiness reporting:
 - `python scripts\verify_monitor_lockfile_contract.py` is a pure no-network contract verifier for future lock helper requirements. It does not implement locking, create lockfiles, schedule anything, or run bot commands.
 - `python scripts\verify_monitor_lockfile_helper.py` verifies the helper in `trading_bot/safety/monitor_lockfile.py`, including temp-directory lock acquire/release cleanup, fresh-lock blocking, malformed-lock blocking, and stale-lock manual review.
 - `python scripts\verify_monitor_lockfile_integration_readiness.py` is a static checkpoint for the next manual-review stage. It verifies exactly `--monitor-lockfile-readiness-report`, `--refresh-promoted-review`, and `--refresh-defensive-research` are lock-wrapped, `bot.py` is not using the helper directly, no other command is lock-wrapped, and future safe report/display/monitor refresh commands remain manual-review only.
+- `python scripts\verify_monitor_lockfile_final_state.py` is the final static checkpoint for the current lockfile handoff. It verifies the exact three-command lock boundary, false execution/scheduling approval flags, stale-lock manual review, blocked execution commands, and VPS handoff documentation.
+- VPS safe manual monitoring commands are report/refresh/display only. Use `git pull`, `py -3 scripts\verify_repo_safety.py`, and `py -3 scripts\verify_monitor_lockfile_final_state.py` before manual review commands such as `py -3 bot.py --monitor-lockfile-readiness-report`, `py -3 bot.py --refresh-promoted-review`, and `py -3 bot.py --refresh-defensive-research`.
+- Generated CSVs/charts/logs/databases/secrets/config must not be committed or pasted. Generated outputs remain ignored and stale lockfiles require manual review, not automatic deletion.
 - Lockfile planning applies only to report/preview/display/monitor refresh commands. Execution-capable commands must never be scheduled and must not be treated as safe merely because a lockfile exists. A lockfile does not approve scheduling, execution, or paper orders.
 - It does not call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, change strategy rules, or approve execution.
 - More tickers and more frequent price checks do not mean more trades. Frequent monitoring should start as preview/display/report only, and daily strategies should not become intraday trading strategies without separate research.
@@ -346,6 +349,7 @@ python scripts\verify_monitor_lockfile_helper.py
 python scripts\verify_monitor_lockfile_integration_readiness.py
 python scripts\verify_refresh_promoted_review_lock_readiness.py
 python scripts\verify_refresh_defensive_research_lock_readiness.py
+python scripts\verify_monitor_lockfile_final_state.py
 python bot.py --ticker-universe-readiness-report
 python bot.py --market-monitor-snapshot
 python bot.py --show-market-monitor

@@ -70,32 +70,27 @@ protection as a separate reviewed effort. Overlapping report runs could collide
 while fetching data, writing CSVs, updating caches, or producing quality reports,
 so the future lockfile is for report integrity only.
 
-A future lock helper must be pure and no-network. A future lock file may prevent
-two safe refresh/report/display commands from running at once. Stale lock
-handling must be conservative. Lock metadata may include command name,
-`started_at`, host, pid, `lock_version`, and optional `stale_after_seconds` if
-safe, but must not include secrets, account IDs, config contents, order IDs,
-webhook URLs, API keys, logs, database contents, generated CSV contents,
-generated trading data, trading history, positions, or report contents.
+The monitor lockfile helper is pure/no-network and now prevents overlapping safe
+refresh/report commands only. It is applied exactly to
+`python bot.py --monitor-lockfile-readiness-report`,
+`python bot.py --refresh-promoted-review`, and
+`python bot.py --refresh-defensive-research`.
+
+Stale lock handling is conservative: stale lockfiles require manual review, not
+automatic deletion. Lock metadata may include command name, `started_at`, host,
+pid, `lock_version`, and optional `stale_after_seconds` if safe, but must not
+include secrets, account IDs, config contents, order IDs, webhook URLs, API
+keys, logs, database contents, generated CSV contents, generated trading data,
+trading history, positions, or report contents.
 
 This applies only to report, preview, display, and monitor refresh commands.
 Execution-capable commands must never be scheduled and must not be protected
 merely by a lockfile. A lockfile does not approve scheduling, execution, or paper
 orders.
 
-Future order of work: first add a report-only no-overlap/lockfile design or
-verifier, then add isolated lock helper tests, then apply only to safe
-refresh/report/display commands, and only after manual review consider
-scheduling safe monitor/report refresh commands.
-
-The current static scaffold command is
-`python bot.py --monitor-lockfile-readiness-report`. It writes a readiness report
-only and must not be mistaken for runtime locking, scheduling approval, or
-execution approval.
-
-The pure no-network contract verifier is
-`python scripts\verify_monitor_lockfile_contract.py`. It defines future helper
-requirements only and must not implement locking or run bot commands.
+Use `python scripts\verify_monitor_lockfile_final_state.py` to verify the final
+three-command lock boundary, stale-lock manual-review policy, false
+execution/scheduling approval flags, and VPS handoff documentation.
 
 ## MCP Feasibility Boundary
 

@@ -87,12 +87,14 @@ Expected caveat:
 
 ## Safe Commands For Future Scheduling Review
 
-These are candidates for later scheduling review only after each has been run
-manually and verified on the VPS:
+These are safe VPS manual monitoring commands for review only. They are
+report/refresh/display only, and they are not execution approval or automatic
+scheduling approval:
 
 ```powershell
-python bot.py --refresh-defensive-research
-python bot.py --refresh-promoted-review
+py -3 bot.py --monitor-lockfile-readiness-report
+py -3 bot.py --refresh-promoted-review
+py -3 bot.py --refresh-defensive-research
 python bot.py --show-promoted-decision
 python bot.py --show-crypto-monitor
 python bot.py --deployment-readiness-report
@@ -138,58 +140,46 @@ Stop if any candidate schedule tries to load `config.json`, call Alpaca, read
 positions, write SQLite `trade_log`, send Discord alerts, create orders, or
 approve execution.
 
-## Future No-Overlap / Lockfile Readiness
+## Current No-Overlap / Lockfile Checkpoint
 
-No repeated market-monitor refresh should be scheduled until no-overlap
-protection exists. A later scheduled refresh could start while the previous
-refresh is still fetching market data, writing CSVs, updating the yfinance
-cache, displaying the saved snapshot, or writing the quality report. Even
-without execution, overlapping report runs can create confusing or partially
-written monitoring outputs.
-
-Future lockfile helper contract, planning only:
-
-- A lock file should prevent two refresh commands from running at once.
-- The helper must be pure and no-network.
-- Stale lock handling must be conservative; uncertain stale locks should stop
-  the run and require manual review.
-- Lock metadata may include command name, `started_at`, host, pid,
-  `lock_version`, and optional `stale_after_seconds` if safe.
-- The lock must not contain secrets, account IDs, config contents, order IDs,
-  webhook URLs, API keys, logs, database contents, generated CSV contents,
-  generated trading data, trading history, positions, or report contents.
-
-This plan applies only to future report, preview, display, and monitor refresh
-commands. Execution-capable commands must never be scheduled, and they must not
-be considered acceptable simply because a lockfile exists. A lockfile does not
-approve scheduling, execution, or paper orders.
-
-Future implementation order:
-
-1. Add a report-only no-overlap/lockfile design or verifier.
-2. Add isolated lock helper tests.
-3. Apply the helper only to safe refresh/report/display commands.
-4. Only after manual review, consider scheduling safe monitor/report refresh
-   commands.
-
-The current design scaffold command is:
+The monitor lockfile prevents overlapping safe refresh/report commands only.
+It is currently applied exactly to:
 
 ```powershell
 python bot.py --monitor-lockfile-readiness-report
+python bot.py --refresh-promoted-review
+python bot.py --refresh-defensive-research
 ```
 
-It writes `data/monitor_lockfile_readiness_report.csv` when run, but it does not
-create a lockfile, wrap an existing command, approve scheduling, or approve
-execution.
+These locks are transient report-only guards. They do not approve scheduling or
+execution, do not make report output executable, and do not make any command
+safe for automatic scheduling by themselves. Stale lockfiles require manual
+review, not automatic deletion.
 
-The pure no-network contract verifier is:
+Lock metadata may include command name, `started_at`, host, pid,
+`lock_version`, and optional `stale_after_seconds` if safe. The lock must not
+contain secrets, account IDs, config contents, order IDs, webhook URLs, API
+keys, logs, database contents, generated CSV contents, generated trading data,
+trading history, positions, or report contents.
+
+VPS manual update flow:
 
 ```powershell
-python scripts\verify_monitor_lockfile_contract.py
+git pull
+py -3 scripts\verify_repo_safety.py
+py -3 scripts\verify_monitor_lockfile_final_state.py
 ```
 
-It defines future lock helper requirements only; it does not implement locking,
-create lockfiles, schedule anything, or run bot commands.
+Safe VPS manual monitoring commands:
+
+```powershell
+py -3 bot.py --monitor-lockfile-readiness-report
+py -3 bot.py --refresh-promoted-review
+py -3 bot.py --refresh-defensive-research
+```
+
+Generated CSVs/charts/logs/databases/secrets/config must not be committed or
+pasted. Generated CSV/chart outputs remain ignored and should not be committed.
 
 Keep the project paper-only: no live trading, `dry_run=true`, `alpaca.paper=true`,
 and `allow_shorting=false`. Do not read or commit config, secrets, logs,

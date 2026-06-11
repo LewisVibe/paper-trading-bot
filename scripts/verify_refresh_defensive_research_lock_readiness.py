@@ -166,8 +166,11 @@ def verify_not_scheduled(failures: list[str]) -> None:
         if any(token in line_lower for token in ["schedule:", "cron", "schtasks", "task scheduler"]):
             failures.append(f"--refresh-defensive-research appears scheduled: {line}")
     docs_lower = docs_text().lower()
-    if DEFENSIVE_REFRESH_COMMAND in docs_lower and "later scheduling review only" not in docs_lower:
-        failures.append("--refresh-defensive-research scheduling mentions must remain future-review only")
+    if DEFENSIVE_REFRESH_COMMAND in docs_lower and (
+        "not automatic scheduling approval" not in docs_lower
+        and "being listed here does not mean it is approved for automatic scheduling today" not in docs_lower
+    ):
+        failures.append("--refresh-defensive-research scheduling mentions must remain not-approved-for-scheduling")
 
 
 def verify_refresh_defensive_research_is_lock_wrapped(failures: list[str]) -> None:
