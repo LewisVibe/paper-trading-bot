@@ -23,6 +23,7 @@ READINESS_COMMAND = "--monitor-lockfile-readiness-report"
 EXPECTED_LOCKED_COMMANDS = {
     "run_monitor_lockfile_readiness_report_command": READINESS_COMMAND,
     "run_refresh_promoted_review_command": PROMOTED_REVIEW_COMMAND,
+    "run_refresh_defensive_research_command": "--refresh-defensive-research",
 }
 
 BLOCKED_COMMANDS = [
@@ -84,7 +85,7 @@ def main() -> int:
         return 1
 
     print("Refresh promoted review lock readiness verification passed.")
-    print("Verified --refresh-promoted-review is lock-wrapped, behavior-preserving, non-execution, unscheduled, and the only additional command using the monitor lock helper.")
+    print("Verified --refresh-promoted-review is lock-wrapped, behavior-preserving, non-execution, unscheduled, and within the approved monitor lock helper boundary.")
     return 0
 
 

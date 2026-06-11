@@ -68,6 +68,7 @@ OUTPUT_APPROVAL_REFUSALS = [
 EXPECTED_LOCK_WRAPPED_FUNCTIONS = {
     "run_monitor_lockfile_readiness_report_command": "--monitor-lockfile-readiness-report",
     "run_refresh_promoted_review_command": "--refresh-promoted-review",
+    "run_refresh_defensive_research_command": "--refresh-defensive-research",
 }
 
 SCHEDULING_FILE_FRAGMENTS = [
@@ -100,7 +101,7 @@ def main() -> int:
         return 1
 
     print("Monitor lockfile integration readiness verification passed.")
-    print("Verified helper/test presence, no bot.py helper wiring, two-command lock wrapping, future-only docs for other commands, blocked commands, false approval flags, and no scheduler/service additions.")
+    print("Verified helper/test presence, no bot.py helper wiring, three-command lock wrapping, future-only docs for other commands, blocked commands, false approval flags, and no scheduler/service additions.")
     return 0
 
 

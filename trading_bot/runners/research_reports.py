@@ -140,13 +140,42 @@ def run_defensive_execution_readiness_report_command() -> int:
 
 
 def run_refresh_defensive_research_command() -> int:
+    command_name = "--refresh-defensive-research"
+    lock_path = default_monitor_lock_path(Path(__file__).resolve().parents[2], command_name)
+    lock_result = acquire_monitor_lock(lock_path, command_name)
+    if not lock_result.acquired:
+        print(f"Defensive research refresh blocked by lock: {lock_result.decision.status}", file=sys.stderr)
+        for reason in lock_result.decision.reasons:
+            print(f"- {reason}", file=sys.stderr)
+        print(f"Required next step: {lock_result.decision.required_next_step}", file=sys.stderr)
+        print("Lock protection is report-only and does not approve scheduling or execution.", file=sys.stderr)
+        return 1
+
+    result = None
+    error: Exception | None = None
+    release_decision = None
     try:
         result = refresh_defensive_research()
     except Exception as exc:
-        print(f"Defensive research refresh failed: {exc}", file=sys.stderr)
+        error = exc
+    finally:
+        if lock_result.metadata is not None:
+            release_decision = release_monitor_lock(lock_path, lock_result.metadata)
+
+    if error is not None:
+        print(f"Defensive research refresh failed: {error}", file=sys.stderr)
+        if release_decision is not None and not release_decision.allowed:
+            print(f"Defensive research lock release requires manual review: {release_decision.status}", file=sys.stderr)
+            print(f"Required next step: {release_decision.required_next_step}", file=sys.stderr)
         return 1
+    if release_decision is not None and not release_decision.allowed:
+        print(f"Defensive research lock release requires manual review: {release_decision.status}", file=sys.stderr)
+        print(f"Required next step: {release_decision.required_next_step}", file=sys.stderr)
+        return 1
+
     for line in result.summary_lines:
         print(line)
+    print("Lock protection is report-only and does not approve scheduling or execution.")
     return 0
 
 

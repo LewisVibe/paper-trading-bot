@@ -23,6 +23,7 @@ DEFENSIVE_REFRESH_COMMAND = "--refresh-defensive-research"
 EXPECTED_LOCKED_COMMANDS = {
     "run_monitor_lockfile_readiness_report_command": "--monitor-lockfile-readiness-report",
     "run_refresh_promoted_review_command": "--refresh-promoted-review",
+    "run_refresh_defensive_research_command": DEFENSIVE_REFRESH_COMMAND,
 }
 
 BLOCKED_COMMANDS = [
@@ -77,8 +78,8 @@ def main() -> int:
     verify_generated_outputs_are_ignored(failures)
     verify_outputs_are_not_execution_approval(failures)
     verify_not_scheduled(failures)
-    verify_not_currently_lock_wrapped(failures)
-    verify_future_candidate_only(failures)
+    verify_refresh_defensive_research_is_lock_wrapped(failures)
+    verify_locking_does_not_approve_scheduling_or_execution(failures)
     verify_blocked_commands_remain_blocked(failures)
     verify_current_lock_wrappers_remain_limited(failures)
 
@@ -89,7 +90,7 @@ def main() -> int:
         return 1
 
     print("Refresh defensive research lock readiness verification passed.")
-    print("Verified --refresh-defensive-research is a future-only no-overlap candidate, remains unwrapped, research/report/chart-only, non-execution, unscheduled, and separate from current lock wrapping.")
+    print("Verified --refresh-defensive-research is lock-wrapped, behavior-preserving, research/report/chart-only, non-execution, unscheduled, and the only additional command using the monitor lock helper.")
     return 0
 
 
@@ -169,27 +170,31 @@ def verify_not_scheduled(failures: list[str]) -> None:
         failures.append("--refresh-defensive-research scheduling mentions must remain future-review only")
 
 
-def verify_not_currently_lock_wrapped(failures: list[str]) -> None:
+def verify_refresh_defensive_research_is_lock_wrapped(failures: list[str]) -> None:
     runner_source = read_text(RUNNER_PATH)
     refresh_body = extract_function_body(runner_source, "run_refresh_defensive_research_command")
-    for token in LOCK_TOKENS:
-        if token in refresh_body:
-            failures.append(f"--refresh-defensive-research must not be lock-wrapped yet; found {token}")
+    if DEFENSIVE_REFRESH_COMMAND not in refresh_body:
+        failures.append("--refresh-defensive-research lock wrapper must name the defensive refresh command")
+    if refresh_body.count("acquire_monitor_lock(") != 1:
+        failures.append("--refresh-defensive-research should have exactly one lock acquire call")
+    if refresh_body.count("release_monitor_lock(") != 1:
+        failures.append("--refresh-defensive-research should have exactly one lock release call")
+    if "finally:" not in refresh_body:
+        failures.append("--refresh-defensive-research lock release should be attempted in a finally block")
 
 
-def verify_future_candidate_only(failures: list[str]) -> None:
+def verify_locking_does_not_approve_scheduling_or_execution(failures: list[str]) -> None:
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
-    from trading_bot.safety.monitor_lockfile import LOCK_WRAPPED_COMMAND_NAMES, SAFE_LOCK_COMMAND_NAMES  # noqa: PLC0415
+    from trading_bot.safety.monitor_lockfile import LOCK_WRAPPED_COMMAND_NAMES  # noqa: PLC0415
 
     docs_lower = docs_text().lower()
-    if DEFENSIVE_REFRESH_COMMAND not in SAFE_LOCK_COMMAND_NAMES:
-        failures.append("--refresh-defensive-research should remain only a helper allowlist candidate")
-    if DEFENSIVE_REFRESH_COMMAND in LOCK_WRAPPED_COMMAND_NAMES:
-        failures.append("--refresh-defensive-research must not be in the wrapped-command allowlist yet")
+    if DEFENSIVE_REFRESH_COMMAND not in LOCK_WRAPPED_COMMAND_NAMES:
+        failures.append("--refresh-defensive-research should be in the wrapped-command allowlist")
+    for command_name in ["--monitor-lockfile-readiness-report", "--refresh-promoted-review"]:
+        if command_name not in LOCK_WRAPPED_COMMAND_NAMES:
+            failures.append(f"{command_name} should remain in the wrapped-command allowlist")
     required_phrases = [
-        "future",
-        "manual review",
         "lock",
         "does not approve scheduling",
         "does not approve execution",

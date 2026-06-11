@@ -175,7 +175,11 @@ def verify_no_existing_lock_decision_is_non_executing(failures: list[str]) -> No
 
 
 def verify_lock_acquire_release_uses_temp_files_and_cleans_up(failures: list[str]) -> None:
-    for command_name in ["--monitor-lockfile-readiness-report", "--refresh-promoted-review"]:
+    for command_name in [
+        "--monitor-lockfile-readiness-report",
+        "--refresh-promoted-review",
+        "--refresh-defensive-research",
+    ]:
         with tempfile.TemporaryDirectory() as tmpdir:
             lock_path = Path(tmpdir) / "monitor.lock"
             acquire_result = acquire_monitor_lock(
