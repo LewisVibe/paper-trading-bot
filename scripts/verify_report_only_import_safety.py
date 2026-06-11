@@ -13,7 +13,7 @@ def main() -> int:
     failures: list[str] = []
     verify_early_route_precedes_alpaca_imports(failures)
     verify_execution_imports_still_present(failures)
-    verify_status_command_runs_without_venv_site_packages(failures)
+    verify_report_only_commands_run_without_venv_site_packages(failures)
 
     if failures:
         print("Report-only import safety verification failed:")
@@ -22,7 +22,7 @@ def main() -> int:
         return 1
 
     print("Report-only import safety verification passed.")
-    print("Verified --vps-monitoring-status can route before Alpaca imports while execution imports remain present.")
+    print("Verified report-only commands can route before Alpaca imports while execution imports remain present.")
     return 0
 
 
@@ -38,6 +38,8 @@ def verify_early_route_precedes_alpaca_imports(failures: list[str]) -> None:
         failures.append("_early_report_only_route() must run before top-level Alpaca imports")
     if 'sys.argv[1:] == ["--vps-monitoring-status"]' not in source:
         failures.append("early route must be limited to exact --vps-monitoring-status invocation")
+    if 'sys.argv[1:] == ["--market-monitor-scheduling-readiness-report"]' not in source:
+        failures.append("early route must be limited to exact --market-monitor-scheduling-readiness-report invocation")
 
 
 def verify_execution_imports_still_present(failures: list[str]) -> None:
@@ -54,22 +56,30 @@ def verify_execution_imports_still_present(failures: list[str]) -> None:
             failures.append(f"Execution dependency/safety import must remain present: {token}")
 
 
-def verify_status_command_runs_without_venv_site_packages(failures: list[str]) -> None:
-    completed = subprocess.run(
-        [sys.executable, "bot.py", "--vps-monitoring-status"],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
-    output = (completed.stdout or "") + "\n" + (completed.stderr or "")
-    if completed.returncode != 0:
-        failures.append(f"--vps-monitoring-status should run without Alpaca import; exit code {completed.returncode}")
-    if "ModuleNotFoundError: No module named 'alpaca'" in output:
-        failures.append("--vps-monitoring-status must not require top-level Alpaca import")
-    if "VPS MONITORING STATUS. REPORT ONLY. NOT EXECUTION." not in output:
-        failures.append("--vps-monitoring-status output marker missing")
+def verify_report_only_commands_run_without_venv_site_packages(failures: list[str]) -> None:
+    commands = [
+        ("--vps-monitoring-status", "VPS MONITORING STATUS. REPORT ONLY. NOT EXECUTION."),
+        (
+            "--market-monitor-scheduling-readiness-report",
+            "Market monitor scheduling readiness checks:",
+        ),
+    ]
+    for command, marker in commands:
+        completed = subprocess.run(
+            [sys.executable, "bot.py", command],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        output = (completed.stdout or "") + "\n" + (completed.stderr or "")
+        if completed.returncode != 0:
+            failures.append(f"{command} should run without Alpaca import; exit code {completed.returncode}")
+        if "ModuleNotFoundError: No module named 'alpaca'" in output:
+            failures.append(f"{command} must not require top-level Alpaca import")
+        if marker not in output:
+            failures.append(f"{command} output marker missing")
 
 
 def read_text(path: Path) -> str:

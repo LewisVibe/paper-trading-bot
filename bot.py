@@ -17,6 +17,10 @@ def _early_report_only_route() -> None:
         from trading_bot.research.vps_monitoring_status import print_vps_monitoring_status
 
         raise SystemExit(print_vps_monitoring_status())
+    if sys.argv[1:] == ["--market-monitor-scheduling-readiness-report"]:
+        from trading_bot.research.market_monitor_scheduling import print_market_monitor_scheduling_readiness_report
+
+        raise SystemExit(print_market_monitor_scheduling_readiness_report())
 
 
 _early_report_only_route()

@@ -134,6 +134,12 @@ python bot.py --vps-operations-readiness-report
 python bot.py --refresh-market-monitor
 ```
 
+The scheduling-readiness report assesses only the VPS-safe monitoring set:
+`--monitor-lockfile-readiness-report`, `--refresh-promoted-review`, and
+`--refresh-defensive-research`. It can report
+`ready_for_future_manual_scheduling_review` only as a checkpoint for a separate
+future review; it never approves scheduling or execution.
+
 Only continue to a separate scheduling review after the manual VPS refresh run
 succeeds and generated CSV/cache files remain ignored by git.
 
@@ -222,12 +228,15 @@ This command is report-only. It does not call Alpaca, yfinance, Discord, SQLite
 execution. When saved promoted review outputs exist, it reads only
 `data/promoted_review_refresh_summary.csv` and `data/promoted_decision_preview.csv`
 to show compact step-status and decision-state counts; it does not print full CSV
-contents or tickers.
+contents or tickers. High-risk/manual-only boundaries are shown in prose instead
+of copy-paste command strings.
 
 Safe next manual VPS steps are to keep using report/refresh/display commands
 only, resolve local config privately if the read-only promoted preview needs it,
 and rebuild saved defensive research inputs only through separately reviewed
 research tasks. Lockfile protection does not approve scheduling or execution.
+Execution-capable commands remain manual-only and out of scope for VPS-safe
+monitoring scheduling review.
 
 Keep the project paper-only: no live trading, `dry_run=true`, `alpaca.paper=true`,
 and `allow_shorting=false`. Do not read or commit config, secrets, logs,

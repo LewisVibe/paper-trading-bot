@@ -529,7 +529,7 @@ Create a report-only scheduling readiness audit for the market monitor refresh c
 python bot.py --market-monitor-scheduling-readiness-report
 ```
 
-This writes `data/market_monitor_scheduling_readiness_report.csv` and checks whether the existing refresh chain is safe to consider for a future manual scheduling review. It does not create Windows Task Scheduler tasks, add cron/loop execution, approve scheduling, load `config.json`, call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, connect monitoring output to strategy execution, or approve execution.
+This writes `data/market_monitor_scheduling_readiness_report.csv` and checks whether the current VPS-safe monitoring set is ready to be considered for a separate future scheduling review. The assessed set is limited to `--monitor-lockfile-readiness-report`, `--refresh-promoted-review`, and `--refresh-defensive-research`. It checks lockfile coverage, config presence without reading contents, saved promoted/defensive output presence, generated-output ignore policy, and false scheduling/execution approval flags. It does not create Windows Task Scheduler tasks, add cron/loop execution, approve scheduling, call Alpaca, call yfinance, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, connect monitoring output to strategy execution, or approve execution.
 
 Create a static no-overlap/lockfile readiness design report:
 
@@ -558,10 +558,11 @@ python bot.py --vps-monitoring-status
 This is report/display-only. It summarizes repo-safety reminders, lock-wrapped
 safe commands, config presence without reading `config.json`, saved defensive
 input presence, generated-output ignore expectations, latest saved promoted
-review step/decision counts when present, blocked execution-capable commands,
-and next safe manual commands. It does not call Alpaca, yfinance, Discord,
-SQLite `trade_log`, read paper positions, create orders, schedule anything, or
-approve execution.
+review step/decision counts when present, high-risk/manual-only boundaries in
+prose, and next safe manual report actions. It avoids printing pasteable
+high-risk command lines. It does not call Alpaca, yfinance, Discord, SQLite
+`trade_log`, read paper positions, create orders, schedule anything, or approve
+execution.
 
 Future Hermes cron plan for market monitor reports only:
 

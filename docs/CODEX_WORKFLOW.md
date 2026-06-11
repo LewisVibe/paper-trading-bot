@@ -95,9 +95,11 @@ execution/scheduling approval flags, and VPS handoff documentation.
 For VPS monitoring, prefer terminal-only report/display commands. The
 `python bot.py --vps-monitoring-status` command is safe to route before top-level
 Alpaca imports so it can report environment status without requiring trading
-dependencies at startup. Keep this exception narrow: do not weaken normal bot,
-paper-order-test, slow-SMA paper execution, or any execution-capable dependency
-checks.
+dependencies at startup. The `python bot.py --market-monitor-scheduling-readiness-report`
+checkpoint uses the same narrow report-only route and assesses only the three
+VPS-safe lock-wrapped monitoring commands for future manual scheduling review.
+Keep these exceptions narrow: do not weaken normal bot, paper-order-test,
+slow-SMA paper execution, or any execution-capable dependency checks.
 
 ## MCP Feasibility Boundary
 

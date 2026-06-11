@@ -1,12 +1,15 @@
-"""Report-only scheduling readiness audit for market monitor refresh."""
+"""Report-only scheduling readiness audit for VPS-safe monitoring commands."""
 
 from __future__ import annotations
 
 import csv
+import subprocess
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+from trading_bot.safety.monitor_lockfile import LOCK_WRAPPED_COMMAND_NAMES
 
 
 MARKET_MONITOR_SCHEDULING_READINESS_COLUMNS = [
@@ -19,57 +22,54 @@ MARKET_MONITOR_SCHEDULING_READINESS_COLUMNS = [
     "required_next_step",
 ]
 
-MARKET_MONITOR_COMMANDS = [
-    "--ticker-universe-readiness-report",
-    "--market-monitor-snapshot",
-    "--show-market-monitor",
-    "--market-monitor-quality-report",
-    "--refresh-market-monitor",
-    "--market-monitor-scheduling-readiness-report",
+ASSESSED_SAFE_COMMANDS = [
+    "--monitor-lockfile-readiness-report",
+    "--refresh-promoted-review",
+    "--refresh-defensive-research",
 ]
 
-FORBIDDEN_REFRESH_TOKENS = [
-    "TradingClient(",
-    "get_alpaca_positions(",
-    "insert_trade_log(",
-    "send_discord_alert(",
-    "init_database(",
-    "load_config(",
-    "Task Scheduler",
-    "schtasks",
+PROMOTED_SAVED_OUTPUTS = [
+    "data/promoted_review_refresh_summary.csv",
+    "data/promoted_decision_preview.csv",
 ]
 
-TARGETED_FORBIDDEN_CHECKS = [
-    (
-        "refresh_command_does_not_call_alpaca",
-        ["TradingClient("],
-        "Refresh runner has no TradingClient construction.",
-        "Keep Alpaca clients out of market monitor refresh and any future scheduling review.",
-    ),
-    (
-        "refresh_command_does_not_read_paper_positions",
-        ["get_alpaca_positions("],
-        "Refresh runner has no paper-position read calls.",
-        "Keep paper positions out of market monitor refresh.",
-    ),
-    (
-        "refresh_command_does_not_write_sqlite_trade_log",
-        ["insert_trade_log(", "init_database("],
-        "Refresh runner has no SQLite trade_log writes or database initialization.",
-        "Keep SQLite trade_log writes out of monitoring refresh.",
-    ),
-    (
-        "refresh_command_does_not_send_discord_alerts",
-        ["send_discord_alert("],
-        "Refresh runner has no Discord alert calls.",
-        "Keep Discord alerts out of monitoring refresh until separately reviewed.",
-    ),
-    (
-        "refresh_command_does_not_schedule",
-        ["Task Scheduler", "schtasks"],
-        "Refresh runner has no Windows Task Scheduler or schtasks calls.",
-        "Do not add scheduled tasks or loops without a separate explicit scheduling task.",
-    ),
+DEFENSIVE_SAVED_OUTPUTS = [
+    "data/vol_managed_etf_robustness_report.csv",
+    "data/etf_rotation_robustness_report.csv",
+    "data/defensive_research_refresh_summary.csv",
+]
+
+GENERATED_OUTPUT_PATHS = [
+    "data/monitor_lockfile_readiness_report.csv",
+    "data/promoted_review_refresh_summary.csv",
+    "data/defensive_research_refresh_summary.csv",
+    "data/promoted_strategy_preview.csv",
+    "data/promoted_strategy_action_preview.csv",
+    "data/promoted_risk_preview.csv",
+    "data/promoted_consensus_preview.csv",
+    "data/promoted_decision_preview.csv",
+    "data/defensive_candidate_comparison.csv",
+    "data/etf_defensive_drawdown_comparison.csv",
+    "data/charts/etf_defensive_drawdown_comparison.png",
+    "data/market_monitor_scheduling_readiness_report.csv",
+]
+
+FORBIDDEN_REPORT_TOKEN_PARTS = [
+    ("Trading", "Client("),
+    ("get_alpaca", "_positions("),
+    ("submit", "_order("),
+    ("cancel", "_order("),
+    ("create", "_order("),
+    ("insert", "_trade_log("),
+    ("sqlite3", ".connect("),
+    ("send_discord", "_alert("),
+    ("yf", ".download("),
+    ("download_close", "_prices("),
+    ("download_backtest", "_prices("),
+    ("load", "_config("),
+    ("open(", '"config.json"'),
+    ("read_text(", '"config.json"'),
+    ("scht", "asks"),
 ]
 
 
@@ -97,143 +97,151 @@ def generate_market_monitor_scheduling_readiness_report(
 
 def build_market_monitor_scheduling_readiness_rows(root: Path) -> list[dict[str, Any]]:
     bot_source = read_text(root / "bot.py")
+    module_source = read_text(root / "trading_bot" / "research" / "market_monitor_scheduling.py")
     runner_source = read_text(root / "trading_bot" / "runners" / "research_reports.py")
     inventory_source = read_text(root / "scripts" / "verify_command_inventory.py")
-    gitignore_source = read_text(root / ".gitignore")
-    refresh_segment = source_segment(
-        runner_source,
-        "def run_refresh_market_monitor_command()",
-        "def print_market_monitor_refresh_summary",
+    docs_source = "\n".join(
+        read_text(path)
+        for path in [
+            root / "README.md",
+            root / "docs" / "CURRENT_STATE.md",
+            root / "docs" / "VPS_SETUP_CHECKLIST.md",
+            root / "docs" / "HERMES_TASK_BOARD.md",
+        ]
     )
-
-    rows = [
-        refresh_command_exists_row(bot_source, runner_source),
-        refresh_report_only_row(bot_source, runner_source),
-        refresh_no_forbidden_tokens_row(refresh_segment),
-        refresh_dispatch_before_config_row(bot_source),
-        *targeted_forbidden_token_rows(refresh_segment),
-        generated_outputs_ignored_row(gitignore_source),
-        repo_safety_verifier_exists_row(root),
-        command_inventory_includes_market_monitor_rows(inventory_source),
-        normal_bot_execution_separate_row(bot_source),
+    return [
+        scheduling_readiness_command_exists_row(bot_source, inventory_source),
+        report_only_early_route_row(bot_source),
+        assessed_command_set_row(),
+        lockfile_coverage_row(runner_source),
+        config_presence_only_row(root),
+        saved_outputs_present_row(root, "promoted_saved_outputs_present", PROMOTED_SAVED_OUTPUTS),
+        saved_outputs_present_row(root, "defensive_saved_outputs_present", DEFENSIVE_SAVED_OUTPUTS),
+        generated_outputs_ignored_row(root),
+        execution_capable_commands_excluded_row(docs_source),
+        report_module_no_forbidden_calls_row(module_source),
         scheduling_not_approved_row(),
         execution_not_approved_row(),
+        final_outcome_row(root),
     ]
-    return rows
 
 
-def refresh_command_exists_row(bot_source: str, runner_source: str) -> dict[str, Any]:
-    command_present = "--refresh-market-monitor" in bot_source
-    runner_present = "def run_refresh_market_monitor_command()" in runner_source
-    passed = command_present and runner_present
+def scheduling_readiness_command_exists_row(bot_source: str, inventory_source: str) -> dict[str, Any]:
+    command_present = "--market-monitor-scheduling-readiness-report" in bot_source
+    inventory_present = "--market-monitor-scheduling-readiness-report" in inventory_source
     return readiness_row(
-        "refresh_command_exists",
-        "pass" if passed else "error",
+        "scheduling_readiness_command_exists",
+        "pass" if command_present and inventory_present else "error",
         "medium",
-        f"cli_flag={command_present}; runner={runner_present}",
-        "Keep the refresh command as a report/display wrapper only.",
+        f"bot_flag={command_present}; inventory={inventory_present}",
+        "Keep the command registered as report-only.",
     )
 
 
-def refresh_report_only_row(bot_source: str, runner_source: str) -> dict[str, Any]:
-    evidence_tokens = [
-        "Refresh the safe market monitor report/display chain without execution.",
-        "monitoring/report/display only and does not approve orders",
-    ]
-    passed = all(token in bot_source or token in runner_source for token in evidence_tokens)
+def report_only_early_route_row(bot_source: str) -> dict[str, Any]:
+    command_index = bot_source.find('sys.argv[1:] == ["--market-monitor-scheduling-readiness-report"]')
+    alpaca_import_index = bot_source.find("from alpaca.trading.client import TradingClient")
+    passed = command_index != -1 and alpaca_import_index != -1 and command_index < alpaca_import_index
     return readiness_row(
-        "refresh_command_report_display_only",
-        "pass" if passed else "warning",
+        "scheduling_readiness_routes_before_runtime_imports",
+        "pass" if passed else "error",
         "high",
-        "Help and runner warning describe monitoring/report/display only.",
-        "Do not use refresh output as scheduling or execution approval.",
+        f"early_route_index={command_index}; alpaca_import_index={alpaca_import_index}",
+        "Keep this report-only route exact and before normal runtime imports.",
     )
 
 
-def refresh_no_forbidden_tokens_row(refresh_segment: str) -> dict[str, Any]:
-    found = [token for token in FORBIDDEN_REFRESH_TOKENS if token in refresh_segment]
+def assessed_command_set_row() -> dict[str, Any]:
+    expected = sorted(ASSESSED_SAFE_COMMANDS)
+    actual = sorted(LOCK_WRAPPED_COMMAND_NAMES)
     return readiness_row(
-        "refresh_command_no_execution_side_effects",
+        "assessed_command_set_limited_to_safe_vps_monitoring",
+        "pass" if actual == expected else "error",
+        "high",
+        f"assessed={', '.join(expected)}; lock_wrapped={', '.join(actual)}",
+        "Do not add execution-capable commands to the scheduling-readiness set.",
+    )
+
+
+def lockfile_coverage_row(runner_source: str) -> dict[str, Any]:
+    missing = [command for command in ASSESSED_SAFE_COMMANDS if command not in runner_source]
+    acquire_count = runner_source.count("acquire_monitor_lock(")
+    release_count = runner_source.count("release_monitor_lock(")
+    passed = not missing and acquire_count == len(ASSESSED_SAFE_COMMANDS) and release_count == len(ASSESSED_SAFE_COMMANDS)
+    return readiness_row(
+        "lockfile_protection_covers_safe_commands_only",
+        "pass" if passed else "error",
+        "high",
+        (
+            f"missing={', '.join(missing) if missing else 'none'}; "
+            f"acquire_calls={acquire_count}; release_calls={release_count}"
+        ),
+        "Keep lockfile protection limited to safe report/preview/refresh commands.",
+    )
+
+
+def config_presence_only_row(root: Path) -> dict[str, Any]:
+    exists = (root / "config.json").exists()
+    return readiness_row(
+        "config_presence_checked_without_reading_contents",
+        "pass" if exists else "warning",
+        "medium",
+        f"config.json exists={exists}; contents were not read.",
+        "Local config presence may be required for read-only paper-position preview, but secrets must never be printed.",
+    )
+
+
+def saved_outputs_present_row(root: Path, check_name: str, paths: list[str]) -> dict[str, Any]:
+    missing = [path for path in paths if not (root / path).exists()]
+    return readiness_row(
+        check_name,
+        "pass" if not missing else "warning",
+        "medium",
+        "Missing saved outputs: " + (", ".join(missing) if missing else "none"),
+        "Run the relevant safe manual refresh command before a future scheduling review.",
+    )
+
+
+def generated_outputs_ignored_row(root: Path) -> dict[str, Any]:
+    failures = [
+        path
+        for path in GENERATED_OUTPUT_PATHS
+        if not is_git_ignored(root, path) or is_git_tracked(root, path)
+    ]
+    return readiness_row(
+        "generated_outputs_remain_ignored_untracked",
+        "pass" if not failures else "error",
+        "medium",
+        "Generated output policy failures: " + (", ".join(failures) if failures else "none"),
+        "Keep generated CSV/chart/log/database outputs out of commits.",
+    )
+
+
+def execution_capable_commands_excluded_row(docs_source: str) -> dict[str, Any]:
+    docs_lower = docs_source.lower()
+    required_prose = [
+        "execution-capable commands remain manual-only",
+        "paper-order smoke tests",
+        "slow-sma paper execution",
+    ]
+    missing = [phrase for phrase in required_prose if phrase not in docs_lower]
+    return readiness_row(
+        "execution_capable_commands_remain_excluded",
+        "pass" if not missing else "warning",
+        "high",
+        "Missing documentation phrases: " + (", ".join(missing) if missing else "none"),
+        "Keep execution-capable commands excluded from safe monitoring and scheduling review.",
+    )
+
+
+def report_module_no_forbidden_calls_row(module_source: str) -> dict[str, Any]:
+    found = ["".join(parts) for parts in FORBIDDEN_REPORT_TOKEN_PARTS if "".join(parts) in module_source]
+    return readiness_row(
+        "scheduling_readiness_report_has_no_forbidden_calls",
         "pass" if not found else "error",
         "high",
-        "Forbidden tokens in refresh runner: " + (", ".join(found) if found else "none"),
-        "If any forbidden token appears, remove it before scheduling review.",
-    )
-
-
-def targeted_forbidden_token_rows(refresh_segment: str) -> list[dict[str, Any]]:
-    rows = []
-    for check_name, tokens, pass_evidence, required_next_step in TARGETED_FORBIDDEN_CHECKS:
-        found = [token for token in tokens if token in refresh_segment]
-        rows.append(
-            readiness_row(
-                check_name,
-                "pass" if not found else "error",
-                "high",
-                pass_evidence if not found else "Forbidden tokens found: " + ", ".join(found),
-                required_next_step,
-            )
-        )
-    return rows
-
-
-def refresh_dispatch_before_config_row(bot_source: str) -> dict[str, Any]:
-    refresh_index = bot_source.find("if args.refresh_market_monitor:")
-    config_index = bot_source.find("config_path = Path(args.config).resolve()")
-    passed = refresh_index != -1 and config_index != -1 and refresh_index < config_index
-    return readiness_row(
-        "refresh_command_does_not_load_config",
-        "pass" if passed else "error",
-        "high",
-        f"refresh_dispatch_index={refresh_index}; config_load_index={config_index}",
-        "Keep refresh dispatch before config loading.",
-    )
-
-
-def generated_outputs_ignored_row(gitignore_source: str) -> dict[str, Any]:
-    passed = "data/*" in gitignore_source
-    return readiness_row(
-        "generated_market_monitor_outputs_ignored",
-        "pass" if passed else "error",
-        "medium",
-        "`.gitignore` contains data/*" if passed else "Could not find data/* in .gitignore.",
-        "Keep generated market monitor CSVs out of commits.",
-    )
-
-
-def repo_safety_verifier_exists_row(root: Path) -> dict[str, Any]:
-    verifier_path = root / "scripts" / "verify_repo_safety.py"
-    passed = verifier_path.exists()
-    return readiness_row(
-        "repo_safety_verifier_exists",
-        "pass" if passed else "error",
-        "medium",
-        str(verifier_path),
-        "Run the repo safety verifier before commits and before any future scheduling review.",
-    )
-
-
-def command_inventory_includes_market_monitor_rows(inventory_source: str) -> dict[str, Any]:
-    missing = [command for command in MARKET_MONITOR_COMMANDS if command not in inventory_source]
-    return readiness_row(
-        "command_inventory_includes_market_monitor_commands",
-        "pass" if not missing else "error",
-        "medium",
-        "Missing commands: " + (", ".join(missing) if missing else "none"),
-        "Keep command inventory verification covering all market monitor commands.",
-    )
-
-
-def normal_bot_execution_separate_row(bot_source: str) -> dict[str, Any]:
-    refresh_index = bot_source.find("if args.refresh_market_monitor:")
-    normal_config_index = bot_source.find("config_path = Path(args.config).resolve()")
-    passed = refresh_index != -1 and normal_config_index != -1 and refresh_index < normal_config_index
-    return readiness_row(
-        "normal_bot_execution_remains_separate",
-        "pass" if passed else "error",
-        "high",
-        "Refresh command returns before normal config/runtime path." if passed else "Could not confirm separation.",
-        "Do not connect monitoring refresh to normal bot execution.",
+        "Forbidden tokens in report module: " + (", ".join(found) if found else "none"),
+        "Remove any runtime execution, market-data, alert, scheduling, or config-content access from this report.",
     )
 
 
@@ -242,8 +250,8 @@ def scheduling_not_approved_row() -> dict[str, Any]:
         "scheduling_not_approved",
         "pass",
         "high",
-        "This report is readiness/audit only and does not create Windows Task Scheduler tasks.",
-        "Future manual scheduling review must be explicitly requested and separately approved.",
+        "This report is readiness-only and creates no schedules, services, cron jobs, or Task Scheduler entries.",
+        "A separate explicit manual scheduling review is still required.",
     )
 
 
@@ -252,8 +260,36 @@ def execution_not_approved_row() -> dict[str, Any]:
         "execution_not_approved",
         "pass",
         "high",
-        "Market monitor outputs remain monitoring/report/display only.",
-        "Do not treat monitoring output as order or paper-execution approval.",
+        "Report, preview, refresh, and lockfile outputs are not order or paper-execution approval.",
+        "Do not connect these outputs to execution.",
+    )
+
+
+def final_outcome_row(root: Path) -> dict[str, Any]:
+    config_exists = (root / "config.json").exists()
+    saved_outputs_exist = all((root / path).exists() for path in PROMOTED_SAVED_OUTPUTS + DEFENSIVE_SAVED_OUTPUTS)
+    generated_outputs_ok = all(
+        is_git_ignored(root, path) and not is_git_tracked(root, path)
+        for path in GENERATED_OUTPUT_PATHS
+    )
+    ready = config_exists and saved_outputs_exist and generated_outputs_ok
+    reasons = []
+    if not config_exists:
+        reasons.append("config_presence_missing")
+    if not saved_outputs_exist:
+        reasons.append("saved_outputs_missing")
+    if not generated_outputs_ok:
+        reasons.append("generated_output_policy_failure")
+    return readiness_row(
+        "final_readiness_outcome",
+        "pass" if ready else "warning",
+        "high",
+        (
+            "ready_for_future_manual_scheduling_review"
+            if ready
+            else "not_ready_for_scheduling_review: " + ", ".join(reasons)
+        ),
+        "Even when ready, scheduling remains unapproved until a separate explicit review.",
     )
 
 
@@ -287,14 +323,34 @@ def build_market_monitor_scheduling_readiness_summary(rows: list[dict[str, Any]]
     counts = Counter(row.get("status", "unknown") for row in rows)
     scheduling_false = all(str(row.get("scheduling_approved")).lower() == "false" for row in rows)
     execution_false = all(str(row.get("execution_approved")).lower() == "false" for row in rows)
+    outcome = next(
+        (row["evidence"] for row in rows if row.get("check_name") == "final_readiness_outcome"),
+        "not_ready_for_scheduling_review",
+    )
+    blocking_rows = [
+        row["check_name"]
+        for row in rows
+        if row.get("status") in {"warning", "error"} and row.get("check_name") != "final_readiness_outcome"
+    ]
     return [
         f"Market monitor scheduling readiness checks: {len(rows)}",
         f"Pass: {counts['pass']}, warning: {counts['warning']}, error: {counts['error']}",
+        f"Outcome: {outcome}",
+        "Assessed safe VPS commands: " + ", ".join(ASSESSED_SAFE_COMMANDS),
+        "Blocking or review rows: " + (", ".join(blocking_rows) if blocking_rows else "none"),
         f"Scheduling approved false for all rows: {scheduling_false}",
         f"Execution approved false for all rows: {execution_false}",
-        "Warning: this is readiness/audit only and does not create or approve scheduling.",
         f"Saved market monitor scheduling readiness report to {output_path}",
+        "Warning: this is report-only readiness for future manual review; it does not create or approve scheduling.",
+        "Warning: report/preview/refresh monitoring is not execution approval.",
     ]
+
+
+def print_market_monitor_scheduling_readiness_report(root: Path | str = ".") -> int:
+    result = generate_market_monitor_scheduling_readiness_report(root)
+    for line in result.summary_lines:
+        print(line)
+    return 0
 
 
 def read_text(path: Path) -> str:
@@ -304,11 +360,23 @@ def read_text(path: Path) -> str:
         return ""
 
 
-def source_segment(source: str, start_marker: str, end_marker: str) -> str:
-    start = source.find(start_marker)
-    if start == -1:
-        return ""
-    end = source.find(end_marker, start + len(start_marker))
-    if end == -1:
-        return source[start:]
-    return source[start:end]
+def is_git_ignored(root: Path, path: str) -> bool:
+    completed = subprocess.run(
+        ["git", "check-ignore", "-q", path],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return completed.returncode == 0
+
+
+def is_git_tracked(root: Path, path: str) -> bool:
+    completed = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", path],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return completed.returncode == 0

@@ -18,19 +18,28 @@ REQUIRED_OUTPUT_PHRASES = [
     "lock-wrapped safe command: --refresh-defensive-research",
     "config_missing_for_readonly_promoted_review",
     "missing_saved_research_inputs",
-    "python bot.py --monitor-lockfile-readiness-report",
-    "python bot.py --refresh-promoted-review",
-    "python bot.py --refresh-defensive-research",
-    "python bot.py --paper-order-test ... --confirm-paper-order",
-    "python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper",
-    "--paper-order-test",
-    "--confirm-paper-order",
-    "--execute-slow-sma-paper",
-    "--confirm-slow-sma-paper",
+    "Next safe manual report actions:",
+    "Monitor lockfile readiness report flag: --monitor-lockfile-readiness-report",
+    "Promoted review refresh flag: --refresh-promoted-review",
+    "Defensive research refresh flag: --refresh-defensive-research",
+    "High-risk/manual-only boundaries:",
+    "Normal bot runs remain high-risk/manual-only and are outside safe VPS monitoring.",
+    "Paper-order smoke tests remain excluded from safe monitoring and scheduling readiness.",
+    "Slow-SMA paper execution remains excluded from safe monitoring and scheduling readiness.",
+    "No execution-capable paper-trading command is approved for scheduling or automation.",
     "does not call Alpaca, yfinance, Discord, SQLite trade_log, or read config.json contents",
     "Promoted review state:",
     "promoted_review_missing_saved_outputs",
     "Promoted review saved-output summaries are compact counts only and do not approve execution.",
+]
+
+FORBIDDEN_OUTPUT_PHRASES = [
+    "python bot.py --paper-order-test",
+    "python bot.py --execute-slow-sma-paper",
+    "--paper-order-test",
+    "--confirm-paper-order",
+    "--execute-slow-sma-paper",
+    "--confirm-slow-sma-paper",
 ]
 
 FORBIDDEN_CALL_TOKENS = [
@@ -87,6 +96,9 @@ def verify_status_output_text(failures: list[str]) -> None:
     for phrase in REQUIRED_OUTPUT_PHRASES:
         if phrase not in output:
             failures.append(f"Missing status output phrase: {phrase}")
+    for phrase in FORBIDDEN_OUTPUT_PHRASES:
+        if phrase in output:
+            failures.append(f"Status output should avoid pasteable high-risk command string: {phrase}")
 
 
 def verify_missing_promoted_outputs_do_not_fail(failures: list[str]) -> None:

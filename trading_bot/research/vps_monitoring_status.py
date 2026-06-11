@@ -16,19 +16,16 @@ LOCK_WRAPPED_COMMANDS = [
 ]
 
 SAFE_NEXT_COMMANDS = [
-    "python bot.py --monitor-lockfile-readiness-report",
-    "python bot.py --refresh-promoted-review",
-    "python bot.py --refresh-defensive-research",
+    "Monitor lockfile readiness report flag: --monitor-lockfile-readiness-report",
+    "Promoted review refresh flag: --refresh-promoted-review",
+    "Defensive research refresh flag: --refresh-defensive-research",
 ]
 
-BLOCKED_COMMANDS = [
-    "python bot.py",
-    "python bot.py --paper-order-test ... --confirm-paper-order",
-    "python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper",
-    "--paper-order-test",
-    "--confirm-paper-order",
-    "--execute-slow-sma-paper",
-    "--confirm-slow-sma-paper",
+HIGH_RISK_BOUNDARY_LINES = [
+    "Normal bot runs remain high-risk/manual-only and are outside safe VPS monitoring.",
+    "Paper-order smoke tests remain excluded from safe monitoring and scheduling readiness.",
+    "Slow-SMA paper execution remains excluded from safe monitoring and scheduling readiness.",
+    "No execution-capable paper-trading command is approved for scheduling or automation.",
 ]
 
 DEFENSIVE_SAVED_INPUTS = [
@@ -87,17 +84,17 @@ def build_vps_monitoring_status_lines(root: Path | str = ".") -> list[str]:
     lines.append("Promoted review state:")
     lines.extend(promoted_review_status_lines(root_path))
     lines.append("")
-    lines.append("Next safe manual commands:")
+    lines.append("Next safe manual report actions:")
     for command in SAFE_NEXT_COMMANDS:
         lines.append(f"- {command}")
     lines.append("")
-    lines.append("Blocked/high-risk commands:")
-    for command in BLOCKED_COMMANDS:
-        lines.append(f"- {command}")
+    lines.append("High-risk/manual-only boundaries:")
+    for boundary in HIGH_RISK_BOUNDARY_LINES:
+        lines.append(f"- {boundary}")
     lines.append("")
     lines.append("Missing config and missing saved research inputs are prerequisites/statuses, not execution approval.")
     lines.append("Promoted review saved-output summaries are compact counts only and do not approve execution.")
-    lines.append("Normal python bot.py, paper-order-test, and slow-SMA paper execution remain high-risk/manual-only.")
+    lines.append("Normal bot runs, paper-order smoke tests, and slow-SMA paper execution remain high-risk/manual-only.")
     lines.append("Warning: this command does not call Alpaca, yfinance, Discord, SQLite trade_log, or read config.json contents.")
     return lines
 
