@@ -549,6 +549,19 @@ The final lockfile checkpoint, `python scripts\verify_monitor_lockfile_final_sta
 
 The VPS monitoring prerequisite checkpoint, `python scripts\verify_vps_monitoring_prerequisites.py`, separates environment readiness from missing local prerequisites. Missing `config.json` for read-only promoted preview is classified as `config_missing_for_readonly_promoted_review`, and missing saved defensive inputs are classified as `missing_saved_research_inputs`; neither classification approves scheduling or execution.
 
+For VPS terminal monitoring, use:
+
+```powershell
+python bot.py --vps-monitoring-status
+```
+
+This is report/display-only. It summarizes repo-safety reminders, lock-wrapped
+safe commands, config presence without reading `config.json`, saved defensive
+input presence, generated-output ignore expectations, blocked execution-capable
+commands, and next safe manual commands. It does not call Alpaca, yfinance,
+Discord, SQLite `trade_log`, read paper positions, create orders, schedule
+anything, or approve execution.
+
 Future Hermes cron plan for market monitor reports only:
 
 ```bat

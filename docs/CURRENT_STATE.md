@@ -279,6 +279,8 @@ Ticker universe readiness reporting:
 - `python scripts\verify_monitor_lockfile_final_state.py` is the final static checkpoint for the current lockfile handoff. It verifies the exact three-command lock boundary, false execution/scheduling approval flags, stale-lock manual review, blocked execution commands, and VPS handoff documentation.
 - VPS safe manual monitoring commands are report/refresh/display only. Use `git pull`, `.venv\Scripts\python.exe scripts\verify_repo_safety.py`, and `.venv\Scripts\python.exe scripts\verify_monitor_lockfile_final_state.py` before manual review commands such as `.venv\Scripts\python.exe bot.py --monitor-lockfile-readiness-report`, `.venv\Scripts\python.exe bot.py --refresh-promoted-review`, and `.venv\Scripts\python.exe bot.py --refresh-defensive-research`.
 - `python scripts\verify_vps_monitoring_prerequisites.py` is a static checkpoint for the first manual VPS monitoring test. It distinguishes environment/dependency readiness, `config_missing_for_readonly_promoted_review`, `missing_saved_research_inputs`, actual safety failures, and safe next manual VPS steps. It does not read or create `config.json`, install packages, run bot commands, or approve scheduling/execution.
+- `python bot.py --vps-monitoring-status` is the VPS-safe terminal monitoring route. It is report/display-only and summarizes repo safety reminders, lockfile state, config presence without reading contents, saved research prerequisite presence, generated-output ignore expectations, blocked commands, and next safe manual commands. It does not call Alpaca, yfinance, Discord, SQLite `trade_log`, read positions, create orders, schedule anything, or approve execution.
+- Terminal monitoring is the chosen VPS route for now. No dashboard, web server, public hosting, open ports, scheduling, or execution controls are added.
 - Generated CSVs/charts/logs/databases/secrets/config must not be committed or pasted. Generated outputs remain ignored and stale lockfiles require manual review, not automatic deletion.
 - Lockfile planning applies only to report/preview/display/monitor refresh commands. Execution-capable commands must never be scheduled and must not be treated as safe merely because a lockfile exists. A lockfile does not approve scheduling, execution, or paper orders.
 - It does not call Alpaca, read paper positions, create/cancel/submit orders, write SQLite `trade_log`, send Discord alerts, change strategy rules, or approve execution.
@@ -352,6 +354,8 @@ python scripts\verify_refresh_promoted_review_lock_readiness.py
 python scripts\verify_refresh_defensive_research_lock_readiness.py
 python scripts\verify_monitor_lockfile_final_state.py
 python scripts\verify_vps_monitoring_prerequisites.py
+python scripts\verify_vps_monitoring_status.py
+python scripts\verify_report_only_import_safety.py
 python bot.py --ticker-universe-readiness-report
 python bot.py --market-monitor-snapshot
 python bot.py --show-market-monitor

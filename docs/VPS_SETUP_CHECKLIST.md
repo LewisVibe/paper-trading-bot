@@ -92,6 +92,7 @@ report/refresh/display only, and they are not execution approval or automatic
 scheduling approval:
 
 ```powershell
+.venv\Scripts\python.exe bot.py --vps-monitoring-status
 .venv\Scripts\python.exe bot.py --monitor-lockfile-readiness-report
 .venv\Scripts\python.exe bot.py --refresh-promoted-review
 .venv\Scripts\python.exe bot.py --refresh-defensive-research
@@ -183,6 +184,10 @@ pasted. Generated CSV/chart outputs remain ignored and should not be committed.
 
 ## VPS Monitoring Prerequisites Checkpoint
 
+Terminal monitoring is the chosen VPS route for now. Do not add a dashboard, web
+server, public hosting, open ports, loop mode, scheduling, or execution controls
+for this workflow.
+
 After the first manual VPS safe-command test, separate environment readiness
 from missing local prerequisites:
 
@@ -205,6 +210,16 @@ Run the static prerequisite checkpoint:
 ```powershell
 .venv\Scripts\python.exe scripts\verify_vps_monitoring_prerequisites.py
 ```
+
+Run the terminal status command:
+
+```powershell
+.venv\Scripts\python.exe bot.py --vps-monitoring-status
+```
+
+This command is report-only. It does not call Alpaca, yfinance, Discord, SQLite
+`trade_log`, read paper positions, create orders, schedule anything, or approve
+execution.
 
 Safe next manual VPS steps are to keep using report/refresh/display commands
 only, resolve local config privately if the read-only promoted preview needs it,

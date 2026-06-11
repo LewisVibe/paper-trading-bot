@@ -11,6 +11,16 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 
+
+def _early_report_only_route() -> None:
+    if sys.argv[1:] == ["--vps-monitoring-status"]:
+        from trading_bot.research.vps_monitoring_status import print_vps_monitoring_status
+
+        raise SystemExit(print_vps_monitoring_status())
+
+
+_early_report_only_route()
+
 from alpaca.trading.client import TradingClient
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.trading.requests import MarketOrderRequest
@@ -4030,6 +4040,11 @@ def parse_args() -> argparse.Namespace:
         help="Create a report-only VPS/Hermes operations readiness audit without scheduling or execution.",
     )
     parser.add_argument(
+        "--vps-monitoring-status",
+        action="store_true",
+        help="Display a VPS-safe monitoring status summary without Alpaca, scheduling, or execution.",
+    )
+    parser.add_argument(
         "--portfolio-risk-policy-report",
         action="store_true",
         help="Create a research-only portfolio risk policy audit without enforcing execution gates.",
@@ -4278,6 +4293,10 @@ def main() -> int:
         return run_deployment_readiness_report_command()
     if args.vps_operations_readiness_report:
         return run_vps_operations_readiness_report_command()
+    if args.vps_monitoring_status:
+        from trading_bot.research.vps_monitoring_status import print_vps_monitoring_status
+
+        return print_vps_monitoring_status()
     if args.portfolio_risk_policy_report:
         return run_portfolio_risk_policy_report_command()
     if args.show_portfolio_risk_policy:

@@ -92,6 +92,13 @@ Use `python scripts\verify_monitor_lockfile_final_state.py` to verify the final
 three-command lock boundary, stale-lock manual-review policy, false
 execution/scheduling approval flags, and VPS handoff documentation.
 
+For VPS monitoring, prefer terminal-only report/display commands. The
+`python bot.py --vps-monitoring-status` command is safe to route before top-level
+Alpaca imports so it can report environment status without requiring trading
+dependencies at startup. Keep this exception narrow: do not weaken normal bot,
+paper-order-test, slow-SMA paper execution, or any execution-capable dependency
+checks.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

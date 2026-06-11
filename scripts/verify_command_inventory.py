@@ -68,6 +68,7 @@ REQUIRED_COMMANDS = [
     "--refresh-promoted-review",
     "--deployment-readiness-report",
     "--vps-operations-readiness-report",
+    "--vps-monitoring-status",
     "--portfolio-risk-policy-report",
     "--show-portfolio-risk-policy",
     "--paper-kill-switch-readiness-report",
