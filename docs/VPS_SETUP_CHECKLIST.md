@@ -219,7 +219,10 @@ Run the terminal status command:
 
 This command is report-only. It does not call Alpaca, yfinance, Discord, SQLite
 `trade_log`, read paper positions, create orders, schedule anything, or approve
-execution.
+execution. When saved promoted review outputs exist, it reads only
+`data/promoted_review_refresh_summary.csv` and `data/promoted_decision_preview.csv`
+to show compact step-status and decision-state counts; it does not print full CSV
+contents or tickers.
 
 Safe next manual VPS steps are to keep using report/refresh/display commands
 only, resolve local config privately if the read-only promoted preview needs it,

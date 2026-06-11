@@ -557,10 +557,11 @@ python bot.py --vps-monitoring-status
 
 This is report/display-only. It summarizes repo-safety reminders, lock-wrapped
 safe commands, config presence without reading `config.json`, saved defensive
-input presence, generated-output ignore expectations, blocked execution-capable
-commands, and next safe manual commands. It does not call Alpaca, yfinance,
-Discord, SQLite `trade_log`, read paper positions, create orders, schedule
-anything, or approve execution.
+input presence, generated-output ignore expectations, latest saved promoted
+review step/decision counts when present, blocked execution-capable commands,
+and next safe manual commands. It does not call Alpaca, yfinance, Discord,
+SQLite `trade_log`, read paper positions, create orders, schedule anything, or
+approve execution.
 
 Future Hermes cron plan for market monitor reports only:
 
