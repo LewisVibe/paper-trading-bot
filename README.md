@@ -545,7 +545,9 @@ The pure helper verifier, `python scripts\verify_monitor_lockfile_helper.py`, ch
 
 The integration-readiness checkpoint, `python scripts\verify_monitor_lockfile_integration_readiness.py`, verifies that exactly `--monitor-lockfile-readiness-report`, `--refresh-promoted-review`, and `--refresh-defensive-research` are lock-wrapped, `bot.py` is not using the helper directly, no other command is lock-wrapped, and future safe report/display/monitor refresh commands remain manual-review only.
 
-The final lockfile checkpoint, `python scripts\verify_monitor_lockfile_final_state.py`, verifies the exact three-command lock boundary, blocked execution commands, false execution/scheduling approval flags, stale-lock manual review, and VPS handoff documentation. On the VPS, use `git pull`, `py -3 scripts\verify_repo_safety.py`, and `py -3 scripts\verify_monitor_lockfile_final_state.py` before manual report/refresh/display review commands. Generated CSVs/charts/logs/databases/secrets/config must not be committed or pasted.
+The final lockfile checkpoint, `python scripts\verify_monitor_lockfile_final_state.py`, verifies the exact three-command lock boundary, blocked execution commands, false execution/scheduling approval flags, stale-lock manual review, and VPS handoff documentation. On the VPS, use `git pull`, `.venv\Scripts\python.exe scripts\verify_repo_safety.py`, and `.venv\Scripts\python.exe scripts\verify_monitor_lockfile_final_state.py` before manual report/refresh/display review commands. Generated CSVs/charts/logs/databases/secrets/config must not be committed or pasted.
+
+The VPS monitoring prerequisite checkpoint, `python scripts\verify_vps_monitoring_prerequisites.py`, separates environment readiness from missing local prerequisites. Missing `config.json` for read-only promoted preview is classified as `config_missing_for_readonly_promoted_review`, and missing saved defensive inputs are classified as `missing_saved_research_inputs`; neither classification approves scheduling or execution.
 
 Future Hermes cron plan for market monitor reports only:
 

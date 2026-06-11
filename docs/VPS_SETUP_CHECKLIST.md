@@ -92,9 +92,9 @@ report/refresh/display only, and they are not execution approval or automatic
 scheduling approval:
 
 ```powershell
-py -3 bot.py --monitor-lockfile-readiness-report
-py -3 bot.py --refresh-promoted-review
-py -3 bot.py --refresh-defensive-research
+.venv\Scripts\python.exe bot.py --monitor-lockfile-readiness-report
+.venv\Scripts\python.exe bot.py --refresh-promoted-review
+.venv\Scripts\python.exe bot.py --refresh-defensive-research
 python bot.py --show-promoted-decision
 python bot.py --show-crypto-monitor
 python bot.py --deployment-readiness-report
@@ -173,13 +173,43 @@ py -3 scripts\verify_monitor_lockfile_final_state.py
 Safe VPS manual monitoring commands:
 
 ```powershell
-py -3 bot.py --monitor-lockfile-readiness-report
-py -3 bot.py --refresh-promoted-review
-py -3 bot.py --refresh-defensive-research
+.venv\Scripts\python.exe bot.py --monitor-lockfile-readiness-report
+.venv\Scripts\python.exe bot.py --refresh-promoted-review
+.venv\Scripts\python.exe bot.py --refresh-defensive-research
 ```
 
 Generated CSVs/charts/logs/databases/secrets/config must not be committed or
 pasted. Generated CSV/chart outputs remain ignored and should not be committed.
+
+## VPS Monitoring Prerequisites Checkpoint
+
+After the first manual VPS safe-command test, separate environment readiness
+from missing local prerequisites:
+
+- `.venv\Scripts\python.exe` working means dependencies are available for
+  manual verifier/report commands.
+- `config.json` may be absent. That is
+  `config_missing_for_readonly_promoted_review`, not a safety failure. Do not
+  fix it by printing, reading, or creating secrets from Codex.
+- `python bot.py --refresh-promoted-review` may refuse without local config
+  because it includes the explicitly read-only paper-position preview context.
+  That refusal does not approve execution.
+- `python bot.py --refresh-defensive-research` may report
+  `missing_saved_research_inputs` when saved defensive CSV/chart prerequisites
+  are absent. Do not run heavy market-data backtests automatically just to fill
+  those inputs.
+- Generated outputs staying ignored and git status staying clean are expected.
+
+Run the static prerequisite checkpoint:
+
+```powershell
+.venv\Scripts\python.exe scripts\verify_vps_monitoring_prerequisites.py
+```
+
+Safe next manual VPS steps are to keep using report/refresh/display commands
+only, resolve local config privately if the read-only promoted preview needs it,
+and rebuild saved defensive research inputs only through separately reviewed
+research tasks. Lockfile protection does not approve scheduling or execution.
 
 Keep the project paper-only: no live trading, `dry_run=true`, `alpaca.paper=true`,
 and `allow_shorting=false`. Do not read or commit config, secrets, logs,
@@ -242,6 +272,8 @@ python bot.py
 python bot.py --paper-order-test ... --confirm-paper-order
 python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper
 ```
+
+Normal python bot.py remains high-risk/manual-only and must not be scheduled.
 
 Also do not schedule:
 

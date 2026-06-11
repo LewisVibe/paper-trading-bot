@@ -180,11 +180,11 @@ def verify_docs(failures: list[str]) -> None:
         if command_name not in docs_lower:
             failures.append(f"Docs must mention lock-wrapped command: {command_name}")
     for command_name in [
-        "py -3 scripts\\verify_repo_safety.py",
-        "py -3 scripts\\verify_monitor_lockfile_final_state.py",
-        "py -3 bot.py --monitor-lockfile-readiness-report",
-        "py -3 bot.py --refresh-promoted-review",
-        "py -3 bot.py --refresh-defensive-research",
+        ".venv\\scripts\\python.exe scripts\\verify_repo_safety.py",
+        ".venv\\scripts\\python.exe scripts\\verify_monitor_lockfile_final_state.py",
+        ".venv\\scripts\\python.exe bot.py --monitor-lockfile-readiness-report",
+        ".venv\\scripts\\python.exe bot.py --refresh-promoted-review",
+        ".venv\\scripts\\python.exe bot.py --refresh-defensive-research",
     ]:
         if command_name.lower() not in docs_lower:
             failures.append(f"VPS handoff docs must include manual command: {command_name}")
