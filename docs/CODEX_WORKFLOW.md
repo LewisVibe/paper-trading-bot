@@ -101,6 +101,16 @@ VPS-safe lock-wrapped monitoring commands for future manual scheduling review.
 Keep these exceptions narrow: do not weaken normal bot, paper-order-test,
 slow-SMA paper execution, or any execution-capable dependency checks.
 
+Hermes cron preferred for future monitoring scheduling if configured, but no
+scheduling is currently approved or created. Use Hermes cron for safe
+monitoring/reporting only; not for execution. Do not paste config/API
+keys/webhooks/account IDs into Hermes prompts. Initial cron candidate should
+probably be a status/checkpoint job before refresh jobs. Refresh jobs should
+remain protected by lockfile/no-overlap, and a stale lock requires manual
+review. Scheduling cadence is a separate future decision; a future review must
+approve exact cadence, exact command list, enabled toolsets, output destination,
+and failure behaviour before any Hermes cron job is created.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

@@ -368,17 +368,16 @@ Cross-references:
   - Hermes cron job creation
   - config/secrets/logs/databases/generated outputs
   - Alpaca/order/position/SQLite `trade_log`/Discord alert logic
-- **Candidate future command only:**
-  ```bat
-  cd /d C:\dev\paper-trading-bot
-  .venv\Scripts\python.exe bot.py --refresh-market-monitor
-  ```
-- **Preferred scheduler:** Hermes cron once Hermes runs on the VPS. Windows Task Scheduler may be used only to start or keep the Hermes gateway running on boot, not for execution-capable trading commands.
-- **Mode:** Prefer no-agent mode for deterministic commands where possible.
+- **Preferred scheduler:** Hermes cron preferred for future monitoring scheduling if configured. Windows Task Scheduler remains an alternative, not the default assumption, and may be used only to start or keep the Hermes gateway running on boot, not for execution-capable trading commands.
+- **Scheduling state:** No scheduling is currently approved or created. Use Hermes cron for safe monitoring/reporting only; not for execution.
+- **Initial candidate set:** Initial cron candidate should probably be a status/checkpoint job before refresh jobs. Candidate commands are `--vps-monitoring-status`, `--market-monitor-scheduling-readiness-report`, `--monitor-lockfile-readiness-report`, `--refresh-promoted-review`, and `--refresh-defensive-research`.
+- **Prompt/tooling boundary:** Do not paste config/API keys/webhooks/account IDs into Hermes prompts. Future jobs should run from `C:\dev\paper-trading-bot`, use `.venv\Scripts\python.exe`, include a repo-safety check, use concise output capture, avoid recursive cron creation, and use restricted `enabled_toolsets` where Hermes supports them.
+- **Manual review required:** Scheduling cadence is a separate future decision. A future review must approve exact cadence, exact command list, enabled toolsets, output destination, and failure behaviour before any Hermes cron job is created.
+- **Lock boundary:** Refresh jobs should remain protected by lockfile/no-overlap. A stale lock requires manual review. Lockfile protection does not make execution-capable commands schedulable.
 - **Prerequisites before scheduling review:**
   - `python scripts\verify_repo_safety.py`
+  - `python scripts\verify_hermes_cron_readiness.py`
   - `python bot.py --market-monitor-scheduling-readiness-report`
-  - Manual successful VPS run of `python bot.py --refresh-market-monitor`
   - Confirmation generated CSV/cache files remain ignored
 - **Never schedule:**
   - `python bot.py`
@@ -460,6 +459,7 @@ Cross-references:
 - **Recommended order:** Add report-only no-overlap/lockfile design or verifier, add isolated lock helper tests, apply only to safe refresh/report/display commands, then only after manual review consider scheduling safe monitor/report refresh commands.
 - **Current scaffold commands:** `python bot.py --monitor-lockfile-readiness-report`, `python bot.py --refresh-promoted-review`, and `python bot.py --refresh-defensive-research` are the only commands protected by the monitor lockfile helper. The locks are transient report-only no-overlap guards and do not approve scheduling or execution.
 - **Scheduling-readiness checkpoint:** `python bot.py --market-monitor-scheduling-readiness-report` assesses only the three VPS-safe lock-wrapped monitoring commands, config presence without reading contents, saved promoted/defensive output presence, generated-output ignore policy, and false scheduling/execution approval flags. It may report readiness for a future manual scheduling review, but it does not create or approve scheduling.
+- **Hermes cron readiness checkpoint:** `python scripts\verify_hermes_cron_readiness.py` verifies Hermes cron is the preferred future monitoring scheduler if configured, Windows Task Scheduler is only an alternative, no scheduler is created or approved, initial candidates are limited to safe status/report/refresh commands, refresh jobs remain lock-wrapped, `enabled_toolsets` restrictions are documented, and execution-capable commands remain high-risk/manual-only.
 - **Contract verifier:** `python scripts\verify_monitor_lockfile_contract.py` is pure/no-network and defines future helper requirements only.
 - **Helper verifier:** `python scripts\verify_monitor_lockfile_helper.py` checks temp-directory acquire/release cleanup, fresh-lock blocking, malformed-lock blocking, and stale-lock manual review in `trading_bot/safety/monitor_lockfile.py`.
 - **Integration checkpoint:** `python scripts\verify_monitor_lockfile_integration_readiness.py` verifies exactly `--monitor-lockfile-readiness-report`, `--refresh-promoted-review`, and `--refresh-defensive-research` are lock-wrapped, `bot.py` is not using the helper directly, no other command is lock-wrapped, and future safe report/display/monitor refresh commands remain manual-review only.

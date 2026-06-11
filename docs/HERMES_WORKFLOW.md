@@ -185,38 +185,69 @@ Hermes must also never schedule:
 
 Safe-looking report, preview, display, or verifier commands should still only be scheduled after a separate user-approved scheduling review.
 
-## 6A. Future Hermes Cron Plan For Market Monitor Only
+## 6A. Future Hermes Cron Plan For Safe Monitoring Only
 
-Once Hermes is running on the VPS, Hermes cron is preferred for
-monitoring-only, chat-delivered market monitor refresh reports. Windows Task
-Scheduler may still be used only to start or keep the Hermes gateway running on
-boot, not for execution-capable trading commands.
+Hermes cron preferred for future monitoring scheduling if configured. Once
+Hermes is running on the VPS, Hermes Agent cron is the preferred future
+scheduling layer for monitoring-only, chat-delivered reports because it keeps
+outputs visible in the Hermes conversation. Windows Task Scheduler remains an
+alternative, but not the default assumption; if used, it should be limited to
+starting or keeping the Hermes gateway running on boot, not to running
+execution-capable trading commands.
 
-Use no-agent mode for deterministic commands where possible. The candidate
-future scheduled command is:
+No scheduling is currently approved or created. Use Hermes cron for safe
+monitoring/reporting only; not for execution. Do not paste config/API
+keys/webhooks/account IDs into Hermes prompts, and do not print `config.json`
+contents, API keys, webhook URLs, tokens, account IDs, generated data, logs, or
+database contents.
 
-```bat
-cd /d C:\dev\paper-trading-bot
-.venv\Scripts\python.exe bot.py --refresh-market-monitor
-```
+Initial cron candidate should probably be a status/checkpoint job before refresh
+jobs. The initial candidate command set for a future Hermes cron review should
+be limited to:
 
-This is a candidate plan only. Hermes must not create the cron job yet, and the
-plan does not approve scheduling, orders, or paper execution.
+- `.venv\Scripts\python.exe bot.py --vps-monitoring-status`
+- `.venv\Scripts\python.exe bot.py --market-monitor-scheduling-readiness-report`
+- `.venv\Scripts\python.exe bot.py --monitor-lockfile-readiness-report`
+- `.venv\Scripts\python.exe bot.py --refresh-promoted-review`
+- `.venv\Scripts\python.exe bot.py --refresh-defensive-research`
+
+All future cron commands should run from `C:\dev\paper-trading-bot` and use the
+VPS `.venv\Scripts\python.exe`. Hermes cron jobs should use a restricted
+toolset if Hermes supports `enabled_toolsets`; avoid unnecessary broad
+capabilities, arbitrary shell access, network tools beyond the command's real
+need, or access to secrets/config/logs/databases/generated outputs.
+
+Future Hermes cron job prompts should include a repo-safety check, concise
+output capture, and a clear instruction that the job must not create other cron
+jobs recursively. Scheduling cadence is a separate future decision. A future
+manual review must approve the exact cadence, exact command list, enabled
+toolsets, output destination, and failure behaviour before any Hermes cron job
+is created.
+
+Refresh jobs should remain protected by lockfile/no-overlap. The current
+lock-wrapped overlap-risk commands are `--monitor-lockfile-readiness-report`,
+`--refresh-promoted-review`, and `--refresh-defensive-research`. A stale lock
+requires manual review. Lockfile protection does not make execution-capable
+commands schedulable, and it does not approve scheduling, orders, paper
+execution, or any execution-capable workflow.
+
+Execution-capable commands remain high-risk/manual-only and excluded from all
+scheduling review: normal bot run, paper-order smoke test, slow-SMA paper
+execution, and any future order-capable command.
 
 Prerequisites before any future scheduling review:
 
 ```powershell
 python scripts\verify_repo_safety.py
+python scripts\verify_hermes_cron_readiness.py
 python bot.py --market-monitor-scheduling-readiness-report
-python bot.py --refresh-market-monitor
+python bot.py --vps-monitoring-status
 ```
 
-The manual `--refresh-market-monitor` run must succeed on the VPS, and generated
-CSV/cache files must remain ignored by git.
-
-Stop if any candidate schedule tries to load `config.json`, call Alpaca, read
-positions, write SQLite `trade_log`, send Discord alerts, create orders, or
-approve execution.
+Generated CSV/cache/chart/log/database files must remain ignored by git. Stop if
+any candidate schedule tries to read or print config contents, call Alpaca, read
+positions, write SQLite `trade_log`, send Discord alerts, create orders, create
+more cron jobs, or approve execution.
 
 Before any repeated market-monitor refresh is considered, no-overlap protection
 must exist. Repeated runs can collide if a prior yfinance fetch, CSV write, cache

@@ -106,32 +106,42 @@ python scripts\verify_repo_safety.py
 Scheduling any command should be treated as a separate reviewed task. A command
 being listed here does not mean it is approved for automatic scheduling today.
 
-## Hermes Cron Plan For Market Monitor Only
+## Hermes Cron Plan For Safe Monitoring Only
 
-Once Hermes is running on the VPS, Hermes cron is preferred for
-monitoring-only, chat-delivered market monitor reports. Windows Task Scheduler
-may still be used only to start or keep the Hermes gateway running on boot, not
-for execution-capable trading commands.
+Hermes cron preferred for future monitoring scheduling if configured. Once
+Hermes is running on the VPS, Hermes cron is preferred for monitoring-only,
+chat-delivered reports. Windows Task Scheduler remains an alternative, not the
+default assumption, and may be used only to start or keep the Hermes gateway
+running on boot, not for execution-capable trading commands.
 
-Use no-agent mode for deterministic commands where possible. The candidate
-future scheduled command is:
+No scheduling is currently approved or created. Use Hermes cron for safe
+monitoring/reporting only; not for execution. Do not paste config/API
+keys/webhooks/account IDs into Hermes prompts.
 
-```bat
-cd /d C:\dev\paper-trading-bot
-.venv\Scripts\python.exe bot.py --refresh-market-monitor
-```
+Initial cron candidate should probably be a status/checkpoint job before refresh
+jobs. The initial future candidate set is limited to
+`--vps-monitoring-status`, `--market-monitor-scheduling-readiness-report`,
+`--monitor-lockfile-readiness-report`, `--refresh-promoted-review`, and
+`--refresh-defensive-research`. All jobs should run from
+`C:\dev\paper-trading-bot`, use `.venv\Scripts\python.exe`, include a
+repo-safety check, use concise output capture, avoid recursive cron creation,
+and use restricted `enabled_toolsets` where Hermes supports them.
 
-This command is a future scheduling candidate only. It is not approved for
-scheduling yet, and it does not approve orders or paper execution.
+Refresh jobs should remain protected by lockfile/no-overlap. A stale lock
+requires manual review. Lockfile protection does not make execution-capable
+commands schedulable. Scheduling cadence is a separate future decision. A
+future manual review must approve exact cadence, exact command list, enabled
+toolsets, output destination, and failure behaviour before any Hermes cron job
+is created.
 
 Prerequisites before any scheduling review:
 
 ```powershell
 python scripts\verify_repo_safety.py
+python scripts\verify_hermes_cron_readiness.py
 python bot.py --market-monitor-scheduling-readiness-report
 python bot.py --monitor-lockfile-readiness-report
 python bot.py --vps-operations-readiness-report
-python bot.py --refresh-market-monitor
 ```
 
 The scheduling-readiness report assesses only the VPS-safe monitoring set:

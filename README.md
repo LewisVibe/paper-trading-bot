@@ -564,16 +564,37 @@ high-risk command lines. It does not call Alpaca, yfinance, Discord, SQLite
 `trade_log`, read paper positions, create orders, schedule anything, or approve
 execution.
 
-Future Hermes cron plan for market monitor reports only:
+Future Hermes cron readiness plan for safe monitoring reports only:
 
-```bat
-cd /d C:\dev\paper-trading-bot
-.venv\Scripts\python.exe bot.py --refresh-market-monitor
-```
+Hermes cron preferred for future monitoring scheduling if configured. No
+scheduling is currently approved or created. Use Hermes cron for safe
+monitoring/reporting only; not for execution. Windows Task Scheduler remains an
+alternative only for keeping the Hermes gateway running, not for trading
+commands.
 
-This is a candidate future Hermes cron command only after Hermes is running on the VPS. Hermes cron is preferred for monitoring-only, chat-delivered reports because it keeps the report workflow visible in chat. Windows Task Scheduler may still be used only to start or keep the Hermes gateway running on boot, not for execution-capable trading commands. Use no-agent mode for deterministic commands where possible. Scheduling is not approved yet, and this does not approve orders or paper execution.
+Do not paste config/API keys/webhooks/account IDs into Hermes prompts. Candidate
+jobs should run from `C:\dev\paper-trading-bot`, use
+`.venv\Scripts\python.exe`, include a repo-safety check, use concise output
+capture, and use restricted `enabled_toolsets` where Hermes supports them.
+Initial cron candidate should probably be a status/checkpoint job before refresh
+jobs. Refresh jobs should remain protected by lockfile/no-overlap. A stale lock
+requires manual review. Scheduling cadence is a separate future decision.
 
-Before any future scheduling review, run `python scripts\verify_repo_safety.py`, run `python bot.py --market-monitor-scheduling-readiness-report`, manually run `python bot.py --refresh-market-monitor` successfully on the VPS, and confirm generated CSV/cache files remain ignored. Stop if any scheduled candidate tries to load `config.json`, call Alpaca, read positions, write SQLite `trade_log`, send Discord alerts, create orders, or approve execution.
+The initial future Hermes cron candidate command set is limited to
+`--vps-monitoring-status`, `--market-monitor-scheduling-readiness-report`,
+`--monitor-lockfile-readiness-report`, `--refresh-promoted-review`, and
+`--refresh-defensive-research`. A future manual review must approve the exact
+cadence, exact command list, enabled toolsets, output destination, and failure
+behaviour before any Hermes cron job is created.
+
+Before any future scheduling review, run `python scripts\verify_repo_safety.py`,
+run `python scripts\verify_hermes_cron_readiness.py`, run
+`python bot.py --market-monitor-scheduling-readiness-report`, and confirm
+generated CSV/cache files remain ignored. Stop if any scheduled candidate tries
+to read or print `config.json` contents, call Alpaca, read positions, write
+SQLite `trade_log`, send Discord alerts, create orders, create other cron jobs
+recursively, or approve execution. Lockfile protection does not make
+execution-capable commands schedulable.
 
 Never schedule:
 
