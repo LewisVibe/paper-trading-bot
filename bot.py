@@ -129,6 +129,10 @@ from trading_bot.research.expanded_crypto_robustness_report import (
     generate_expanded_crypto_robustness_report,
     show_expanded_crypto_robustness_report_file,
 )
+from trading_bot.research.crypto_equal_weight_crash_gate import (
+    generate_crypto_equal_weight_crash_gate,
+    show_crypto_equal_weight_crash_gate_file,
+)
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
 from trading_bot.research.crypto_robustness import generate_crypto_robustness_report
@@ -4123,6 +4127,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved expanded crypto robustness report without refreshing data.",
     )
     parser.add_argument(
+        "--crypto-equal-weight-crash-gate",
+        action="store_true",
+        help="Run a research-only equal-weight crypto crash-gate report without execution.",
+    )
+    parser.add_argument(
+        "--show-crypto-equal-weight-crash-gate",
+        action="store_true",
+        help="Display the saved equal-weight crypto crash-gate report without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-strategy-lab",
         action="store_true",
         help="Run a research-only crypto strategy lab with daily yfinance-compatible history.",
@@ -4647,6 +4661,20 @@ def main() -> int:
         return 0
     if args.show_expanded_crypto_robustness_report:
         status_code, lines = show_expanded_crypto_robustness_report_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.crypto_equal_weight_crash_gate:
+        try:
+            result = generate_crypto_equal_weight_crash_gate()
+        except Exception as exc:
+            print(f"Crypto equal-weight crash-gate report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_crypto_equal_weight_crash_gate:
+        status_code, lines = show_crypto_equal_weight_crash_gate_file()
         for line in lines:
             print(line)
         return status_code

@@ -422,6 +422,8 @@ python bot.py --expanded-crypto-strategy-lab
 python bot.py --show-expanded-crypto-strategy-lab
 python bot.py --expanded-crypto-robustness-report
 python bot.py --show-expanded-crypto-robustness-report
+python bot.py --crypto-equal-weight-crash-gate
+python bot.py --show-crypto-equal-weight-crash-gate
 python bot.py --crypto-strategy-lab
 python bot.py --crypto-strategy-report
 python bot.py --crypto-strategy-decision-report
@@ -432,6 +434,8 @@ python bot.py --crypto-research-state-report
 ```
 
 Expanded crypto robustness report challenges whether static equal-weight eligible crypto is robust or hindsight-biased. `python bot.py --expanded-crypto-robustness-report` writes `data/expanded_crypto_robustness_report.csv`, `data/expanded_crypto_robustness_summary.csv`, `data/expanded_crypto_robustness_splits.csv`, `data/expanded_crypto_robustness_costs.csv`, `data/expanded_crypto_robustness_drawdowns.csv`, `data/expanded_crypto_asset_contribution.csv`, and `data/expanded_crypto_equal_weight_reality_check.csv`. It checks inception-aware equal weight, outlier exclusions, cost stress, splits, drawdown context, and asset contribution estimates while keeping `POL-USD` and `MATIC-USD` transition-blocked. `python bot.py --show-expanded-crypto-robustness-report` reads saved CSVs only. This is research/report-only, does not approve crypto execution, and does not connect crypto to Alpaca or paper orders.
+
+Crypto equal-weight crash-gate report tests whether the robust equal-weight eligible-crypto benchmark can retain meaningful return while reducing catastrophic drawdown. `python bot.py --crypto-equal-weight-crash-gate` writes `data/crypto_equal_weight_crash_gate.csv`, `data/crypto_equal_weight_crash_gate_summary.csv`, `data/crypto_equal_weight_crash_gate_trades.csv`, `data/crypto_equal_weight_crash_gate_equity_curves.csv`, `data/crypto_equal_weight_crash_gate_costs.csv`, `data/crypto_equal_weight_crash_gate_splits.csv`, and `data/crypto_equal_weight_crash_gate_drawdowns.csv`. It compares fixed trend/crash-gate variants, inception-aware equal weight, static equal weight, the existing planned and Codex crypto candidates, BTC/ETH benchmarks, BTC/ETH 50/50, and cash while keeping `POL-USD` and `MATIC-USD` transition-blocked. `python bot.py --show-crypto-equal-weight-crash-gate` reads saved CSVs only. This is research/report-only, does not approve crypto execution, and does not connect crypto to Alpaca or paper orders.
 
 Crypto signal and monitor refresh:
 

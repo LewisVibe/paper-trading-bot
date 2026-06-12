@@ -1495,6 +1495,32 @@ data/expanded_crypto_asset_contribution.csv
 data/expanded_crypto_equal_weight_reality_check.csv
 ```
 
+Crypto equal-weight crash-gate mode tests whether the robust static equal-weight eligible-crypto benchmark can keep much of its return while reducing catastrophic drawdown. It uses the saved eligible crypto universe where possible, continues to exclude `POL-USD` and `MATIC-USD` until transition review, and compares `equal_weight_eligible_crypto_benchmark`, `equal_weight_inception_aware`, `crypto_equal_weight_trend_crash_gate`, `crypto_equal_weight_btc_trend_gate`, `crypto_equal_weight_breadth_gate`, `crypto_equal_weight_drawdown_brake`, `crypto_risk_on_momentum_persistence`, `codex_ambitious_crypto_btc_eth_core_alt_accelerator`, BTC buy-and-hold, ETH buy-and-hold, BTC/ETH 50/50 monthly, and cash. This is research/report-only and does not approve crypto execution or connect crypto to Alpaca or paper orders.
+
+Command:
+
+```text
+python bot.py --crypto-equal-weight-crash-gate
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-crypto-equal-weight-crash-gate
+```
+
+Outputs:
+
+```text
+data/crypto_equal_weight_crash_gate.csv
+data/crypto_equal_weight_crash_gate_summary.csv
+data/crypto_equal_weight_crash_gate_trades.csv
+data/crypto_equal_weight_crash_gate_equity_curves.csv
+data/crypto_equal_weight_crash_gate_costs.csv
+data/crypto_equal_weight_crash_gate_splits.csv
+data/crypto_equal_weight_crash_gate_drawdowns.csv
+```
+
 Crypto strategy lab mode backtests a tiny fixed research-only strategy set for `BTC/USD`, `ETH/USD`, and `LTC/USD` using yfinance-compatible daily symbols (`BTC-USD`, `ETH-USD`, `LTC-USD`). The per-symbol strategies are `crypto_buy_and_hold_baseline`, `crypto_sma_50_200_trend`, `crypto_buy_above_200_exit_below_200`, and one controlled iteration: `crypto_buy_above_200_with_vol_gate`. The volatility-gate strategy uses fixed parameters only: 20-day realised volatility, trailing 252-day median volatility, and a 1.5x gate for new entries. The lab also writes a separate portfolio-style BTC/ETH/cash rotation test, `crypto_monthly_btc_eth_momentum_rotation`, using fixed monthly rebalance, 126-day momentum ranking, and a 200-day SMA absolute trend filter. It writes full-period, in-sample, and out-of-sample rows, plus an iteration log to discourage tuning after seeing results. Results include simple crypto research cost assumptions: `crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, and `crypto_slippage_bps=10`. It does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, or approve execution.
 
 Outputs:

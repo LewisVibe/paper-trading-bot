@@ -70,6 +70,8 @@ REQUIRED_COMMANDS = [
     "--show-expanded-crypto-strategy-lab",
     "--expanded-crypto-robustness-report",
     "--show-expanded-crypto-robustness-report",
+    "--crypto-equal-weight-crash-gate",
+    "--show-crypto-equal-weight-crash-gate",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",
     "--crypto-strategy-decision-report",
