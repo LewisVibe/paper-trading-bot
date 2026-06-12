@@ -190,6 +190,12 @@ baseline. Next work should validate the stricter gate with split, cost-stress,
 drawdown-period, and promotion-checkpoint reports. Do not add random variants,
 ML, intraday logic, scheduling, execution, or strategy-to-order wiring.
 
+Use `python bot.py --growth-biased-stricter-validation` for the dedicated
+stricter-gate validation checkpoint and
+`python bot.py --show-growth-biased-stricter-validation` for the saved display.
+The checkpoint can support future preview-candidate discussion only; it must
+not approve execution, paper execution, promoted execution, scheduling, or cron.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

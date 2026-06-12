@@ -153,6 +153,10 @@ from trading_bot.research.strategy_improvement_diagnostics import (
     generate_strategy_improvement_diagnostics,
     show_strategy_improvement_diagnostics_file,
 )
+from trading_bot.research.growth_biased_stricter_validation import (
+    generate_growth_biased_stricter_validation,
+    show_growth_biased_stricter_validation_file,
+)
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
     run_build_etf_breadth_price_history_command,
@@ -3950,6 +3954,16 @@ def parse_args() -> argparse.Namespace:
         help="Display saved strategy improvement diagnostics CSV without refreshing data.",
     )
     parser.add_argument(
+        "--growth-biased-stricter-validation",
+        action="store_true",
+        help="Create saved research-only validation for the stricter growth-biased breadth-gate lead.",
+    )
+    parser.add_argument(
+        "--show-growth-biased-stricter-validation",
+        action="store_true",
+        help="Display saved stricter growth-biased validation CSVs without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-research-preview",
         action="store_true",
         help="Create a research-only crypto scaffold preview without execution.",
@@ -4306,6 +4320,20 @@ def main() -> int:
         return 0
     if args.show_strategy_improvement_diagnostics:
         status_code, lines = show_strategy_improvement_diagnostics_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.growth_biased_stricter_validation:
+        try:
+            result = generate_growth_biased_stricter_validation()
+        except Exception as exc:
+            print(f"Growth-biased stricter validation failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_growth_biased_stricter_validation:
+        status_code, lines = show_growth_biased_stricter_validation_file()
         for line in lines:
             print(line)
         return status_code

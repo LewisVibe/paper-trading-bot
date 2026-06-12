@@ -995,6 +995,30 @@ data/strategy_improvement_diagnostics.csv
 data/growth_biased_rotation_diagnostics.csv
 ```
 
+Growth-biased stricter validation mode reads saved strategy-improvement outputs only and validates the current active research lead, `growth_biased_rotation_breadth_stricter_gate`, against the previous `growth_biased_rotation_crash_gate` baseline. It writes split validation, cost-stress review, drawdown-period review, and promotion-checkpoint CSVs. A validation pass means research-lead status or possible future preview-candidate discussion only; it does not approve orders, paper execution, promoted execution, scheduling, or cron.
+
+Command:
+
+```text
+python bot.py --growth-biased-stricter-validation
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-growth-biased-stricter-validation
+```
+
+Outputs:
+
+```text
+data/growth_biased_stricter_validation.csv
+data/growth_biased_stricter_split_validation.csv
+data/growth_biased_stricter_cost_review.csv
+data/growth_biased_stricter_drawdown_review.csv
+data/growth_biased_stricter_promotion_checkpoint.csv
+```
+
 Adaptive momentum backtest mode is research-only. It ranks risk ETFs by fixed multi-horizon momentum with a volatility penalty, uses SPY as the risk regime filter, and rotates to defensive ETFs when the regime is weak. It saves only research CSV files and is not connected to Alpaca execution. `data/adaptive_momentum_results.csv` includes `full_period`, `in_sample`, and `out_of_sample` portfolio rows using the same simple chronological 70% / 30% reporting split as ETF rotation so the walk-forward report can pair the strategy.
 
 Outputs:
