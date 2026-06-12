@@ -299,9 +299,11 @@ Strategy improvement lab:
 
 - `python bot.py --strategy-improvement-lab` runs a fixed research-only daily ETF lab for more growth-aware allocation variants. It writes `data/strategy_improvement_lab_results.csv`, `data/strategy_improvement_lab_trades.csv`, `data/strategy_improvement_lab_equity_curve.csv`, `data/strategy_improvement_lab_summary.csv`, and `data/strategy_improvement_lab_iteration_log.csv`.
 - `python bot.py --show-strategy-improvement-lab` reads the saved summary CSV only. It does not refresh yfinance data.
-- The lab intentionally explores whether the defensive ETF stack has too much cash drag, using fixed monthly rebalance variants only: monthly ETF rotation reference, balanced dual momentum with defensive sleeve, breadth-aware risk-on rotation, and growth-biased rotation with crash gate.
+- The lab intentionally explores whether the defensive ETF stack has too much cash drag, using fixed monthly rebalance variants only: monthly ETF rotation reference, balanced dual momentum with defensive sleeve, breadth-aware risk-on rotation, growth-biased rotation with crash gate, factor/style absolute-gate rotation, sector 52-week-high continuation, and an ambitious fixed multi-sleeve growth allocator.
+- `python bot.py --strategy-improvement-robustness` writes `data/strategy_improvement_robustness_report.csv`, `data/strategy_improvement_cost_stress_report.csv`, `data/strategy_improvement_drawdown_report.csv`, and `data/strategy_improvement_candidate_comparison.csv`. It compares all strategy-improvement candidates across fixed 60/40, 70/30, and 80/20 chronological splits, fixed low/default/high one-way cost assumptions, drawdown windows, cash drag, and benchmark deltas.
+- `python bot.py --show-strategy-improvement-robustness` reads the saved candidate comparison CSV only. It does not refresh yfinance data.
 - Promising labels such as `promising_growth_candidate` are future research labels only. They do not approve orders, paper execution, scheduling, cron, shorting, leverage, margin, or strategy-to-execution wiring.
-- `python scripts\verify_strategy_improvement_lab.py` checks command registration, generated-output ignore policy, fixed variants, false execution approval flags, saved display behavior, and absence of Alpaca/order/SQLite `trade_log`/Discord/config/scheduling paths.
+- `python scripts\verify_strategy_improvement_lab.py` and `python scripts\verify_strategy_improvement_robustness.py` check command registration, generated-output ignore policy, fixed variants, fixed split/cost assumptions, false execution approval flags, saved display behavior, and absence of Alpaca/order/SQLite `trade_log`/Discord/config/scheduling paths.
 
 ## Recommended Next Steps
 

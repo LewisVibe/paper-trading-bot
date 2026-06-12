@@ -41,6 +41,8 @@ REQUIRED_COMMANDS = [
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",
     "--show-strategy-improvement-lab",
+    "--strategy-improvement-robustness",
+    "--show-strategy-improvement-robustness",
     "--crypto-research-preview",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",

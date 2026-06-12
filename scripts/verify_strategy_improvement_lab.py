@@ -27,6 +27,9 @@ FIXED_VARIANTS = [
     "balanced_dual_momentum_defensive_sleeve",
     "breadth_aware_risk_on_rotation",
     "growth_biased_rotation_crash_gate",
+    "factor_style_rotation_absolute_gate",
+    "sector_52_week_high_continuation",
+    "adaptive_multi_sleeve_growth_allocator",
 ]
 
 DECISION_LABELS = [
@@ -123,6 +126,9 @@ def verify_module_static_contract(module_source: str, failures: list[str]) -> No
         "TREND_WINDOW_DAYS = 200",
         "STRONG_BREADTH_THRESHOLD = 0.60",
         "MIXED_BREADTH_THRESHOLD = 0.40",
+        "WEAK_BREADTH_THRESHOLD = 0.30",
+        "VOLATILITY_WINDOW_DAYS = 20",
+        "VOLATILITY_MEDIAN_WINDOW_DAYS = 252",
     ]
     for token in required_tokens:
         if token not in module_source:

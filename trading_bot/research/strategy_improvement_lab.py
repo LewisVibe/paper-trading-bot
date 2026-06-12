@@ -26,6 +26,10 @@ TOP_N = 3
 IN_SAMPLE_FRACTION = 0.70
 STRONG_BREADTH_THRESHOLD = 0.60
 MIXED_BREADTH_THRESHOLD = 0.40
+WEAK_BREADTH_THRESHOLD = 0.30
+VOLATILITY_WINDOW_DAYS = 20
+VOLATILITY_MEDIAN_WINDOW_DAYS = 252
+EXTREME_VOLATILITY_MULTIPLE = 1.75
 
 RISK_ETFS = [
     "SPY",
@@ -42,7 +46,23 @@ RISK_ETFS = [
     "XLU",
 ]
 DEFENSIVE_ETFS = ["SHY", "IEF", "TLT", "GLD"]
-ALL_ETFS = sorted(set(RISK_ETFS + DEFENSIVE_ETFS))
+FACTOR_STYLE_ETFS = ["MTUM", "QUAL", "USMV", "VLUE", "VTV", "VUG", "RSP", "IWM", "SPY", "QQQ"]
+SECTOR_52_WEEK_ETFS = ["XLK", "XLY", "XLF", "XLI", "XLE", "XLP", "XLU", "XLV", "XLB", "XLRE", "XLC"]
+MULTI_SLEEVE_GROWTH_ETFS = ["SPY", "QQQ", "IWM", "DIA", "XLK", "XLY", "XLF", "XLI", "XLE"]
+MULTI_SLEEVE_FACTOR_ETFS = ["MTUM", "QUAL", "USMV", "VLUE", "VUG", "VTV", "RSP"]
+MULTI_SLEEVE_DEFENSIVE_ETFS = ["SHY", "IEF", "TLT", "GLD", "XLU", "XLP", "USMV"]
+MULTI_SLEEVE_RISK_ETFS = sorted(set(MULTI_SLEEVE_GROWTH_ETFS + MULTI_SLEEVE_FACTOR_ETFS))
+ALL_ETFS = sorted(
+    set(
+        RISK_ETFS
+        + DEFENSIVE_ETFS
+        + FACTOR_STYLE_ETFS
+        + SECTOR_52_WEEK_ETFS
+        + MULTI_SLEEVE_GROWTH_ETFS
+        + MULTI_SLEEVE_FACTOR_ETFS
+        + MULTI_SLEEVE_DEFENSIVE_ETFS
+    )
+)
 
 STRATEGY_NAMES = [
     "spy_buy_and_hold_benchmark",
@@ -51,7 +71,12 @@ STRATEGY_NAMES = [
     "balanced_dual_momentum_defensive_sleeve",
     "breadth_aware_risk_on_rotation",
     "growth_biased_rotation_crash_gate",
+    "factor_style_rotation_absolute_gate",
+    "sector_52_week_high_continuation",
+    "adaptive_multi_sleeve_growth_allocator",
 ]
+DEFENSIVE_EXPOSURE_ETFS = sorted(set(DEFENSIVE_ETFS + MULTI_SLEEVE_DEFENSIVE_ETFS))
+RISK_EXPOSURE_ETFS = sorted(set(ALL_ETFS) - set(DEFENSIVE_EXPOSURE_ETFS))
 
 OUTPUT_FILES = {
     "results": Path("data/strategy_improvement_lab_results.csv"),
@@ -244,8 +269,9 @@ def build_strategy_improvement_outputs(
     aligned_rows = align_price_rows(price_data)
     if not aligned_rows:
         result_rows = build_insufficient_data_rows(created_at, data_errors)
+        summary_rows = build_summary_rows(result_rows)
         iteration_rows = build_iteration_rows(created_at, result_rows, data_errors)
-        return result_rows, [], [], result_rows[:], iteration_rows
+        return result_rows, [], [], summary_rows, iteration_rows
 
     all_trade_rows: list[dict[str, Any]] = []
     all_equity_rows: list[dict[str, Any]] = []
@@ -328,8 +354,8 @@ def simulate_strategy(
             current_weights = target_weights
 
         cash_weight = max(0.0, 1.0 - sum(current_weights.values()))
-        risk_weight = sum(weight for ticker, weight in current_weights.items() if ticker in RISK_ETFS)
-        defensive_weight = sum(weight for ticker, weight in current_weights.items() if ticker in DEFENSIVE_ETFS)
+        defensive_weight = sum(weight for ticker, weight in current_weights.items() if ticker in DEFENSIVE_EXPOSURE_ETFS)
+        risk_weight = sum(weight for ticker, weight in current_weights.items() if ticker in RISK_EXPOSURE_ETFS)
         equity_rows.append(
             {
                 "created_at": created_at,
@@ -393,6 +419,12 @@ def target_weights_for_strategy(
         return breadth_aware_weights(history)
     if strategy_name == "growth_biased_rotation_crash_gate":
         return growth_biased_weights(history, current_weights)
+    if strategy_name == "factor_style_rotation_absolute_gate":
+        return factor_style_rotation_weights(history)
+    if strategy_name == "sector_52_week_high_continuation":
+        return sector_52_week_high_weights(history)
+    if strategy_name == "adaptive_multi_sleeve_growth_allocator":
+        return adaptive_multi_sleeve_weights(history)
     raise ValueError(f"Unknown strategy_name: {strategy_name}")
 
 
@@ -462,10 +494,82 @@ def growth_biased_weights(
     return {}, "No eligible risk or defensive trend; holding cash.", "growth_cash"
 
 
+def factor_style_rotation_weights(history: dict[str, list[float]]) -> tuple[dict[str, float], str, str]:
+    spy_healthy = is_above_sma(history["SPY"], TREND_WINDOW_DAYS)
+    breadth = breadth_ratio_for(FACTOR_STYLE_ETFS, history)
+    eligible = [
+        ticker
+        for ticker in rank_by_momentum(FACTOR_STYLE_ETFS, history, MOMENTUM_LOOKBACK_DAYS)
+        if is_above_sma(history[ticker], TREND_WINDOW_DAYS)
+    ][:TOP_N]
+    if not eligible:
+        return {}, "No factor/style ETF qualifies above its 200-day SMA; holding cash.", "factor_cash"
+    if spy_healthy:
+        return equal_weights(eligible), "SPY above 200-day SMA; factor/style top 3 absolute-gate allocation.", "factor_risk_on"
+    if breadth >= 0.50:
+        return (
+            scaled_weights(equal_weights(eligible), 0.60),
+            f"SPY below 200-day SMA but factor breadth {breadth:.2f}; reduced allocation to eligible factor/style ETFs.",
+            "factor_reduced_risk",
+        )
+    return {}, f"SPY below 200-day SMA and factor breadth {breadth:.2f}; holding cash.", "factor_risk_off_cash"
+
+
+def sector_52_week_high_weights(history: dict[str, list[float]]) -> tuple[dict[str, float], str, str]:
+    spy_healthy = is_above_sma(history["SPY"], TREND_WINDOW_DAYS)
+    breadth = breadth_ratio_for(SECTOR_52_WEEK_ETFS, history)
+    eligible = [
+        ticker
+        for ticker in rank_by_sector_continuation(SECTOR_52_WEEK_ETFS, history)
+        if is_above_sma(history[ticker], TREND_WINDOW_DAYS) and not is_extreme_volatility(history[ticker])
+    ][:TOP_N]
+    if not eligible:
+        return {}, "No sector ETF qualifies by trend and volatility screen; holding cash.", "sector_cash"
+    if spy_healthy:
+        return equal_weights(eligible), "SPY above 200-day SMA; sector 52-week-high continuation top 3.", "sector_risk_on"
+    if breadth >= 0.50:
+        return (
+            scaled_weights(equal_weights(eligible), 0.60),
+            f"SPY below 200-day SMA but sector breadth {breadth:.2f}; reduced sector continuation allocation.",
+            "sector_reduced_risk",
+        )
+    return {}, f"SPY below 200-day SMA and sector breadth {breadth:.2f}; holding cash.", "sector_risk_off_cash"
+
+
+def adaptive_multi_sleeve_weights(history: dict[str, list[float]]) -> tuple[dict[str, float], str, str]:
+    spy_healthy = is_above_sma(history["SPY"], TREND_WINDOW_DAYS)
+    breadth = breadth_ratio_for(MULTI_SLEEVE_RISK_ETFS, history)
+    vol_extreme = is_extreme_volatility(history["SPY"])
+    top_risk = rank_by_multi_sleeve_score(MULTI_SLEEVE_RISK_ETFS, history)[:4]
+    defensive = defensive_sleeve_weights_for(MULTI_SLEEVE_DEFENSIVE_ETFS, history)
+
+    if breadth < WEAK_BREADTH_THRESHOLD or vol_extreme:
+        if defensive:
+            return defensive, f"Stress regime: breadth {breadth:.2f}, extreme volatility={vol_extreme}; defensive sleeve only.", "multi_stress_defensive"
+        return {}, f"Stress regime: breadth {breadth:.2f}, extreme volatility={vol_extreme}; holding cash.", "multi_stress_cash"
+
+    if spy_healthy and breadth >= STRONG_BREADTH_THRESHOLD:
+        return equal_weights(top_risk), f"Healthy regime: SPY trend positive, breadth {breadth:.2f}; full growth/factor sleeve.", "multi_healthy_growth"
+
+    if (spy_healthy and breadth >= MIXED_BREADTH_THRESHOLD) or ((not spy_healthy) and breadth >= 0.50):
+        risk_weights = scaled_weights(equal_weights(top_risk), 0.65)
+        defensive_weights = scaled_weights(defensive, 0.35)
+        weights = add_weights(risk_weights, defensive_weights)
+        return weights, f"Mixed regime: SPY trend={spy_healthy}, breadth {breadth:.2f}; 65/35 risk and defensive sleeves.", "multi_mixed"
+
+    if defensive:
+        return scaled_weights(defensive, 0.85), f"Weak regime: breadth {breadth:.2f}; mostly defensive sleeve with cash buffer.", "multi_weak_defensive"
+    return {}, f"Weak regime: breadth {breadth:.2f}; holding cash.", "multi_weak_cash"
+
+
 def defensive_sleeve_weights(history: dict[str, list[float]]) -> dict[str, float]:
+    return defensive_sleeve_weights_for(DEFENSIVE_ETFS, history)
+
+
+def defensive_sleeve_weights_for(tickers: list[str], history: dict[str, list[float]]) -> dict[str, float]:
     selections = [
         ticker
-        for ticker in rank_by_momentum(DEFENSIVE_ETFS, history, MOMENTUM_LOOKBACK_DAYS)
+        for ticker in rank_by_momentum(tickers, history, MOMENTUM_LOOKBACK_DAYS)
         if momentum(history[ticker], MOMENTUM_LOOKBACK_DAYS) >= 0 and is_above_sma(history[ticker], TREND_WINDOW_DAYS)
     ][:2]
     return equal_weights(selections)
@@ -489,6 +593,24 @@ def rank_by_composite_momentum(tickers: list[str], history: dict[str, list[float
     return [ticker for ticker, _score in sorted(candidates, key=lambda item: (-item[1], item[0]))]
 
 
+def rank_by_sector_continuation(tickers: list[str], history: dict[str, list[float]]) -> list[str]:
+    candidates = [
+        (ticker, momentum(history[ticker], MOMENTUM_LOOKBACK_DAYS) + high_closeness_score(history[ticker]))
+        for ticker in tickers
+        if ticker in history and len(history[ticker]) > 252
+    ]
+    return [ticker for ticker, _score in sorted(candidates, key=lambda item: (-item[1], item[0]))]
+
+
+def rank_by_multi_sleeve_score(tickers: list[str], history: dict[str, list[float]]) -> list[str]:
+    candidates = [
+        (ticker, multi_sleeve_score(history[ticker]))
+        for ticker in tickers
+        if ticker in history and len(history[ticker]) > 252 and is_above_sma(history[ticker], TREND_WINDOW_DAYS)
+    ]
+    return [ticker for ticker, _score in sorted(candidates, key=lambda item: (-item[1], item[0]))]
+
+
 def momentum(prices: list[float], lookback_days: int) -> float:
     if len(prices) <= lookback_days or prices[-lookback_days - 1] <= 0:
         return -999.0
@@ -499,6 +621,25 @@ def composite_momentum(prices: list[float]) -> float:
     return sum(momentum(prices, lookback) for lookback in [21, 63, 126, 252]) / 4.0
 
 
+def high_closeness_score(prices: list[float]) -> float:
+    if len(prices) < 252:
+        return -1.0
+    high = max(prices[-252:])
+    if high <= 0:
+        return -1.0
+    return (prices[-1] / high) - 1.0
+
+
+def multi_sleeve_score(prices: list[float]) -> float:
+    vol_penalty = realised_volatility(prices, VOLATILITY_WINDOW_DAYS)
+    return (
+        0.50 * momentum(prices, MOMENTUM_LOOKBACK_DAYS)
+        + 0.25 * momentum(prices, 63)
+        + 0.25 * high_closeness_score(prices)
+        - 0.10 * vol_penalty
+    )
+
+
 def is_above_sma(prices: list[float], window: int) -> bool:
     if len(prices) < window:
         return False
@@ -506,11 +647,54 @@ def is_above_sma(prices: list[float], window: int) -> bool:
 
 
 def breadth_ratio(history: dict[str, list[float]]) -> float:
-    eligible = [ticker for ticker in RISK_ETFS if ticker in history and len(history[ticker]) >= TREND_WINDOW_DAYS]
+    return breadth_ratio_for(RISK_ETFS, history)
+
+
+def breadth_ratio_for(tickers: list[str], history: dict[str, list[float]]) -> float:
+    eligible = [ticker for ticker in tickers if ticker in history and len(history[ticker]) >= TREND_WINDOW_DAYS]
     if not eligible:
         return 0.0
     above = [ticker for ticker in eligible if is_above_sma(history[ticker], TREND_WINDOW_DAYS)]
     return len(above) / len(eligible)
+
+
+def is_extreme_volatility(prices: list[float]) -> bool:
+    if len(prices) < VOLATILITY_MEDIAN_WINDOW_DAYS + VOLATILITY_WINDOW_DAYS:
+        return False
+    current = realised_volatility(prices, VOLATILITY_WINDOW_DAYS)
+    samples = [
+        realised_volatility(prices[index - VOLATILITY_WINDOW_DAYS : index], VOLATILITY_WINDOW_DAYS)
+        for index in range(len(prices) - VOLATILITY_MEDIAN_WINDOW_DAYS, len(prices) + 1)
+        if index >= VOLATILITY_WINDOW_DAYS
+    ]
+    median = median_value([value for value in samples if value > 0])
+    return median > 0 and current > median * EXTREME_VOLATILITY_MULTIPLE
+
+
+def realised_volatility(prices: list[float], window: int) -> float:
+    if len(prices) <= window:
+        return 0.0
+    returns = []
+    for index in range(len(prices) - window + 1, len(prices)):
+        previous = prices[index - 1]
+        current = prices[index]
+        if previous > 0:
+            returns.append((current / previous) - 1.0)
+    if len(returns) < 2:
+        return 0.0
+    mean_return = sum(returns) / len(returns)
+    variance = sum((value - mean_return) ** 2 for value in returns) / (len(returns) - 1)
+    return math.sqrt(variance) * math.sqrt(252.0)
+
+
+def median_value(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    sorted_values = sorted(values)
+    midpoint = len(sorted_values) // 2
+    if len(sorted_values) % 2:
+        return sorted_values[midpoint]
+    return (sorted_values[midpoint - 1] + sorted_values[midpoint]) / 2.0
 
 
 def equal_weights(tickers: list[str]) -> dict[str, float]:
@@ -769,6 +953,9 @@ def build_iteration_rows(
         "balanced_dual_momentum_defensive_sleeve": "Risk-on top-three momentum with defensive sleeve when broad trend is weak.",
         "breadth_aware_risk_on_rotation": "Breadth-threshold allocation that reduces cash drag in mixed regimes.",
         "growth_biased_rotation_crash_gate": "Growth-biased own-trend rotation with a crash gate for weak breadth.",
+        "factor_style_rotation_absolute_gate": "Factor/style ETF rotation using absolute trend gates and reduced weak-market exposure.",
+        "sector_52_week_high_continuation": "Sector ETF continuation using fixed momentum plus 252-day-high closeness.",
+        "adaptive_multi_sleeve_growth_allocator": "Fixed-rule multi-sleeve allocator blending growth, factor/style, defensive sleeve, breadth, and volatility diagnostics.",
     }
     for index, strategy_name in enumerate(descriptions, start=1):
         metrics = full_period_metrics(result_rows, strategy_name)
@@ -782,7 +969,7 @@ def build_iteration_rows(
                 "iteration_id": f"strategy_improvement_lab_{index:03d}",
                 "hypothesis": descriptions[strategy_name],
                 "allowed_parameter_set": (
-                    "monthly rebalance; 126-day momentum; 200-day trend; top 3; fixed breadth thresholds 60/40."
+                    "monthly rebalance; 126-day momentum; 200-day trend; fixed 252-day high score; fixed breadth thresholds 60/40/30; fixed volatility window 20/252."
                 ),
                 "reason_for_testing": "Explore growth-aware ETF allocation variants without execution approval.",
                 "result_summary": result_summary_text(result),

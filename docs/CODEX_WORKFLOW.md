@@ -150,6 +150,15 @@ its command routing. Promising labels from the lab mean "research this further";
 they are not buy/sell signals, order instructions, paper execution approval, or
 scheduling approval.
 
+`python bot.py --strategy-improvement-robustness` is the matching fixed
+robustness layer for the same candidate set. It may refresh daily yfinance ETF
+history and write generated robustness/cost/drawdown/comparison CSVs under
+`data/`, but it must remain research-only and use fixed chronological splits and
+fixed cost assumptions. Use
+`python scripts\verify_strategy_improvement_robustness.py` when changing that
+report. No cron, scheduling, or execution change is part of strategy
+improvement research.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

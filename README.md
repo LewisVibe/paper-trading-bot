@@ -921,7 +921,7 @@ Output:
 data/vol_managed_etf_robustness_report.csv
 ```
 
-Strategy improvement lab mode tests a small fixed set of growth-aware ETF allocation variants meant to investigate whether current defensive ETF research is too cash-dragged. It uses daily yfinance ETF history, monthly rebalancing, fixed 126-day momentum and 200-day trend rules, and fixed breadth thresholds only. Variants include the existing monthly ETF rotation reference, balanced dual momentum with a defensive sleeve, breadth-aware risk-on rotation, and growth-biased rotation with a crash gate. It also includes SPY and equal-weight ETF buy-and-hold benchmarks. Promising labels are research labels only; they do not approve orders, paper execution, scheduling, cron, shorting, leverage, margin, or any strategy-to-execution wiring.
+Strategy improvement lab mode tests a small fixed set of growth-aware ETF allocation variants meant to investigate whether current defensive ETF research is too cash-dragged. It uses daily yfinance ETF history, monthly rebalancing, fixed 126-day momentum and 200-day trend rules, fixed 52-week-high closeness scoring where relevant, fixed breadth thresholds, and fixed volatility diagnostics only. Variants include the existing monthly ETF rotation reference, balanced dual momentum with a defensive sleeve, breadth-aware risk-on rotation, growth-biased rotation with a crash gate, factor/style rotation with an absolute gate, sector 52-week-high continuation, and an ambitious fixed multi-sleeve growth allocator. It also includes SPY and equal-weight ETF buy-and-hold benchmarks. Promising labels are research labels only; they do not approve orders, paper execution, scheduling, cron, shorting, leverage, margin, or any strategy-to-execution wiring.
 
 Command:
 
@@ -943,6 +943,29 @@ data/strategy_improvement_lab_trades.csv
 data/strategy_improvement_lab_equity_curve.csv
 data/strategy_improvement_lab_summary.csv
 data/strategy_improvement_lab_iteration_log.csv
+```
+
+Strategy improvement robustness mode reruns the fixed strategy-improvement candidate set and writes combined chronological split, fixed cost, drawdown, and candidate comparison reports. It checks `split_60_40`, `split_70_30`, and `split_80_20`, uses fixed `low_cost`, `default_cost`, and `high_cost` one-way assumptions, and compares cash drag and drawdown tradeoffs against the monthly ETF rotation reference. A strategy does not need to beat SPY buy-and-hold to be labelled promising, but the report shows whether it still trails SPY. The ambitious multi-sleeve allocator remains aggressive research only.
+
+Command:
+
+```text
+python bot.py --strategy-improvement-robustness
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-strategy-improvement-robustness
+```
+
+Outputs:
+
+```text
+data/strategy_improvement_robustness_report.csv
+data/strategy_improvement_cost_stress_report.csv
+data/strategy_improvement_drawdown_report.csv
+data/strategy_improvement_candidate_comparison.csv
 ```
 
 Adaptive momentum backtest mode is research-only. It ranks risk ETFs by fixed multi-horizon momentum with a volatility penalty, uses SPY as the risk regime filter, and rotates to defensive ETFs when the regime is weak. It saves only research CSV files and is not connected to Alpaca execution. `data/adaptive_momentum_results.csv` includes `full_period`, `in_sample`, and `out_of_sample` portfolio rows using the same simple chronological 70% / 30% reporting split as ETF rotation so the walk-forward report can pair the strategy.

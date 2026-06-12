@@ -145,6 +145,10 @@ from trading_bot.research.strategy_improvement_lab import (
     run_strategy_improvement_lab_files,
     show_strategy_improvement_lab_file,
 )
+from trading_bot.research.strategy_improvement_robustness import (
+    generate_strategy_improvement_robustness,
+    show_strategy_improvement_robustness_file,
+)
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
     run_build_etf_breadth_price_history_command,
@@ -3922,6 +3926,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved strategy improvement lab summary CSV without refreshing data.",
     )
     parser.add_argument(
+        "--strategy-improvement-robustness",
+        action="store_true",
+        help="Create research-only robustness, cost, drawdown, and comparison reports for strategy improvement candidates.",
+    )
+    parser.add_argument(
+        "--show-strategy-improvement-robustness",
+        action="store_true",
+        help="Display saved strategy improvement robustness comparison CSV without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-research-preview",
         action="store_true",
         help="Create a research-only crypto scaffold preview without execution.",
@@ -4250,6 +4264,20 @@ def main() -> int:
         return 0
     if args.show_strategy_improvement_lab:
         status_code, lines = show_strategy_improvement_lab_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.strategy_improvement_robustness:
+        try:
+            result = generate_strategy_improvement_robustness()
+        except Exception as exc:
+            print(f"Strategy improvement robustness failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_strategy_improvement_robustness:
+        status_code, lines = show_strategy_improvement_robustness_file()
         for line in lines:
             print(line)
         return status_code
