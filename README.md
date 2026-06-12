@@ -995,7 +995,7 @@ data/strategy_improvement_diagnostics.csv
 data/growth_biased_rotation_diagnostics.csv
 ```
 
-Growth-biased stricter validation mode reads saved strategy-improvement outputs only and validates the current active research lead, `growth_biased_rotation_breadth_stricter_gate`, against the previous `growth_biased_rotation_crash_gate` baseline. It writes split validation, cost-stress review, drawdown-period review, and promotion-checkpoint CSVs. A validation pass means research-lead status or possible future preview-candidate discussion only; it does not approve orders, paper execution, promoted execution, scheduling, or cron.
+Growth-biased stricter validation mode reads saved strategy-improvement outputs only and validates the current active research lead, `growth_biased_rotation_breadth_stricter_gate`, against the previous `growth_biased_rotation_crash_gate` baseline. It writes deeper split validation, cost-stress review, drawdown-period review, benchmark comparison, and promotion-checkpoint CSVs. Split validation compares the stricter gate with the original growth-biased baseline, monthly ETF rotation, SPY buy-and-hold, and equal-weight ETF benchmark when saved rows exist. A validation pass means research-lead status or possible future preview-candidate discussion only; it does not approve orders, paper execution, promoted execution, scheduling, or cron.
 
 Command:
 
@@ -1016,6 +1016,7 @@ data/growth_biased_stricter_validation.csv
 data/growth_biased_stricter_split_validation.csv
 data/growth_biased_stricter_cost_review.csv
 data/growth_biased_stricter_drawdown_review.csv
+data/growth_biased_stricter_benchmark_comparison.csv
 data/growth_biased_stricter_promotion_checkpoint.csv
 ```
 

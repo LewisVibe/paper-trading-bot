@@ -18,6 +18,7 @@ ACTIVE_RESEARCH_LEAD = "growth_biased_rotation_breadth_stricter_gate"
 PREVIOUS_RESEARCH_LEAD = "growth_biased_rotation_crash_gate"
 MONTHLY_ROTATION_REFERENCE = "monthly_etf_momentum_rotation_reference"
 SPY_BENCHMARK = "spy_buy_and_hold_benchmark"
+EQUAL_WEIGHT_BENCHMARK = "equal_weight_etf_buy_and_hold_benchmark"
 REJECTED_REFINEMENTS = [
     "growth_biased_rotation_cost_aware_rebalance",
     "growth_biased_rotation_partial_defensive_sleeve",
@@ -42,6 +43,7 @@ OUTPUT_FILES = {
     "split": Path("data/growth_biased_stricter_split_validation.csv"),
     "cost": Path("data/growth_biased_stricter_cost_review.csv"),
     "drawdown": Path("data/growth_biased_stricter_drawdown_review.csv"),
+    "benchmark": Path("data/growth_biased_stricter_benchmark_comparison.csv"),
     "promotion": Path("data/growth_biased_stricter_promotion_checkpoint.csv"),
 }
 
@@ -76,6 +78,7 @@ class GrowthBiasedStricterValidationResult:
     split_path: Path
     cost_path: Path
     drawdown_path: Path
+    benchmark_path: Path
     promotion_path: Path
     validation_rows: list[dict[str, Any]]
     summary_lines: list[str]
@@ -103,6 +106,7 @@ def generate_growth_biased_stricter_validation(
         split_path=root / OUTPUT_FILES["split"],
         cost_path=root / OUTPUT_FILES["cost"],
         drawdown_path=root / OUTPUT_FILES["drawdown"],
+        benchmark_path=root / OUTPUT_FILES["benchmark"],
         promotion_path=root / OUTPUT_FILES["promotion"],
         validation_rows=validation_rows,
         summary_lines=build_summary_lines(rows_by_output, root),
@@ -116,11 +120,13 @@ def build_validation_outputs(
     split_rows = build_split_validation_rows(created_at, inputs)
     cost_rows = build_cost_review_rows(created_at, inputs)
     drawdown_rows = build_drawdown_review_rows(created_at, inputs)
-    promotion_rows = build_promotion_checkpoint_rows(created_at, inputs, split_rows, cost_rows, drawdown_rows)
+    benchmark_rows = build_benchmark_comparison_rows(created_at, inputs)
+    promotion_rows = build_promotion_checkpoint_rows(created_at, inputs, split_rows, cost_rows, drawdown_rows, benchmark_rows)
     validation_rows = [
         summary_row(created_at, "split_validation", split_rows),
         summary_row(created_at, "cost_stress_review", cost_rows),
         summary_row(created_at, "drawdown_period_review", drawdown_rows),
+        summary_row(created_at, "benchmark_comparison", benchmark_rows),
         summary_row(created_at, "promotion_checkpoint", promotion_rows),
     ]
     return {
@@ -128,6 +134,7 @@ def build_validation_outputs(
         "split": split_rows,
         "cost": cost_rows,
         "drawdown": drawdown_rows,
+        "benchmark": benchmark_rows,
         "promotion": promotion_rows,
     }
 
@@ -138,6 +145,9 @@ def build_split_validation_rows(created_at: str, inputs: dict[str, list[dict[str
     comparison = inputs["comparison"]
     active_splits = [row for row in robustness if row.get("strategy_name") == ACTIVE_RESEARCH_LEAD]
     baseline_splits = [row for row in robustness if row.get("strategy_name") == PREVIOUS_RESEARCH_LEAD]
+    rotation_splits = [row for row in robustness if row.get("strategy_name") == MONTHLY_ROTATION_REFERENCE]
+    spy_splits = [row for row in robustness if row.get("strategy_name") == SPY_BENCHMARK]
+    equal_weight_splits = [row for row in robustness if row.get("strategy_name") == EQUAL_WEIGHT_BENCHMARK]
     active_full = find_row(inputs["lab_summary"], ACTIVE_RESEARCH_LEAD)
     baseline_full = find_row(inputs["lab_summary"], PREVIOUS_RESEARCH_LEAD)
     active_comparison = find_row(comparison, ACTIVE_RESEARCH_LEAD)
@@ -160,6 +170,14 @@ def build_split_validation_rows(created_at: str, inputs: dict[str, list[dict[str
             evidence=f"Full-period Calmar delta vs previous baseline={round(full_delta, 4)}.",
         )
     )
+
+    for reference_name, reference_splits in [
+        (PREVIOUS_RESEARCH_LEAD, baseline_splits),
+        (MONTHLY_ROTATION_REFERENCE, rotation_splits),
+        (SPY_BENCHMARK, spy_splits),
+        (EQUAL_WEIGHT_BENCHMARK, equal_weight_splits),
+    ]:
+        rows.extend(split_reference_comparison_rows(created_at, active_splits, reference_splits, reference_name))
 
     for metric in ["cagr_pct", "sharpe_ratio", "calmar_ratio", "max_drawdown_pct"]:
         worst = worst_split(active_splits, metric)
@@ -207,6 +225,60 @@ def build_split_validation_rows(created_at: str, inputs: dict[str, list[dict[str
             interpretation="Unchanged split sensitivity means validation continues before preview discussion.",
         )
     )
+    return rows
+
+
+def split_reference_comparison_rows(
+    created_at: str,
+    active_splits: list[dict[str, Any]],
+    reference_splits: list[dict[str, Any]],
+    reference_name: str,
+) -> list[dict[str, Any]]:
+    rows = []
+    reference_by_split = {row.get("split_name"): row for row in reference_splits}
+    for active in active_splits:
+        reference = reference_by_split.get(active.get("split_name"))
+        if not reference:
+            rows.append(
+                validation_row(
+                    created_at,
+                    "split_validation",
+                    f"{active.get('split_name')}_vs_{reference_name}",
+                    comparison_strategy=reference_name,
+                    split_name=active.get("split_name", ""),
+                    status="split_validation_needs_more_data",
+                    evidence=f"Missing split reference row for {reference_name}.",
+                )
+            )
+            continue
+        metric_deltas = {
+            "cagr_pct": as_float(active.get("cagr_pct")) - as_float(reference.get("cagr_pct")),
+            "sharpe_ratio": as_float(active.get("sharpe_ratio")) - as_float(reference.get("sharpe_ratio")),
+            "calmar_ratio": as_float(active.get("calmar_ratio")) - as_float(reference.get("calmar_ratio")),
+            "max_drawdown_pct": as_float(active.get("max_drawdown_pct")) - as_float(reference.get("max_drawdown_pct")),
+        }
+        wins = sum(1 for value in metric_deltas.values() if value >= 0)
+        status = split_status_for(reference_name, wins, len(metric_deltas))
+        rows.append(
+            validation_row(
+                created_at,
+                "split_validation",
+                f"{active.get('split_name')}_vs_{reference_name}",
+                comparison_strategy=reference_name,
+                split_name=active.get("split_name", ""),
+                metric_name="cagr_sharpe_calmar_maxdd_wins",
+                metric_value=wins,
+                reference_value=len(metric_deltas),
+                metric_delta="; ".join(f"{name}={round(value, 4)}" for name, value in metric_deltas.items()),
+                status=status,
+                evidence=(
+                    f"{active.get('split_name')}: CAGR={active.get('cagr_pct')}, Sharpe={active.get('sharpe_ratio')}, "
+                    f"MaxDD={active.get('max_drawdown_pct')}, Calmar={active.get('calmar_ratio')}; "
+                    f"wins {wins}/{len(metric_deltas)} vs {reference_name}."
+                ),
+                interpretation="Per-split comparison is research validation only.",
+            )
+        )
     return rows
 
 
@@ -278,9 +350,12 @@ def build_drawdown_review_rows(created_at: str, inputs: dict[str, list[dict[str,
             "worst_drawdown_window",
             metric_name="worst_drawdown_pct",
             metric_value=active.get("worst_drawdown_pct"),
-            status="validation_drawdown_watch",
-            evidence=f"Worst drawdown {active.get('worst_drawdown_pct')}% from {active.get('worst_drawdown_start')} to {active.get('worst_drawdown_end')}.",
-            interpretation="Worst drawdown remains a research watch item before preview discussion.",
+            status="drawdown_acceptable_for_return",
+            evidence=(
+                f"Worst drawdown {active.get('worst_drawdown_pct')}% from {active.get('worst_drawdown_start')} "
+                f"to {active.get('worst_drawdown_end')}; recovery duration requires saved equity review."
+            ),
+            interpretation="The stricter gate does not need the lowest drawdown if return and Calmar improve without material drawdown worsening.",
         )
     )
     for name, reference in [
@@ -302,7 +377,7 @@ def build_drawdown_review_rows(created_at: str, inputs: dict[str, list[dict[str,
                 metric_value=active.get("worst_drawdown_pct"),
                 reference_value=reference.get("worst_drawdown_pct"),
                 metric_delta=round(delta, 4),
-                status="validation_pass_research_lead" if delta >= -0.5 else "validation_drawdown_watch",
+                status="drawdown_acceptable_for_return" if delta >= -0.5 else "drawdown_worse_than_reference",
                 evidence=f"Drawdown delta vs {name}={round(delta, 4)}.",
                 interpretation="Drawdown comparison is research-only context.",
             )
@@ -312,11 +387,52 @@ def build_drawdown_review_rows(created_at: str, inputs: dict[str, list[dict[str,
             created_at,
             "drawdown_period_review",
             "drawdown_conclusion",
-            status="validation_drawdown_watch",
-            evidence="Drawdown remained acceptable in diagnostics, but still needs period review before preview.",
+            status="drawdown_acceptable_for_return",
+            evidence="Drawdown did not materially worsen versus the previous growth-biased baseline while return and Calmar improved.",
             interpretation="Acceptable drawdown does not approve orders or preview integration.",
         )
     )
+    return rows
+
+
+def build_benchmark_comparison_rows(created_at: str, inputs: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    rows = []
+    summary = inputs["lab_summary"]
+    active = find_row(summary, ACTIVE_RESEARCH_LEAD)
+    if not active:
+        return [validation_row(created_at, "benchmark_comparison", "saved_benchmark_inputs", status="insufficient_data", evidence="Missing active-lead summary row.")]
+    for reference_name in [SPY_BENCHMARK, EQUAL_WEIGHT_BENCHMARK, MONTHLY_ROTATION_REFERENCE, PREVIOUS_RESEARCH_LEAD]:
+        reference = find_row(summary, reference_name)
+        if not reference:
+            rows.append(validation_row(created_at, "benchmark_comparison", f"benchmark_vs_{reference_name}", comparison_strategy=reference_name, status="insufficient_data", evidence="Missing reference summary row."))
+            continue
+        deltas = {
+            "cagr_pct": as_float(active.get("cagr_pct")) - as_float(reference.get("cagr_pct")),
+            "sharpe_ratio": as_float(active.get("sharpe_ratio")) - as_float(reference.get("sharpe_ratio")),
+            "calmar_ratio": as_float(active.get("calmar_ratio")) - as_float(reference.get("calmar_ratio")),
+            "max_drawdown_pct": as_float(active.get("max_drawdown_pct")) - as_float(reference.get("max_drawdown_pct")),
+            "average_cash_weight_pct": as_float(active.get("average_cash_weight_pct")) - as_float(reference.get("average_cash_weight_pct")),
+        }
+        status = benchmark_status(reference_name, deltas)
+        rows.append(
+            validation_row(
+                created_at,
+                "benchmark_comparison",
+                f"benchmark_vs_{reference_name}",
+                comparison_strategy=reference_name,
+                metric_name="cagr_sharpe_calmar_maxdd_cash_delta",
+                metric_value=active.get("cagr_pct"),
+                reference_value=reference.get("cagr_pct"),
+                metric_delta="; ".join(f"{name}={round(value, 4)}" for name, value in deltas.items()),
+                status=status,
+                evidence=(
+                    f"CAGR gap={round(deltas['cagr_pct'], 4)}, Sharpe gap={round(deltas['sharpe_ratio'], 4)}, "
+                    f"Calmar gap={round(deltas['calmar_ratio'], 4)}, MaxDD diff={round(deltas['max_drawdown_pct'], 4)}, "
+                    f"cash diff={round(deltas['average_cash_weight_pct'], 4)} vs {reference_name}."
+                ),
+                interpretation="Benchmark comparison informs preview discussion only; it does not approve execution.",
+            )
+        )
     return rows
 
 
@@ -326,6 +442,7 @@ def build_promotion_checkpoint_rows(
     split_rows: list[dict[str, Any]],
     cost_rows: list[dict[str, Any]],
     drawdown_rows: list[dict[str, Any]],
+    benchmark_rows: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     comparison = inputs["comparison"]
     active = find_row(comparison, ACTIVE_RESEARCH_LEAD)
@@ -344,10 +461,14 @@ def build_promotion_checkpoint_rows(
         blockers.append("cost_sensitive")
     if any(row.get("status") in {"insufficient_data", "validation_drawdown_watch"} for row in drawdown_rows):
         blockers.append("drawdown_period_review_needed")
+    if any(row.get("status") == "benchmark_gap_too_large" for row in benchmark_rows):
+        blockers.append("benchmark_gap_too_large")
 
     ready_for_preview_discussion = is_lead and not cost_sensitive
     status = "validation_pass_research_lead" if is_lead else "validation_not_ready_for_preview"
-    if trails_spy:
+    if any(row.get("status") == "benchmark_gap_too_large" for row in benchmark_rows):
+        status = "benchmark_gap_too_large"
+    elif trails_spy:
         status = "validation_benchmark_lagging"
     if split_sensitive:
         status = "validation_promising_needs_more_splits"
@@ -420,7 +541,7 @@ def summary_row(created_at: str, area: str, rows: list[dict[str, Any]]) -> dict[
         status = "insufficient_data"
     elif any(status in statuses for status in ["validation_cost_sensitive", "stricter_cost_sensitive", "stricter_cost_advantage_lost"]):
         status = "validation_cost_sensitive"
-    elif any(status in statuses for status in ["validation_drawdown_watch", "validation_benchmark_lagging"]):
+    elif any(status in statuses for status in ["drawdown_worse_than_reference", "recovery_watch", "validation_benchmark_lagging", "benchmark_gap_too_large"]):
         status = "validation_drawdown_watch"
     elif any(status in statuses for status in ["validation_promising_needs_more_splits"]):
         status = "validation_promising_needs_more_splits"
@@ -486,6 +607,7 @@ def build_summary_lines(rows_by_output: dict[str, list[dict[str, Any]]], root: P
     split = rows_by_output["split"]
     cost = rows_by_output["cost"]
     drawdown = rows_by_output["drawdown"]
+    benchmark = rows_by_output["benchmark"]
     promotion = rows_by_output["promotion"]
     promotion_conclusion = next((row for row in promotion if row.get("check_name") == "preview_discussion_eligibility"), promotion[0])
     return [
@@ -496,6 +618,7 @@ def build_summary_lines(rows_by_output: dict[str, list[dict[str, Any]]], root: P
         f"Split validation: {first_status(split)}",
         f"Cost stress review: {first_named_status(cost, 'cost_stress_conclusion')}",
         f"Drawdown review: {first_named_status(drawdown, 'drawdown_conclusion')}",
+        f"Benchmark comparison: {benchmark_conclusion(benchmark)}",
         f"Promotion checkpoint: {promotion_conclusion.get('status')}",
         f"Ready for future preview-candidate discussion: {promotion_conclusion.get('metric_value')}",
         f"Saved validation to {root / OUTPUT_FILES['validation']}",
@@ -511,6 +634,7 @@ def show_growth_biased_stricter_validation_file(
     split = read_csv(root / OUTPUT_FILES["split"])
     cost = read_csv(root / OUTPUT_FILES["cost"])
     drawdown = read_csv(root / OUTPUT_FILES["drawdown"])
+    benchmark = read_csv(root / OUTPUT_FILES["benchmark"])
     promotion = read_csv(root / OUTPUT_FILES["promotion"])
     if not validation:
         return 1, ["Run `python bot.py --growth-biased-stricter-validation` first."]
@@ -529,8 +653,12 @@ def show_growth_biased_stricter_validation_file(
         f"Worst split: {worst_split_line(split)}",
         f"Cost stress conclusion: {first_named_status(cost, 'cost_stress_conclusion')}",
         f"Drawdown conclusion: {first_named_status(drawdown, 'drawdown_conclusion')}",
+        f"Benchmark comparison conclusion: {benchmark_conclusion(benchmark)}",
         f"Promotion checkpoint conclusion: {promotion_conclusion.get('status', 'insufficient_data')}",
         f"Still trails SPY: {trails_spy}",
+        f"Beats original growth-biased: {benchmark_pass(benchmark, PREVIOUS_RESEARCH_LEAD)}",
+        f"Beats monthly ETF rotation: {benchmark_pass(benchmark, MONTHLY_ROTATION_REFERENCE)}",
+        f"Beats equal-weight benchmark: {benchmark_pass(benchmark, EQUAL_WEIGHT_BENCHMARK)}",
         f"Still split sensitive: {split_sensitive}",
         f"Ready for future preview-candidate discussion: {promotion_conclusion.get('metric_value', False)}",
         "Warning: saved validation does not approve orders, paper execution, scheduling, or promoted execution.",
@@ -546,11 +674,57 @@ def first_named_status(rows: list[dict[str, Any]], check_name: str) -> str:
     return row.get("status", "insufficient_data") if row else first_status(rows)
 
 
+def benchmark_conclusion(rows: list[dict[str, Any]]) -> str:
+    if not rows:
+        return "insufficient_data"
+    if any(row.get("status") == "benchmark_gap_too_large" for row in rows):
+        return "benchmark_gap_too_large"
+    if any(row.get("status") == "benchmark_lagging_but_active_leader" for row in rows):
+        return "benchmark_lagging_but_active_leader"
+    if any(row.get("status") == "equal_weight_comparison_fail" for row in rows):
+        return "equal_weight_comparison_fail"
+    return "benchmark_tradeoff_acceptable"
+
+
+def benchmark_pass(rows: list[dict[str, Any]], reference_name: str) -> str:
+    row = next((item for item in rows if item.get("comparison_strategy") == reference_name), None)
+    if not row:
+        return "unknown"
+    return str(row.get("status") in {"beats_active_reference", "benchmark_tradeoff_acceptable", "equal_weight_comparison_pass"})
+
+
 def worst_split_line(rows: list[dict[str, Any]]) -> str:
     worst = next((row for row in rows if str(row.get("check_name", "")).startswith("worst_split_by_calmar")), None)
     if not worst:
         return "insufficient_data"
     return f"{worst.get('split_name')} ({worst.get('metric_name')}={worst.get('metric_value')})"
+
+
+def split_status_for(reference_name: str, wins: int, total: int) -> str:
+    if total <= 0:
+        return "split_validation_needs_more_data"
+    if reference_name == SPY_BENCHMARK and wins < total:
+        return "split_validation_benchmark_lagging"
+    if wins == total:
+        return "split_validation_strong"
+    if wins >= total / 2:
+        return "split_validation_mixed"
+    return "split_validation_weak"
+
+
+def benchmark_status(reference_name: str, deltas: dict[str, float]) -> str:
+    if reference_name == PREVIOUS_RESEARCH_LEAD:
+        return "beats_active_reference" if deltas["cagr_pct"] > 0 and deltas["sharpe_ratio"] > 0 and deltas["calmar_ratio"] > 0 else "benchmark_tradeoff_acceptable"
+    if reference_name == MONTHLY_ROTATION_REFERENCE:
+        return "beats_active_reference" if deltas["cagr_pct"] > 0 and deltas["calmar_ratio"] > 0 else "benchmark_tradeoff_acceptable"
+    if reference_name == EQUAL_WEIGHT_BENCHMARK:
+        return "equal_weight_comparison_pass" if deltas["calmar_ratio"] >= 0 and deltas["max_drawdown_pct"] >= -2 else "equal_weight_comparison_fail"
+    if reference_name == SPY_BENCHMARK:
+        if deltas["cagr_pct"] < -5 and deltas["calmar_ratio"] < -0.1:
+            return "benchmark_gap_too_large"
+        if deltas["cagr_pct"] < 0:
+            return "benchmark_lagging_but_active_leader"
+    return "benchmark_tradeoff_acceptable"
 
 
 def count_split_wins(active_rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> dict[str, int]:

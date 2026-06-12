@@ -191,7 +191,8 @@ drawdown-period, and promotion-checkpoint reports. Do not add random variants,
 ML, intraday logic, scheduling, execution, or strategy-to-order wiring.
 
 Use `python bot.py --growth-biased-stricter-validation` for the dedicated
-stricter-gate validation checkpoint and
+stricter-gate validation checkpoint covering deeper split validation,
+drawdown-period review, cost stress, benchmark comparison, and
 `python bot.py --show-growth-biased-stricter-validation` for the saved display.
 The checkpoint can support future preview-candidate discussion only; it must
 not approve execution, paper execution, promoted execution, scheduling, or cron.
