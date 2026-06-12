@@ -61,6 +61,8 @@ REQUIRED_COMMANDS = [
     "--show-codex-ambitious-validation",
     "--codex-ambitious-split-drawdown-validation",
     "--show-codex-ambitious-split-drawdown-validation",
+    "--codex-ambitious-lead-decision",
+    "--show-codex-ambitious-lead-decision",
     "--crypto-research-preview",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",

@@ -185,6 +185,10 @@ from trading_bot.research.codex_ambitious_split_drawdown_validation import (
     generate_codex_ambitious_split_drawdown_validation,
     show_codex_ambitious_split_drawdown_validation_file,
 )
+from trading_bot.research.codex_ambitious_lead_decision import (
+    generate_codex_ambitious_lead_decision,
+    show_codex_ambitious_lead_decision_file,
+)
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
     run_build_etf_breadth_price_history_command,
@@ -4062,6 +4066,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved Codex ambitious split/drawdown validation without refreshing data.",
     )
     parser.add_argument(
+        "--codex-ambitious-lead-decision",
+        action="store_true",
+        help="Create a saved-output final research lead decision checkpoint for the Codex ambitious candidate.",
+    )
+    parser.add_argument(
+        "--show-codex-ambitious-lead-decision",
+        action="store_true",
+        help="Display the saved Codex ambitious lead decision checkpoint without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-research-preview",
         action="store_true",
         help="Create a research-only crypto scaffold preview without execution.",
@@ -4530,6 +4544,20 @@ def main() -> int:
         return 0
     if args.show_codex_ambitious_split_drawdown_validation:
         status_code, lines = show_codex_ambitious_split_drawdown_validation_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.codex_ambitious_lead_decision:
+        try:
+            result = generate_codex_ambitious_lead_decision()
+        except Exception as exc:
+            print(f"Codex ambitious lead decision failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_codex_ambitious_lead_decision:
+        status_code, lines = show_codex_ambitious_lead_decision_file()
         for line in lines:
             print(line)
         return status_code

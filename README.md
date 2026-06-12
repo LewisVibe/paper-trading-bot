@@ -1172,6 +1172,28 @@ data/codex_ambitious_drawdown_windows.csv
 data/codex_ambitious_lead_change_checkpoint.csv
 ```
 
+Codex ambitious lead decision mode reads saved validation, split/drawdown, persistence, threshold, cost/turnover, and manual-review reports where available and creates a final research-only lead-decision checkpoint for `codex_ambitious_concentrated_growth_persistence`. It decides whether the candidate should become the new active research lead as a research label only. If cost review remains open, the label keeps that blocker explicit. It does not approve preview promotion automatically and does not approve execution.
+
+Command:
+
+```text
+python bot.py --codex-ambitious-lead-decision
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-codex-ambitious-lead-decision
+```
+
+Outputs:
+
+```text
+data/codex_ambitious_lead_decision.csv
+data/codex_ambitious_lead_decision_summary.csv
+data/codex_ambitious_lead_decision_evidence.csv
+```
+
 Adaptive momentum backtest mode is research-only. It ranks risk ETFs by fixed multi-horizon momentum with a volatility penalty, uses SPY as the risk regime filter, and rotates to defensive ETFs when the regime is weak. It saves only research CSV files and is not connected to Alpaca execution. `data/adaptive_momentum_results.csv` includes `full_period`, `in_sample`, and `out_of_sample` portfolio rows using the same simple chronological 70% / 30% reporting split as ETF rotation so the walk-forward report can pair the strategy.
 
 Outputs:
