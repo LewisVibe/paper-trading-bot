@@ -32,6 +32,12 @@ VOLATILITY_MEDIAN_WINDOW_DAYS = 252
 EXTREME_VOLATILITY_MULTIPLE = 1.75
 COST_AWARE_REBALANCE_THRESHOLD = 0.05
 COST_AWARE_CLOSE_RANK_BUFFER = 2
+PARTIAL_DEFENSIVE_HEALTHY_BREADTH = 0.60
+PARTIAL_DEFENSIVE_MIXED_BREADTH = 0.40
+PARTIAL_DEFENSIVE_WEAK_BREADTH = 0.30
+PARTIAL_DEFENSIVE_MIXED_RISK_WEIGHT = 0.75
+PARTIAL_DEFENSIVE_WEAK_RISK_WEIGHT = 0.50
+PARTIAL_DEFENSIVE_STRESS_DEFENSIVE_WEIGHT = 0.85
 
 RISK_ETFS = [
     "SPY",
@@ -74,6 +80,7 @@ STRATEGY_NAMES = [
     "breadth_aware_risk_on_rotation",
     "growth_biased_rotation_crash_gate",
     "growth_biased_rotation_cost_aware_rebalance",
+    "growth_biased_rotation_partial_defensive_sleeve",
     "factor_style_rotation_absolute_gate",
     "sector_52_week_high_continuation",
     "adaptive_multi_sleeve_growth_allocator",
@@ -424,6 +431,8 @@ def target_weights_for_strategy(
         return growth_biased_weights(history, current_weights)
     if strategy_name == "growth_biased_rotation_cost_aware_rebalance":
         return growth_biased_cost_aware_weights(history, current_weights)
+    if strategy_name == "growth_biased_rotation_partial_defensive_sleeve":
+        return growth_biased_partial_defensive_weights(history, current_weights)
     if strategy_name == "factor_style_rotation_absolute_gate":
         return factor_style_rotation_weights(history)
     if strategy_name == "sector_52_week_high_continuation":
@@ -534,6 +543,60 @@ def growth_biased_cost_aware_weights(
         ),
         "growth_cost_aware",
     )
+
+
+def growth_biased_partial_defensive_weights(
+    history: dict[str, list[float]],
+    current_weights: dict[str, float],
+) -> tuple[dict[str, float], str, str]:
+    breadth = breadth_ratio(history)
+    spy_healthy = is_above_sma(history["SPY"], TREND_WINDOW_DAYS)
+    vol_extreme = is_extreme_volatility(history["SPY"])
+    ranked = rank_by_momentum(RISK_ETFS, history, MOMENTUM_LOOKBACK_DAYS)
+    eligible = [ticker for ticker in ranked if is_above_sma(history[ticker], TREND_WINDOW_DAYS)]
+    risk_top = eligible[:TOP_N]
+    defensive = defensive_sleeve_weights_for(MULTI_SLEEVE_DEFENSIVE_ETFS, history)
+
+    if spy_healthy and breadth >= PARTIAL_DEFENSIVE_HEALTHY_BREADTH and not vol_extreme:
+        return (
+            equal_weights(risk_top),
+            "Healthy regime: SPY above 200-day SMA and breadth strong; full growth-biased risk allocation.",
+            "partial_defensive_healthy_growth",
+        )
+
+    if vol_extreme or breadth < PARTIAL_DEFENSIVE_WEAK_BREADTH:
+        if defensive:
+            return (
+                scaled_weights(defensive, PARTIAL_DEFENSIVE_STRESS_DEFENSIVE_WEIGHT),
+                f"Stress regime: breadth {breadth:.2f}, extreme volatility={vol_extreme}; mostly defensive sleeve with cash buffer.",
+                "partial_defensive_stress_defensive",
+            )
+        return {}, f"Stress regime: breadth {breadth:.2f}, extreme volatility={vol_extreme}; holding cash.", "partial_defensive_stress_cash"
+
+    if (spy_healthy and breadth >= PARTIAL_DEFENSIVE_MIXED_BREADTH) or ((not spy_healthy) and breadth >= 0.50):
+        if risk_top:
+            weights = scaled_weights(equal_weights(risk_top), PARTIAL_DEFENSIVE_MIXED_RISK_WEIGHT)
+            weights = add_weights(weights, scaled_weights(defensive, 1.0 - PARTIAL_DEFENSIVE_MIXED_RISK_WEIGHT))
+            return (
+                weights,
+                f"Mixed regime: SPY trend={spy_healthy}, breadth {breadth:.2f}; 75/25 growth-biased risk and defensive sleeve.",
+                "partial_defensive_mixed",
+            )
+        if defensive:
+            return defensive, f"Mixed regime breadth {breadth:.2f}; no eligible risk ETFs, defensive sleeve.", "partial_defensive_mixed_defensive"
+        return {}, f"Mixed regime breadth {breadth:.2f}; no eligible risk or defensive sleeve, holding cash.", "partial_defensive_mixed_cash"
+
+    if risk_top:
+        weights = scaled_weights(equal_weights(risk_top), PARTIAL_DEFENSIVE_WEAK_RISK_WEIGHT)
+        weights = add_weights(weights, scaled_weights(defensive, 1.0 - PARTIAL_DEFENSIVE_WEAK_RISK_WEIGHT))
+        return (
+            weights,
+            f"Weak regime: SPY trend={spy_healthy}, breadth {breadth:.2f}; 50/50 eligible risk and defensive sleeve.",
+            "partial_defensive_weak",
+        )
+    if defensive:
+        return defensive, f"Weak regime breadth {breadth:.2f}; defensive sleeve only.", "partial_defensive_weak_defensive"
+    return {}, f"Weak regime breadth {breadth:.2f}; no eligible risk or defensive trend, holding cash.", "partial_defensive_weak_cash"
 
 
 def factor_style_rotation_weights(history: dict[str, list[float]]) -> tuple[dict[str, float], str, str]:
@@ -1003,6 +1066,7 @@ def build_iteration_rows(
         "breadth_aware_risk_on_rotation": "Breadth-threshold allocation that reduces cash drag in mixed regimes.",
         "growth_biased_rotation_crash_gate": "Growth-biased own-trend rotation with a crash gate for weak breadth.",
         "growth_biased_rotation_cost_aware_rebalance": "Fixed-threshold cost-aware refinement of the growth-biased crash-gate strategy.",
+        "growth_biased_rotation_partial_defensive_sleeve": "Fixed partial defensive-sleeve refinement of the growth-biased crash-gate strategy.",
         "factor_style_rotation_absolute_gate": "Factor/style ETF rotation using absolute trend gates and reduced weak-market exposure.",
         "sector_52_week_high_continuation": "Sector ETF continuation using fixed momentum plus 252-day-high closeness.",
         "adaptive_multi_sleeve_growth_allocator": "Fixed-rule multi-sleeve allocator blending growth, factor/style, defensive sleeve, breadth, and volatility diagnostics.",
@@ -1020,6 +1084,7 @@ def build_iteration_rows(
                 "hypothesis": descriptions[strategy_name],
                 "allowed_parameter_set": (
                     "monthly rebalance; 126-day momentum; 200-day trend; fixed 252-day high score; fixed breadth thresholds 60/40/30; fixed volatility window 20/252; fixed cost-aware rebalance threshold 5%."
+                    " partial defensive sleeve uses fixed 75/25 mixed, 50/50 weak, and 85% stress defensive allocations."
                 ),
                 "reason_for_testing": "Explore growth-aware ETF allocation variants without execution approval.",
                 "result_summary": result_summary_text(result),

@@ -173,6 +173,13 @@ rebalance threshold documented in code. Judge it directly against the original
 growth-biased strategy for turnover, cost sensitivity, split sensitivity, and
 return drag before considering any further variant.
 
+The next narrow refinement is `growth_biased_rotation_partial_defensive_sleeve`.
+It must preserve `growth_biased_rotation_crash_gate` unchanged, use fixed
+defensive-sleeve allocations only when breadth/regime weakens, and be judged
+against the original growth-biased strategy, the cost-aware refinement, monthly
+ETF rotation, and SPY. It is research-only and must not change scheduling,
+execution, or strategy-to-order wiring.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

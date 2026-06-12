@@ -39,13 +39,19 @@ DIAGNOSTIC_TOPICS = [
     "candidate_status",
     "next_fixed_hypothesis",
     "cost_refinement",
+    "defensive_sleeve_refinement",
 ]
 
 NEXT_HYPOTHESES = [
     "growth_biased_rotation_reentry_filter",
-    "growth_biased_rotation_partial_defensive_sleeve",
-    "growth_biased_rotation_cost_aware_rebalance",
     "growth_biased_rotation_split_stability_check",
+    "growth_biased_rotation_regime_recovery_filter",
+    "growth_biased_rotation_breadth_threshold_review",
+]
+
+TESTED_REJECTED_REFINEMENTS = [
+    "growth_biased_rotation_cost_aware_rebalance",
+    "growth_biased_rotation_partial_defensive_sleeve",
 ]
 
 COST_REFINEMENT_STATUSES = [
@@ -54,6 +60,14 @@ COST_REFINEMENT_STATUSES = [
     "cost_refinement_no_material_change",
     "cost_refinement_promising",
     "cost_refinement_not_useful",
+]
+
+DEFENSIVE_SLEEVE_STATUSES = [
+    "defensive_sleeve_improved_stability",
+    "defensive_sleeve_return_drag",
+    "defensive_sleeve_no_material_improvement",
+    "defensive_sleeve_promising",
+    "defensive_sleeve_not_useful",
 ]
 
 FORBIDDEN_TOKENS = [
@@ -143,10 +157,23 @@ def verify_module_contract(module_source: str, failures: list[str]) -> None:
     for hypothesis in NEXT_HYPOTHESES:
         if hypothesis not in module_source:
             failures.append(f"missing suggestion-only next hypothesis: {hypothesis}")
+    start = module_source.find("hypotheses = [")
+    end = module_source.find("return [", start)
+    next_hypothesis_source = module_source[start:end] if start != -1 and end != -1 else module_source
+    for rejected in TESTED_REJECTED_REFINEMENTS:
+        if rejected in next_hypothesis_source:
+            failures.append(f"tested rejected refinement should not remain a next hypothesis: {rejected}")
     for status in COST_REFINEMENT_STATUSES:
         if status not in module_source:
             failures.append(f"missing cost refinement diagnostic status: {status}")
-    for strategy_name in ["growth_biased_rotation_crash_gate", "growth_biased_rotation_cost_aware_rebalance"]:
+    for status in DEFENSIVE_SLEEVE_STATUSES:
+        if status not in module_source:
+            failures.append(f"missing defensive sleeve diagnostic status: {status}")
+    for strategy_name in [
+        "growth_biased_rotation_crash_gate",
+        "growth_biased_rotation_cost_aware_rebalance",
+        "growth_biased_rotation_partial_defensive_sleeve",
+    ]:
         if strategy_name not in module_source:
             failures.append(f"missing direct growth-biased comparison strategy: {strategy_name}")
     for token in [
@@ -155,7 +182,9 @@ def verify_module_contract(module_source: str, failures: list[str]) -> None:
         '"research_only": True',
         '"preview_only": True',
         "performance_drag",
+        "excessive_return_drag",
         "Sharpe delta",
+        "partial_defensive_sleeve_decision",
         "Keep original growth_biased_rotation_crash_gate as active research lead.",
         "suggestion_only",
         "This is a future fixed-hypothesis suggestion, not an implemented strategy.",

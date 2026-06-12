@@ -43,6 +43,7 @@ BENCHMARK_NAME = "monthly_etf_momentum_rotation_reference"
 SPY_BENCHMARK_NAME = "spy_buy_and_hold_benchmark"
 GROWTH_BIASED_ORIGINAL = "growth_biased_rotation_crash_gate"
 COST_AWARE_REFINEMENT = "growth_biased_rotation_cost_aware_rebalance"
+PARTIAL_DEFENSIVE_REFINEMENT = "growth_biased_rotation_partial_defensive_sleeve"
 
 COMMON_COLUMNS = [
     "created_at",
@@ -584,9 +585,10 @@ def show_strategy_improvement_robustness_file(
     multi = next((row for row in rows if row["strategy_name"] == "adaptive_multi_sleeve_growth_allocator"), None)
     if multi:
         lines.append(format_display_line("Adaptive multi-sleeve allocator", multi))
-    cost_aware = next((row for row in rows if row["strategy_name"] == COST_AWARE_REFINEMENT), None)
-    if cost_aware:
-        lines.append(format_growth_biased_comparison_line(cost_aware))
+    for refinement in [COST_AWARE_REFINEMENT, PARTIAL_DEFENSIVE_REFINEMENT]:
+        row = next((item for item in rows if item["strategy_name"] == refinement), None)
+        if row:
+            lines.append(format_growth_biased_comparison_line(row))
     warnings = [
         f"{row['strategy_name']}={row['comparison_label']}"
         for row in active
@@ -610,7 +612,7 @@ def format_display_line(label: str, row: dict[str, Any]) -> str:
 
 def format_growth_biased_comparison_line(row: dict[str, Any]) -> str:
     return (
-        "Cost-aware vs original growth-biased: "
+        f"{row.get('strategy_name')} vs original growth-biased: "
         f"CAGR delta={row.get('cagr_delta_vs_growth_biased')}, "
         f"Sharpe delta={row.get('sharpe_delta_vs_growth_biased')}, "
         f"Calmar delta={row.get('calmar_delta_vs_growth_biased')}, "

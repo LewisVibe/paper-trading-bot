@@ -16,6 +16,7 @@ from typing import Any
 
 TARGET_STRATEGY = "growth_biased_rotation_crash_gate"
 COST_AWARE_STRATEGY = "growth_biased_rotation_cost_aware_rebalance"
+PARTIAL_DEFENSIVE_STRATEGY = "growth_biased_rotation_partial_defensive_sleeve"
 ACTIVE_REFERENCE = "monthly_etf_momentum_rotation_reference"
 COMPARISON_STRATEGIES = [
     "spy_buy_and_hold_benchmark",
@@ -24,6 +25,7 @@ COMPARISON_STRATEGIES = [
     "breadth_aware_risk_on_rotation",
     "adaptive_multi_sleeve_growth_allocator",
     COST_AWARE_STRATEGY,
+    PARTIAL_DEFENSIVE_STRATEGY,
 ]
 
 INPUT_FILES = {
@@ -88,7 +90,11 @@ def generate_strategy_improvement_diagnostics(
     else:
         rows = build_diagnostic_rows(created_at, inputs)
 
-    growth_rows = [row for row in rows if row["strategy_name"] in {TARGET_STRATEGY, COST_AWARE_STRATEGY}]
+    growth_rows = [
+        row
+        for row in rows
+        if row["strategy_name"] in {TARGET_STRATEGY, COST_AWARE_STRATEGY, PARTIAL_DEFENSIVE_STRATEGY}
+    ]
     diagnostics_path = root / OUTPUT_FILES["diagnostics"]
     growth_path = root / OUTPUT_FILES["growth"]
     write_rows(diagnostics_path, rows)
@@ -121,6 +127,7 @@ def build_diagnostic_rows(created_at: str, inputs: dict[str, list[dict[str, Any]
     rows.extend(cash_drag_rows(created_at, target_full, inputs["lab_summary"]))
     rows.extend(candidate_status_rows(created_at, target_full, comparison_rows, robustness_rows, cost_rows, drawdown_row))
     rows.extend(cost_refinement_rows(created_at, target_full, inputs))
+    rows.extend(defensive_sleeve_refinement_rows(created_at, target_full, inputs))
     rows.extend(next_hypothesis_rows(created_at))
     return rows
 
@@ -556,6 +563,158 @@ def cost_refinement_decision_row(
     )
 
 
+def defensive_sleeve_refinement_rows(
+    created_at: str,
+    original_full: dict[str, Any],
+    inputs: dict[str, list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    sleeve_full = find_row(inputs["lab_summary"], PARTIAL_DEFENSIVE_STRATEGY)
+    if not sleeve_full:
+        return [
+            diagnostic_row(
+                created_at,
+                "defensive_sleeve_refinement",
+                "partial_defensive_sleeve_missing",
+                "status",
+                "missing",
+                "",
+                "",
+                "insufficient_data",
+                "warning",
+                f"{PARTIAL_DEFENSIVE_STRATEGY} is missing from saved lab summary.",
+                "The direct defensive-sleeve refinement comparison cannot run without the saved partial-sleeve row.",
+                "Run `python bot.py --strategy-improvement-lab` after adding the partial defensive sleeve variant.",
+                strategy_name=PARTIAL_DEFENSIVE_STRATEGY,
+                comparison_strategy=TARGET_STRATEGY,
+            )
+        ]
+
+    rows = []
+    original_comparison = find_row(inputs["comparison"], TARGET_STRATEGY)
+    sleeve_comparison = find_row(inputs["comparison"], PARTIAL_DEFENSIVE_STRATEGY)
+    for metric in [
+        "cagr_pct",
+        "sharpe_ratio",
+        "max_drawdown_pct",
+        "calmar_ratio",
+        "average_cash_weight_pct",
+        "trade_count",
+        "turnover",
+    ]:
+        sleeve_value = as_float(sleeve_full.get(metric))
+        original_value = as_float(original_full.get(metric))
+        rows.append(
+            diagnostic_row(
+                created_at,
+                "defensive_sleeve_refinement",
+                f"partial_defensive_vs_original_{metric}",
+                "delta_vs_original_growth_biased",
+                sleeve_value,
+                original_value,
+                round(sleeve_value - original_value, 4),
+                defensive_sleeve_metric_status(metric, sleeve_value, original_value),
+                "info",
+                f"{PARTIAL_DEFENSIVE_STRATEGY} {metric}={sleeve_value}; {TARGET_STRATEGY} {metric}={original_value}.",
+                defensive_sleeve_metric_interpretation(metric, sleeve_value, original_value),
+                "Judge the partial defensive sleeve against the original growth-biased strategy before considering any promotion.",
+                strategy_name=PARTIAL_DEFENSIVE_STRATEGY,
+                comparison_strategy=TARGET_STRATEGY,
+            )
+        )
+    for diagnostic_name, field_name in [
+        ("partial_defensive_cost_sensitivity", "cost_sensitive"),
+        ("partial_defensive_split_sensitivity", "split_sensitive"),
+    ]:
+        original_value = original_comparison.get(field_name) if original_comparison else False
+        sleeve_value = sleeve_comparison.get(field_name) if sleeve_comparison else False
+        delta = bool_delta(sleeve_value, original_value)
+        status = "defensive_sleeve_improved_stability" if delta == "improved" else "defensive_sleeve_no_material_improvement"
+        rows.append(
+            diagnostic_row(
+                created_at,
+                "defensive_sleeve_refinement",
+                diagnostic_name,
+                field_name,
+                parse_bool(sleeve_value),
+                parse_bool(original_value),
+                delta,
+                status,
+                "info",
+                f"Original {field_name}={parse_bool(original_value)}; partial defensive sleeve {field_name}={parse_bool(sleeve_value)}.",
+                "The partial defensive sleeve improves this diagnostic only when the original was sensitive and the sleeve is not.",
+                "Use saved robustness diagnostics before any future promotion discussion.",
+                strategy_name=PARTIAL_DEFENSIVE_STRATEGY,
+                comparison_strategy=TARGET_STRATEGY,
+            )
+        )
+    rows.append(defensive_sleeve_decision_row(created_at, original_full, sleeve_full, original_comparison, sleeve_comparison))
+    return rows
+
+
+def defensive_sleeve_decision_row(
+    created_at: str,
+    original_full: dict[str, Any],
+    sleeve_full: dict[str, Any],
+    original_comparison: dict[str, Any] | None,
+    sleeve_comparison: dict[str, Any] | None,
+) -> dict[str, Any]:
+    cagr_delta = as_float(sleeve_full.get("cagr_pct")) - as_float(original_full.get("cagr_pct"))
+    sharpe_delta = as_float(sleeve_full.get("sharpe_ratio")) - as_float(original_full.get("sharpe_ratio"))
+    calmar_delta = as_float(sleeve_full.get("calmar_ratio")) - as_float(original_full.get("calmar_ratio"))
+    max_drawdown_delta = as_float(sleeve_full.get("max_drawdown_pct")) - as_float(original_full.get("max_drawdown_pct"))
+    cash_delta = as_float(sleeve_full.get("average_cash_weight_pct")) - as_float(original_full.get("average_cash_weight_pct"))
+    turnover_delta = as_float(sleeve_full.get("turnover")) - as_float(original_full.get("turnover"))
+    cost_improved = bool_improved(sleeve_comparison.get("cost_sensitive") if sleeve_comparison else False, original_comparison.get("cost_sensitive") if original_comparison else False)
+    split_improved = bool_improved(sleeve_comparison.get("split_sensitive") if sleeve_comparison else False, original_comparison.get("split_sensitive") if original_comparison else False)
+    drawdown_improved = max_drawdown_delta > 0.50
+    risk_adjusted_improved = sharpe_delta > 0.03 or calmar_delta > 0.03
+    stability_improved = split_improved or drawdown_improved or cost_improved
+    excessive_return_drag = cagr_delta <= -1.00 or sharpe_delta <= -0.05 or calmar_delta <= -0.05
+
+    if (risk_adjusted_improved or split_improved) and not excessive_return_drag:
+        status = "defensive_sleeve_promising"
+        interpretation = (
+            "The partial defensive sleeve improves risk-adjusted performance or split stability without excessive return drag; "
+            "review manually before changing the active research lead."
+        )
+    elif stability_improved and not excessive_return_drag:
+        status = "defensive_sleeve_improved_stability"
+        interpretation = "The partial defensive sleeve improves stability or drawdown behaviour while preserving most of the growth profile."
+    elif excessive_return_drag:
+        status = "defensive_sleeve_return_drag"
+        interpretation = "The partial defensive sleeve sacrifices too much CAGR, Sharpe, or Calmar versus the original growth-biased strategy."
+    elif not stability_improved:
+        status = "defensive_sleeve_no_material_improvement"
+        interpretation = "The partial defensive sleeve does not materially improve split stability, drawdown, or cost sensitivity."
+    else:
+        status = "defensive_sleeve_not_useful"
+        interpretation = "The partial defensive sleeve is not useful enough versus the original growth-biased strategy."
+
+    if status not in {"defensive_sleeve_promising", "defensive_sleeve_improved_stability"}:
+        interpretation += " Keep original growth_biased_rotation_crash_gate as active research lead."
+    return diagnostic_row(
+        created_at,
+        "defensive_sleeve_refinement",
+        "partial_defensive_sleeve_decision",
+        "status",
+        status,
+        "",
+        "",
+        status,
+        "warning" if status in {"defensive_sleeve_return_drag", "defensive_sleeve_not_useful"} else "info",
+        (
+            f"CAGR delta={round(cagr_delta, 4)}, Sharpe delta={round(sharpe_delta, 4)}, "
+            f"Calmar delta={round(calmar_delta, 4)}, MaxDD delta={round(max_drawdown_delta, 4)}, "
+            f"cash delta={round(cash_delta, 4)}, turnover delta={round(turnover_delta, 4)}, "
+            f"cost_improved={cost_improved}, split_improved={split_improved}."
+        ),
+        interpretation,
+        "Keep both variants research-only; choose the active research lead only after reviewing saved robustness and diagnostics.",
+        strategy_name=PARTIAL_DEFENSIVE_STRATEGY,
+        comparison_strategy=TARGET_STRATEGY,
+    )
+
+
 def next_hypothesis_rows(created_at: str) -> list[dict[str, Any]]:
     hypotheses = [
         (
@@ -563,16 +722,16 @@ def next_hypothesis_rows(created_at: str) -> list[dict[str, Any]]:
             "Refine crash-gate re-entry after weak/bear-market splits using fixed breadth recovery criteria.",
         ),
         (
-            "growth_biased_rotation_partial_defensive_sleeve",
-            "Keep growth-biased selection but add a small fixed defensive sleeve only in weak-breadth regimes.",
-        ),
-        (
-            "growth_biased_rotation_cost_aware_rebalance",
-            "Skip tiny rebalance changes with a fixed turnover threshold to reduce cost sensitivity.",
-        ),
-        (
             "growth_biased_rotation_split_stability_check",
             "Require fixed split diagnostics before any future promotion discussion.",
+        ),
+        (
+            "growth_biased_rotation_regime_recovery_filter",
+            "Test a fixed re-risking rule after crash-gate periods to reduce weak-split decay without adding a defensive sleeve.",
+        ),
+        (
+            "growth_biased_rotation_breadth_threshold_review",
+            "Review fixed crash-gate breadth thresholds for split stability without optimizing parameters.",
         ),
     ]
     return [
@@ -772,6 +931,28 @@ def cost_refinement_metric_interpretation(metric: str, value: float, reference: 
     return "This metric is broadly similar to the original growth-biased strategy."
 
 
+def defensive_sleeve_metric_status(metric: str, value: float, reference: float) -> str:
+    if metric in {"average_cash_weight_pct", "trade_count", "turnover"}:
+        return "defensive_sleeve_improved_stability" if value < reference else "defensive_sleeve_no_material_improvement"
+    if metric == "max_drawdown_pct":
+        return "defensive_sleeve_improved_stability" if value > reference else "defensive_sleeve_no_material_improvement"
+    return "defensive_sleeve_improved_stability" if value >= reference else "defensive_sleeve_return_drag"
+
+
+def defensive_sleeve_metric_interpretation(metric: str, value: float, reference: float) -> str:
+    if metric == "max_drawdown_pct" and value > reference:
+        return "The partial defensive sleeve reduced drawdown versus the original growth-biased strategy."
+    if metric in {"sharpe_ratio", "calmar_ratio"} and value > reference:
+        return "The partial defensive sleeve improved a risk-adjusted performance metric."
+    if metric == "cagr_pct" and value < reference:
+        return "The partial defensive sleeve reduced CAGR; check whether stability benefits justify the drag."
+    if metric == "average_cash_weight_pct" and value > reference:
+        return "The partial defensive sleeve increased cash drag versus the original strategy."
+    if metric in {"trade_count", "turnover"} and value < reference:
+        return "The partial defensive sleeve reduced churn versus the original strategy."
+    return "This metric is broadly similar to the original growth-biased strategy."
+
+
 def bool_delta(value: Any, reference: Any) -> str:
     value_bool = parse_bool(value)
     reference_bool = parse_bool(reference)
@@ -813,6 +994,11 @@ def status_interpretation(status: str) -> str:
         "cost_sensitive_candidate": "Cost burden may matter and should be checked before future promotion.",
         "drawdown_heavy_candidate": "Drawdown needs focused refinement, not random tuning.",
         "cash_drag_reduced": "Lower cash drag is a useful research feature to preserve.",
+        "defensive_sleeve_improved_stability": "The partial defensive sleeve improved a stability metric, but remains research-only.",
+        "defensive_sleeve_return_drag": "The partial defensive sleeve sacrificed too much performance versus the original growth-biased strategy.",
+        "defensive_sleeve_no_material_improvement": "The partial defensive sleeve did not materially improve the diagnosed weakness.",
+        "defensive_sleeve_promising": "The partial defensive sleeve may be promising if manual review confirms stability gains without excess drag.",
+        "defensive_sleeve_not_useful": "The partial defensive sleeve is not useful enough versus the original growth-biased strategy.",
         "insufficient_data": "Saved inputs are insufficient for this diagnostic.",
     }
     return interpretations.get(status, "Research-only diagnostic status.")
@@ -876,6 +1062,7 @@ def build_summary_lines(rows: list[dict[str, Any]], diagnostics_path: Path, grow
     cash = next((row for row in rows if row["diagnostic_type"] == "cash_drag"), None)
     hypotheses = [row["diagnostic_name"] for row in rows if row["diagnostic_type"] == "next_fixed_hypothesis"]
     refinement = next((row for row in rows if row["diagnostic_name"] == "cost_aware_refinement_decision"), None)
+    defensive_refinement = next((row for row in rows if row["diagnostic_name"] == "partial_defensive_sleeve_decision"), None)
     lines = [
         "Strategy improvement diagnostics complete. Research/preview only; execution_approved=False.",
         f"Main statuses: {', '.join(statuses) if statuses else 'insufficient_data'}",
@@ -891,6 +1078,8 @@ def build_summary_lines(rows: list[dict[str, Any]], diagnostics_path: Path, grow
         lines.append("Next fixed hypotheses: " + ", ".join(hypotheses))
     if refinement:
         lines.append(f"Cost-aware refinement decision: {refinement['status']} ({refinement['evidence']})")
+    if defensive_refinement:
+        lines.append(f"Partial defensive sleeve decision: {defensive_refinement['status']} ({defensive_refinement['evidence']})")
     lines.append(f"Saved diagnostics to {diagnostics_path}")
     lines.append(f"Saved growth-biased diagnostics to {growth_path}")
     lines.append("Warning: diagnostics are research guidance only and do not approve orders.")
@@ -915,6 +1104,7 @@ def show_strategy_improvement_diagnostics_file(
     active_lead = any(row["status"] == "benchmark_lagging_but_active_leader" for row in rows)
     hypotheses = [row["diagnostic_name"] for row in rows if row["diagnostic_type"] == "next_fixed_hypothesis"]
     refinement = next((row for row in rows if row["diagnostic_name"] == "cost_aware_refinement_decision"), None)
+    defensive_refinement = next((row for row in rows if row["diagnostic_name"] == "partial_defensive_sleeve_decision"), None)
     lines = [
         "Growth-biased strategy diagnostics. Display only; execution_approved=False.",
         f"Main diagnostic status: {', '.join(statuses) if statuses else 'insufficient_data'}",
@@ -929,6 +1119,8 @@ def show_strategy_improvement_diagnostics_file(
     lines.append(f"Remains active research lead: {active_lead}")
     if refinement:
         lines.append(f"Cost-aware refinement: {refinement['status']} - {refinement['interpretation']}")
+    if defensive_refinement:
+        lines.append(f"Partial defensive sleeve: {defensive_refinement['status']} - {defensive_refinement['interpretation']}")
     if hypotheses:
         lines.append("Recommended next fixed hypotheses: " + ", ".join(hypotheses[:4]))
     lines.append("Warning: saved diagnostics do not approve orders or paper execution.")

@@ -28,6 +28,7 @@ FIXED_VARIANTS = [
     "breadth_aware_risk_on_rotation",
     "growth_biased_rotation_crash_gate",
     "growth_biased_rotation_cost_aware_rebalance",
+    "growth_biased_rotation_partial_defensive_sleeve",
     "factor_style_rotation_absolute_gate",
     "sector_52_week_high_continuation",
     "adaptive_multi_sleeve_growth_allocator",
@@ -132,8 +133,12 @@ def verify_module_static_contract(module_source: str, failures: list[str]) -> No
         "VOLATILITY_MEDIAN_WINDOW_DAYS = 252",
         "COST_AWARE_REBALANCE_THRESHOLD = 0.05",
         "COST_AWARE_CLOSE_RANK_BUFFER = 2",
+        "PARTIAL_DEFENSIVE_MIXED_RISK_WEIGHT = 0.75",
+        "PARTIAL_DEFENSIVE_WEAK_RISK_WEIGHT = 0.50",
+        "PARTIAL_DEFENSIVE_STRESS_DEFENSIVE_WEIGHT = 0.85",
         "def growth_biased_weights(",
         "def growth_biased_cost_aware_weights(",
+        "def growth_biased_partial_defensive_weights(",
     ]
     for token in required_tokens:
         if token not in module_source:
