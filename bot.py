@@ -117,6 +117,10 @@ from trading_bot.research.backtesting import (
 )
 from trading_bot.research.costs import CostModel, adjusted_buy_fill_price, adjusted_sell_fill_price
 from trading_bot.research.crypto import run_crypto_research_preview_files
+from trading_bot.research.crypto_universe_readiness import (
+    generate_crypto_universe_readiness_report,
+    show_crypto_universe_readiness_report_file,
+)
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
 from trading_bot.research.crypto_robustness import generate_crypto_robustness_report
@@ -4081,6 +4085,16 @@ def parse_args() -> argparse.Namespace:
         help="Create a research-only crypto scaffold preview without execution.",
     )
     parser.add_argument(
+        "--crypto-universe-readiness-report",
+        action="store_true",
+        help="Create a research-only crypto universe data-readiness report without strategy signals.",
+    )
+    parser.add_argument(
+        "--show-crypto-universe-readiness-report",
+        action="store_true",
+        help="Display the saved crypto universe readiness report without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-strategy-lab",
         action="store_true",
         help="Run a research-only crypto strategy lab with daily yfinance-compatible history.",
@@ -4566,6 +4580,20 @@ def main() -> int:
         for line in result.summary_lines:
             print(line)
         return 0
+    if args.crypto_universe_readiness_report:
+        try:
+            result = generate_crypto_universe_readiness_report()
+        except Exception as exc:
+            print(f"Crypto universe readiness report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_crypto_universe_readiness_report:
+        status_code, lines = show_crypto_universe_readiness_report_file()
+        for line in lines:
+            print(line)
+        return status_code
     if args.crypto_strategy_lab:
         try:
             result = run_crypto_strategy_lab_files()

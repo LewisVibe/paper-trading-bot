@@ -64,6 +64,8 @@ REQUIRED_COMMANDS = [
     "--codex-ambitious-lead-decision",
     "--show-codex-ambitious-lead-decision",
     "--crypto-research-preview",
+    "--crypto-universe-readiness-report",
+    "--show-crypto-universe-readiness-report",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",
     "--crypto-strategy-decision-report",

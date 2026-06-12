@@ -416,6 +416,8 @@ Crypto research refresh:
 
 ```text
 python bot.py --crypto-research-preview
+python bot.py --crypto-universe-readiness-report
+python bot.py --show-crypto-universe-readiness-report
 python bot.py --crypto-strategy-lab
 python bot.py --crypto-strategy-report
 python bot.py --crypto-strategy-decision-report
