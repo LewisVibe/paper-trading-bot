@@ -1521,6 +1521,32 @@ data/crypto_equal_weight_crash_gate_splits.csv
 data/crypto_equal_weight_crash_gate_drawdowns.csv
 ```
 
+Crypto equal-weight volatility-scaling mode is the next research-only follow-up after the hard crash-gate result showed too much return drag. It tests whether partial volatility/drawdown exposure scaling can improve equal-weight crypto's catastrophic drawdown without destroying returns. It includes fixed planned scalers (`crypto_equal_weight_volatility_scaled_allocator`, `crypto_equal_weight_drawdown_scaled_allocator`, and `crypto_equal_weight_combined_vol_drawdown_scaler`) plus one Codex-designed fixed-rule risk-control idea, `codex_ambitious_crypto_core_alt_volatility_throttle`, which uses a BTC/ETH core, capped alt sleeve, and volatility/drawdown/breadth throttles while staying long-only and no-leverage. It uses the saved eligible crypto universe where possible, continues to exclude `POL-USD` and `MATIC-USD` until transition review, and compares static equal weight, inception-aware equal weight, existing crypto candidates, BTC/ETH benchmarks, BTC/ETH 50/50, and cash. This is research/report-only and does not approve crypto execution or connect crypto to Alpaca or paper orders.
+
+Command:
+
+```text
+python bot.py --crypto-equal-weight-volatility-scaling
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-crypto-equal-weight-volatility-scaling
+```
+
+Outputs:
+
+```text
+data/crypto_equal_weight_volatility_scaling.csv
+data/crypto_equal_weight_volatility_scaling_summary.csv
+data/crypto_equal_weight_volatility_scaling_trades.csv
+data/crypto_equal_weight_volatility_scaling_equity_curves.csv
+data/crypto_equal_weight_volatility_scaling_costs.csv
+data/crypto_equal_weight_volatility_scaling_splits.csv
+data/crypto_equal_weight_volatility_scaling_drawdowns.csv
+```
+
 Crypto strategy lab mode backtests a tiny fixed research-only strategy set for `BTC/USD`, `ETH/USD`, and `LTC/USD` using yfinance-compatible daily symbols (`BTC-USD`, `ETH-USD`, `LTC-USD`). The per-symbol strategies are `crypto_buy_and_hold_baseline`, `crypto_sma_50_200_trend`, `crypto_buy_above_200_exit_below_200`, and one controlled iteration: `crypto_buy_above_200_with_vol_gate`. The volatility-gate strategy uses fixed parameters only: 20-day realised volatility, trailing 252-day median volatility, and a 1.5x gate for new entries. The lab also writes a separate portfolio-style BTC/ETH/cash rotation test, `crypto_monthly_btc_eth_momentum_rotation`, using fixed monthly rebalance, 126-day momentum ranking, and a 200-day SMA absolute trend filter. It writes full-period, in-sample, and out-of-sample rows, plus an iteration log to discourage tuning after seeing results. Results include simple crypto research cost assumptions: `crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, and `crypto_slippage_bps=10`. It does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, or approve execution.
 
 Outputs:
