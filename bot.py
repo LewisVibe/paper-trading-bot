@@ -141,6 +141,10 @@ from trading_bot.research.promoted_decision import run_promoted_decision_preview
 from trading_bot.research.promoted_risk import run_promoted_risk_preview_files
 from trading_bot.research.promotion import generate_strategy_promotion_report
 from trading_bot.research.reporting import generate_research_report
+from trading_bot.research.strategy_improvement_lab import (
+    run_strategy_improvement_lab_files,
+    show_strategy_improvement_lab_file,
+)
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
     run_build_etf_breadth_price_history_command,
@@ -3908,6 +3912,16 @@ def parse_args() -> argparse.Namespace:
         help="Create a research-only fixed-split robustness report for the vol-managed ETF strategy.",
     )
     parser.add_argument(
+        "--strategy-improvement-lab",
+        action="store_true",
+        help="Run a fixed research-only growth-aware ETF strategy improvement lab without execution.",
+    )
+    parser.add_argument(
+        "--show-strategy-improvement-lab",
+        action="store_true",
+        help="Display the saved strategy improvement lab summary CSV without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-research-preview",
         action="store_true",
         help="Create a research-only crypto scaffold preview without execution.",
@@ -4225,6 +4239,20 @@ def main() -> int:
         return run_etf_breadth_regime_decision_report_command()
     if args.etf_breadth_regime_robustness:
         return run_etf_breadth_regime_robustness_command()
+    if args.strategy_improvement_lab:
+        try:
+            result = run_strategy_improvement_lab_files()
+        except Exception as exc:
+            print(f"Strategy improvement lab failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_strategy_improvement_lab:
+        status_code, lines = show_strategy_improvement_lab_file()
+        for line in lines:
+            print(line)
+        return status_code
     if args.crypto_research_preview:
         result = run_crypto_research_preview_files()
         for line in result.summary_lines:

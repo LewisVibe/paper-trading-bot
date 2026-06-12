@@ -135,6 +135,21 @@ only. Use `docs/HERMES_CRON_MONITORING_RUNBOOK.md` and
 `python scripts\verify_hermes_cron_monitoring_runbook.py` when interpreting
 Telegram/status output from the existing status cron.
 
+## Strategy Improvement Lab Boundary
+
+`python bot.py --strategy-improvement-lab` is a research-only ETF allocation
+lab for testing a fixed small set of more growth-aware variants. It may refresh
+daily yfinance ETF history and write generated CSVs under `data/`, but it must
+not load config, call Alpaca, read positions, submit/cancel/create orders, write
+SQLite `trade_log`, send Discord alerts, schedule jobs, add shorting/leverage,
+or approve execution.
+
+`python bot.py --show-strategy-improvement-lab` is saved-CSV display only. Use
+`python scripts\verify_strategy_improvement_lab.py` when changing the lab or
+its command routing. Promising labels from the lab mean "research this further";
+they are not buy/sell signals, order instructions, paper execution approval, or
+scheduling approval.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

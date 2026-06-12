@@ -921,6 +921,30 @@ Output:
 data/vol_managed_etf_robustness_report.csv
 ```
 
+Strategy improvement lab mode tests a small fixed set of growth-aware ETF allocation variants meant to investigate whether current defensive ETF research is too cash-dragged. It uses daily yfinance ETF history, monthly rebalancing, fixed 126-day momentum and 200-day trend rules, and fixed breadth thresholds only. Variants include the existing monthly ETF rotation reference, balanced dual momentum with a defensive sleeve, breadth-aware risk-on rotation, and growth-biased rotation with a crash gate. It also includes SPY and equal-weight ETF buy-and-hold benchmarks. Promising labels are research labels only; they do not approve orders, paper execution, scheduling, cron, shorting, leverage, margin, or any strategy-to-execution wiring.
+
+Command:
+
+```text
+python bot.py --strategy-improvement-lab
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-strategy-improvement-lab
+```
+
+Outputs:
+
+```text
+data/strategy_improvement_lab_results.csv
+data/strategy_improvement_lab_trades.csv
+data/strategy_improvement_lab_equity_curve.csv
+data/strategy_improvement_lab_summary.csv
+data/strategy_improvement_lab_iteration_log.csv
+```
+
 Adaptive momentum backtest mode is research-only. It ranks risk ETFs by fixed multi-horizon momentum with a volatility penalty, uses SPY as the risk regime filter, and rotates to defensive ETFs when the regime is weak. It saves only research CSV files and is not connected to Alpaca execution. `data/adaptive_momentum_results.csv` includes `full_period`, `in_sample`, and `out_of_sample` portfolio rows using the same simple chronological 70% / 30% reporting split as ETF rotation so the walk-forward report can pair the strategy.
 
 Outputs:
