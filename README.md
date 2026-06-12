@@ -968,6 +968,27 @@ data/strategy_improvement_drawdown_report.csv
 data/strategy_improvement_candidate_comparison.csv
 ```
 
+Strategy improvement diagnostics mode reads the saved lab and robustness CSVs only and explains why `growth_biased_rotation_crash_gate` is split-sensitive. It checks split decay, benchmark-relative gaps, cost sensitivity, drawdown window/recovery context, cash drag, and whether the candidate remains the active research lead despite trailing SPY. It also writes suggestion-only next fixed hypotheses such as a re-entry filter, partial defensive sleeve, cost-aware rebalance threshold, and split-stability checkpoint. It does not add another strategy, rerun yfinance-heavy backtests, call Alpaca, create orders, schedule anything, or approve execution.
+
+Command:
+
+```text
+python bot.py --strategy-improvement-diagnostics
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-strategy-improvement-diagnostics
+```
+
+Outputs:
+
+```text
+data/strategy_improvement_diagnostics.csv
+data/growth_biased_rotation_diagnostics.csv
+```
+
 Adaptive momentum backtest mode is research-only. It ranks risk ETFs by fixed multi-horizon momentum with a volatility penalty, uses SPY as the risk regime filter, and rotates to defensive ETFs when the regime is weak. It saves only research CSV files and is not connected to Alpaca execution. `data/adaptive_momentum_results.csv` includes `full_period`, `in_sample`, and `out_of_sample` portfolio rows using the same simple chronological 70% / 30% reporting split as ETF rotation so the walk-forward report can pair the strategy.
 
 Outputs:

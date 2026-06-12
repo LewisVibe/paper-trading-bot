@@ -149,6 +149,10 @@ from trading_bot.research.strategy_improvement_robustness import (
     generate_strategy_improvement_robustness,
     show_strategy_improvement_robustness_file,
 )
+from trading_bot.research.strategy_improvement_diagnostics import (
+    generate_strategy_improvement_diagnostics,
+    show_strategy_improvement_diagnostics_file,
+)
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
     run_build_etf_breadth_price_history_command,
@@ -3936,6 +3940,16 @@ def parse_args() -> argparse.Namespace:
         help="Display saved strategy improvement robustness comparison CSV without refreshing data.",
     )
     parser.add_argument(
+        "--strategy-improvement-diagnostics",
+        action="store_true",
+        help="Create saved-CSV diagnostics explaining strategy improvement split sensitivity without execution.",
+    )
+    parser.add_argument(
+        "--show-strategy-improvement-diagnostics",
+        action="store_true",
+        help="Display saved strategy improvement diagnostics CSV without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-research-preview",
         action="store_true",
         help="Create a research-only crypto scaffold preview without execution.",
@@ -4278,6 +4292,20 @@ def main() -> int:
         return 0
     if args.show_strategy_improvement_robustness:
         status_code, lines = show_strategy_improvement_robustness_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.strategy_improvement_diagnostics:
+        try:
+            result = generate_strategy_improvement_diagnostics()
+        except Exception as exc:
+            print(f"Strategy improvement diagnostics failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_strategy_improvement_diagnostics:
+        status_code, lines = show_strategy_improvement_diagnostics_file()
         for line in lines:
             print(line)
         return status_code

@@ -43,6 +43,8 @@ REQUIRED_COMMANDS = [
     "--show-strategy-improvement-lab",
     "--strategy-improvement-robustness",
     "--show-strategy-improvement-robustness",
+    "--strategy-improvement-diagnostics",
+    "--show-strategy-improvement-diagnostics",
     "--crypto-research-preview",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",

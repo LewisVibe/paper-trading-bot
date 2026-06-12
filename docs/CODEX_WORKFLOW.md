@@ -159,6 +159,14 @@ fixed cost assumptions. Use
 report. No cron, scheduling, or execution change is part of strategy
 improvement research.
 
+`python bot.py --strategy-improvement-diagnostics` is saved-CSV diagnostics for
+the current best active strategy-improvement lead. It explains split
+sensitivity, benchmark lag, cost stress, drawdown behaviour, cash drag, and
+next fixed-hypothesis ideas without adding another strategy. Use
+`python scripts\verify_strategy_improvement_diagnostics.py` when changing this
+layer. Diagnostics are guidance for a later fixed research task, not tuning,
+promotion, scheduling, or execution approval.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

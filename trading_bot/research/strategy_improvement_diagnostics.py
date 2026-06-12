@@ -1,0 +1,739 @@
+"""Saved-CSV diagnostics for the strategy improvement research lab.
+
+This module reads generated strategy-improvement CSVs only. It does not refresh
+market data, load config, call brokers, read positions, write SQLite, send
+alerts, add strategies, or approve execution.
+"""
+
+from __future__ import annotations
+
+import csv
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+TARGET_STRATEGY = "growth_biased_rotation_crash_gate"
+ACTIVE_REFERENCE = "monthly_etf_momentum_rotation_reference"
+COMPARISON_STRATEGIES = [
+    "spy_buy_and_hold_benchmark",
+    "equal_weight_etf_buy_and_hold_benchmark",
+    ACTIVE_REFERENCE,
+    "breadth_aware_risk_on_rotation",
+    "adaptive_multi_sleeve_growth_allocator",
+]
+
+INPUT_FILES = {
+    "lab_results": Path("data/strategy_improvement_lab_results.csv"),
+    "lab_trades": Path("data/strategy_improvement_lab_trades.csv"),
+    "lab_equity": Path("data/strategy_improvement_lab_equity_curve.csv"),
+    "lab_summary": Path("data/strategy_improvement_lab_summary.csv"),
+    "robustness": Path("data/strategy_improvement_robustness_report.csv"),
+    "cost": Path("data/strategy_improvement_cost_stress_report.csv"),
+    "drawdown": Path("data/strategy_improvement_drawdown_report.csv"),
+    "comparison": Path("data/strategy_improvement_candidate_comparison.csv"),
+}
+
+OUTPUT_FILES = {
+    "diagnostics": Path("data/strategy_improvement_diagnostics.csv"),
+    "growth": Path("data/growth_biased_rotation_diagnostics.csv"),
+}
+
+DIAGNOSTIC_COLUMNS = [
+    "created_at",
+    "strategy_name",
+    "diagnostic_type",
+    "diagnostic_name",
+    "period",
+    "split_name",
+    "comparison_strategy",
+    "metric_name",
+    "metric_value",
+    "reference_value",
+    "metric_delta",
+    "status",
+    "severity",
+    "evidence",
+    "interpretation",
+    "recommended_next_step",
+    "research_only",
+    "preview_only",
+    "execution_approved",
+    "paper_execution_approved",
+]
+
+
+@dataclass
+class StrategyImprovementDiagnosticsResult:
+    diagnostics_path: Path
+    growth_diagnostics_path: Path
+    diagnostic_rows: list[dict[str, Any]]
+    growth_rows: list[dict[str, Any]]
+    summary_lines: list[str]
+
+
+def generate_strategy_improvement_diagnostics(
+    root_dir: Path | str = ".",
+) -> StrategyImprovementDiagnosticsResult:
+    root = Path(root_dir)
+    created_at = datetime.now(timezone.utc).isoformat()
+    inputs = {name: read_csv(root / path) for name, path in INPUT_FILES.items()}
+    missing = [str(path) for name, path in INPUT_FILES.items() if not inputs[name]]
+
+    if missing:
+        rows = build_insufficient_rows(created_at, missing)
+    else:
+        rows = build_diagnostic_rows(created_at, inputs)
+
+    growth_rows = [row for row in rows if row["strategy_name"] == TARGET_STRATEGY]
+    diagnostics_path = root / OUTPUT_FILES["diagnostics"]
+    growth_path = root / OUTPUT_FILES["growth"]
+    write_rows(diagnostics_path, rows)
+    write_rows(growth_path, growth_rows)
+    return StrategyImprovementDiagnosticsResult(
+        diagnostics_path=diagnostics_path,
+        growth_diagnostics_path=growth_path,
+        diagnostic_rows=rows,
+        growth_rows=growth_rows,
+        summary_lines=build_summary_lines(rows, diagnostics_path, growth_path),
+    )
+
+
+def build_diagnostic_rows(created_at: str, inputs: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    target_full = find_row(inputs["lab_summary"], TARGET_STRATEGY)
+    comparison_rows = inputs["comparison"]
+    robustness_rows = [row for row in inputs["robustness"] if row.get("strategy_name") == TARGET_STRATEGY]
+    cost_rows = [row for row in inputs["cost"] if row.get("strategy_name") == TARGET_STRATEGY]
+    drawdown_row = find_row(inputs["drawdown"], TARGET_STRATEGY)
+    equity_rows = [row for row in inputs["lab_equity"] if row.get("strategy_name") == TARGET_STRATEGY]
+
+    if not target_full:
+        return build_insufficient_rows(created_at, ["growth_biased row missing from data/strategy_improvement_lab_summary.csv"])
+
+    rows.extend(split_sensitivity_rows(created_at, target_full, robustness_rows))
+    rows.extend(benchmark_relative_rows(created_at, target_full, inputs["lab_summary"]))
+    rows.extend(cost_sensitivity_rows(created_at, cost_rows, inputs["cost"]))
+    rows.extend(drawdown_rows(created_at, target_full, drawdown_row, equity_rows, inputs["drawdown"]))
+    rows.extend(cash_drag_rows(created_at, target_full, inputs["lab_summary"]))
+    rows.extend(candidate_status_rows(created_at, target_full, comparison_rows, robustness_rows, cost_rows, drawdown_row))
+    rows.extend(next_hypothesis_rows(created_at))
+    return rows
+
+
+def split_sensitivity_rows(
+    created_at: str,
+    target_full: dict[str, Any],
+    robustness_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    rows = []
+    for metric in ["cagr_pct", "sharpe_ratio", "calmar_ratio", "max_drawdown_pct"]:
+        worst = worst_split_row(robustness_rows, metric)
+        if not worst:
+            continue
+        full_value = as_float(target_full.get(metric))
+        split_value = as_float(worst.get(metric))
+        delta = split_value - full_value
+        rows.append(
+            diagnostic_row(
+                created_at,
+                "split_sensitivity",
+                f"worst_split_by_{metric}",
+                metric,
+                split_value,
+                full_value,
+                delta,
+                status_for_split_metric(metric, delta),
+                "warning" if metric in {"cagr_pct", "sharpe_ratio", "calmar_ratio"} and delta < 0 else "info",
+                f"{worst.get('split_name')} out-of-sample {metric}={split_value}; full-period {metric}={full_value}.",
+                split_interpretation(metric, delta),
+                "Review whether weakness is concentrated around this chronological split before adding new variants.",
+                period="out_of_sample",
+                split_name=worst.get("split_name", ""),
+            )
+        )
+    for split in sorted(robustness_rows, key=lambda row: row.get("split_name", "")):
+        rows.append(
+            diagnostic_row(
+                created_at,
+                "split_sensitivity",
+                "split_metric_snapshot",
+                "calmar_ratio",
+                as_float(split.get("calmar_ratio")),
+                as_float(target_full.get("calmar_ratio")),
+                as_float(split.get("calmar_ratio")) - as_float(target_full.get("calmar_ratio")),
+                "split_diagnostic",
+                "info",
+                (
+                    f"{split.get('split_name')} CAGR={split.get('cagr_pct')}, Sharpe={split.get('sharpe_ratio')}, "
+                    f"MaxDD={split.get('max_drawdown_pct')}, Calmar={split.get('calmar_ratio')}."
+                ),
+                "Split rows show whether the active lead persists across different out-of-sample windows.",
+                "Keep this as a diagnostic input, not an execution gate.",
+                period="out_of_sample",
+                split_name=split.get("split_name", ""),
+            )
+        )
+    return rows
+
+
+def benchmark_relative_rows(
+    created_at: str,
+    target_full: dict[str, Any],
+    summary_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    rows = []
+    for comparison_strategy in COMPARISON_STRATEGIES:
+        reference = find_row(summary_rows, comparison_strategy)
+        if not reference:
+            rows.append(
+                diagnostic_row(
+                    created_at,
+                    "benchmark_relative",
+                    "missing_comparison_row",
+                    "availability",
+                    "",
+                    "",
+                    "",
+                    "insufficient_data",
+                    "warning",
+                    f"Missing comparison strategy row: {comparison_strategy}.",
+                    "Benchmark-relative diagnostics need the saved lab summary row.",
+                    "Run `python bot.py --strategy-improvement-lab`.",
+                    comparison_strategy=comparison_strategy,
+                )
+            )
+            continue
+        for metric in ["cagr_pct", "sharpe_ratio", "calmar_ratio", "max_drawdown_pct", "average_cash_weight_pct"]:
+            target_value = as_float(target_full.get(metric))
+            reference_value = as_float(reference.get(metric))
+            rows.append(
+                diagnostic_row(
+                    created_at,
+                    "benchmark_relative",
+                    f"vs_{comparison_strategy}",
+                    metric,
+                    target_value,
+                    reference_value,
+                    target_value - reference_value,
+                    benchmark_status(comparison_strategy, metric, target_value, reference_value),
+                    "info",
+                    f"{TARGET_STRATEGY} {metric}={target_value}; {comparison_strategy} {metric}={reference_value}.",
+                    benchmark_interpretation(comparison_strategy, metric, target_value, reference_value),
+                    "Use benchmark gaps to refine the next fixed hypothesis; do not treat them as order instructions.",
+                    comparison_strategy=comparison_strategy,
+                )
+            )
+    return rows
+
+
+def cost_sensitivity_rows(
+    created_at: str,
+    target_cost_rows: list[dict[str, Any]],
+    all_cost_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    rows = []
+    for cost_row in sorted(target_cost_rows, key=lambda row: row.get("cost_label", "")):
+        cost_label = cost_row.get("cost_label", "")
+        same_cost = [row for row in all_cost_rows if row.get("cost_label") == cost_label and not is_benchmark(row)]
+        best = max(same_cost, key=lambda row: as_float(row.get("cost_adjusted_calmar_ratio")), default=None)
+        rank = rank_for_strategy(same_cost, TARGET_STRATEGY, "cost_adjusted_calmar_ratio")
+        remains_best = bool(best and best.get("strategy_name") == TARGET_STRATEGY)
+        rows.append(
+            diagnostic_row(
+                created_at,
+                "cost_sensitivity",
+                f"{cost_label}_ranking",
+                "cost_adjusted_calmar_ratio",
+                as_float(cost_row.get("cost_adjusted_calmar_ratio")),
+                as_float(best.get("cost_adjusted_calmar_ratio")) if best else "",
+                rank,
+                "cost_resilient" if remains_best else "cost_rank_changed",
+                "warning" if not remains_best and cost_label == "high_cost" else "info",
+                (
+                    f"{cost_label}: target cost-adjusted Calmar={cost_row.get('cost_adjusted_calmar_ratio')}; "
+                    f"rank={rank}; best active={best.get('strategy_name') if best else 'unavailable'}."
+                ),
+                "Cost stress is a turnover-burden diagnostic, not a live cost model.",
+                "If high-cost rank drops, consider a future fixed turnover threshold hypothesis.",
+                comparison_strategy=best.get("strategy_name") if best else "",
+            )
+        )
+    worst = min(target_cost_rows, key=lambda row: as_float(row.get("cost_adjusted_calmar_ratio")), default=None)
+    if worst:
+        rows.append(
+            diagnostic_row(
+                created_at,
+                "cost_sensitivity",
+                "worst_cost_scenario",
+                "cost_adjusted_calmar_ratio",
+                as_float(worst.get("cost_adjusted_calmar_ratio")),
+                as_float(worst.get("calmar_ratio")),
+                as_float(worst.get("cost_adjusted_calmar_ratio")) - as_float(worst.get("calmar_ratio")),
+                "cost_burden_review",
+                "info",
+                f"Worst fixed cost scenario is {worst.get('cost_label')}.",
+                "Cost burden explains split sensitivity only if rank or adjusted Calmar decays materially.",
+                "Use fixed cost diagnostics before any future promotion discussion.",
+            )
+        )
+    return rows
+
+
+def drawdown_rows(
+    created_at: str,
+    target_full: dict[str, Any],
+    drawdown_row: dict[str, Any] | None,
+    equity_rows: list[dict[str, Any]],
+    all_drawdown_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    rows = []
+    reference = find_row(all_drawdown_rows, ACTIVE_REFERENCE)
+    target_dd = as_float(target_full.get("max_drawdown_pct"))
+    reference_dd = as_float(reference.get("max_drawdown_pct")) if reference else 0.0
+    recovery_days = recovery_duration_days(equity_rows, drawdown_row)
+    rows.append(
+        diagnostic_row(
+            created_at,
+            "drawdown_behavior",
+            "worst_drawdown_window",
+            "max_drawdown_pct",
+            target_dd,
+            reference_dd,
+            target_dd - reference_dd,
+            drawdown_status(target_full, reference),
+            "warning" if target_dd < reference_dd - 5 else "info",
+            (
+                f"Worst drawdown {drawdown_row.get('worst_drawdown_pct') if drawdown_row else target_dd}% "
+                f"from {drawdown_row.get('worst_drawdown_start') if drawdown_row else ''} "
+                f"to {drawdown_row.get('worst_drawdown_end') if drawdown_row else ''}; recovery_days={recovery_days}."
+            ),
+            drawdown_interpretation(target_full, reference),
+            "If drawdown is concentrated in one crisis/rebound period, test re-entry refinement later.",
+        )
+    )
+    return rows
+
+
+def cash_drag_rows(
+    created_at: str,
+    target_full: dict[str, Any],
+    summary_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    reference = find_row(summary_rows, ACTIVE_REFERENCE)
+    target_cash = as_float(target_full.get("average_cash_weight_pct"))
+    reference_cash = as_float(reference.get("average_cash_weight_pct")) if reference else 0.0
+    delta = target_cash - reference_cash
+    return [
+        diagnostic_row(
+            created_at,
+            "cash_drag",
+            "cash_drag_vs_rotation_reference",
+            "average_cash_weight_pct",
+            target_cash,
+            reference_cash,
+            delta,
+            "cash_drag_reduced" if delta < 0 else "cash_drag_not_reduced",
+            "info",
+            f"Target average cash={target_cash}%; rotation reference average cash={reference_cash}%.",
+            "Lower cash likely explains part of the stronger CAGR, while increasing participation during drawdowns.",
+            "Consider only precise future refinements that preserve reduced cash drag.",
+            comparison_strategy=ACTIVE_REFERENCE,
+        )
+    ]
+
+
+def candidate_status_rows(
+    created_at: str,
+    target_full: dict[str, Any],
+    comparison_rows: list[dict[str, Any]],
+    robustness_rows: list[dict[str, Any]],
+    cost_rows: list[dict[str, Any]],
+    drawdown_row: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    target_comparison = find_row(comparison_rows, TARGET_STRATEGY)
+    active_rows = [row for row in comparison_rows if not is_benchmark(row)]
+    best_calmar = max(active_rows, key=lambda row: as_float(row.get("calmar_ratio")), default=None)
+    active_lead = bool(best_calmar and best_calmar.get("strategy_name") == TARGET_STRATEGY)
+    split_sensitive = parse_bool(target_comparison.get("split_sensitive")) if target_comparison else split_sensitive_from_rows(robustness_rows)
+    cost_sensitive = parse_bool(target_comparison.get("cost_sensitive")) if target_comparison else any(parse_bool(row.get("cost_sensitive")) for row in cost_rows)
+    cagr_delta = as_float(target_full.get("cagr_delta_vs_benchmark"))
+    calmar_delta = as_float(target_full.get("calmar_delta_vs_benchmark"))
+    dd_delta = as_float(target_full.get("max_drawdown_delta_vs_benchmark"))
+
+    statuses = []
+    if active_lead and split_sensitive:
+        statuses.append("promising_but_split_sensitive")
+    if active_lead:
+        statuses.append("benchmark_lagging_but_active_leader")
+    if cagr_delta > 0 and calmar_delta > 0 and dd_delta > -5:
+        statuses.append("return_improved_drawdown_acceptable")
+    if cost_sensitive:
+        statuses.append("cost_sensitive_candidate")
+    if dd_delta < -5:
+        statuses.append("drawdown_heavy_candidate")
+    cash_delta = as_float(target_comparison.get("cash_drag_delta_vs_benchmark")) if target_comparison else 0.0
+    if cash_delta < 0:
+        statuses.append("cash_drag_reduced")
+    if not statuses:
+        statuses.append("insufficient_data")
+
+    return [
+        diagnostic_row(
+            created_at,
+            "candidate_status",
+            status,
+            "status",
+            status,
+            "",
+            "",
+            status,
+            "warning" if status in {"promising_but_split_sensitive", "cost_sensitive_candidate", "drawdown_heavy_candidate"} else "info",
+            status_evidence(status, target_full, target_comparison, drawdown_row),
+            status_interpretation(status),
+            "Use the diagnostic statuses to choose one fixed next hypothesis; do not add random tuning.",
+        )
+        for status in statuses
+    ]
+
+
+def next_hypothesis_rows(created_at: str) -> list[dict[str, Any]]:
+    hypotheses = [
+        (
+            "growth_biased_rotation_reentry_filter",
+            "Refine crash-gate re-entry after weak/bear-market splits using fixed breadth recovery criteria.",
+        ),
+        (
+            "growth_biased_rotation_partial_defensive_sleeve",
+            "Keep growth-biased selection but add a small fixed defensive sleeve only in weak-breadth regimes.",
+        ),
+        (
+            "growth_biased_rotation_cost_aware_rebalance",
+            "Skip tiny rebalance changes with a fixed turnover threshold to reduce cost sensitivity.",
+        ),
+        (
+            "growth_biased_rotation_split_stability_check",
+            "Require fixed split diagnostics before any future promotion discussion.",
+        ),
+    ]
+    return [
+        diagnostic_row(
+            created_at,
+            "next_fixed_hypothesis",
+            name,
+            "future_research_suggestion",
+            name,
+            "",
+            "",
+            "suggestion_only",
+            "info",
+            description,
+            "This is a future fixed-hypothesis suggestion, not an implemented strategy.",
+            "Do not implement until diagnostics are reviewed manually.",
+        )
+        for name, description in hypotheses
+    ]
+
+
+def build_insufficient_rows(created_at: str, missing: list[str]) -> list[dict[str, Any]]:
+    return [
+        diagnostic_row(
+            created_at,
+            "input_readiness",
+            "missing_or_empty_saved_input",
+            "missing_input",
+            missing_item,
+            "",
+            "",
+            "insufficient_data",
+            "warning",
+            f"Missing or empty prerequisite: {missing_item}.",
+            "Diagnostics read saved CSVs only and do not refresh market data.",
+            "Run `python bot.py --strategy-improvement-lab` and `python bot.py --strategy-improvement-robustness` first.",
+        )
+        for missing_item in missing
+    ]
+
+
+def diagnostic_row(
+    created_at: str,
+    diagnostic_type: str,
+    diagnostic_name: str,
+    metric_name: str,
+    metric_value: Any,
+    reference_value: Any,
+    metric_delta: Any,
+    status: str,
+    severity: str,
+    evidence: str,
+    interpretation: str,
+    recommended_next_step: str,
+    period: str = "full_period",
+    split_name: str = "",
+    comparison_strategy: str = "",
+    strategy_name: str = TARGET_STRATEGY,
+) -> dict[str, Any]:
+    return {
+        "created_at": created_at,
+        "strategy_name": strategy_name,
+        "diagnostic_type": diagnostic_type,
+        "diagnostic_name": diagnostic_name,
+        "period": period,
+        "split_name": split_name,
+        "comparison_strategy": comparison_strategy,
+        "metric_name": metric_name,
+        "metric_value": metric_value,
+        "reference_value": reference_value,
+        "metric_delta": metric_delta,
+        "status": status,
+        "severity": severity,
+        "evidence": evidence,
+        "interpretation": interpretation,
+        "recommended_next_step": recommended_next_step,
+        "research_only": True,
+        "preview_only": True,
+        "execution_approved": False,
+        "paper_execution_approved": False,
+    }
+
+
+def worst_split_row(rows: list[dict[str, Any]], metric: str) -> dict[str, Any] | None:
+    if not rows:
+        return None
+    if metric == "max_drawdown_pct":
+        return min(rows, key=lambda row: as_float(row.get(metric)))
+    return min(rows, key=lambda row: as_float(row.get(metric)))
+
+
+def status_for_split_metric(metric: str, delta: float) -> str:
+    if metric == "max_drawdown_pct":
+        return "drawdown_worse_in_split" if delta < 0 else "drawdown_not_worse_in_split"
+    return "split_decay" if delta < 0 else "split_holds_up"
+
+
+def split_interpretation(metric: str, delta: float) -> str:
+    if delta < 0 and metric != "max_drawdown_pct":
+        return "This split is weaker than the full-period profile and contributes to the split-sensitive label."
+    if metric == "max_drawdown_pct" and delta < 0:
+        return "This split has a deeper drawdown than the full-period metric."
+    return "This split does not appear worse than the full-period metric for this measure."
+
+
+def benchmark_status(strategy: str, metric: str, target: float, reference: float) -> str:
+    if metric == "max_drawdown_pct":
+        return "target_better" if target > reference else "target_worse"
+    if metric == "average_cash_weight_pct":
+        return "target_lower_cash" if target < reference else "target_higher_cash"
+    return "target_leads" if target > reference else "target_trails"
+
+
+def benchmark_interpretation(strategy: str, metric: str, target: float, reference: float) -> str:
+    if strategy == "spy_buy_and_hold_benchmark" and metric in {"cagr_pct", "sharpe_ratio", "calmar_ratio"} and target < reference:
+        return "The candidate trails SPY on this benchmark metric, but that alone is not a research rejection."
+    if strategy == ACTIVE_REFERENCE and target > reference and metric in {"cagr_pct", "sharpe_ratio", "calmar_ratio"}:
+        return "The candidate improves versus the active ETF rotation reference on this metric."
+    if metric == "average_cash_weight_pct" and target < reference:
+        return "Lower cash drag likely contributes to stronger growth."
+    return "Use this gap as context for the next fixed research hypothesis."
+
+
+def drawdown_status(row: dict[str, Any], reference: dict[str, Any] | None) -> str:
+    if not reference:
+        return "drawdown_reference_missing"
+    cagr_delta = as_float(row.get("cagr_delta_vs_benchmark"))
+    dd_delta = as_float(row.get("max_drawdown_delta_vs_benchmark"))
+    if cagr_delta > 0 and dd_delta > -5:
+        return "return_improved_drawdown_acceptable"
+    if cagr_delta > 0 and dd_delta <= -5:
+        return "promising_but_drawdown_heavy"
+    return "drawdown_not_compensated"
+
+
+def drawdown_interpretation(row: dict[str, Any], reference: dict[str, Any] | None) -> str:
+    status = drawdown_status(row, reference)
+    if status == "return_improved_drawdown_acceptable":
+        return "Drawdown is not the lowest, but appears acceptable relative to improved active-reference return."
+    if status == "promising_but_drawdown_heavy":
+        return "The return improvement may come with a drawdown penalty that needs targeted refinement."
+    return "Drawdown does not clearly justify the return tradeoff from saved metrics."
+
+
+def recovery_duration_days(equity_rows: list[dict[str, Any]], drawdown_row: dict[str, Any] | None) -> int | str:
+    if not drawdown_row:
+        return ""
+    start = drawdown_row.get("worst_drawdown_start", "")
+    end = drawdown_row.get("worst_drawdown_end", "")
+    if not start or not end:
+        return ""
+    peak_equity = None
+    recovery_date = ""
+    for row in equity_rows:
+        if row.get("date") == start:
+            peak_equity = as_float(row.get("equity"))
+        if peak_equity is not None and row.get("date", "") >= end and as_float(row.get("equity")) >= peak_equity:
+            recovery_date = row.get("date", "")
+            break
+    if not recovery_date:
+        return "not_recovered_in_saved_curve"
+    return business_day_distance(end, recovery_date, equity_rows)
+
+
+def business_day_distance(start: str, end: str, rows: list[dict[str, Any]]) -> int:
+    dates = [row.get("date", "") for row in rows]
+    try:
+        return max(0, dates.index(end) - dates.index(start))
+    except ValueError:
+        return 0
+
+
+def split_sensitive_from_rows(rows: list[dict[str, Any]]) -> bool:
+    promising = [
+        row
+        for row in rows
+        if as_float(row.get("cagr_delta_vs_benchmark")) > 0 and as_float(row.get("calmar_delta_vs_benchmark")) > 0
+    ]
+    return len(promising) <= 1
+
+
+def status_evidence(
+    status: str,
+    target_full: dict[str, Any],
+    target_comparison: dict[str, Any] | None,
+    drawdown_row: dict[str, Any] | None,
+) -> str:
+    if status == "benchmark_lagging_but_active_leader":
+        return f"Comparison label={target_comparison.get('comparison_label') if target_comparison else ''}; trails_spy={target_comparison.get('trails_spy_buy_and_hold') if target_comparison else ''}."
+    if status == "cash_drag_reduced":
+        return f"Average cash={target_full.get('average_cash_weight_pct')}%; cash delta vs rotation={target_comparison.get('cash_drag_delta_vs_benchmark') if target_comparison else target_full.get('cash_drag_delta_vs_benchmark')}."
+    if status == "drawdown_heavy_candidate":
+        return f"Max drawdown={target_full.get('max_drawdown_pct')}%; worst window={drawdown_row.get('worst_drawdown_start') if drawdown_row else ''} to {drawdown_row.get('worst_drawdown_end') if drawdown_row else ''}."
+    return (
+        f"CAGR delta={target_full.get('cagr_delta_vs_benchmark')}; "
+        f"Sharpe delta={target_full.get('sharpe_delta_vs_benchmark')}; "
+        f"Calmar delta={target_full.get('calmar_delta_vs_benchmark')}."
+    )
+
+
+def status_interpretation(status: str) -> str:
+    interpretations = {
+        "promising_but_split_sensitive": "Split-sensitive means promising but not stable enough for promotion; it does not mean automatically discard.",
+        "benchmark_lagging_but_active_leader": "The major issue may be SPY benchmark lag rather than active-strategy underperformance.",
+        "return_improved_drawdown_acceptable": "The active-reference improvement appears meaningful without an obviously unacceptable drawdown penalty.",
+        "cost_sensitive_candidate": "Cost burden may matter and should be checked before future promotion.",
+        "drawdown_heavy_candidate": "Drawdown needs focused refinement, not random tuning.",
+        "cash_drag_reduced": "Lower cash drag is a useful research feature to preserve.",
+        "insufficient_data": "Saved inputs are insufficient for this diagnostic.",
+    }
+    return interpretations.get(status, "Research-only diagnostic status.")
+
+
+def rank_for_strategy(rows: list[dict[str, Any]], strategy_name: str, metric: str) -> int | str:
+    ranked = sorted(rows, key=lambda row: as_float(row.get(metric)), reverse=True)
+    for index, row in enumerate(ranked, start=1):
+        if row.get("strategy_name") == strategy_name:
+            return index
+    return ""
+
+
+def is_benchmark(row: dict[str, Any]) -> bool:
+    return str(row.get("strategy_name", "")).endswith("_benchmark")
+
+
+def find_row(rows: list[dict[str, Any]], strategy_name: str) -> dict[str, Any] | None:
+    for row in rows:
+        if row.get("strategy_name") == strategy_name and row.get("period", "full_period") == "full_period":
+            return row
+    for row in rows:
+        if row.get("strategy_name") == strategy_name:
+            return row
+    return None
+
+
+def as_float(value: Any) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def parse_bool(value: Any) -> bool:
+    return str(value).strip().lower() in {"true", "1", "yes"}
+
+
+def read_csv(path: Path) -> list[dict[str, Any]]:
+    try:
+        with path.open(newline="", encoding="utf-8") as handle:
+            return list(csv.DictReader(handle))
+    except FileNotFoundError:
+        return []
+
+
+def write_rows(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=DIAGNOSTIC_COLUMNS, extrasaction="ignore")
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+
+def build_summary_lines(rows: list[dict[str, Any]], diagnostics_path: Path, growth_path: Path) -> list[str]:
+    statuses = [row["status"] for row in rows if row["diagnostic_type"] == "candidate_status"]
+    worst_split = next((row for row in rows if row["diagnostic_name"] == "worst_split_by_calmar_ratio"), None)
+    cost_warning = any(row["status"] in {"cost_rank_changed", "cost_sensitive_candidate"} for row in rows)
+    drawdown = next((row for row in rows if row["diagnostic_type"] == "drawdown_behavior"), None)
+    cash = next((row for row in rows if row["diagnostic_type"] == "cash_drag"), None)
+    hypotheses = [row["diagnostic_name"] for row in rows if row["diagnostic_type"] == "next_fixed_hypothesis"]
+    lines = [
+        "Strategy improvement diagnostics complete. Research/preview only; execution_approved=False.",
+        f"Main statuses: {', '.join(statuses) if statuses else 'insufficient_data'}",
+    ]
+    if worst_split:
+        lines.append(f"Worst Calmar split: {worst_split['split_name']} ({worst_split['evidence']})")
+    if drawdown:
+        lines.append(f"Drawdown: {drawdown['status']} ({drawdown['evidence']})")
+    if cash:
+        lines.append(f"Cash drag: {cash['status']} ({cash['evidence']})")
+    lines.append(f"Cost sensitivity matters: {cost_warning}")
+    if hypotheses:
+        lines.append("Next fixed hypotheses: " + ", ".join(hypotheses))
+    lines.append(f"Saved diagnostics to {diagnostics_path}")
+    lines.append(f"Saved growth-biased diagnostics to {growth_path}")
+    lines.append("Warning: diagnostics are research guidance only and do not approve orders.")
+    return lines
+
+
+def show_strategy_improvement_diagnostics_file(
+    growth_path: Path | str = OUTPUT_FILES["growth"],
+) -> tuple[int, list[str]]:
+    path = Path(growth_path)
+    if not path.exists():
+        return 1, ["Run `python bot.py --strategy-improvement-diagnostics` first."]
+    rows = read_csv(path)
+    if not rows:
+        return 1, [f"No rows found in {path}. Run `python bot.py --strategy-improvement-diagnostics` first."]
+
+    statuses = [row["status"] for row in rows if row["diagnostic_type"] == "candidate_status"]
+    worst_split = next((row for row in rows if row["diagnostic_name"] == "worst_split_by_calmar_ratio"), None)
+    cost_warning = any(row["status"] in {"cost_rank_changed", "cost_sensitive_candidate"} for row in rows)
+    drawdown = next((row for row in rows if row["diagnostic_type"] == "drawdown_behavior"), None)
+    cash = next((row for row in rows if row["diagnostic_type"] == "cash_drag"), None)
+    active_lead = any(row["status"] == "benchmark_lagging_but_active_leader" for row in rows)
+    hypotheses = [row["diagnostic_name"] for row in rows if row["diagnostic_type"] == "next_fixed_hypothesis"]
+    lines = [
+        "Growth-biased strategy diagnostics. Display only; execution_approved=False.",
+        f"Main diagnostic status: {', '.join(statuses) if statuses else 'insufficient_data'}",
+    ]
+    if worst_split:
+        lines.append(f"Worst split: {worst_split['split_name']} - {worst_split['interpretation']}")
+    lines.append(f"Cost sensitivity matters: {cost_warning}")
+    if drawdown:
+        lines.append(f"Drawdown: {drawdown['status']} - {drawdown['interpretation']}")
+    if cash:
+        lines.append(f"Cash drag: {cash['status']} - {cash['interpretation']}")
+    lines.append(f"Remains active research lead: {active_lead}")
+    if hypotheses:
+        lines.append("Recommended next fixed hypotheses: " + ", ".join(hypotheses[:4]))
+    lines.append("Warning: saved diagnostics do not approve orders or paper execution.")
+    return 0, lines
