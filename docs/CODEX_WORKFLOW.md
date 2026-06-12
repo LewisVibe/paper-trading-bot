@@ -197,6 +197,14 @@ drawdown-period review, cost stress, benchmark comparison, and
 The checkpoint can support future preview-candidate discussion only; it must
 not approve execution, paper execution, promoted execution, scheduling, or cron.
 
+Use `python bot.py --growth-biased-stricter-promotion-readiness` after the
+saved stricter-gate validation exists when the question is what still blocks
+future preview-candidate discussion. It reads saved outputs only and writes
+benchmark, split, cost, drawdown, saved-output, and final preview-readiness
+blocker rows. `python bot.py --show-growth-biased-stricter-promotion-readiness`
+is saved-display only. The report does not approve preview promotion,
+execution, paper execution, scheduling, or strategy-to-order wiring.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

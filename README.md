@@ -1020,6 +1020,27 @@ data/growth_biased_stricter_benchmark_comparison.csv
 data/growth_biased_stricter_promotion_checkpoint.csv
 ```
 
+Growth-biased stricter promotion-readiness mode reads saved validation and strategy-improvement outputs only and explains what still blocks the current active research lead from moving into future preview-candidate discussion. It writes a readiness summary and blocker rows for benchmark, split/robustness, cost, drawdown, saved-output freshness, and final preview-readiness status. This is a blocker report only: it does not approve execution, paper execution, preview promotion, scheduling, cron, order instructions, or strategy-to-execution wiring.
+
+Command:
+
+```text
+python bot.py --growth-biased-stricter-promotion-readiness
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-growth-biased-stricter-promotion-readiness
+```
+
+Outputs:
+
+```text
+data/growth_biased_stricter_promotion_readiness.csv
+data/growth_biased_stricter_promotion_blockers.csv
+```
+
 Adaptive momentum backtest mode is research-only. It ranks risk ETFs by fixed multi-horizon momentum with a volatility penalty, uses SPY as the risk regime filter, and rotates to defensive ETFs when the regime is weak. It saves only research CSV files and is not connected to Alpaca execution. `data/adaptive_momentum_results.csv` includes `full_period`, `in_sample`, and `out_of_sample` portfolio rows using the same simple chronological 70% / 30% reporting split as ETF rotation so the walk-forward report can pair the strategy.
 
 Outputs:
