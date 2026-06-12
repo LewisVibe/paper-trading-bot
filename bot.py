@@ -169,6 +169,10 @@ from trading_bot.research.growth_biased_stricter_threshold_neighbourhood import 
     generate_growth_biased_stricter_threshold_neighbourhood,
     show_growth_biased_stricter_threshold_neighbourhood_file,
 )
+from trading_bot.research.growth_biased_stricter_cost_turnover_stress import (
+    generate_growth_biased_stricter_cost_turnover_stress,
+    show_growth_biased_stricter_cost_turnover_stress_file,
+)
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
     run_build_etf_breadth_price_history_command,
@@ -4006,6 +4010,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved stricter-gate threshold neighbourhood report without refreshing data.",
     )
     parser.add_argument(
+        "--growth-biased-stricter-cost-turnover-stress",
+        action="store_true",
+        help="Create a saved-output turnover and cost stress report for the stricter 55%% breadth-gate cluster.",
+    )
+    parser.add_argument(
+        "--show-growth-biased-stricter-cost-turnover-stress",
+        action="store_true",
+        help="Display the saved stricter-gate turnover and cost stress report without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-research-preview",
         action="store_true",
         help="Create a research-only crypto scaffold preview without execution.",
@@ -4418,6 +4432,20 @@ def main() -> int:
         return 0
     if args.show_growth_biased_stricter_threshold_neighbourhood:
         status_code, lines = show_growth_biased_stricter_threshold_neighbourhood_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.growth_biased_stricter_cost_turnover_stress:
+        try:
+            result = generate_growth_biased_stricter_cost_turnover_stress()
+        except Exception as exc:
+            print(f"Growth-biased stricter cost/turnover stress failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_growth_biased_stricter_cost_turnover_stress:
+        status_code, lines = show_growth_biased_stricter_cost_turnover_stress_file()
         for line in lines:
             print(line)
         return status_code

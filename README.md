@@ -1083,6 +1083,27 @@ data/growth_biased_stricter_threshold_neighbourhood.csv
 data/growth_biased_stricter_threshold_neighbourhood_summary.csv
 ```
 
+Growth-biased stricter cost/turnover stress mode reads the saved threshold-neighbourhood output and stress-tests the current 55% stricter-gate cluster against fixed one-way cost assumptions of 0, 5, 10, 25, 50, and 100 bps. It applies a simple explicit research mapping of `turnover * one_way_cost_bps / 100` to CAGR, derives cost-adjusted Sharpe and Calmar, and compares the result with the original crash-gate baseline and SPY gap from the saved neighbourhood report. This is research/report-only manual review support; it does not approve preview promotion automatically and does not approve execution.
+
+Command:
+
+```text
+python bot.py --growth-biased-stricter-cost-turnover-stress
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-growth-biased-stricter-cost-turnover-stress
+```
+
+Outputs:
+
+```text
+data/growth_biased_stricter_cost_turnover_stress.csv
+data/growth_biased_stricter_cost_turnover_stress_summary.csv
+```
+
 Adaptive momentum backtest mode is research-only. It ranks risk ETFs by fixed multi-horizon momentum with a volatility penalty, uses SPY as the risk regime filter, and rotates to defensive ETFs when the regime is weak. It saves only research CSV files and is not connected to Alpaca execution. `data/adaptive_momentum_results.csv` includes `full_period`, `in_sample`, and `out_of_sample` portfolio rows using the same simple chronological 70% / 30% reporting split as ETF rotation so the walk-forward report can pair the strategy.
 
 Outputs:
