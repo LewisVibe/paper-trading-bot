@@ -125,6 +125,10 @@ from trading_bot.research.expanded_crypto_strategy_lab import (
     generate_expanded_crypto_strategy_lab,
     show_expanded_crypto_strategy_lab_file,
 )
+from trading_bot.research.expanded_crypto_robustness_report import (
+    generate_expanded_crypto_robustness_report,
+    show_expanded_crypto_robustness_report_file,
+)
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
 from trading_bot.research.crypto_robustness import generate_crypto_robustness_report
@@ -4109,6 +4113,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved expanded crypto strategy lab without refreshing data.",
     )
     parser.add_argument(
+        "--expanded-crypto-robustness-report",
+        action="store_true",
+        help="Create a research-only expanded crypto robustness and equal-weight reality-check report.",
+    )
+    parser.add_argument(
+        "--show-expanded-crypto-robustness-report",
+        action="store_true",
+        help="Display the saved expanded crypto robustness report without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-strategy-lab",
         action="store_true",
         help="Run a research-only crypto strategy lab with daily yfinance-compatible history.",
@@ -4619,6 +4633,20 @@ def main() -> int:
         return 0
     if args.show_expanded_crypto_strategy_lab:
         status_code, lines = show_expanded_crypto_strategy_lab_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.expanded_crypto_robustness_report:
+        try:
+            result = generate_expanded_crypto_robustness_report()
+        except Exception as exc:
+            print(f"Expanded crypto robustness report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_expanded_crypto_robustness_report:
+        status_code, lines = show_expanded_crypto_robustness_report_file()
         for line in lines:
             print(line)
         return status_code

@@ -68,6 +68,8 @@ REQUIRED_COMMANDS = [
     "--show-crypto-universe-readiness-report",
     "--expanded-crypto-strategy-lab",
     "--show-expanded-crypto-strategy-lab",
+    "--expanded-crypto-robustness-report",
+    "--show-expanded-crypto-robustness-report",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",
     "--crypto-strategy-decision-report",
