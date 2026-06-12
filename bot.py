@@ -177,6 +177,10 @@ from trading_bot.research.growth_biased_stricter_persistence_filter import (
     generate_growth_biased_stricter_persistence_filter,
     show_growth_biased_stricter_persistence_filter_file,
 )
+from trading_bot.research.codex_ambitious_validation import (
+    generate_codex_ambitious_validation,
+    show_codex_ambitious_validation_file,
+)
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
     run_build_etf_breadth_price_history_command,
@@ -4034,6 +4038,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved stricter-gate persistence-filter report without refreshing data.",
     )
     parser.add_argument(
+        "--codex-ambitious-validation",
+        action="store_true",
+        help="Create a saved-output validation checkpoint for the Codex ambitious persistence candidate.",
+    )
+    parser.add_argument(
+        "--show-codex-ambitious-validation",
+        action="store_true",
+        help="Display the saved Codex ambitious validation checkpoint without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-research-preview",
         action="store_true",
         help="Create a research-only crypto scaffold preview without execution.",
@@ -4474,6 +4488,20 @@ def main() -> int:
         return 0
     if args.show_growth_biased_stricter_persistence_filter:
         status_code, lines = show_growth_biased_stricter_persistence_filter_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.codex_ambitious_validation:
+        try:
+            result = generate_codex_ambitious_validation()
+        except Exception as exc:
+            print(f"Codex ambitious validation failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_codex_ambitious_validation:
+        status_code, lines = show_codex_ambitious_validation_file()
         for line in lines:
             print(line)
         return status_code

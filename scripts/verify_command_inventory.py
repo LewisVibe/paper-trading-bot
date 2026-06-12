@@ -57,6 +57,8 @@ REQUIRED_COMMANDS = [
     "--show-growth-biased-stricter-cost-turnover-stress",
     "--growth-biased-stricter-persistence-filter",
     "--show-growth-biased-stricter-persistence-filter",
+    "--codex-ambitious-validation",
+    "--show-codex-ambitious-validation",
     "--crypto-research-preview",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",

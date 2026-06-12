@@ -1125,6 +1125,30 @@ data/growth_biased_stricter_persistence_filter.csv
 data/growth_biased_stricter_persistence_filter_summary.csv
 ```
 
+Codex ambitious validation mode reads saved persistence-filter outputs only and creates a focused validation checkpoint for `codex_ambitious_concentrated_growth_persistence`. It writes summary, split, cost, and drawdown validation CSVs to help decide whether the candidate should become the new active research lead. Missing split or drawdown-window data is reported conservatively rather than inferred. This is research/report-only and does not approve preview promotion or execution.
+
+Command:
+
+```text
+python bot.py --codex-ambitious-validation
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-codex-ambitious-validation
+```
+
+Outputs:
+
+```text
+data/codex_ambitious_validation.csv
+data/codex_ambitious_validation_summary.csv
+data/codex_ambitious_validation_splits.csv
+data/codex_ambitious_validation_costs.csv
+data/codex_ambitious_validation_drawdowns.csv
+```
+
 Adaptive momentum backtest mode is research-only. It ranks risk ETFs by fixed multi-horizon momentum with a volatility penalty, uses SPY as the risk regime filter, and rotates to defensive ETFs when the regime is weak. It saves only research CSV files and is not connected to Alpaca execution. `data/adaptive_momentum_results.csv` includes `full_period`, `in_sample`, and `out_of_sample` portfolio rows using the same simple chronological 70% / 30% reporting split as ETF rotation so the walk-forward report can pair the strategy.
 
 Outputs:
