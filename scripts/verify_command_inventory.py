@@ -59,6 +59,8 @@ REQUIRED_COMMANDS = [
     "--show-growth-biased-stricter-persistence-filter",
     "--codex-ambitious-validation",
     "--show-codex-ambitious-validation",
+    "--codex-ambitious-split-drawdown-validation",
+    "--show-codex-ambitious-split-drawdown-validation",
     "--crypto-research-preview",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",

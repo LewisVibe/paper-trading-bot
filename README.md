@@ -1149,6 +1149,29 @@ data/codex_ambitious_validation_costs.csv
 data/codex_ambitious_validation_drawdowns.csv
 ```
 
+Codex ambitious split/drawdown validation mode runs the focused fixed-split and drawdown-window checkpoint for `codex_ambitious_concentrated_growth_persistence`. It evaluates `split_60_40`, `split_70_30`, and `split_80_20` out-of-sample windows, computes the worst drawdown start/trough/recovery where market data is available, compares the drawdown window with SPY and the stricter-gate lead, and writes a lead-change checkpoint. This is a research label only; it does not approve preview promotion or execution.
+
+Command:
+
+```text
+python bot.py --codex-ambitious-split-drawdown-validation
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-codex-ambitious-split-drawdown-validation
+```
+
+Outputs:
+
+```text
+data/codex_ambitious_split_drawdown_validation.csv
+data/codex_ambitious_split_validation.csv
+data/codex_ambitious_drawdown_windows.csv
+data/codex_ambitious_lead_change_checkpoint.csv
+```
+
 Adaptive momentum backtest mode is research-only. It ranks risk ETFs by fixed multi-horizon momentum with a volatility penalty, uses SPY as the risk regime filter, and rotates to defensive ETFs when the regime is weak. It saves only research CSV files and is not connected to Alpaca execution. `data/adaptive_momentum_results.csv` includes `full_period`, `in_sample`, and `out_of_sample` portfolio rows using the same simple chronological 70% / 30% reporting split as ETF rotation so the walk-forward report can pair the strategy.
 
 Outputs:
