@@ -29,6 +29,10 @@ FIXED_VARIANTS = [
     "growth_biased_rotation_crash_gate",
     "growth_biased_rotation_cost_aware_rebalance",
     "growth_biased_rotation_partial_defensive_sleeve",
+    "growth_biased_rotation_reentry_filter",
+    "growth_biased_rotation_regime_recovery_filter",
+    "growth_biased_rotation_breadth_looser_gate",
+    "growth_biased_rotation_breadth_stricter_gate",
     "factor_style_rotation_absolute_gate",
     "sector_52_week_high_continuation",
     "adaptive_multi_sleeve_growth_allocator",
@@ -136,9 +140,17 @@ def verify_module_static_contract(module_source: str, failures: list[str]) -> No
         "PARTIAL_DEFENSIVE_MIXED_RISK_WEIGHT = 0.75",
         "PARTIAL_DEFENSIVE_WEAK_RISK_WEIGHT = 0.50",
         "PARTIAL_DEFENSIVE_STRESS_DEFENSIVE_WEIGHT = 0.85",
+        "REENTRY_CONFIRMATION_BREADTH = 0.50",
+        "RECOVERY_PARTIAL_RISK_WEIGHT = 0.65",
+        "RECOVERY_MIN_BREADTH = 0.30",
+        "BREADTH_LOOSER_GATE = 0.45",
+        "BREADTH_STRICTER_GATE = 0.55",
         "def growth_biased_weights(",
         "def growth_biased_cost_aware_weights(",
         "def growth_biased_partial_defensive_weights(",
+        "def growth_biased_reentry_filter_weights(",
+        "def growth_biased_regime_recovery_weights(",
+        "def growth_biased_breadth_gate_weights(",
     ]
     for token in required_tokens:
         if token not in module_source:

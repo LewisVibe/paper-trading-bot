@@ -25,6 +25,10 @@ OUTPUTS = [
 NEW_VARIANTS = [
     "growth_biased_rotation_cost_aware_rebalance",
     "growth_biased_rotation_partial_defensive_sleeve",
+    "growth_biased_rotation_reentry_filter",
+    "growth_biased_rotation_regime_recovery_filter",
+    "growth_biased_rotation_breadth_looser_gate",
+    "growth_biased_rotation_breadth_stricter_gate",
     "factor_style_rotation_absolute_gate",
     "sector_52_week_high_continuation",
     "adaptive_multi_sleeve_growth_allocator",
@@ -163,6 +167,11 @@ def verify_robustness_contract(robustness_source: str, failures: list[str]) -> N
         "GROWTH_BIASED_ORIGINAL = \"growth_biased_rotation_crash_gate\"",
         "COST_AWARE_REFINEMENT = \"growth_biased_rotation_cost_aware_rebalance\"",
         "PARTIAL_DEFENSIVE_REFINEMENT = \"growth_biased_rotation_partial_defensive_sleeve\"",
+        "GROWTH_BIASED_REFINEMENTS",
+        "growth_biased_rotation_reentry_filter",
+        "growth_biased_rotation_regime_recovery_filter",
+        "growth_biased_rotation_breadth_looser_gate",
+        "growth_biased_rotation_breadth_stricter_gate",
         "format_growth_biased_comparison_line",
     ]:
         if token not in robustness_source:

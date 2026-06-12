@@ -167,18 +167,28 @@ next fixed-hypothesis ideas without adding another strategy. Use
 layer. Diagnostics are guidance for a later fixed research task, not tuning,
 promotion, scheduling, or execution approval.
 
-The first narrow refinement is `growth_biased_rotation_cost_aware_rebalance`.
+The first tested narrow refinement is `growth_biased_rotation_cost_aware_rebalance`.
 It must preserve `growth_biased_rotation_crash_gate` unchanged and use the fixed
 rebalance threshold documented in code. Judge it directly against the original
 growth-biased strategy for turnover, cost sensitivity, split sensitivity, and
-return drag before considering any further variant.
+return drag. When diagnostics label it `cost_refinement_return_drag`, keep it
+as tested/rejected research history rather than a next recommendation.
 
-The next narrow refinement is `growth_biased_rotation_partial_defensive_sleeve`.
+The second tested narrow refinement is `growth_biased_rotation_partial_defensive_sleeve`.
 It must preserve `growth_biased_rotation_crash_gate` unchanged, use fixed
 defensive-sleeve allocations only when breadth/regime weakens, and be judged
 against the original growth-biased strategy, the cost-aware refinement, monthly
 ETF rotation, and SPY. It is research-only and must not change scheduling,
-execution, or strategy-to-order wiring.
+execution, or strategy-to-order wiring. When diagnostics label it
+`defensive_sleeve_return_drag`, keep it as tested/rejected research history.
+
+The remaining fixed batch tested `growth_biased_rotation_reentry_filter`,
+`growth_biased_rotation_regime_recovery_filter`, and fixed 45%/55% breadth-gate
+reviews. `growth_biased_rotation_breadth_stricter_gate` is now the active
+research lead, with `growth_biased_rotation_crash_gate` retained as the previous
+baseline. Next work should validate the stricter gate with split, cost-stress,
+drawdown-period, and promotion-checkpoint reports. Do not add random variants,
+ML, intraday logic, scheduling, execution, or strategy-to-order wiring.
 
 ## MCP Feasibility Boundary
 

@@ -38,6 +38,11 @@ PARTIAL_DEFENSIVE_WEAK_BREADTH = 0.30
 PARTIAL_DEFENSIVE_MIXED_RISK_WEIGHT = 0.75
 PARTIAL_DEFENSIVE_WEAK_RISK_WEIGHT = 0.50
 PARTIAL_DEFENSIVE_STRESS_DEFENSIVE_WEIGHT = 0.85
+REENTRY_CONFIRMATION_BREADTH = 0.50
+RECOVERY_PARTIAL_RISK_WEIGHT = 0.65
+RECOVERY_MIN_BREADTH = 0.30
+BREADTH_LOOSER_GATE = 0.45
+BREADTH_STRICTER_GATE = 0.55
 
 RISK_ETFS = [
     "SPY",
@@ -81,6 +86,10 @@ STRATEGY_NAMES = [
     "growth_biased_rotation_crash_gate",
     "growth_biased_rotation_cost_aware_rebalance",
     "growth_biased_rotation_partial_defensive_sleeve",
+    "growth_biased_rotation_reentry_filter",
+    "growth_biased_rotation_regime_recovery_filter",
+    "growth_biased_rotation_breadth_looser_gate",
+    "growth_biased_rotation_breadth_stricter_gate",
     "factor_style_rotation_absolute_gate",
     "sector_52_week_high_continuation",
     "adaptive_multi_sleeve_growth_allocator",
@@ -433,6 +442,14 @@ def target_weights_for_strategy(
         return growth_biased_cost_aware_weights(history, current_weights)
     if strategy_name == "growth_biased_rotation_partial_defensive_sleeve":
         return growth_biased_partial_defensive_weights(history, current_weights)
+    if strategy_name == "growth_biased_rotation_reentry_filter":
+        return growth_biased_reentry_filter_weights(history, current_weights)
+    if strategy_name == "growth_biased_rotation_regime_recovery_filter":
+        return growth_biased_regime_recovery_weights(history, current_weights)
+    if strategy_name == "growth_biased_rotation_breadth_looser_gate":
+        return growth_biased_breadth_gate_weights(history, current_weights, BREADTH_LOOSER_GATE, "looser")
+    if strategy_name == "growth_biased_rotation_breadth_stricter_gate":
+        return growth_biased_breadth_gate_weights(history, current_weights, BREADTH_STRICTER_GATE, "stricter")
     if strategy_name == "factor_style_rotation_absolute_gate":
         return factor_style_rotation_weights(history)
     if strategy_name == "sector_52_week_high_continuation":
@@ -597,6 +614,81 @@ def growth_biased_partial_defensive_weights(
     if defensive:
         return defensive, f"Weak regime breadth {breadth:.2f}; defensive sleeve only.", "partial_defensive_weak_defensive"
     return {}, f"Weak regime breadth {breadth:.2f}; no eligible risk or defensive trend, holding cash.", "partial_defensive_weak_cash"
+
+
+def growth_biased_reentry_filter_weights(
+    history: dict[str, list[float]],
+    current_weights: dict[str, float],
+) -> tuple[dict[str, float], str, str]:
+    base_weights, base_reason, regime = growth_biased_weights(history, current_weights)
+    breadth = breadth_ratio(history)
+    spy_healthy = is_above_sma(history["SPY"], TREND_WINDOW_DAYS)
+    current_risk_weight = sum(weight for ticker, weight in current_weights.items() if ticker in RISK_EXPOSURE_ETFS)
+    restoring_from_weak_posture = current_risk_weight < 0.80 and regime == "growth_risk_on"
+    if restoring_from_weak_posture and not (spy_healthy or breadth >= REENTRY_CONFIRMATION_BREADTH):
+        ranked = rank_by_momentum(RISK_ETFS, history, MOMENTUM_LOOKBACK_DAYS)
+        eligible = [ticker for ticker in ranked if is_above_sma(history[ticker], TREND_WINDOW_DAYS)]
+        held = [ticker for ticker in current_weights if ticker in eligible][:TOP_N]
+        if held:
+            return equal_weights(held), f"Re-entry filter: breadth {breadth:.2f} below {REENTRY_CONFIRMATION_BREADTH:.0%}; holding eligible prior risk names.", "reentry_hold_prior"
+        defensive = defensive_sleeve_weights(history)
+        if defensive:
+            return defensive, f"Re-entry filter: breadth {breadth:.2f} below confirmation; staying defensive until SPY or breadth confirms.", "reentry_defensive"
+        return {}, f"Re-entry filter: breadth {breadth:.2f} below confirmation; holding cash.", "reentry_cash"
+    return base_weights, base_reason + " Re-entry confirmation satisfied or not required.", "reentry_" + regime
+
+
+def growth_biased_regime_recovery_weights(
+    history: dict[str, list[float]],
+    current_weights: dict[str, float],
+) -> tuple[dict[str, float], str, str]:
+    breadth = breadth_ratio(history)
+    spy_healthy = is_above_sma(history["SPY"], TREND_WINDOW_DAYS)
+    spy_momentum_63 = momentum(history["SPY"], 63)
+    spy_momentum_126 = momentum(history["SPY"], MOMENTUM_LOOKBACK_DAYS)
+    ranked = rank_by_momentum(RISK_ETFS, history, MOMENTUM_LOOKBACK_DAYS)
+    eligible = [ticker for ticker in ranked if is_above_sma(history[ticker], TREND_WINDOW_DAYS)]
+    recovery_state = (
+        not spy_healthy
+        and breadth >= RECOVERY_MIN_BREADTH
+        and (spy_momentum_63 > 0 or spy_momentum_126 > 0)
+        and bool(eligible)
+    )
+    if recovery_state and breadth < MIXED_BREADTH_THRESHOLD:
+        return (
+            scaled_weights(equal_weights(eligible[:TOP_N]), RECOVERY_PARTIAL_RISK_WEIGHT),
+            f"Recovery filter: SPY below 200-day SMA but 63/126 momentum recovering and breadth {breadth:.2f}; partial risk allocation.",
+            "recovery_partial_risk",
+        )
+    base_weights, base_reason, regime = growth_biased_weights(history, current_weights)
+    return base_weights, base_reason + " Recovery override inactive under fixed 63/126-day momentum rule.", "recovery_" + regime
+
+
+def growth_biased_breadth_gate_weights(
+    history: dict[str, list[float]],
+    current_weights: dict[str, float],
+    breadth_gate: float,
+    gate_label: str,
+) -> tuple[dict[str, float], str, str]:
+    breadth = breadth_ratio(history)
+    spy_healthy = is_above_sma(history["SPY"], TREND_WINDOW_DAYS)
+    ranked = rank_by_momentum(RISK_ETFS, history, MOMENTUM_LOOKBACK_DAYS)
+    eligible = [ticker for ticker in ranked if is_above_sma(history[ticker], TREND_WINDOW_DAYS)]
+    if not spy_healthy and breadth < breadth_gate:
+        held = [ticker for ticker in current_weights if ticker in eligible][:TOP_N]
+        if held:
+            return equal_weights(held), f"Fixed {gate_label} breadth gate {breadth_gate:.0%}; weak SPY and breadth {breadth:.2f}, holding prior eligible risk names.", f"breadth_{gate_label}_hold_only"
+        defensive = defensive_sleeve_weights(history)
+        if defensive:
+            return defensive, f"Fixed {gate_label} breadth gate {breadth_gate:.0%}; no eligible prior risk, defensive sleeve.", f"breadth_{gate_label}_defensive"
+        return {}, f"Fixed {gate_label} breadth gate {breadth_gate:.0%}; weak SPY and breadth {breadth:.2f}, holding cash.", f"breadth_{gate_label}_cash"
+    selections = eligible[:TOP_N]
+    if selections:
+        return equal_weights(selections), f"Fixed {gate_label} breadth gate {breadth_gate:.0%}; growth-biased top 3 above own 200-day SMA.", f"breadth_{gate_label}_risk_on"
+    defensive = defensive_sleeve_weights(history)
+    if defensive:
+        return defensive, f"Fixed {gate_label} breadth gate {breadth_gate:.0%}; no risk ETF above own trend, defensive sleeve.", f"breadth_{gate_label}_defensive_fallback"
+    return {}, f"Fixed {gate_label} breadth gate {breadth_gate:.0%}; no eligible risk or defensive trend, holding cash.", f"breadth_{gate_label}_cash_fallback"
 
 
 def factor_style_rotation_weights(history: dict[str, list[float]]) -> tuple[dict[str, float], str, str]:
@@ -1067,6 +1159,10 @@ def build_iteration_rows(
         "growth_biased_rotation_crash_gate": "Growth-biased own-trend rotation with a crash gate for weak breadth.",
         "growth_biased_rotation_cost_aware_rebalance": "Fixed-threshold cost-aware refinement of the growth-biased crash-gate strategy.",
         "growth_biased_rotation_partial_defensive_sleeve": "Fixed partial defensive-sleeve refinement of the growth-biased crash-gate strategy.",
+        "growth_biased_rotation_reentry_filter": "Fixed re-entry confirmation refinement after weak growth-biased regimes.",
+        "growth_biased_rotation_regime_recovery_filter": "Fixed 63/126-day recovery-state refinement for sharp rebounds.",
+        "growth_biased_rotation_breadth_looser_gate": "Fixed looser 45% breadth gate review for the growth-biased crash gate.",
+        "growth_biased_rotation_breadth_stricter_gate": "Fixed stricter 55% breadth gate review for the growth-biased crash gate.",
         "factor_style_rotation_absolute_gate": "Factor/style ETF rotation using absolute trend gates and reduced weak-market exposure.",
         "sector_52_week_high_continuation": "Sector ETF continuation using fixed momentum plus 252-day-high closeness.",
         "adaptive_multi_sleeve_growth_allocator": "Fixed-rule multi-sleeve allocator blending growth, factor/style, defensive sleeve, breadth, and volatility diagnostics.",
@@ -1085,6 +1181,7 @@ def build_iteration_rows(
                 "allowed_parameter_set": (
                     "monthly rebalance; 126-day momentum; 200-day trend; fixed 252-day high score; fixed breadth thresholds 60/40/30; fixed volatility window 20/252; fixed cost-aware rebalance threshold 5%."
                     " partial defensive sleeve uses fixed 75/25 mixed, 50/50 weak, and 85% stress defensive allocations."
+                    " re-entry confirmation uses fixed 50% breadth; recovery filter uses fixed 63/126-day SPY momentum and 30% breadth; breadth review uses fixed 45% and 55% gates only."
                 ),
                 "reason_for_testing": "Explore growth-aware ETF allocation variants without execution approval.",
                 "result_summary": result_summary_text(result),

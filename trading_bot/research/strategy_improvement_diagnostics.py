@@ -17,6 +17,18 @@ from typing import Any
 TARGET_STRATEGY = "growth_biased_rotation_crash_gate"
 COST_AWARE_STRATEGY = "growth_biased_rotation_cost_aware_rebalance"
 PARTIAL_DEFENSIVE_STRATEGY = "growth_biased_rotation_partial_defensive_sleeve"
+REENTRY_FILTER_STRATEGY = "growth_biased_rotation_reentry_filter"
+RECOVERY_FILTER_STRATEGY = "growth_biased_rotation_regime_recovery_filter"
+BREADTH_LOOSER_STRATEGY = "growth_biased_rotation_breadth_looser_gate"
+BREADTH_STRICTER_STRATEGY = "growth_biased_rotation_breadth_stricter_gate"
+ACTIVE_RESEARCH_LEAD = BREADTH_STRICTER_STRATEGY
+PREVIOUS_RESEARCH_LEAD = TARGET_STRATEGY
+REMAINING_REFINEMENT_STRATEGIES = [
+    REENTRY_FILTER_STRATEGY,
+    RECOVERY_FILTER_STRATEGY,
+    BREADTH_LOOSER_STRATEGY,
+    BREADTH_STRICTER_STRATEGY,
+]
 ACTIVE_REFERENCE = "monthly_etf_momentum_rotation_reference"
 COMPARISON_STRATEGIES = [
     "spy_buy_and_hold_benchmark",
@@ -26,6 +38,10 @@ COMPARISON_STRATEGIES = [
     "adaptive_multi_sleeve_growth_allocator",
     COST_AWARE_STRATEGY,
     PARTIAL_DEFENSIVE_STRATEGY,
+    REENTRY_FILTER_STRATEGY,
+    RECOVERY_FILTER_STRATEGY,
+    BREADTH_LOOSER_STRATEGY,
+    BREADTH_STRICTER_STRATEGY,
 ]
 
 INPUT_FILES = {
@@ -93,7 +109,7 @@ def generate_strategy_improvement_diagnostics(
     growth_rows = [
         row
         for row in rows
-        if row["strategy_name"] in {TARGET_STRATEGY, COST_AWARE_STRATEGY, PARTIAL_DEFENSIVE_STRATEGY}
+        if row["strategy_name"] in {TARGET_STRATEGY, COST_AWARE_STRATEGY, PARTIAL_DEFENSIVE_STRATEGY, *REMAINING_REFINEMENT_STRATEGIES}
     ]
     diagnostics_path = root / OUTPUT_FILES["diagnostics"]
     growth_path = root / OUTPUT_FILES["growth"]
@@ -128,6 +144,8 @@ def build_diagnostic_rows(created_at: str, inputs: dict[str, list[dict[str, Any]
     rows.extend(candidate_status_rows(created_at, target_full, comparison_rows, robustness_rows, cost_rows, drawdown_row))
     rows.extend(cost_refinement_rows(created_at, target_full, inputs))
     rows.extend(defensive_sleeve_refinement_rows(created_at, target_full, inputs))
+    rows.extend(remaining_refinement_rows(created_at, target_full, inputs))
+    rows.extend(split_stability_check_rows(created_at, target_full, inputs))
     rows.extend(next_hypothesis_rows(created_at))
     return rows
 
@@ -362,17 +380,20 @@ def candidate_status_rows(
     cost_rows: list[dict[str, Any]],
     drawdown_row: dict[str, Any] | None,
 ) -> list[dict[str, Any]]:
-    target_comparison = find_row(comparison_rows, TARGET_STRATEGY)
+    lead_full = find_row(comparison_rows, ACTIVE_RESEARCH_LEAD) or target_full
+    target_comparison = find_row(comparison_rows, ACTIVE_RESEARCH_LEAD) or find_row(comparison_rows, TARGET_STRATEGY)
     active_rows = [row for row in comparison_rows if not is_benchmark(row)]
     best_calmar = max(active_rows, key=lambda row: as_float(row.get("calmar_ratio")), default=None)
-    active_lead = bool(best_calmar and best_calmar.get("strategy_name") == TARGET_STRATEGY)
+    active_lead = bool(best_calmar and best_calmar.get("strategy_name") == ACTIVE_RESEARCH_LEAD)
     split_sensitive = parse_bool(target_comparison.get("split_sensitive")) if target_comparison else split_sensitive_from_rows(robustness_rows)
     cost_sensitive = parse_bool(target_comparison.get("cost_sensitive")) if target_comparison else any(parse_bool(row.get("cost_sensitive")) for row in cost_rows)
-    cagr_delta = as_float(target_full.get("cagr_delta_vs_benchmark"))
-    calmar_delta = as_float(target_full.get("calmar_delta_vs_benchmark"))
-    dd_delta = as_float(target_full.get("max_drawdown_delta_vs_benchmark"))
+    cagr_delta = as_float(lead_full.get("cagr_delta_vs_benchmark"))
+    calmar_delta = as_float(lead_full.get("calmar_delta_vs_benchmark"))
+    dd_delta = as_float(lead_full.get("max_drawdown_delta_vs_benchmark"))
 
     statuses = []
+    if active_lead and ACTIVE_RESEARCH_LEAD != PREVIOUS_RESEARCH_LEAD:
+        statuses.append("new_active_research_lead")
     if active_lead and split_sensitive:
         statuses.append("promising_but_split_sensitive")
     if active_lead:
@@ -400,9 +421,10 @@ def candidate_status_rows(
             "",
             status,
             "warning" if status in {"promising_but_split_sensitive", "cost_sensitive_candidate", "drawdown_heavy_candidate"} else "info",
-            status_evidence(status, target_full, target_comparison, drawdown_row),
+            status_evidence(status, lead_full, target_comparison, drawdown_row),
             status_interpretation(status),
             "Use the diagnostic statuses to choose one fixed next hypothesis; do not add random tuning.",
+            strategy_name=ACTIVE_RESEARCH_LEAD,
         )
         for status in statuses
     ]
@@ -530,7 +552,7 @@ def cost_refinement_decision_row(
         if turnover_reduced and not diagnostic_improved:
             interpretation = (
                 "Reduced turnover, but did not improve cost/split sensitivity and sacrificed too much performance. "
-                "Keep original growth_biased_rotation_crash_gate as active research lead."
+                f"Do not displace active research lead {ACTIVE_RESEARCH_LEAD}."
             )
         else:
             interpretation = "The refinement appears to sacrifice too much return or risk-adjusted performance."
@@ -691,7 +713,7 @@ def defensive_sleeve_decision_row(
         interpretation = "The partial defensive sleeve is not useful enough versus the original growth-biased strategy."
 
     if status not in {"defensive_sleeve_promising", "defensive_sleeve_improved_stability"}:
-        interpretation += " Keep original growth_biased_rotation_crash_gate as active research lead."
+        interpretation += f" Do not displace active research lead {ACTIVE_RESEARCH_LEAD}."
     return diagnostic_row(
         created_at,
         "defensive_sleeve_refinement",
@@ -715,23 +737,166 @@ def defensive_sleeve_decision_row(
     )
 
 
+def remaining_refinement_rows(
+    created_at: str,
+    original_full: dict[str, Any],
+    inputs: dict[str, list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    rows = []
+    original_comparison = find_row(inputs["comparison"], TARGET_STRATEGY)
+    for strategy_name in REMAINING_REFINEMENT_STRATEGIES:
+        candidate_full = find_row(inputs["lab_summary"], strategy_name)
+        candidate_comparison = find_row(inputs["comparison"], strategy_name)
+        if not candidate_full:
+            rows.append(
+                diagnostic_row(
+                    created_at,
+                    "remaining_refinement_batch",
+                    f"{strategy_name}_missing",
+                    "status",
+                    "missing",
+                    "",
+                    "",
+                    "insufficient_data",
+                    "warning",
+                    f"{strategy_name} is missing from saved lab summary.",
+                    "The remaining-refinement batch comparison cannot run without the saved strategy row.",
+                    "Run `python bot.py --strategy-improvement-lab` and robustness before reviewing this hypothesis.",
+                    strategy_name=strategy_name,
+                    comparison_strategy=TARGET_STRATEGY,
+                )
+            )
+            continue
+        rows.append(remaining_refinement_decision_row(created_at, original_full, candidate_full, original_comparison, candidate_comparison))
+    return rows
+
+
+def remaining_refinement_decision_row(
+    created_at: str,
+    original_full: dict[str, Any],
+    candidate_full: dict[str, Any],
+    original_comparison: dict[str, Any] | None,
+    candidate_comparison: dict[str, Any] | None,
+) -> dict[str, Any]:
+    strategy_name = str(candidate_full.get("strategy_name"))
+    cagr_delta = as_float(candidate_full.get("cagr_pct")) - as_float(original_full.get("cagr_pct"))
+    sharpe_delta = as_float(candidate_full.get("sharpe_ratio")) - as_float(original_full.get("sharpe_ratio"))
+    calmar_delta = as_float(candidate_full.get("calmar_ratio")) - as_float(original_full.get("calmar_ratio"))
+    max_drawdown_delta = as_float(candidate_full.get("max_drawdown_pct")) - as_float(original_full.get("max_drawdown_pct"))
+    cash_delta = as_float(candidate_full.get("average_cash_weight_pct")) - as_float(original_full.get("average_cash_weight_pct"))
+    turnover_delta = as_float(candidate_full.get("turnover")) - as_float(original_full.get("turnover"))
+    cost_improved = bool_improved(candidate_comparison.get("cost_sensitive") if candidate_comparison else False, original_comparison.get("cost_sensitive") if original_comparison else False)
+    split_improved = bool_improved(candidate_comparison.get("split_sensitive") if candidate_comparison else False, original_comparison.get("split_sensitive") if original_comparison else False)
+    risk_adjusted_improved = sharpe_delta > 0.03 or calmar_delta > 0.03
+    excessive_return_drag = cagr_delta <= -1.00 or sharpe_delta <= -0.05 or calmar_delta <= -0.05
+    status_prefix = remaining_refinement_status_prefix(strategy_name)
+
+    if (risk_adjusted_improved or split_improved or cost_improved) and not excessive_return_drag:
+        status = f"{status_prefix}_improved"
+        if strategy_name == ACTIVE_RESEARCH_LEAD:
+            interpretation = (
+                "This fixed refinement is the new active research lead because it improves the previous growth-biased baseline "
+                "without worsening drawdown, cash drag, cost sensitivity, or split sensitivity."
+            )
+        else:
+            interpretation = "This fixed refinement improves risk-adjusted performance, cost sensitivity, or split stability without excessive return drag."
+    elif excessive_return_drag:
+        status = f"{status_prefix}_return_drag"
+        interpretation = "This fixed refinement sacrifices too much CAGR, Sharpe, or Calmar versus the original growth-biased strategy."
+    else:
+        status = f"{status_prefix}_no_material_improvement"
+        interpretation = "This fixed refinement does not materially improve the diagnosed growth-biased weakness."
+
+    if (status.endswith("_return_drag") or status.endswith("_no_material_improvement")) and strategy_name != ACTIVE_RESEARCH_LEAD:
+        interpretation += f" Do not displace active research lead {ACTIVE_RESEARCH_LEAD}."
+    return diagnostic_row(
+        created_at,
+        "remaining_refinement_batch",
+        f"{strategy_name}_decision",
+        "status",
+        status,
+        "",
+        "",
+        status,
+        "warning" if status.endswith("_return_drag") else "info",
+        (
+            f"CAGR delta={round(cagr_delta, 4)}, Sharpe delta={round(sharpe_delta, 4)}, "
+            f"Calmar delta={round(calmar_delta, 4)}, MaxDD delta={round(max_drawdown_delta, 4)}, "
+            f"cash delta={round(cash_delta, 4)}, turnover delta={round(turnover_delta, 4)}, "
+            f"cost_improved={cost_improved}, split_improved={split_improved}."
+        ),
+        interpretation,
+        "Keep this research-only; do not connect the refinement to execution or scheduling.",
+        strategy_name=strategy_name,
+        comparison_strategy=TARGET_STRATEGY,
+    )
+
+
+def split_stability_check_rows(
+    created_at: str,
+    original_full: dict[str, Any],
+    inputs: dict[str, list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    original_comparison = find_row(inputs["comparison"], TARGET_STRATEGY)
+    candidate_rows = [
+        row
+        for row in inputs["comparison"]
+        if row.get("strategy_name") in REMAINING_REFINEMENT_STRATEGIES
+    ]
+    improved = []
+    for row in candidate_rows:
+        cagr_delta = as_float(row.get("cagr_delta_vs_growth_biased"))
+        sharpe_delta = as_float(row.get("sharpe_delta_vs_growth_biased"))
+        calmar_delta = as_float(row.get("calmar_delta_vs_growth_biased"))
+        excessive_return_drag = cagr_delta <= -1.00 or sharpe_delta <= -0.05 or calmar_delta <= -0.05
+        if bool_improved(row.get("split_sensitive"), original_comparison.get("split_sensitive") if original_comparison else False) and not excessive_return_drag:
+            improved.append(str(row.get("strategy_name")))
+    status = "split_stability_improved" if improved else "split_stability_no_material_improvement"
+    return [
+        diagnostic_row(
+            created_at,
+            "split_stability_check",
+            "growth_biased_rotation_split_stability_check",
+            "status",
+            status,
+            "",
+            "",
+            status,
+            "info",
+            f"Variants improving split sensitivity without excessive return drag: {', '.join(improved) if improved else 'none'}.",
+            "The split-stability checkpoint is a diagnostic layer, not a separate trading strategy.",
+            "Keep original growth-biased strategy unless a fixed refinement improves stability without excess drag.",
+            strategy_name=TARGET_STRATEGY,
+            comparison_strategy="remaining_growth_biased_refinement_batch",
+        )
+    ]
+
+
+def remaining_refinement_status_prefix(strategy_name: str) -> str:
+    if strategy_name == REENTRY_FILTER_STRATEGY:
+        return "reentry_filter"
+    if strategy_name == RECOVERY_FILTER_STRATEGY:
+        return "recovery_filter"
+    return "breadth_threshold"
+
+
 def next_hypothesis_rows(created_at: str) -> list[dict[str, Any]]:
     hypotheses = [
         (
-            "growth_biased_rotation_reentry_filter",
-            "Refine crash-gate re-entry after weak/bear-market splits using fixed breadth recovery criteria.",
+            "growth_biased_rotation_breadth_stricter_split_validation",
+            "Validate the stricter breadth-gate lead across fixed chronological splits before any promotion discussion.",
         ),
         (
-            "growth_biased_rotation_split_stability_check",
-            "Require fixed split diagnostics before any future promotion discussion.",
+            "growth_biased_rotation_breadth_stricter_cost_stress_review",
+            "Review fixed low/default/high cost stress for the stricter breadth-gate lead.",
         ),
         (
-            "growth_biased_rotation_regime_recovery_filter",
-            "Test a fixed re-risking rule after crash-gate periods to reduce weak-split decay without adding a defensive sleeve.",
+            "growth_biased_rotation_breadth_stricter_drawdown_period_review",
+            "Review drawdown windows and recovery duration for the stricter breadth-gate lead.",
         ),
         (
-            "growth_biased_rotation_breadth_threshold_review",
-            "Review fixed crash-gate breadth thresholds for split stability without optimizing parameters.",
+            "growth_biased_rotation_breadth_stricter_promotion_checkpoint",
+            "Run a research-only promotion checkpoint for the stricter breadth-gate lead without execution approval.",
         ),
     ]
     return [
@@ -989,6 +1154,7 @@ def status_evidence(
 def status_interpretation(status: str) -> str:
     interpretations = {
         "promising_but_split_sensitive": "Split-sensitive means promising but not stable enough for promotion; it does not mean automatically discard.",
+        "new_active_research_lead": "The stricter breadth gate is now the active research lead versus the previous growth-biased baseline; this is still research-only.",
         "benchmark_lagging_but_active_leader": "The major issue may be SPY benchmark lag rather than active-strategy underperformance.",
         "return_improved_drawdown_acceptable": "The active-reference improvement appears meaningful without an obviously unacceptable drawdown penalty.",
         "cost_sensitive_candidate": "Cost burden may matter and should be checked before future promotion.",
@@ -999,6 +1165,17 @@ def status_interpretation(status: str) -> str:
         "defensive_sleeve_no_material_improvement": "The partial defensive sleeve did not materially improve the diagnosed weakness.",
         "defensive_sleeve_promising": "The partial defensive sleeve may be promising if manual review confirms stability gains without excess drag.",
         "defensive_sleeve_not_useful": "The partial defensive sleeve is not useful enough versus the original growth-biased strategy.",
+        "reentry_filter_improved": "The fixed re-entry filter improved a key diagnostic without excessive drag.",
+        "reentry_filter_return_drag": "The fixed re-entry filter sacrificed too much performance versus the original growth-biased strategy.",
+        "reentry_filter_no_material_improvement": "The fixed re-entry filter did not materially improve the diagnosed weakness.",
+        "recovery_filter_improved": "The fixed recovery filter improved a key diagnostic without excessive drag.",
+        "recovery_filter_return_drag": "The fixed recovery filter sacrificed too much performance versus the original growth-biased strategy.",
+        "recovery_filter_no_material_improvement": "The fixed recovery filter did not materially improve the diagnosed weakness.",
+        "breadth_threshold_improved": "The fixed breadth-threshold review improved a key diagnostic without excessive drag.",
+        "breadth_threshold_return_drag": "The fixed breadth-threshold review sacrificed too much performance versus the original growth-biased strategy.",
+        "breadth_threshold_no_material_improvement": "The fixed breadth-threshold review did not materially improve the diagnosed weakness.",
+        "split_stability_improved": "At least one fixed refinement improved split stability without excessive return drag.",
+        "split_stability_no_material_improvement": "No fixed refinement materially improved split stability without excessive return drag.",
         "insufficient_data": "Saved inputs are insufficient for this diagnostic.",
     }
     return interpretations.get(status, "Research-only diagnostic status.")
@@ -1063,8 +1240,12 @@ def build_summary_lines(rows: list[dict[str, Any]], diagnostics_path: Path, grow
     hypotheses = [row["diagnostic_name"] for row in rows if row["diagnostic_type"] == "next_fixed_hypothesis"]
     refinement = next((row for row in rows if row["diagnostic_name"] == "cost_aware_refinement_decision"), None)
     defensive_refinement = next((row for row in rows if row["diagnostic_name"] == "partial_defensive_sleeve_decision"), None)
+    remaining_refinements = [row for row in rows if row["diagnostic_type"] == "remaining_refinement_batch" and row["diagnostic_name"].endswith("_decision")]
+    split_stability = next((row for row in rows if row["diagnostic_name"] == "growth_biased_rotation_split_stability_check"), None)
     lines = [
         "Strategy improvement diagnostics complete. Research/preview only; execution_approved=False.",
+        f"Active research lead: {ACTIVE_RESEARCH_LEAD}",
+        f"Previous growth-biased baseline: {PREVIOUS_RESEARCH_LEAD}",
         f"Main statuses: {', '.join(statuses) if statuses else 'insufficient_data'}",
     ]
     if worst_split:
@@ -1080,6 +1261,10 @@ def build_summary_lines(rows: list[dict[str, Any]], diagnostics_path: Path, grow
         lines.append(f"Cost-aware refinement decision: {refinement['status']} ({refinement['evidence']})")
     if defensive_refinement:
         lines.append(f"Partial defensive sleeve decision: {defensive_refinement['status']} ({defensive_refinement['evidence']})")
+    for row in remaining_refinements:
+        lines.append(f"{row['strategy_name']} decision: {row['status']} ({row['evidence']})")
+    if split_stability:
+        lines.append(f"Split stability check: {split_stability['status']} ({split_stability['evidence']})")
     lines.append(f"Saved diagnostics to {diagnostics_path}")
     lines.append(f"Saved growth-biased diagnostics to {growth_path}")
     lines.append("Warning: diagnostics are research guidance only and do not approve orders.")
@@ -1101,12 +1286,16 @@ def show_strategy_improvement_diagnostics_file(
     cost_warning = any(row["status"] in {"cost_rank_changed", "cost_sensitive_candidate"} for row in rows)
     drawdown = next((row for row in rows if row["diagnostic_type"] == "drawdown_behavior"), None)
     cash = next((row for row in rows if row["diagnostic_type"] == "cash_drag"), None)
-    active_lead = any(row["status"] == "benchmark_lagging_but_active_leader" for row in rows)
+    active_lead = any(row["status"] == "new_active_research_lead" for row in rows)
     hypotheses = [row["diagnostic_name"] for row in rows if row["diagnostic_type"] == "next_fixed_hypothesis"]
     refinement = next((row for row in rows if row["diagnostic_name"] == "cost_aware_refinement_decision"), None)
     defensive_refinement = next((row for row in rows if row["diagnostic_name"] == "partial_defensive_sleeve_decision"), None)
+    remaining_refinements = [row for row in rows if row["diagnostic_type"] == "remaining_refinement_batch" and row["diagnostic_name"].endswith("_decision")]
+    split_stability = next((row for row in rows if row["diagnostic_name"] == "growth_biased_rotation_split_stability_check"), None)
     lines = [
         "Growth-biased strategy diagnostics. Display only; execution_approved=False.",
+        f"Active research lead: {ACTIVE_RESEARCH_LEAD}",
+        f"Previous growth-biased baseline: {PREVIOUS_RESEARCH_LEAD}",
         f"Main diagnostic status: {', '.join(statuses) if statuses else 'insufficient_data'}",
     ]
     if worst_split:
@@ -1116,11 +1305,15 @@ def show_strategy_improvement_diagnostics_file(
         lines.append(f"Drawdown: {drawdown['status']} - {drawdown['interpretation']}")
     if cash:
         lines.append(f"Cash drag: {cash['status']} - {cash['interpretation']}")
-    lines.append(f"Remains active research lead: {active_lead}")
+    lines.append(f"Stricter breadth gate is active research lead: {active_lead}")
     if refinement:
         lines.append(f"Cost-aware refinement: {refinement['status']} - {refinement['interpretation']}")
     if defensive_refinement:
         lines.append(f"Partial defensive sleeve: {defensive_refinement['status']} - {defensive_refinement['interpretation']}")
+    for row in remaining_refinements:
+        lines.append(f"{row['strategy_name']}: {row['status']} - {row['interpretation']}")
+    if split_stability:
+        lines.append(f"Split stability check: {split_stability['status']} - {split_stability['interpretation']}")
     if hypotheses:
         lines.append("Recommended next fixed hypotheses: " + ", ".join(hypotheses[:4]))
     lines.append("Warning: saved diagnostics do not approve orders or paper execution.")

@@ -40,18 +40,23 @@ DIAGNOSTIC_TOPICS = [
     "next_fixed_hypothesis",
     "cost_refinement",
     "defensive_sleeve_refinement",
+    "remaining_refinement_batch",
+    "split_stability_check",
 ]
 
 NEXT_HYPOTHESES = [
-    "growth_biased_rotation_reentry_filter",
-    "growth_biased_rotation_split_stability_check",
-    "growth_biased_rotation_regime_recovery_filter",
-    "growth_biased_rotation_breadth_threshold_review",
+    "growth_biased_rotation_breadth_stricter_split_validation",
+    "growth_biased_rotation_breadth_stricter_cost_stress_review",
+    "growth_biased_rotation_breadth_stricter_drawdown_period_review",
+    "growth_biased_rotation_breadth_stricter_promotion_checkpoint",
 ]
 
 TESTED_REJECTED_REFINEMENTS = [
     "growth_biased_rotation_cost_aware_rebalance",
     "growth_biased_rotation_partial_defensive_sleeve",
+    "growth_biased_rotation_reentry_filter",
+    "growth_biased_rotation_regime_recovery_filter",
+    "growth_biased_rotation_breadth_threshold_review",
 ]
 
 COST_REFINEMENT_STATUSES = [
@@ -68,6 +73,21 @@ DEFENSIVE_SLEEVE_STATUSES = [
     "defensive_sleeve_no_material_improvement",
     "defensive_sleeve_promising",
     "defensive_sleeve_not_useful",
+]
+
+REMAINING_REFINEMENT_STATUSES = [
+    "reentry_filter_improved",
+    "reentry_filter_return_drag",
+    "reentry_filter_no_material_improvement",
+    "recovery_filter_improved",
+    "recovery_filter_return_drag",
+    "recovery_filter_no_material_improvement",
+    "breadth_threshold_improved",
+    "breadth_threshold_return_drag",
+    "breadth_threshold_no_material_improvement",
+    "new_active_research_lead",
+    "split_stability_improved",
+    "split_stability_no_material_improvement",
 ]
 
 FORBIDDEN_TOKENS = [
@@ -169,10 +189,20 @@ def verify_module_contract(module_source: str, failures: list[str]) -> None:
     for status in DEFENSIVE_SLEEVE_STATUSES:
         if status not in module_source:
             failures.append(f"missing defensive sleeve diagnostic status: {status}")
+    for status in REMAINING_REFINEMENT_STATUSES:
+        if status not in module_source:
+            failures.append(f"missing remaining refinement diagnostic status: {status}")
     for strategy_name in [
         "growth_biased_rotation_crash_gate",
         "growth_biased_rotation_cost_aware_rebalance",
         "growth_biased_rotation_partial_defensive_sleeve",
+        "growth_biased_rotation_reentry_filter",
+        "growth_biased_rotation_regime_recovery_filter",
+        "growth_biased_rotation_breadth_looser_gate",
+        "growth_biased_rotation_breadth_stricter_gate",
+        "growth_biased_rotation_split_stability_check",
+        "ACTIVE_RESEARCH_LEAD = BREADTH_STRICTER_STRATEGY",
+        "PREVIOUS_RESEARCH_LEAD = TARGET_STRATEGY",
     ]:
         if strategy_name not in module_source:
             failures.append(f"missing direct growth-biased comparison strategy: {strategy_name}")
@@ -185,7 +215,8 @@ def verify_module_contract(module_source: str, failures: list[str]) -> None:
         "excessive_return_drag",
         "Sharpe delta",
         "partial_defensive_sleeve_decision",
-        "Keep original growth_biased_rotation_crash_gate as active research lead.",
+        "new active research lead",
+        "Previous growth-biased baseline",
         "suggestion_only",
         "This is a future fixed-hypothesis suggestion, not an implemented strategy.",
     ]:
