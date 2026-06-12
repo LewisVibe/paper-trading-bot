@@ -130,6 +130,10 @@ CSV contents. A possible promoted-review refresh cron remains a future
 manual-review item documented in
 `docs/HERMES_PROMOTED_REVIEW_REFRESH_CRON_DESIGN.md`; do not create or trigger it
 during routine documentation or verifier work.
+The older `docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md` file is a legacy pointer
+only. Use `docs/HERMES_CRON_MONITORING_RUNBOOK.md` and
+`python scripts\verify_hermes_cron_monitoring_runbook.py` when interpreting
+Telegram/status output from the existing status cron.
 
 ## MCP Feasibility Boundary
 

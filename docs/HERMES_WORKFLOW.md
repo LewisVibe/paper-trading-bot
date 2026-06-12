@@ -262,6 +262,17 @@ any separate manual scheduling review. If promoted review reports strategy
 disagreement, no-action states, or blocked review states, those are monitoring
 results, not execution approval.
 
+`docs/HERMES_PROMOTED_REVIEW_REFRESH_CRON_DESIGN.md` is the canonical
+future-only design for the possible second cron job.
+`docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md` is kept only as a legacy pointer.
+
+Use `docs/HERMES_CRON_MONITORING_RUNBOOK.md` to interpret Telegram output from
+`paper-bot-vps-status-check`. It covers `healthy_monitoring_state`,
+`monitoring_warning`, `monitoring_stale_or_missing_inputs`, and failed-step
+responses, and it preserves `execution_approved=false` and
+`scheduling_approved=false`. Verify it with
+`python scripts\verify_hermes_cron_monitoring_runbook.py`.
+
 Refresh jobs should remain protected by lockfile/no-overlap. The current
 lock-wrapped overlap-risk commands are `--monitor-lockfile-readiness-report`,
 `--refresh-promoted-review`, and `--refresh-defensive-research`. A stale lock

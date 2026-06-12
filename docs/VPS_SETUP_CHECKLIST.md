@@ -164,6 +164,14 @@ second job is documented in
 `docs/HERMES_PROMOTED_REVIEW_REFRESH_CRON_DESIGN.md`; verify the design with
 `python scripts\verify_hermes_promoted_review_refresh_cron_design.py` before any
 separate manual scheduling review.
+`docs/HERMES_PROMOTED_REVIEW_REFRESH_CRON_DESIGN.md` is canonical;
+`docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md` is a legacy pointer only.
+
+Use `docs/HERMES_CRON_MONITORING_RUNBOOK.md` to interpret Telegram output from
+`paper-bot-vps-status-check`. It covers `healthy_monitoring_state`,
+`monitoring_warning`, `monitoring_stale_or_missing_inputs`, and failed-step
+responses without approving execution or creating a second cron. Verify it with
+`python scripts\verify_hermes_cron_monitoring_runbook.py`.
 
 Prerequisites before any scheduling review:
 

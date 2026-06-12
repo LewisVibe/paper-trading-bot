@@ -649,6 +649,15 @@ No refresh cron job is currently created. A future promoted review refresh cron
 requires a separate manual review; see
 `docs/HERMES_PROMOTED_REVIEW_REFRESH_CRON_DESIGN.md` and verify the design with
 `python scripts\verify_hermes_promoted_review_refresh_cron_design.py`.
+The older `docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md` file is a legacy pointer
+to the canonical refresh-specific design.
+
+For interpreting Telegram output from `paper-bot-vps-status-check`, use
+`docs/HERMES_CRON_MONITORING_RUNBOOK.md` and verify it with
+`python scripts\verify_hermes_cron_monitoring_runbook.py`. The runbook covers
+`healthy_monitoring_state`, `monitoring_warning`,
+`monitoring_stale_or_missing_inputs`, and failed-step responses without
+approving execution or creating a second cron.
 
 Create a research-only portfolio risk policy audit before any future execution discussion:
 

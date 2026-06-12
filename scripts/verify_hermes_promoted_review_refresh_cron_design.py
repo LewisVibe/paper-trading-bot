@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DESIGN_PATH = ROOT / "docs" / "HERMES_PROMOTED_REVIEW_REFRESH_CRON_DESIGN.md"
+LEGACY_POINTER_PATH = ROOT / "docs" / "HERMES_PROMOTED_REVIEW_CRON_DESIGN.md"
 DOC_PATHS = [
     ROOT / "README.md",
     ROOT / "docs" / "CURRENT_STATE.md",
@@ -110,6 +111,7 @@ def build_checks() -> list[CheckResult]:
     return [
         design_exists_check(design_text),
         design_required_phrases_check(design_text),
+        legacy_pointer_check(),
         current_status_cron_documented_check(docs_text),
         lock_wrapped_set_check(set(LOCK_WRAPPED_COMMAND_NAMES)),
         no_scheduler_artifacts_check(all_text),
@@ -129,6 +131,24 @@ def design_required_phrases_check(text: str) -> CheckResult:
     missing = [phrase for phrase in DESIGN_PHRASES if normalize_text(phrase) not in normalized]
     return CheckResult(
         "future_only_design_requirements_documented",
+        "pass" if not missing else "error",
+        "missing=" + (", ".join(missing) if missing else "none"),
+    )
+
+
+def legacy_pointer_check() -> CheckResult:
+    text = read_text(LEGACY_POINTER_PATH)
+    required = [
+        "legacy pointer only",
+        "docs/HERMES_PROMOTED_REVIEW_REFRESH_CRON_DESIGN.md",
+        "python scripts\\verify_hermes_promoted_review_refresh_cron_design.py",
+        "does not approve scheduling",
+        "does not approve scheduling, execution, orders, paper execution, live trading, or any cron changes",
+    ]
+    normalized = normalize_text(text)
+    missing = [phrase for phrase in required if normalize_text(phrase) not in normalized]
+    return CheckResult(
+        "legacy_promoted_review_cron_doc_points_to_canonical",
         "pass" if not missing else "error",
         "missing=" + (", ".join(missing) if missing else "none"),
     )
