@@ -23,6 +23,7 @@ OUTPUTS = [
 ]
 
 NEW_VARIANTS = [
+    "growth_biased_rotation_cost_aware_rebalance",
     "factor_style_rotation_absolute_gate",
     "sector_52_week_high_continuation",
     "adaptive_multi_sleeve_growth_allocator",
@@ -40,6 +41,9 @@ COMPARISON_LABELS = [
     "defensive_but_return_drag",
     "split_sensitive",
     "cost_sensitive",
+    "cagr_delta_vs_growth_biased",
+    "turnover_delta_vs_growth_biased",
+    "cost_sensitivity_delta_vs_growth_biased",
     "not_useful",
     "insufficient_data",
 ]
@@ -154,6 +158,9 @@ def verify_robustness_contract(robustness_source: str, failures: list[str]) -> N
         "research_only",
         "preview_only",
         "Warning: robustness labels are research labels only",
+        "GROWTH_BIASED_ORIGINAL = \"growth_biased_rotation_crash_gate\"",
+        "COST_AWARE_REFINEMENT = \"growth_biased_rotation_cost_aware_rebalance\"",
+        "format_growth_biased_comparison_line",
     ]:
         if token not in robustness_source:
             failures.append(f"missing research-only safety token: {token}")

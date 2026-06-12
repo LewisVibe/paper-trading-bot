@@ -15,6 +15,7 @@ from typing import Any
 
 
 TARGET_STRATEGY = "growth_biased_rotation_crash_gate"
+COST_AWARE_STRATEGY = "growth_biased_rotation_cost_aware_rebalance"
 ACTIVE_REFERENCE = "monthly_etf_momentum_rotation_reference"
 COMPARISON_STRATEGIES = [
     "spy_buy_and_hold_benchmark",
@@ -22,6 +23,7 @@ COMPARISON_STRATEGIES = [
     ACTIVE_REFERENCE,
     "breadth_aware_risk_on_rotation",
     "adaptive_multi_sleeve_growth_allocator",
+    COST_AWARE_STRATEGY,
 ]
 
 INPUT_FILES = {
@@ -86,7 +88,7 @@ def generate_strategy_improvement_diagnostics(
     else:
         rows = build_diagnostic_rows(created_at, inputs)
 
-    growth_rows = [row for row in rows if row["strategy_name"] == TARGET_STRATEGY]
+    growth_rows = [row for row in rows if row["strategy_name"] in {TARGET_STRATEGY, COST_AWARE_STRATEGY}]
     diagnostics_path = root / OUTPUT_FILES["diagnostics"]
     growth_path = root / OUTPUT_FILES["growth"]
     write_rows(diagnostics_path, rows)
@@ -118,6 +120,7 @@ def build_diagnostic_rows(created_at: str, inputs: dict[str, list[dict[str, Any]
     rows.extend(drawdown_rows(created_at, target_full, drawdown_row, equity_rows, inputs["drawdown"]))
     rows.extend(cash_drag_rows(created_at, target_full, inputs["lab_summary"]))
     rows.extend(candidate_status_rows(created_at, target_full, comparison_rows, robustness_rows, cost_rows, drawdown_row))
+    rows.extend(cost_refinement_rows(created_at, target_full, inputs))
     rows.extend(next_hypothesis_rows(created_at))
     return rows
 
@@ -398,6 +401,161 @@ def candidate_status_rows(
     ]
 
 
+def cost_refinement_rows(
+    created_at: str,
+    original_full: dict[str, Any],
+    inputs: dict[str, list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    cost_full = find_row(inputs["lab_summary"], COST_AWARE_STRATEGY)
+    if not cost_full:
+        return [
+            diagnostic_row(
+                created_at,
+                "cost_refinement",
+                "cost_aware_variant_missing",
+                "availability",
+                "",
+                "",
+                "",
+                "insufficient_data",
+                "warning",
+                f"{COST_AWARE_STRATEGY} is missing from saved lab summary.",
+                "The direct refinement comparison cannot run without the saved cost-aware row.",
+                "Run `python bot.py --strategy-improvement-lab` after adding the cost-aware variant.",
+                strategy_name=COST_AWARE_STRATEGY,
+                comparison_strategy=TARGET_STRATEGY,
+            )
+        ]
+
+    original_comparison = find_row(inputs["comparison"], TARGET_STRATEGY)
+    cost_comparison = find_row(inputs["comparison"], COST_AWARE_STRATEGY)
+    rows = []
+    for metric in ["cagr_pct", "sharpe_ratio", "calmar_ratio", "max_drawdown_pct", "average_cash_weight_pct", "trade_count", "turnover"]:
+        cost_value = as_float(cost_full.get(metric))
+        original_value = as_float(original_full.get(metric))
+        rows.append(
+            diagnostic_row(
+                created_at,
+                "cost_refinement",
+                f"cost_aware_vs_original_{metric}",
+                metric,
+                cost_value,
+                original_value,
+                cost_value - original_value,
+                cost_refinement_metric_status(metric, cost_value, original_value),
+                "info",
+                f"{COST_AWARE_STRATEGY} {metric}={cost_value}; {TARGET_STRATEGY} {metric}={original_value}.",
+                cost_refinement_metric_interpretation(metric, cost_value, original_value),
+                "Judge the cost-aware refinement against the original growth-biased strategy before considering any new variant.",
+                strategy_name=COST_AWARE_STRATEGY,
+                comparison_strategy=TARGET_STRATEGY,
+            )
+        )
+
+    original_cost_sensitive = parse_bool(original_comparison.get("cost_sensitive")) if original_comparison else False
+    cost_cost_sensitive = parse_bool(cost_comparison.get("cost_sensitive")) if cost_comparison else False
+    original_split_sensitive = parse_bool(original_comparison.get("split_sensitive")) if original_comparison else False
+    cost_split_sensitive = parse_bool(cost_comparison.get("split_sensitive")) if cost_comparison else False
+    rows.append(
+        diagnostic_row(
+            created_at,
+            "cost_refinement",
+            "cost_sensitivity_change",
+            "cost_sensitive",
+            cost_cost_sensitive,
+            original_cost_sensitive,
+            bool_delta(cost_cost_sensitive, original_cost_sensitive),
+            "cost_refinement_improved" if original_cost_sensitive and not cost_cost_sensitive else "cost_refinement_no_material_change",
+            "info",
+            f"Original cost_sensitive={original_cost_sensitive}; cost-aware cost_sensitive={cost_cost_sensitive}.",
+            "This checks whether the fixed rebalance threshold directly improves the diagnosed cost sensitivity.",
+            "If cost sensitivity improves without large return drag, consider it as the next active research lead.",
+            strategy_name=COST_AWARE_STRATEGY,
+            comparison_strategy=TARGET_STRATEGY,
+        )
+    )
+    rows.append(
+        diagnostic_row(
+            created_at,
+            "cost_refinement",
+            "split_sensitivity_change",
+            "split_sensitive",
+            cost_split_sensitive,
+            original_split_sensitive,
+            bool_delta(cost_split_sensitive, original_split_sensitive),
+            "cost_refinement_improved" if original_split_sensitive and not cost_split_sensitive else "cost_refinement_no_material_change",
+            "info",
+            f"Original split_sensitive={original_split_sensitive}; cost-aware split_sensitive={cost_split_sensitive}.",
+            "This checks whether reduced rebalance churn also improves split stability.",
+            "Use fixed split diagnostics before any future promotion discussion.",
+            strategy_name=COST_AWARE_STRATEGY,
+            comparison_strategy=TARGET_STRATEGY,
+        )
+    )
+    rows.append(cost_refinement_decision_row(created_at, original_full, cost_full, original_comparison, cost_comparison))
+    return rows
+
+
+def cost_refinement_decision_row(
+    created_at: str,
+    original_full: dict[str, Any],
+    cost_full: dict[str, Any],
+    original_comparison: dict[str, Any] | None,
+    cost_comparison: dict[str, Any] | None,
+) -> dict[str, Any]:
+    cagr_delta = as_float(cost_full.get("cagr_pct")) - as_float(original_full.get("cagr_pct"))
+    sharpe_delta = as_float(cost_full.get("sharpe_ratio")) - as_float(original_full.get("sharpe_ratio"))
+    calmar_delta = as_float(cost_full.get("calmar_ratio")) - as_float(original_full.get("calmar_ratio"))
+    turnover_delta = as_float(cost_full.get("turnover")) - as_float(original_full.get("turnover"))
+    cost_improved = bool_improved(cost_comparison.get("cost_sensitive") if cost_comparison else False, original_comparison.get("cost_sensitive") if original_comparison else False)
+    split_improved = bool_improved(cost_comparison.get("split_sensitive") if cost_comparison else False, original_comparison.get("split_sensitive") if original_comparison else False)
+    diagnostic_improved = cost_improved or split_improved
+    turnover_reduced = turnover_delta < 0
+    performance_drag = cagr_delta <= -0.50 or sharpe_delta <= -0.03 or calmar_delta <= -0.05
+    if diagnostic_improved and not performance_drag:
+        status = "cost_refinement_promising"
+        interpretation = "The cost-aware refinement improves the diagnosed cost issue without large return drag."
+    elif diagnostic_improved and turnover_reduced:
+        status = "cost_refinement_improved"
+        interpretation = "The refinement improves a diagnosed sensitivity issue and reduces turnover, but still needs review before any promotion."
+    elif performance_drag:
+        status = "cost_refinement_return_drag"
+        if turnover_reduced and not diagnostic_improved:
+            interpretation = (
+                "Reduced turnover, but did not improve cost/split sensitivity and sacrificed too much performance. "
+                "Keep original growth_biased_rotation_crash_gate as active research lead."
+            )
+        else:
+            interpretation = "The refinement appears to sacrifice too much return or risk-adjusted performance."
+    elif not cost_improved and not split_improved:
+        status = "cost_refinement_no_material_change"
+        if turnover_reduced:
+            interpretation = (
+                "The refinement reduces turnover but does not materially improve the diagnosed cost or split-sensitivity weakness."
+            )
+        else:
+            interpretation = "The refinement does not materially improve the diagnosed weakness."
+    else:
+        status = "cost_refinement_not_useful"
+        interpretation = "The refinement is not useful enough versus the original growth-biased strategy."
+    return diagnostic_row(
+        created_at,
+        "cost_refinement",
+        "cost_aware_refinement_decision",
+        "status",
+        status,
+        "",
+        "",
+        status,
+        "warning" if status in {"cost_refinement_return_drag", "cost_refinement_not_useful"} else "info",
+        f"CAGR delta={round(cagr_delta, 4)}, Sharpe delta={round(sharpe_delta, 4)}, Calmar delta={round(calmar_delta, 4)}, turnover delta={round(turnover_delta, 4)}, cost_improved={cost_improved}, split_improved={split_improved}.",
+        interpretation,
+        "Keep both variants research-only; choose the active research lead only after reviewing saved robustness and diagnostics.",
+        strategy_name=COST_AWARE_STRATEGY,
+        comparison_strategy=TARGET_STRATEGY,
+    )
+
+
 def next_hypothesis_rows(created_at: str) -> list[dict[str, Any]]:
     hypotheses = [
         (
@@ -596,6 +754,38 @@ def split_sensitive_from_rows(rows: list[dict[str, Any]]) -> bool:
     return len(promising) <= 1
 
 
+def cost_refinement_metric_status(metric: str, value: float, reference: float) -> str:
+    if metric in {"trade_count", "turnover", "average_cash_weight_pct"}:
+        return "cost_refinement_improved" if value < reference else "cost_refinement_no_material_change"
+    if metric == "max_drawdown_pct":
+        return "cost_refinement_improved" if value > reference else "cost_refinement_return_drag"
+    return "cost_refinement_improved" if value >= reference else "cost_refinement_return_drag"
+
+
+def cost_refinement_metric_interpretation(metric: str, value: float, reference: float) -> str:
+    if metric in {"trade_count", "turnover"} and value < reference:
+        return "The cost-aware rule reduced churn versus the original strategy."
+    if metric in {"cagr_pct", "sharpe_ratio", "calmar_ratio"} and value < reference:
+        return "The refinement reduced a headline performance metric; check whether turnover savings justify the drag."
+    if metric == "max_drawdown_pct" and value > reference:
+        return "The refinement reduced drawdown versus the original strategy."
+    return "This metric is broadly similar to the original growth-biased strategy."
+
+
+def bool_delta(value: Any, reference: Any) -> str:
+    value_bool = parse_bool(value)
+    reference_bool = parse_bool(reference)
+    if value_bool == reference_bool:
+        return "no_change"
+    if reference_bool and not value_bool:
+        return "improved"
+    return "worse"
+
+
+def bool_improved(value: Any, reference: Any) -> bool:
+    return parse_bool(reference) and not parse_bool(value)
+
+
 def status_evidence(
     status: str,
     target_full: dict[str, Any],
@@ -685,6 +875,7 @@ def build_summary_lines(rows: list[dict[str, Any]], diagnostics_path: Path, grow
     drawdown = next((row for row in rows if row["diagnostic_type"] == "drawdown_behavior"), None)
     cash = next((row for row in rows if row["diagnostic_type"] == "cash_drag"), None)
     hypotheses = [row["diagnostic_name"] for row in rows if row["diagnostic_type"] == "next_fixed_hypothesis"]
+    refinement = next((row for row in rows if row["diagnostic_name"] == "cost_aware_refinement_decision"), None)
     lines = [
         "Strategy improvement diagnostics complete. Research/preview only; execution_approved=False.",
         f"Main statuses: {', '.join(statuses) if statuses else 'insufficient_data'}",
@@ -698,6 +889,8 @@ def build_summary_lines(rows: list[dict[str, Any]], diagnostics_path: Path, grow
     lines.append(f"Cost sensitivity matters: {cost_warning}")
     if hypotheses:
         lines.append("Next fixed hypotheses: " + ", ".join(hypotheses))
+    if refinement:
+        lines.append(f"Cost-aware refinement decision: {refinement['status']} ({refinement['evidence']})")
     lines.append(f"Saved diagnostics to {diagnostics_path}")
     lines.append(f"Saved growth-biased diagnostics to {growth_path}")
     lines.append("Warning: diagnostics are research guidance only and do not approve orders.")
@@ -721,6 +914,7 @@ def show_strategy_improvement_diagnostics_file(
     cash = next((row for row in rows if row["diagnostic_type"] == "cash_drag"), None)
     active_lead = any(row["status"] == "benchmark_lagging_but_active_leader" for row in rows)
     hypotheses = [row["diagnostic_name"] for row in rows if row["diagnostic_type"] == "next_fixed_hypothesis"]
+    refinement = next((row for row in rows if row["diagnostic_name"] == "cost_aware_refinement_decision"), None)
     lines = [
         "Growth-biased strategy diagnostics. Display only; execution_approved=False.",
         f"Main diagnostic status: {', '.join(statuses) if statuses else 'insufficient_data'}",
@@ -733,6 +927,8 @@ def show_strategy_improvement_diagnostics_file(
     if cash:
         lines.append(f"Cash drag: {cash['status']} - {cash['interpretation']}")
     lines.append(f"Remains active research lead: {active_lead}")
+    if refinement:
+        lines.append(f"Cost-aware refinement: {refinement['status']} - {refinement['interpretation']}")
     if hypotheses:
         lines.append("Recommended next fixed hypotheses: " + ", ".join(hypotheses[:4]))
     lines.append("Warning: saved diagnostics do not approve orders or paper execution.")

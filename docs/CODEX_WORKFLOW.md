@@ -167,6 +167,12 @@ next fixed-hypothesis ideas without adding another strategy. Use
 layer. Diagnostics are guidance for a later fixed research task, not tuning,
 promotion, scheduling, or execution approval.
 
+The first narrow refinement is `growth_biased_rotation_cost_aware_rebalance`.
+It must preserve `growth_biased_rotation_crash_gate` unchanged and use the fixed
+rebalance threshold documented in code. Judge it directly against the original
+growth-biased strategy for turnover, cost sensitivity, split sensitivity, and
+return drag before considering any further variant.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

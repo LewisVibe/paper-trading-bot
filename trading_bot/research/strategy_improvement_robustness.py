@@ -41,6 +41,8 @@ FIXED_COSTS = [
 
 BENCHMARK_NAME = "monthly_etf_momentum_rotation_reference"
 SPY_BENCHMARK_NAME = "spy_buy_and_hold_benchmark"
+GROWTH_BIASED_ORIGINAL = "growth_biased_rotation_crash_gate"
+COST_AWARE_REFINEMENT = "growth_biased_rotation_cost_aware_rebalance"
 
 COMMON_COLUMNS = [
     "created_at",
@@ -100,6 +102,15 @@ DRAWDOWN_COLUMNS = COMMON_COLUMNS + [
 COMPARISON_COLUMNS = COMMON_COLUMNS + [
     "average_cash_weight_pct",
     "cash_drag_delta_vs_benchmark",
+    "cagr_delta_vs_growth_biased",
+    "sharpe_delta_vs_growth_biased",
+    "max_drawdown_delta_vs_growth_biased",
+    "calmar_delta_vs_growth_biased",
+    "cash_delta_vs_growth_biased",
+    "trade_count_delta_vs_growth_biased",
+    "turnover_delta_vs_growth_biased",
+    "cost_sensitivity_delta_vs_growth_biased",
+    "split_sensitivity_delta_vs_growth_biased",
     "trails_spy_buy_and_hold",
     "beats_rotation_cagr",
     "beats_rotation_sharpe",
@@ -331,6 +342,7 @@ def build_comparison_rows(
     best_drawdown = min(active_rows, key=lambda row: abs(float(row.get("max_drawdown_pct", 0) or 0)), default={}).get("strategy_name", "")
     lowest_cash = min(active_rows, key=lambda row: float(row.get("average_cash_weight_pct", 999) or 999), default={}).get("strategy_name", "")
     spy = next((row for row in full_rows if row["strategy_name"] == SPY_BENCHMARK_NAME), None)
+    growth_biased = next((row for row in full_rows if row["strategy_name"] == GROWTH_BIASED_ORIGINAL), None)
     rows = []
     for source in full_rows:
         strategy_name = source["strategy_name"]
@@ -342,6 +354,15 @@ def build_comparison_rows(
             {
                 "average_cash_weight_pct": source.get("average_cash_weight_pct", ""),
                 "cash_drag_delta_vs_benchmark": cash_drag_delta(source, full_rows),
+                "cagr_delta_vs_growth_biased": metric_delta(source, growth_biased, "cagr_pct"),
+                "sharpe_delta_vs_growth_biased": metric_delta(source, growth_biased, "sharpe_ratio"),
+                "max_drawdown_delta_vs_growth_biased": metric_delta(source, growth_biased, "max_drawdown_pct"),
+                "calmar_delta_vs_growth_biased": metric_delta(source, growth_biased, "calmar_ratio"),
+                "cash_delta_vs_growth_biased": metric_delta(source, growth_biased, "average_cash_weight_pct"),
+                "trade_count_delta_vs_growth_biased": metric_delta(source, growth_biased, "trade_count"),
+                "turnover_delta_vs_growth_biased": metric_delta(source, growth_biased, "turnover"),
+                "cost_sensitivity_delta_vs_growth_biased": "",
+                "split_sensitivity_delta_vs_growth_biased": "",
                 "trails_spy_buy_and_hold": trails_spy(source, spy),
                 "beats_rotation_cagr": float(source.get("cagr_delta_vs_benchmark", 0) or 0) > 0,
                 "beats_rotation_sharpe": float(source.get("sharpe_delta_vs_benchmark", 0) or 0) > 0,
@@ -355,7 +376,33 @@ def build_comparison_rows(
             }
         )
         rows.append(row)
+    apply_growth_biased_sensitivity_deltas(rows)
     return rows
+
+
+def apply_growth_biased_sensitivity_deltas(rows: list[dict[str, Any]]) -> None:
+    original = next((row for row in rows if row["strategy_name"] == GROWTH_BIASED_ORIGINAL), None)
+    if not original:
+        return
+    for row in rows:
+        row["cost_sensitivity_delta_vs_growth_biased"] = bool_delta(row.get("cost_sensitive"), original.get("cost_sensitive"))
+        row["split_sensitivity_delta_vs_growth_biased"] = bool_delta(row.get("split_sensitive"), original.get("split_sensitive"))
+
+
+def metric_delta(row: dict[str, Any], reference: dict[str, Any] | None, metric: str) -> float | str:
+    if not reference:
+        return ""
+    return round(float(row.get(metric, 0) or 0) - float(reference.get(metric, 0) or 0), 4)
+
+
+def bool_delta(value: Any, reference: Any) -> str:
+    current_bool = parse_bool(value)
+    reference_bool = parse_bool(reference)
+    if current_bool == reference_bool:
+        return "no_change"
+    if reference_bool and not current_bool:
+        return "improved"
+    return "worse"
 
 
 def comparison_label(row: dict[str, Any], flags: list[str], split_sensitive: bool, cost_sensitive: bool) -> str:
@@ -537,6 +584,9 @@ def show_strategy_improvement_robustness_file(
     multi = next((row for row in rows if row["strategy_name"] == "adaptive_multi_sleeve_growth_allocator"), None)
     if multi:
         lines.append(format_display_line("Adaptive multi-sleeve allocator", multi))
+    cost_aware = next((row for row in rows if row["strategy_name"] == COST_AWARE_REFINEMENT), None)
+    if cost_aware:
+        lines.append(format_growth_biased_comparison_line(cost_aware))
     warnings = [
         f"{row['strategy_name']}={row['comparison_label']}"
         for row in active
@@ -555,4 +605,19 @@ def format_display_line(label: str, row: dict[str, Any]) -> str:
         f"CAGR={row.get('cagr_pct')}% | Sharpe={row.get('sharpe_ratio')} | "
         f"MaxDD={row.get('max_drawdown_pct')}% | Calmar={row.get('calmar_ratio')} | "
         f"Cash={row.get('average_cash_weight_pct')}%"
+    )
+
+
+def format_growth_biased_comparison_line(row: dict[str, Any]) -> str:
+    return (
+        "Cost-aware vs original growth-biased: "
+        f"CAGR delta={row.get('cagr_delta_vs_growth_biased')}, "
+        f"Sharpe delta={row.get('sharpe_delta_vs_growth_biased')}, "
+        f"Calmar delta={row.get('calmar_delta_vs_growth_biased')}, "
+        f"MaxDD delta={row.get('max_drawdown_delta_vs_growth_biased')}, "
+        f"cash delta={row.get('cash_delta_vs_growth_biased')}, "
+        f"trade delta={row.get('trade_count_delta_vs_growth_biased')}, "
+        f"turnover delta={row.get('turnover_delta_vs_growth_biased')}, "
+        f"cost sensitivity={row.get('cost_sensitivity_delta_vs_growth_biased')}, "
+        f"split sensitivity={row.get('split_sensitivity_delta_vs_growth_biased')}."
     )

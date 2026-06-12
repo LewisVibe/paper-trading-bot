@@ -38,6 +38,7 @@ DIAGNOSTIC_TOPICS = [
     "cash_drag",
     "candidate_status",
     "next_fixed_hypothesis",
+    "cost_refinement",
 ]
 
 NEXT_HYPOTHESES = [
@@ -45,6 +46,14 @@ NEXT_HYPOTHESES = [
     "growth_biased_rotation_partial_defensive_sleeve",
     "growth_biased_rotation_cost_aware_rebalance",
     "growth_biased_rotation_split_stability_check",
+]
+
+COST_REFINEMENT_STATUSES = [
+    "cost_refinement_improved",
+    "cost_refinement_return_drag",
+    "cost_refinement_no_material_change",
+    "cost_refinement_promising",
+    "cost_refinement_not_useful",
 ]
 
 FORBIDDEN_TOKENS = [
@@ -134,11 +143,20 @@ def verify_module_contract(module_source: str, failures: list[str]) -> None:
     for hypothesis in NEXT_HYPOTHESES:
         if hypothesis not in module_source:
             failures.append(f"missing suggestion-only next hypothesis: {hypothesis}")
+    for status in COST_REFINEMENT_STATUSES:
+        if status not in module_source:
+            failures.append(f"missing cost refinement diagnostic status: {status}")
+    for strategy_name in ["growth_biased_rotation_crash_gate", "growth_biased_rotation_cost_aware_rebalance"]:
+        if strategy_name not in module_source:
+            failures.append(f"missing direct growth-biased comparison strategy: {strategy_name}")
     for token in [
         '"execution_approved": False',
         '"paper_execution_approved": False',
         '"research_only": True',
         '"preview_only": True',
+        "performance_drag",
+        "Sharpe delta",
+        "Keep original growth_biased_rotation_crash_gate as active research lead.",
         "suggestion_only",
         "This is a future fixed-hypothesis suggestion, not an implemented strategy.",
     ]:

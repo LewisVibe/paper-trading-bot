@@ -30,6 +30,8 @@ WEAK_BREADTH_THRESHOLD = 0.30
 VOLATILITY_WINDOW_DAYS = 20
 VOLATILITY_MEDIAN_WINDOW_DAYS = 252
 EXTREME_VOLATILITY_MULTIPLE = 1.75
+COST_AWARE_REBALANCE_THRESHOLD = 0.05
+COST_AWARE_CLOSE_RANK_BUFFER = 2
 
 RISK_ETFS = [
     "SPY",
@@ -71,6 +73,7 @@ STRATEGY_NAMES = [
     "balanced_dual_momentum_defensive_sleeve",
     "breadth_aware_risk_on_rotation",
     "growth_biased_rotation_crash_gate",
+    "growth_biased_rotation_cost_aware_rebalance",
     "factor_style_rotation_absolute_gate",
     "sector_52_week_high_continuation",
     "adaptive_multi_sleeve_growth_allocator",
@@ -419,6 +422,8 @@ def target_weights_for_strategy(
         return breadth_aware_weights(history)
     if strategy_name == "growth_biased_rotation_crash_gate":
         return growth_biased_weights(history, current_weights)
+    if strategy_name == "growth_biased_rotation_cost_aware_rebalance":
+        return growth_biased_cost_aware_weights(history, current_weights)
     if strategy_name == "factor_style_rotation_absolute_gate":
         return factor_style_rotation_weights(history)
     if strategy_name == "sector_52_week_high_continuation":
@@ -492,6 +497,43 @@ def growth_biased_weights(
     if defensive:
         return defensive, "No risk ETF above own trend; using defensive sleeve.", "growth_defensive"
     return {}, "No eligible risk or defensive trend; holding cash.", "growth_cash"
+
+
+def growth_biased_cost_aware_weights(
+    history: dict[str, list[float]],
+    current_weights: dict[str, float],
+) -> tuple[dict[str, float], str, str]:
+    base_weights, base_reason, regime = growth_biased_weights(history, current_weights)
+    if not base_weights or regime not in {"growth_risk_on", "crash_gate_hold_only"}:
+        return base_weights, base_reason + " Cost-aware threshold inactive outside eligible growth-risk posture.", regime
+
+    ranked = rank_by_momentum(RISK_ETFS, history, MOMENTUM_LOOKBACK_DAYS)
+    eligible = [ticker for ticker in ranked if is_above_sma(history[ticker], TREND_WINDOW_DAYS)]
+    close_group = set(eligible[: TOP_N + COST_AWARE_CLOSE_RANK_BUFFER])
+    retained = [
+        ticker
+        for ticker in current_weights
+        if ticker in close_group
+    ]
+    target_tickers = retained[:]
+    for ticker in list(base_weights):
+        if ticker not in target_tickers:
+            target_tickers.append(ticker)
+    target_tickers = target_tickers[:TOP_N]
+    adjusted = equal_weights(target_tickers)
+    for ticker, current_weight in current_weights.items():
+        intended_weight = adjusted.get(ticker, 0.0)
+        if ticker in adjusted and abs(intended_weight - current_weight) < COST_AWARE_REBALANCE_THRESHOLD:
+            adjusted[ticker] = current_weight
+    adjusted = normalize_weights(adjusted)
+    return (
+        adjusted,
+        (
+            base_reason
+            + f" Cost-aware refinement preserves eligible near-top holdings and skips weight changes below {COST_AWARE_REBALANCE_THRESHOLD:.0%}."
+        ),
+        "growth_cost_aware",
+    )
 
 
 def factor_style_rotation_weights(history: dict[str, list[float]]) -> tuple[dict[str, float], str, str]:
@@ -703,6 +745,13 @@ def equal_weights(tickers: list[str]) -> dict[str, float]:
         return {}
     weight = 1.0 / len(unique)
     return {ticker: weight for ticker in unique}
+
+
+def normalize_weights(weights: dict[str, float]) -> dict[str, float]:
+    total = sum(weight for weight in weights.values() if weight > 0)
+    if total <= 0:
+        return {}
+    return {ticker: weight / total for ticker, weight in weights.items() if weight > 0}
 
 
 def scaled_weights(weights: dict[str, float], scale: float) -> dict[str, float]:
@@ -953,6 +1002,7 @@ def build_iteration_rows(
         "balanced_dual_momentum_defensive_sleeve": "Risk-on top-three momentum with defensive sleeve when broad trend is weak.",
         "breadth_aware_risk_on_rotation": "Breadth-threshold allocation that reduces cash drag in mixed regimes.",
         "growth_biased_rotation_crash_gate": "Growth-biased own-trend rotation with a crash gate for weak breadth.",
+        "growth_biased_rotation_cost_aware_rebalance": "Fixed-threshold cost-aware refinement of the growth-biased crash-gate strategy.",
         "factor_style_rotation_absolute_gate": "Factor/style ETF rotation using absolute trend gates and reduced weak-market exposure.",
         "sector_52_week_high_continuation": "Sector ETF continuation using fixed momentum plus 252-day-high closeness.",
         "adaptive_multi_sleeve_growth_allocator": "Fixed-rule multi-sleeve allocator blending growth, factor/style, defensive sleeve, breadth, and volatility diagnostics.",
@@ -969,7 +1019,7 @@ def build_iteration_rows(
                 "iteration_id": f"strategy_improvement_lab_{index:03d}",
                 "hypothesis": descriptions[strategy_name],
                 "allowed_parameter_set": (
-                    "monthly rebalance; 126-day momentum; 200-day trend; fixed 252-day high score; fixed breadth thresholds 60/40/30; fixed volatility window 20/252."
+                    "monthly rebalance; 126-day momentum; 200-day trend; fixed 252-day high score; fixed breadth thresholds 60/40/30; fixed volatility window 20/252; fixed cost-aware rebalance threshold 5%."
                 ),
                 "reason_for_testing": "Explore growth-aware ETF allocation variants without execution approval.",
                 "result_summary": result_summary_text(result),
