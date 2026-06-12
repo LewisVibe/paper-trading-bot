@@ -588,7 +588,8 @@ approve execution.
 Future Hermes cron readiness plan for safe monitoring reports only:
 
 Hermes cron preferred for future monitoring scheduling if configured. No
-scheduling is currently approved or created. Use Hermes cron for safe
+refresh cron job or execution scheduling is currently approved or created beyond
+the existing status-only job. Use Hermes cron for safe
 monitoring/reporting only; not for execution. Windows Task Scheduler remains an
 alternative only for keeping the Hermes gateway running, not for trading
 commands.
@@ -608,12 +609,12 @@ The initial future Hermes cron candidate command set is limited to
 cadence, exact command list, enabled toolsets, output destination, and failure
 behaviour before any Hermes cron job is created.
 
-The first-job checklist is in `docs/HERMES_CRON_JOB_DESIGN.md`. It defines the
-first future Hermes cron job as status-only: run repo safety, run Hermes cron
-readiness, run `--vps-monitoring-status`, and optionally run
-`--market-monitor-scheduling-readiness-report`. It explicitly excludes refresh
-commands from the first job until a later review approves them. Verify the
-checklist with `python scripts\verify_hermes_cron_job_design.py`.
+The current status-job checkpoint is in `docs/HERMES_CRON_JOB_DESIGN.md`. It
+records the verified `paper-bot-vps-status-check` job and its status-only command
+sequence: repo safety, Hermes cron readiness, and
+`--vps-daily-monitoring-summary`. It explicitly confirms the job does not run
+refresh commands. Verify the checkpoint with
+`python scripts\verify_hermes_cron_job_design.py`.
 
 Before any future scheduling review, run `python scripts\verify_repo_safety.py`,
 run `python scripts\verify_hermes_cron_readiness.py`, run
@@ -632,11 +633,22 @@ python bot.py --paper-order-test ...
 python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper
 ```
 
-The current daily Hermes status cron exists as `paper-bot-vps-status-check` and
-is status-only. No refresh cron job is currently created. A future promoted
-review refresh cron requires a separate manual review; see
-`docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md` and verify the design with
-`python scripts\verify_hermes_promoted_review_cron_design.py`.
+The current daily Hermes status cron exists as `paper-bot-vps-status-check`
+with job ID `345188fbb60c`. It runs once daily / every 1440m, delivers to
+Telegram, uses script-only / no-agent mode, runs from
+`C:\dev\paper-trading-bot`, and executes repo safety, Hermes cron readiness, and
+`--vps-daily-monitoring-summary`. Verified output is repo_safety PASS,
+hermes_cron_readiness PASS, vps_daily_monitoring_summary PASS,
+final_monitoring_status `healthy_monitoring_state`, execution_approved false,
+scheduling_approved false, and freshness_warnings: none. It does not run refresh
+commands, trade, approve scheduling beyond this one status job, approve
+execution, pull/commit/push code, or inspect/print config contents, secrets,
+logs, databases, or full generated CSV contents.
+
+No refresh cron job is currently created. A future promoted review refresh cron
+requires a separate manual review; see
+`docs/HERMES_PROMOTED_REVIEW_REFRESH_CRON_DESIGN.md` and verify the design with
+`python scripts\verify_hermes_promoted_review_refresh_cron_design.py`.
 
 Create a research-only portfolio risk policy audit before any future execution discussion:
 

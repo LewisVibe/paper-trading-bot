@@ -114,7 +114,8 @@ chat-delivered reports. Windows Task Scheduler remains an alternative, not the
 default assumption, and may be used only to start or keep the Hermes gateway
 running on boot, not for execution-capable trading commands.
 
-No scheduling is currently approved or created. Use Hermes cron for safe
+No refresh cron job or execution scheduling is currently approved or created
+beyond the existing status-only job. Use Hermes cron for safe
 monitoring/reporting only; not for execution. Do not paste config/API
 keys/webhooks/account IDs into Hermes prompts.
 
@@ -134,23 +135,35 @@ future manual review must approve exact cadence, exact command list, enabled
 toolsets, output destination, and failure behaviour before any Hermes cron job
 is created.
 
-The first-job checklist is `docs/HERMES_CRON_JOB_DESIGN.md`. It keeps the first
-future Hermes cron job status-only: repo safety, Hermes cron readiness, VPS
-monitoring status, and optional market-monitor scheduling readiness. It excludes
-refresh commands until a later separate review. Verify it with
+The current status-job checkpoint is `docs/HERMES_CRON_JOB_DESIGN.md`. It records
+the verified `paper-bot-vps-status-check` job and confirms it remains
+status-only: repo safety, Hermes cron readiness, and VPS daily monitoring
+summary. It excludes refresh commands until a later separate review. Verify it with
 `python scripts\verify_hermes_cron_job_design.py`.
 
-The current daily Hermes status cron exists as `paper-bot-vps-status-check` and
-is status-only. For concise Telegram/manual checks, use
-`python bot.py --vps-daily-monitoring-summary`. The summary and
-`--vps-monitoring-status` freshness labels are monitoring diagnostics only:
-`fresh`, `warning_stale`, `stale`, and `missing`. Missing or stale saved outputs
-are prerequisites/status issues, not trading approval.
+The current daily Hermes status cron exists as `paper-bot-vps-status-check`
+with job ID `345188fbb60c`. It runs once daily / every 1440m, delivers to
+Telegram, uses script-only / no-agent mode, runs from
+`C:\dev\paper-trading-bot`, and executes `.venv\Scripts\python.exe
+scripts\verify_repo_safety.py`, `.venv\Scripts\python.exe
+scripts\verify_hermes_cron_readiness.py`, and `.venv\Scripts\python.exe bot.py
+--vps-daily-monitoring-summary`. Verified output is repo_safety PASS,
+hermes_cron_readiness PASS, vps_daily_monitoring_summary PASS,
+final_monitoring_status `healthy_monitoring_state`, execution_approved false,
+scheduling_approved false, and freshness_warnings: none. It does not run refresh
+commands, trade, approve scheduling beyond this one status job, approve
+execution, pull/commit/push code, or inspect/print config contents, secrets,
+logs, databases, or full generated CSV contents.
+
+The summary and `--vps-monitoring-status` freshness labels are monitoring
+diagnostics only: `fresh`, `warning_stale`, `stale`, and `missing`. Missing or
+stale saved outputs are prerequisites/status issues, not trading approval.
 
 No promoted-review refresh cron job is currently created. A possible future
-second job is documented in `docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md`; verify
-the design with `python scripts\verify_hermes_promoted_review_cron_design.py`
-before any separate manual scheduling review.
+second job is documented in
+`docs/HERMES_PROMOTED_REVIEW_REFRESH_CRON_DESIGN.md`; verify the design with
+`python scripts\verify_hermes_promoted_review_refresh_cron_design.py` before any
+separate manual scheduling review.
 
 Prerequisites before any scheduling review:
 

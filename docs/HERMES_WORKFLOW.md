@@ -195,7 +195,8 @@ alternative, but not the default assumption; if used, it should be limited to
 starting or keeping the Hermes gateway running on boot, not to running
 execution-capable trading commands.
 
-No scheduling is currently approved or created. Use Hermes cron for safe
+No refresh cron job or execution scheduling is currently approved or created
+beyond the existing status-only job. Use Hermes cron for safe
 monitoring/reporting only; not for execution. Do not paste config/API
 keys/webhooks/account IDs into Hermes prompts, and do not print `config.json`
 contents, API keys, webhook URLs, tokens, account IDs, generated data, logs, or
@@ -224,27 +225,42 @@ manual review must approve the exact cadence, exact command list, enabled
 toolsets, output destination, and failure behaviour before any Hermes cron job
 is created.
 
-The first-job design/checklist is `docs/HERMES_CRON_JOB_DESIGN.md`. It keeps the
-first future Hermes cron job status-only: repo safety, Hermes cron readiness,
-VPS monitoring status, and optional market-monitor scheduling readiness. It does
-not run `--refresh-promoted-review` or `--refresh-defensive-research`; refresh
-cron jobs require a later separate review after the status-only job proves
-stable. Verify the design with
+The current status-job checkpoint is `docs/HERMES_CRON_JOB_DESIGN.md`. It records
+the verified `paper-bot-vps-status-check` job, including job ID, once-daily
+cadence, Telegram delivery, script-only / no-agent mode, repo path, command
+sequence, and healthy output. It confirms the job does not run
+`--refresh-promoted-review` or `--refresh-defensive-research`; refresh cron jobs
+require a later separate review. Verify the checkpoint with
 `python scripts\verify_hermes_cron_job_design.py`.
 
-The current daily Hermes status cron exists as `paper-bot-vps-status-check` and
-is status-only. It does not approve scheduling changes or execution. The
-`python bot.py --vps-daily-monitoring-summary` command is a concise report-only
-summary for Telegram/manual checks. It includes saved-output freshness labels
-(`fresh`, `warning_stale`, `stale`, `missing`) as monitoring diagnostics only.
-Missing or stale saved outputs are prerequisite/status issues, not trading
-approval.
+The current daily Hermes status cron exists as `paper-bot-vps-status-check`
+with job ID `345188fbb60c`. It runs once daily / every 1440m, delivers to
+Telegram, uses script-only / no-agent mode, runs from
+`C:\dev\paper-trading-bot`, and executes:
+
+```powershell
+.venv\Scripts\python.exe scripts\verify_repo_safety.py
+.venv\Scripts\python.exe scripts\verify_hermes_cron_readiness.py
+.venv\Scripts\python.exe bot.py --vps-daily-monitoring-summary
+```
+
+Verified output is repo_safety PASS, hermes_cron_readiness PASS,
+vps_daily_monitoring_summary PASS, final_monitoring_status
+`healthy_monitoring_state`, execution_approved false, scheduling_approved false,
+and freshness_warnings: none. This status-only job does not run refresh commands,
+trade, approve scheduling beyond this one status job, approve execution,
+pull/commit/push code, or inspect/print config contents, secrets, logs,
+databases, or full generated CSV contents. Freshness labels (`fresh`,
+`warning_stale`, `stale`, `missing`) are monitoring diagnostics only. Missing or
+stale saved outputs are prerequisite/status issues, not trading approval.
 
 No promoted-review refresh cron job is currently created. A possible future
-second job is documented in `docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md` and
-must pass `python scripts\verify_hermes_promoted_review_cron_design.py` before
+second job is documented in
+`docs/HERMES_PROMOTED_REVIEW_REFRESH_CRON_DESIGN.md` and must pass
+`python scripts\verify_hermes_promoted_review_refresh_cron_design.py` before
 any separate manual scheduling review. If promoted review reports strategy
-disagreement, that is a monitoring result, not execution approval.
+disagreement, no-action states, or blocked review states, those are monitoring
+results, not execution approval.
 
 Refresh jobs should remain protected by lockfile/no-overlap. The current
 lock-wrapped overlap-risk commands are `--monitor-lockfile-readiness-report`,

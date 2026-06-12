@@ -25,28 +25,27 @@ LOCK_WRAPPED_REQUIRED = {
 }
 
 REQUIRED_DESIGN_PHRASES = [
-    "The first Hermes cron job should be status-only.",
-    "No Hermes cron job, Windows Task Scheduler task, service, startup script, cron file, loop mode, background process, scheduling approval, or execution approval is currently created.",
-    "The first status-only cron job must not run refresh commands yet:",
-    "Refresh cron jobs require a later separate review after the status-only job proves stable.",
-    "A conservative cadence such as hourly or a few times per day may be considered later, but no cadence is approved by this design.",
-    "Run from `C:\\dev\\paper-trading-bot`.",
-    "Use `.venv\\Scripts\\python.exe`.",
+    "This document records the current verified first Hermes cron job.",
+    "Job name: `paper-bot-vps-status-check`",
+    "Job ID: `345188fbb60c`",
+    "Cadence: once daily / every 1440m",
+    "Delivery: Telegram",
+    "Mode: script-only / no-agent",
+    "Working directory: `C:\\dev\\paper-trading-bot`",
     ".venv\\Scripts\\python.exe scripts\\verify_repo_safety.py",
     ".venv\\Scripts\\python.exe scripts\\verify_hermes_cron_readiness.py",
-    ".venv\\Scripts\\python.exe bot.py --vps-monitoring-status",
-    ".venv\\Scripts\\python.exe bot.py --market-monitor-scheduling-readiness-report",
-    "The job must not inspect, print, paste, or expose config contents, API keys, webhooks, account IDs",
-    "Use restricted Hermes toolsets if supported, such as `enabled_toolsets`",
-    "Do not create, edit, delete, or recursively create other cron jobs.",
-    "Do not perform Git commits or pushes.",
-    "Do not run automatic `git pull` unless a later separate review approves update behaviour.",
-    "Treat any safety verifier failure as a stop condition.",
-    "Capture output concisely.",
-    "Preserve `scheduling_approved=False`.",
-    "Preserve `execution_approved=False`.",
-    "If generated outputs are missing, report that as a prerequisite/status issue",
+    ".venv\\Scripts\\python.exe bot.py --vps-daily-monitoring-summary",
+    "final_monitoring_status: healthy_monitoring_state",
+    "freshness_warnings: none",
+    "does not run `--refresh-promoted-review`",
+    "does not run `--refresh-defensive-research`",
+    "does not approve scheduling beyond this one status job",
+    "does not pull, commit, or push code",
+    "does not inspect or print config contents, secrets, API keys, webhooks",
+    "does not create, edit, delete, trigger, or recursively create other cron jobs",
     "Lockfile protection is for overlap control only",
+    "`scheduling_approved=False`",
+    "`execution_approved=False`",
 ]
 
 FORBIDDEN_FIRST_JOB_APPROVAL_PHRASES = [
@@ -132,8 +131,8 @@ def first_job_status_only_check(design_text: str) -> CheckResult:
         "status-only",
         "scripts\\verify_repo_safety.py",
         "scripts\\verify_hermes_cron_readiness.py",
-        "bot.py --vps-monitoring-status",
-        "bot.py --market-monitor-scheduling-readiness-report",
+        "bot.py --vps-daily-monitoring-summary",
+        "healthy_monitoring_state",
     ]
     missing = [phrase for phrase in required if phrase not in design_text]
     return CheckResult(
@@ -146,8 +145,9 @@ def first_job_status_only_check(design_text: str) -> CheckResult:
 def first_job_excludes_refresh_check(design_text: str) -> CheckResult:
     forbidden_found = [phrase for phrase in FORBIDDEN_FIRST_JOB_APPROVAL_PHRASES if phrase in design_text]
     required = [
-        "The first status-only cron job must not run refresh commands yet:",
+        "does not run `--refresh-promoted-review`",
         "--refresh-promoted-review",
+        "does not run `--refresh-defensive-research`",
         "--refresh-defensive-research",
         "Refresh cron jobs require a later separate review",
     ]

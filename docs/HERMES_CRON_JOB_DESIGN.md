@@ -1,92 +1,67 @@
-# First Hermes Cron Job Design
+# Hermes Daily Status Cron Checkpoint
 
-This is a design/checklist for the first future VPS-safe Hermes cron job. It is
-planning only. No Hermes cron job, Windows Task Scheduler task, service, startup
-script, cron file, loop mode, background process, scheduling approval, or
-execution approval is currently created.
+This document records the current verified first Hermes cron job. It is
+status-only. It does not approve any refresh cron job, execution workflow,
+orders, paper execution, live trading, or broader scheduling.
 
-## Scope
+## Current Verified Job
 
-The first Hermes cron job should be status-only. It should prove that a scheduled
-Hermes status/checkpoint report can run cleanly before any refresh cron job is
-considered.
+- Job name: `paper-bot-vps-status-check`
+- Job ID: `345188fbb60c`
+- Cadence: once daily / every 1440m
+- Delivery: Telegram
+- Mode: script-only / no-agent
+- Working directory: `C:\dev\paper-trading-bot`
 
-The first job should run from `C:\dev\paper-trading-bot` and use the VPS Python:
-
-```powershell
-.venv\Scripts\python.exe
-```
-
-The first status-only job may run:
+Current command sequence:
 
 ```powershell
 .venv\Scripts\python.exe scripts\verify_repo_safety.py
 .venv\Scripts\python.exe scripts\verify_hermes_cron_readiness.py
-.venv\Scripts\python.exe bot.py --vps-monitoring-status
-.venv\Scripts\python.exe bot.py --market-monitor-scheduling-readiness-report
+.venv\Scripts\python.exe bot.py --vps-daily-monitoring-summary
 ```
 
-The final scheduling decision, exact cadence, exact command list, enabled
-toolsets, output destination, and failure behaviour remain future manual
-decisions. A conservative cadence such as hourly or a few times per day may be
-considered later, but no cadence is approved by this design.
+Verified output:
 
-## First Job Exclusions
+- repo_safety: PASS
+- hermes_cron_readiness: PASS
+- vps_daily_monitoring_summary: PASS
+- final_monitoring_status: healthy_monitoring_state
+- execution_approved: false
+- scheduling_approved: false
+- freshness_warnings: none
 
-The first status-only cron job must not run refresh commands yet:
+## Boundaries
 
-- `--refresh-promoted-review`
-- `--refresh-defensive-research`
+The current job:
 
-Refresh cron jobs require a later separate review after the status-only job
-proves stable. Refresh jobs should remain protected by lockfile/no-overlap. A
-stale lock requires manual review. Lockfile protection is for overlap control
-only; it is not scheduling approval, execution approval, order approval, or
-paper-execution approval.
+- runs only status/checkpoint reporting;
+- uses `.venv\Scripts\python.exe`, not bare `python`;
+- sends concise output to Telegram;
+- does not run `--refresh-promoted-review`;
+- does not run `--refresh-defensive-research`;
+- does not trade;
+- does not approve scheduling beyond this one status job;
+- does not approve execution;
+- does not pull, commit, or push code;
+- does not inspect or print config contents, secrets, API keys, webhooks,
+  account IDs, logs, SQLite databases, or full generated CSV/chart contents;
+- does not create, edit, delete, trigger, or recursively create other cron jobs.
+
+Refresh cron jobs require a later separate review. Refresh jobs should remain
+protected by lockfile/no-overlap. A stale lock requires manual review. Lockfile
+protection is for overlap control only; it is not scheduling approval, execution
+approval, order approval, or paper-execution approval.
 
 Execution-capable commands remain high-risk/manual-only and must not be
 scheduled or automated:
 
-- normal bot run
-- paper-order smoke test
-- slow-SMA paper execution
-- any future order-capable command
+- normal bot run;
+- paper-order smoke test;
+- slow-SMA paper execution;
+- any future order-capable command.
 
-The job must not run any command that submits, cancels, or creates orders,
-mutates positions, writes SQLite `trade_log`, sends trade alerts, changes config
-defaults, or changes strategy logic.
+This checkpoint preserves:
 
-## Data And Secret Boundaries
-
-The job must not inspect, print, paste, or expose config contents, API keys,
-webhooks, account IDs, `.env` files, auth files, tokens, logs, SQLite databases,
-or generated CSV/chart contents. It may rely on the status command's existing
-compact summaries, but it must not independently read generated output contents.
-
-If generated outputs are missing, report that as a prerequisite/status issue,
-not execution approval and not a reason to bypass safety checks.
-
-## Hermes Runtime Checklist
-
-Before any future creation of the cron job, review this checklist:
-
-- Use Hermes cron for safe monitoring/reporting only; not for execution.
-- Use restricted Hermes toolsets if supported, such as `enabled_toolsets` scoped
-  to the minimum needed for command execution and concise reporting.
-- Run from `C:\dev\paper-trading-bot`.
-- Use `.venv\Scripts\python.exe`.
-- Run repo safety before status.
-- Treat any safety verifier failure as a stop condition.
-- Capture output concisely.
-- Report failures clearly.
-- Do not create, edit, delete, or recursively create other cron jobs.
-- Do not create Windows Task Scheduler tasks, services, startup scripts, loop
-  modes, or background processes.
-- Do not perform Git commits or pushes.
-- Do not run automatic `git pull` unless a later separate review approves update
-  behaviour.
-- Preserve `scheduling_approved=False`.
-- Preserve `execution_approved=False`.
-
-No scheduling is currently approved or created. This design is only a checkpoint
-for a future manual scheduling review.
+- `scheduling_approved=False`
+- `execution_approved=False`

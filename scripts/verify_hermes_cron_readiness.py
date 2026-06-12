@@ -40,7 +40,7 @@ FORBIDDEN_SCHEDULING_COMMAND_PHRASES = [
 
 REQUIRED_DOC_PHRASES = [
     "Hermes cron preferred for future monitoring scheduling if configured.",
-    "No scheduling is currently approved or created.",
+    "No refresh cron job or execution scheduling is currently approved or created beyond the existing status-only job.",
     "Use Hermes cron for safe monitoring/reporting only; not for execution.",
     "Do not paste config/API keys/webhooks/account IDs into Hermes prompts.",
     "Initial cron candidate should probably be a status/checkpoint job before refresh jobs.",

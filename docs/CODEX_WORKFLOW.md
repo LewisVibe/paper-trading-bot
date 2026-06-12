@@ -102,7 +102,8 @@ Keep these exceptions narrow: do not weaken normal bot, paper-order-test,
 slow-SMA paper execution, or any execution-capable dependency checks.
 
 Hermes cron preferred for future monitoring scheduling if configured, but no
-scheduling is currently approved or created. Use Hermes cron for safe
+refresh cron job or execution scheduling is currently approved or created beyond
+the existing status-only job. Use Hermes cron for safe
 monitoring/reporting only; not for execution. Do not paste config/API
 keys/webhooks/account IDs into Hermes prompts. Initial cron candidate should
 probably be a status/checkpoint job before refresh jobs. Refresh jobs should
@@ -112,16 +113,23 @@ approve exact cadence, exact command list, enabled toolsets, output destination,
 and failure behaviour before any Hermes cron job is created.
 
 Use `docs/HERMES_CRON_JOB_DESIGN.md` and
-`python scripts\verify_hermes_cron_job_design.py` for the first-job checklist.
-That design keeps the first future Hermes cron job status-only and excludes
-refresh commands until a later separate review.
+`python scripts\verify_hermes_cron_job_design.py` for the current status-job
+checkpoint. That checkpoint records the verified status-only Hermes cron and
+confirms refresh commands still require a later separate review.
 
-The current `paper-bot-vps-status-check` Hermes cron is status-only. The
-`python bot.py --vps-daily-monitoring-summary` command is also report/display
-only and should not refresh data or approve execution. Saved-output freshness
-labels are diagnostics only. A possible promoted-review refresh cron remains a
-future manual-review item documented in `docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md`;
-do not create or trigger it during routine documentation or verifier work.
+The current `paper-bot-vps-status-check` Hermes cron is status-only. Job ID is
+`345188fbb60c`; cadence is once daily / every 1440m; delivery is Telegram; mode
+is script-only / no-agent; working directory is `C:\dev\paper-trading-bot`; the
+command sequence is repo safety, Hermes cron readiness, and
+`--vps-daily-monitoring-summary`. Verified output is
+`healthy_monitoring_state`, execution_approved false, scheduling_approved false,
+and freshness_warnings: none. It does not run refresh commands, trade, approve
+execution, approve scheduling beyond this one status job, pull/commit/push code,
+or inspect/print config contents, secrets, logs, databases, or full generated
+CSV contents. A possible promoted-review refresh cron remains a future
+manual-review item documented in
+`docs/HERMES_PROMOTED_REVIEW_REFRESH_CRON_DESIGN.md`; do not create or trigger it
+during routine documentation or verifier work.
 
 ## MCP Feasibility Boundary
 
