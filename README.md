@@ -1062,6 +1062,27 @@ data/growth_biased_stricter_manual_review_pack.csv
 data/growth_biased_stricter_regime_context.csv
 ```
 
+Growth-biased stricter threshold neighbourhood mode runs a small fixed research-only robustness check around the current stricter breadth gate. It tests fixed breadth gates at 40%, 45%, 50%, 55%, and 60%, using the same strategy-improvement lab simulation helpers, and compares the neighbourhood against the previous crash-gate lead, monthly ETF rotation reference, equal-weight ETF benchmark, and SPY buy-and-hold where available. The goal is to see whether the stricter-gate improvement looks like a credible nearby-threshold cluster or a one-threshold accident. It does not approve preview promotion automatically and does not approve execution.
+
+Command:
+
+```text
+python bot.py --growth-biased-stricter-threshold-neighbourhood
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-growth-biased-stricter-threshold-neighbourhood
+```
+
+Outputs:
+
+```text
+data/growth_biased_stricter_threshold_neighbourhood.csv
+data/growth_biased_stricter_threshold_neighbourhood_summary.csv
+```
+
 Adaptive momentum backtest mode is research-only. It ranks risk ETFs by fixed multi-horizon momentum with a volatility penalty, uses SPY as the risk regime filter, and rotates to defensive ETFs when the regime is weak. It saves only research CSV files and is not connected to Alpaca execution. `data/adaptive_momentum_results.csv` includes `full_period`, `in_sample`, and `out_of_sample` portfolio rows using the same simple chronological 70% / 30% reporting split as ETF rotation so the walk-forward report can pair the strategy.
 
 Outputs:

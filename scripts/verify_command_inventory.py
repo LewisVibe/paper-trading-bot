@@ -51,6 +51,8 @@ REQUIRED_COMMANDS = [
     "--show-growth-biased-stricter-promotion-readiness",
     "--growth-biased-stricter-manual-review-pack",
     "--show-growth-biased-stricter-manual-review-pack",
+    "--growth-biased-stricter-threshold-neighbourhood",
+    "--show-growth-biased-stricter-threshold-neighbourhood",
     "--crypto-research-preview",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",
