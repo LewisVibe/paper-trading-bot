@@ -161,6 +161,10 @@ from trading_bot.research.growth_biased_stricter_promotion_readiness import (
     generate_growth_biased_stricter_promotion_readiness,
     show_growth_biased_stricter_promotion_readiness_file,
 )
+from trading_bot.research.growth_biased_stricter_manual_review_pack import (
+    generate_growth_biased_stricter_manual_review_pack,
+    show_growth_biased_stricter_manual_review_pack_file,
+)
 from trading_bot.research.walk_forward import generate_walk_forward_report
 from trading_bot.runners.research_reports import (
     run_build_etf_breadth_price_history_command,
@@ -3978,6 +3982,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved stricter-gate promotion-readiness blocker report without refreshing data.",
     )
     parser.add_argument(
+        "--growth-biased-stricter-manual-review-pack",
+        action="store_true",
+        help="Create a saved-output manual review pack for the stricter growth-biased research lead.",
+    )
+    parser.add_argument(
+        "--show-growth-biased-stricter-manual-review-pack",
+        action="store_true",
+        help="Display the saved stricter-gate manual review pack without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-research-preview",
         action="store_true",
         help="Create a research-only crypto scaffold preview without execution.",
@@ -4362,6 +4376,20 @@ def main() -> int:
         return 0
     if args.show_growth_biased_stricter_promotion_readiness:
         status_code, lines = show_growth_biased_stricter_promotion_readiness_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.growth_biased_stricter_manual_review_pack:
+        try:
+            result = generate_growth_biased_stricter_manual_review_pack()
+        except Exception as exc:
+            print(f"Growth-biased stricter manual review pack failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_growth_biased_stricter_manual_review_pack:
+        status_code, lines = show_growth_biased_stricter_manual_review_pack_file()
         for line in lines:
             print(line)
         return status_code

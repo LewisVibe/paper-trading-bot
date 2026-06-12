@@ -1041,6 +1041,27 @@ data/growth_biased_stricter_promotion_readiness.csv
 data/growth_biased_stricter_promotion_blockers.csv
 ```
 
+Growth-biased stricter manual review pack mode reads saved validation and strategy-improvement outputs only and assembles a structural review pack for `growth_biased_rotation_breadth_stricter_gate`. It compares the stricter gate with the previous crash-gate lead, monthly ETF rotation reference, equal-weight ETF benchmark, and SPY benchmark where saved rows exist. It also writes saved regime/context rows for full-period, in/out-of-sample or fixed split rows, and the saved worst drawdown window when available. This is research/report-only manual review support; it does not approve preview promotion automatically and does not approve execution.
+
+Command:
+
+```text
+python bot.py --growth-biased-stricter-manual-review-pack
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-growth-biased-stricter-manual-review-pack
+```
+
+Outputs:
+
+```text
+data/growth_biased_stricter_manual_review_pack.csv
+data/growth_biased_stricter_regime_context.csv
+```
+
 Adaptive momentum backtest mode is research-only. It ranks risk ETFs by fixed multi-horizon momentum with a volatility penalty, uses SPY as the risk regime filter, and rotates to defensive ETFs when the regime is weak. It saves only research CSV files and is not connected to Alpaca execution. `data/adaptive_momentum_results.csv` includes `full_period`, `in_sample`, and `out_of_sample` portfolio rows using the same simple chronological 70% / 30% reporting split as ETF rotation so the walk-forward report can pair the strategy.
 
 Outputs:
