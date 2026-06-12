@@ -8,6 +8,8 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
+from trading_bot.research.monitoring_freshness import build_freshness_statuses, format_freshness_lines
+
 
 LOCK_WRAPPED_COMMANDS = [
     "--monitor-lockfile-readiness-report",
@@ -83,6 +85,9 @@ def build_vps_monitoring_status_lines(root: Path | str = ".") -> list[str]:
     lines.append("")
     lines.append("Promoted review state:")
     lines.extend(promoted_review_status_lines(root_path))
+    lines.append("")
+    lines.append("Saved-output freshness:")
+    lines.extend(format_freshness_lines(build_freshness_statuses(root_path)))
     lines.append("")
     lines.append("Next safe manual report actions:")
     for command in SAFE_NEXT_COMMANDS:

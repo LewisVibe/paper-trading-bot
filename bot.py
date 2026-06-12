@@ -17,6 +17,10 @@ def _early_report_only_route() -> None:
         from trading_bot.research.vps_monitoring_status import print_vps_monitoring_status
 
         raise SystemExit(print_vps_monitoring_status())
+    if sys.argv[1:] == ["--vps-daily-monitoring-summary"]:
+        from trading_bot.research.vps_daily_monitoring_summary import print_vps_daily_monitoring_summary
+
+        raise SystemExit(print_vps_daily_monitoring_summary())
     if sys.argv[1:] == ["--market-monitor-scheduling-readiness-report"]:
         from trading_bot.research.market_monitor_scheduling import print_market_monitor_scheduling_readiness_report
 
@@ -4049,6 +4053,11 @@ def parse_args() -> argparse.Namespace:
         help="Display a VPS-safe monitoring status summary without Alpaca, scheduling, or execution.",
     )
     parser.add_argument(
+        "--vps-daily-monitoring-summary",
+        action="store_true",
+        help="Display a concise VPS-safe daily monitoring summary without refresh, scheduling, or execution.",
+    )
+    parser.add_argument(
         "--portfolio-risk-policy-report",
         action="store_true",
         help="Create a research-only portfolio risk policy audit without enforcing execution gates.",
@@ -4301,6 +4310,10 @@ def main() -> int:
         from trading_bot.research.vps_monitoring_status import print_vps_monitoring_status
 
         return print_vps_monitoring_status()
+    if args.vps_daily_monitoring_summary:
+        from trading_bot.research.vps_daily_monitoring_summary import print_vps_daily_monitoring_summary
+
+        return print_vps_daily_monitoring_summary()
     if args.portfolio_risk_policy_report:
         return run_portfolio_risk_policy_report_command()
     if args.show_portfolio_risk_policy:

@@ -69,6 +69,7 @@ REQUIRED_COMMANDS = [
     "--deployment-readiness-report",
     "--vps-operations-readiness-report",
     "--vps-monitoring-status",
+    "--vps-daily-monitoring-summary",
     "--portfolio-risk-policy-report",
     "--show-portfolio-risk-policy",
     "--paper-kill-switch-readiness-report",

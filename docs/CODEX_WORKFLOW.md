@@ -116,6 +116,13 @@ Use `docs/HERMES_CRON_JOB_DESIGN.md` and
 That design keeps the first future Hermes cron job status-only and excludes
 refresh commands until a later separate review.
 
+The current `paper-bot-vps-status-check` Hermes cron is status-only. The
+`python bot.py --vps-daily-monitoring-summary` command is also report/display
+only and should not refresh data or approve execution. Saved-output freshness
+labels are diagnostics only. A possible promoted-review refresh cron remains a
+future manual-review item documented in `docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md`;
+do not create or trigger it during routine documentation or verifier work.
+
 ## MCP Feasibility Boundary
 
 MCP may be considered later as a tiny local/custom safe operations adapter for

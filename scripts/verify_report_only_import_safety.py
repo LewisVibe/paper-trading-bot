@@ -38,6 +38,8 @@ def verify_early_route_precedes_alpaca_imports(failures: list[str]) -> None:
         failures.append("_early_report_only_route() must run before top-level Alpaca imports")
     if 'sys.argv[1:] == ["--vps-monitoring-status"]' not in source:
         failures.append("early route must be limited to exact --vps-monitoring-status invocation")
+    if 'sys.argv[1:] == ["--vps-daily-monitoring-summary"]' not in source:
+        failures.append("early route must be limited to exact --vps-daily-monitoring-summary invocation")
     if 'sys.argv[1:] == ["--market-monitor-scheduling-readiness-report"]' not in source:
         failures.append("early route must be limited to exact --market-monitor-scheduling-readiness-report invocation")
 
@@ -59,6 +61,7 @@ def verify_execution_imports_still_present(failures: list[str]) -> None:
 def verify_report_only_commands_run_without_venv_site_packages(failures: list[str]) -> None:
     commands = [
         ("--vps-monitoring-status", "VPS MONITORING STATUS. REPORT ONLY. NOT EXECUTION."),
+        ("--vps-daily-monitoring-summary", "VPS DAILY MONITORING SUMMARY. REPORT ONLY. NOT EXECUTION."),
         (
             "--market-monitor-scheduling-readiness-report",
             "Market monitor scheduling readiness checks:",

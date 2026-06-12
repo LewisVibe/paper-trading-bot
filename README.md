@@ -564,6 +564,27 @@ high-risk command lines. It does not call Alpaca, yfinance, Discord, SQLite
 `trade_log`, read paper positions, create orders, schedule anything, or approve
 execution.
 
+The status output also labels key saved outputs by modification-time freshness:
+`fresh` for updated within 24 hours, `warning_stale` for older than 24 hours but
+within 72 hours, `stale` for older than 72 hours, and `missing` when absent.
+Freshness/staleness labels are monitoring diagnostics only. Missing or stale
+saved outputs are prerequisites/status issues, not trading approval.
+
+For a Telegram-friendly daily monitoring summary, use:
+
+```powershell
+python bot.py --vps-daily-monitoring-summary
+```
+
+This is report/display-only and terminal-only. It summarizes safety reminders,
+lock-wrapped safe commands, promoted decision-state counts, defensive refresh
+step counts, saved-output freshness labels, and a compact final status:
+`healthy_monitoring_state`, `monitoring_warning`, or
+`monitoring_stale_or_missing_inputs`. It does not refresh promoted/defensive
+reports, call Alpaca, call yfinance, send Discord alerts, write SQLite
+`trade_log`, read config contents, create generated files, schedule anything, or
+approve execution.
+
 Future Hermes cron readiness plan for safe monitoring reports only:
 
 Hermes cron preferred for future monitoring scheduling if configured. No
@@ -610,6 +631,12 @@ python bot.py
 python bot.py --paper-order-test ...
 python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper
 ```
+
+The current daily Hermes status cron exists as `paper-bot-vps-status-check` and
+is status-only. No refresh cron job is currently created. A future promoted
+review refresh cron requires a separate manual review; see
+`docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md` and verify the design with
+`python scripts\verify_hermes_promoted_review_cron_design.py`.
 
 Create a research-only portfolio risk policy audit before any future execution discussion:
 

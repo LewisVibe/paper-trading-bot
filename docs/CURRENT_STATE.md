@@ -283,6 +283,9 @@ Ticker universe readiness reporting:
 - VPS safe manual monitoring commands are report/refresh/display only. Use `git pull`, `.venv\Scripts\python.exe scripts\verify_repo_safety.py`, and `.venv\Scripts\python.exe scripts\verify_monitor_lockfile_final_state.py` before manual review commands such as `.venv\Scripts\python.exe bot.py --monitor-lockfile-readiness-report`, `.venv\Scripts\python.exe bot.py --refresh-promoted-review`, and `.venv\Scripts\python.exe bot.py --refresh-defensive-research`.
 - `python scripts\verify_vps_monitoring_prerequisites.py` is a static checkpoint for the first manual VPS monitoring test. It distinguishes environment/dependency readiness, `config_missing_for_readonly_promoted_review`, `missing_saved_research_inputs`, actual safety failures, and safe next manual VPS steps. It does not read or create `config.json`, install packages, run bot commands, or approve scheduling/execution.
 - `python bot.py --vps-monitoring-status` is the VPS-safe terminal monitoring route. It is report/display-only and summarizes repo safety reminders, lockfile state, config presence without reading contents, saved research prerequisite presence, generated-output ignore expectations, latest saved promoted review step/decision counts when present, high-risk/manual-only boundaries in prose, and next safe manual report actions. It avoids printing pasteable high-risk command lines. It does not call Alpaca, yfinance, Discord, SQLite `trade_log`, read positions, create orders, schedule anything, or approve execution.
+- `python bot.py --vps-monitoring-status` now labels key saved outputs by modification-time freshness only: `fresh`, `warning_stale`, `stale`, or `missing`. Freshness/staleness labels are monitoring diagnostics only, and missing/stale saved outputs are prerequisites/status issues, not trading approval.
+- `python bot.py --vps-daily-monitoring-summary` is a concise terminal-only daily report for Telegram/manual checks. It summarizes safety reminders, lock-wrapped safe commands, promoted decision-state counts, defensive refresh step counts, saved-output freshness labels, false approval flags, and a final status of `healthy_monitoring_state`, `monitoring_warning`, or `monitoring_stale_or_missing_inputs`. It does not refresh data, call Alpaca/yfinance/Discord, write SQLite `trade_log`, read config contents, create generated files, schedule anything, or approve execution.
+- The current daily Hermes status cron exists as `paper-bot-vps-status-check` and is status-only. No refresh cron job is currently created. `docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md` documents a possible future promoted-review refresh cron as a separate manual-review item, and `python scripts\verify_hermes_promoted_review_cron_design.py` verifies that it remains future-only and non-execution.
 - Terminal monitoring is the chosen VPS route for now. No dashboard, web server, public hosting, open ports, scheduling, or execution controls are added.
 - Generated CSVs/charts/logs/databases/secrets/config must not be committed or pasted. Generated outputs remain ignored and stale lockfiles require manual review, not automatic deletion.
 - Lockfile planning applies only to report/preview/display/monitor refresh commands. Execution-capable commands must never be scheduled and must not be treated as safe merely because a lockfile exists. A lockfile does not approve scheduling, execution, or paper orders.
@@ -358,6 +361,9 @@ python scripts\verify_refresh_defensive_research_lock_readiness.py
 python scripts\verify_monitor_lockfile_final_state.py
 python scripts\verify_vps_monitoring_prerequisites.py
 python scripts\verify_vps_monitoring_status.py
+python scripts\verify_vps_monitoring_freshness.py
+python scripts\verify_vps_daily_monitoring_summary.py
+python scripts\verify_hermes_promoted_review_cron_design.py
 python scripts\verify_report_only_import_safety.py
 python scripts\verify_market_monitor_scheduling_readiness.py
 python bot.py --ticker-universe-readiness-report
@@ -369,6 +375,8 @@ python bot.py --market-monitor-scheduling-readiness-report
 python bot.py --monitor-lockfile-readiness-report
 python bot.py --deployment-readiness-report
 python bot.py --vps-operations-readiness-report
+python bot.py --vps-monitoring-status
+python bot.py --vps-daily-monitoring-summary
 python bot.py --portfolio-risk-policy-report
 python bot.py --show-portfolio-risk-policy
 ```

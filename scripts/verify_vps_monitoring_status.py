@@ -30,6 +30,12 @@ REQUIRED_OUTPUT_PHRASES = [
     "does not call Alpaca, yfinance, Discord, SQLite trade_log, or read config.json contents",
     "Promoted review state:",
     "promoted_review_missing_saved_outputs",
+    "Saved-output freshness:",
+    "data/promoted_review_refresh_summary.csv",
+    "data/promoted_decision_preview.csv",
+    "data/defensive_research_refresh_summary.csv",
+    "data/market_monitor_scheduling_readiness_report.csv",
+    "data/monitor_lockfile_readiness_report.csv",
     "Promoted review saved-output summaries are compact counts only and do not approve execution.",
 ]
 

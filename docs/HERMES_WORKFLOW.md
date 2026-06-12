@@ -232,6 +232,20 @@ cron jobs require a later separate review after the status-only job proves
 stable. Verify the design with
 `python scripts\verify_hermes_cron_job_design.py`.
 
+The current daily Hermes status cron exists as `paper-bot-vps-status-check` and
+is status-only. It does not approve scheduling changes or execution. The
+`python bot.py --vps-daily-monitoring-summary` command is a concise report-only
+summary for Telegram/manual checks. It includes saved-output freshness labels
+(`fresh`, `warning_stale`, `stale`, `missing`) as monitoring diagnostics only.
+Missing or stale saved outputs are prerequisite/status issues, not trading
+approval.
+
+No promoted-review refresh cron job is currently created. A possible future
+second job is documented in `docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md` and
+must pass `python scripts\verify_hermes_promoted_review_cron_design.py` before
+any separate manual scheduling review. If promoted review reports strategy
+disagreement, that is a monitoring result, not execution approval.
+
 Refresh jobs should remain protected by lockfile/no-overlap. The current
 lock-wrapped overlap-risk commands are `--monitor-lockfile-readiness-report`,
 `--refresh-promoted-review`, and `--refresh-defensive-research`. A stale lock

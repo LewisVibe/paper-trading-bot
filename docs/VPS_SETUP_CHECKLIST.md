@@ -140,6 +140,18 @@ monitoring status, and optional market-monitor scheduling readiness. It excludes
 refresh commands until a later separate review. Verify it with
 `python scripts\verify_hermes_cron_job_design.py`.
 
+The current daily Hermes status cron exists as `paper-bot-vps-status-check` and
+is status-only. For concise Telegram/manual checks, use
+`python bot.py --vps-daily-monitoring-summary`. The summary and
+`--vps-monitoring-status` freshness labels are monitoring diagnostics only:
+`fresh`, `warning_stale`, `stale`, and `missing`. Missing or stale saved outputs
+are prerequisites/status issues, not trading approval.
+
+No promoted-review refresh cron job is currently created. A possible future
+second job is documented in `docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md`; verify
+the design with `python scripts\verify_hermes_promoted_review_cron_design.py`
+before any separate manual scheduling review.
+
 Prerequisites before any scheduling review:
 
 ```powershell
