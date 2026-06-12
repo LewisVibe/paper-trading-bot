@@ -1444,6 +1444,31 @@ data/crypto_universe_readiness_report.csv
 data/crypto_universe_readiness_summary.csv
 ```
 
+Expanded crypto strategy lab mode tests expanded-universe strategy candidates using symbols marked eligible by the saved crypto universe readiness report where possible. It excludes `POL-USD` and `MATIC-USD` until a separate transition review approves one of them. The lab includes the planned `crypto_risk_on_momentum_persistence` strategy and one Codex-designed fixed-rule candidate, `codex_ambitious_crypto_btc_eth_core_alt_accelerator`, plus BTC, ETH, BTC/ETH 50/50, equal-weight eligible-crypto, and cash benchmarks. It includes fixed cost stress and fixed split validation. This is research/report-only and does not approve crypto execution or connect crypto to Alpaca or paper orders.
+
+Command:
+
+```text
+python bot.py --expanded-crypto-strategy-lab
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-expanded-crypto-strategy-lab
+```
+
+Outputs:
+
+```text
+data/expanded_crypto_strategy_lab.csv
+data/expanded_crypto_strategy_lab_summary.csv
+data/expanded_crypto_strategy_lab_trades.csv
+data/expanded_crypto_strategy_lab_equity_curves.csv
+data/expanded_crypto_strategy_lab_costs.csv
+data/expanded_crypto_strategy_lab_splits.csv
+```
+
 Crypto strategy lab mode backtests a tiny fixed research-only strategy set for `BTC/USD`, `ETH/USD`, and `LTC/USD` using yfinance-compatible daily symbols (`BTC-USD`, `ETH-USD`, `LTC-USD`). The per-symbol strategies are `crypto_buy_and_hold_baseline`, `crypto_sma_50_200_trend`, `crypto_buy_above_200_exit_below_200`, and one controlled iteration: `crypto_buy_above_200_with_vol_gate`. The volatility-gate strategy uses fixed parameters only: 20-day realised volatility, trailing 252-day median volatility, and a 1.5x gate for new entries. The lab also writes a separate portfolio-style BTC/ETH/cash rotation test, `crypto_monthly_btc_eth_momentum_rotation`, using fixed monthly rebalance, 126-day momentum ranking, and a 200-day SMA absolute trend filter. It writes full-period, in-sample, and out-of-sample rows, plus an iteration log to discourage tuning after seeing results. Results include simple crypto research cost assumptions: `crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, and `crypto_slippage_bps=10`. It does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, or approve execution.
 
 Outputs:
