@@ -55,6 +55,8 @@ REQUIRED_COMMANDS = [
     "--show-growth-biased-stricter-threshold-neighbourhood",
     "--growth-biased-stricter-cost-turnover-stress",
     "--show-growth-biased-stricter-cost-turnover-stress",
+    "--growth-biased-stricter-persistence-filter",
+    "--show-growth-biased-stricter-persistence-filter",
     "--crypto-research-preview",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",

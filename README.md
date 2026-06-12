@@ -1104,6 +1104,27 @@ data/growth_biased_stricter_cost_turnover_stress.csv
 data/growth_biased_stricter_cost_turnover_stress_summary.csv
 ```
 
+Growth-biased stricter persistence filter mode tests fixed turnover-control variants around the 55% stricter breadth gate: a 55% reference, 2-month and 3-month minimum holds, a 5 percentage-point momentum-gap switch rule, near-top-2 holding, and a combined persistence rule. It also includes one Codex-designed fixed research candidate, `codex_ambitious_concentrated_growth_persistence`, which uses a concentrated top-two growth ETF allocation with a 55% breadth gate, 2-month hold, 7.5 percentage-point momentum gap, and near-top-2 retention. This is research/report-only and does not approve preview promotion or execution.
+
+Command:
+
+```text
+python bot.py --growth-biased-stricter-persistence-filter
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-growth-biased-stricter-persistence-filter
+```
+
+Outputs:
+
+```text
+data/growth_biased_stricter_persistence_filter.csv
+data/growth_biased_stricter_persistence_filter_summary.csv
+```
+
 Adaptive momentum backtest mode is research-only. It ranks risk ETFs by fixed multi-horizon momentum with a volatility penalty, uses SPY as the risk regime filter, and rotates to defensive ETFs when the regime is weak. It saves only research CSV files and is not connected to Alpaca execution. `data/adaptive_momentum_results.csv` includes `full_period`, `in_sample`, and `out_of_sample` portfolio rows using the same simple chronological 70% / 30% reporting split as ETF rotation so the walk-forward report can pair the strategy.
 
 Outputs:
