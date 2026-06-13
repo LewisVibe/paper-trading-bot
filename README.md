@@ -1596,6 +1596,30 @@ data/expanded_crypto_lead_decision_summary.csv
 data/expanded_crypto_lead_decision_evidence.csv
 ```
 
+Crypto lead split-sensitivity diagnosis mode is the saved-output follow-up for the current crypto research lead, `crypto_equal_weight_ex_highest_vol_2`. It reads saved crypto lead-decision, capped-risk, robustness, split, contribution, and universe-readiness CSVs where available, then writes a research/report-only diagnosis of split weakness, broad-market versus lead-specific decay, highest-volatility exclusion stability, and BNB-USD/TRX-USD or other top-contributor dependence. This does not approve crypto execution, paper execution, preview promotion, scheduling, order instructions, or strategy-to-execution wiring.
+
+Command:
+
+```text
+python bot.py --crypto-lead-split-sensitivity-diagnosis
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-crypto-lead-split-sensitivity-diagnosis
+```
+
+Outputs:
+
+```text
+data/crypto_lead_split_sensitivity_diagnosis.csv
+data/crypto_lead_split_sensitivity_summary.csv
+data/crypto_lead_split_sensitivity_periods.csv
+data/crypto_lead_split_sensitivity_exclusions.csv
+data/crypto_lead_split_sensitivity_contributions.csv
+```
+
 Crypto strategy lab mode backtests a tiny fixed research-only strategy set for `BTC/USD`, `ETH/USD`, and `LTC/USD` using yfinance-compatible daily symbols (`BTC-USD`, `ETH-USD`, `LTC-USD`). The per-symbol strategies are `crypto_buy_and_hold_baseline`, `crypto_sma_50_200_trend`, `crypto_buy_above_200_exit_below_200`, and one controlled iteration: `crypto_buy_above_200_with_vol_gate`. The volatility-gate strategy uses fixed parameters only: 20-day realised volatility, trailing 252-day median volatility, and a 1.5x gate for new entries. The lab also writes a separate portfolio-style BTC/ETH/cash rotation test, `crypto_monthly_btc_eth_momentum_rotation`, using fixed monthly rebalance, 126-day momentum ranking, and a 200-day SMA absolute trend filter. It writes full-period, in-sample, and out-of-sample rows, plus an iteration log to discourage tuning after seeing results. Results include simple crypto research cost assumptions: `crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, and `crypto_slippage_bps=10`. It does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, or approve execution.
 
 Outputs:

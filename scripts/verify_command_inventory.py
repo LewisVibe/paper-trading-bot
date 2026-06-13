@@ -78,6 +78,8 @@ REQUIRED_COMMANDS = [
     "--show-crypto-equal-weight-capped-risk-report",
     "--expanded-crypto-lead-decision",
     "--show-expanded-crypto-lead-decision",
+    "--crypto-lead-split-sensitivity-diagnosis",
+    "--show-crypto-lead-split-sensitivity-diagnosis",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",
     "--crypto-strategy-decision-report",

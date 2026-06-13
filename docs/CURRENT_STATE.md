@@ -198,9 +198,16 @@ Research chain:
 - `python bot.py --preview-crypto-signals`
 - `python bot.py --show-crypto-monitor`
 - `python bot.py --crypto-research-state-report`
+- `python bot.py --expanded-crypto-lead-decision`
+- `python bot.py --show-expanded-crypto-lead-decision`
+- `python bot.py --crypto-lead-split-sensitivity-diagnosis`
+- `python bot.py --show-crypto-lead-split-sensitivity-diagnosis`
 
 Current crypto interpretation:
 
+- `crypto_equal_weight_ex_highest_vol_2` is the current expanded crypto research lead as a research label only.
+- `python bot.py --crypto-lead-split-sensitivity-diagnosis` reads saved crypto research CSVs and writes `data/crypto_lead_split_sensitivity_diagnosis.csv`, `data/crypto_lead_split_sensitivity_summary.csv`, `data/crypto_lead_split_sensitivity_periods.csv`, `data/crypto_lead_split_sensitivity_exclusions.csv`, and `data/crypto_lead_split_sensitivity_contributions.csv`.
+- The split-sensitivity diagnosis for the current crypto research lead is research/report-only and does not approve crypto execution, paper execution, preview promotion, scheduling, order instructions, or strategy-to-execution wiring.
 - `BTC/USD`: useful but split-sensitive; keep monitoring.
 - `ETH/USD`: useful but research-only; keep monitoring.
 - `LTC/USD`: researched but not useful; pause.
