@@ -74,6 +74,30 @@ OPTIONAL_DASHBOARD_INPUTS = {
         "data/normal_bot_execution_policy_report.csv",
         "python bot.py --normal-bot-execution-policy-report",
     ),
+    "project_research_state_summary": (
+        "data/project_research_state_summary.csv",
+        "python bot.py --project-research-state-refresh",
+    ),
+    "project_research_state_refresh": (
+        "data/project_research_state_refresh.csv",
+        "python bot.py --project-research-state-refresh",
+    ),
+    "project_research_state_next_steps": (
+        "data/project_research_state_next_steps.csv",
+        "python bot.py --project-research-state-refresh",
+    ),
+    "codex_ambitious_lead_decision_summary": (
+        "data/codex_ambitious_lead_decision_summary.csv",
+        "python bot.py --codex-ambitious-lead-decision",
+    ),
+    "expanded_crypto_manual_review_summary": (
+        "data/expanded_crypto_manual_review_summary.csv",
+        "python bot.py --expanded-crypto-manual-review-pack",
+    ),
+    "expanded_crypto_lead_decision_summary": (
+        "data/expanded_crypto_lead_decision_summary.csv",
+        "python bot.py --expanded-crypto-lead-decision",
+    ),
 }
 
 CHART_INPUTS = [
@@ -148,6 +172,7 @@ def build_dashboard_html(
         render_header(created_at),
         render_cards(cards),
         render_meaning(data),
+        render_project_research_state(data),
         render_next_commands(),
         render_execution_safety_state(data),
         render_defensive_research_state(data),
@@ -252,6 +277,86 @@ def render_meaning(data: dict[str, dict[str, Any]]) -> str:
     return section("What This Means", tag("ul", "".join(tag("li", escape(item)) for item in items), class_="meaning-list"))
 
 
+def render_project_research_state(data: dict[str, dict[str, Any]]) -> str:
+    summary_rows = data["project_research_state_summary"]["rows"]
+    refresh_rows = data["project_research_state_refresh"]["rows"]
+    next_step_rows = data["project_research_state_next_steps"]["rows"]
+    stock_rows = data["codex_ambitious_lead_decision_summary"]["rows"]
+    crypto_manual_rows = data["expanded_crypto_manual_review_summary"]["rows"]
+    crypto_lead_rows = data["expanded_crypto_lead_decision_summary"]["rows"]
+
+    body = tag(
+        "p",
+        "Minimal static state panel. Research/report/display-only. This does not approve preview promotion, execution, or scheduling.",
+        class_="safety-strip danger",
+    )
+    if not summary_rows:
+        body += tag(
+            "p",
+            "Missing saved input: run `python bot.py --project-research-state-refresh` to populate the project research state panel.",
+            class_="muted",
+        )
+    cards = [
+        {
+            "branch": "Stock/ETF",
+            "research_lead": summary_value(summary_rows, "stock_etf_active_research_lead")
+            or summary_value(stock_rows, "selected_research_lead")
+            or "codex_ambitious_concentrated_growth_persistence",
+            "status": status_value(summary_rows, "stock_etf_status_and_blocker", "codex_ambitious_active_research_lead_cost_review_required"),
+            "blocker": blocker_from_status(summary_value(summary_rows, "stock_etf_status_and_blocker"))
+            or "25 bps cost review not survived; survives 10 bps but not 25 bps",
+        },
+        {
+            "branch": "Crypto",
+            "research_lead": summary_value(summary_rows, "crypto_research_lead")
+            or summary_value(crypto_lead_rows, "selected_crypto_research_lead")
+            or "crypto_equal_weight_ex_highest_vol_2",
+            "status": status_value(summary_rows, "crypto_status_and_blockers", "crypto_manual_review_not_ready_for_preview_discussion"),
+            "blocker": blocker_from_status(summary_value(summary_rows, "crypto_status_and_blockers"))
+            or summary_value(crypto_manual_rows, "blocker_counts")
+            or "fixed split sensitivity; exclusion-rule instability; BNB/TRX outlier dependence; cost review; high drawdown review",
+        },
+    ]
+    body += tag("div", "".join(render_state_card(card) for card in cards), class_="cards")
+    body += tag("h3", "Rejected / Downgraded Families")
+    body += tag("p", escape(summary_value(summary_rows, "rejected_or_downgraded_families") or "Crypto hard crash gates rejected for return drag; crypto volatility/drawdown throttles downgraded because drawdown barely improved or return collapsed."))
+    body += tag("h3", "Recommended Next Step")
+    body += tag("p", escape(summary_value(summary_rows, "recommended_next_step") or "pause_strategy_iterations_and_improve_reporting"))
+    body += tag("h3", "Safety Flags")
+    body += render_table(
+        compact_project_state_rows(summary_rows, refresh_rows, next_step_rows),
+        ["check", "value"],
+    )
+    return section("Project Research State", body)
+
+
+def render_state_card(card: dict[str, str]) -> str:
+    return tag(
+        "div",
+        tag("div", "RESEARCH ONLY", class_="badge neutral")
+        + tag("h3", escape(card["branch"]))
+        + tag("p", escape(card["research_lead"]))
+        + tag("p", escape(card["status"]), class_="meta")
+        + tag("p", escape(card["blocker"])),
+        class_="card neutral",
+    )
+
+
+def compact_project_state_rows(
+    summary_rows: list[dict[str, str]],
+    refresh_rows: list[dict[str, str]],
+    next_step_rows: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    execution_values = sorted({str(row.get("execution_approved", "")).lower() for row in summary_rows + refresh_rows + next_step_rows if row})
+    scheduling_values = sorted({str(row.get("scheduling_approved", "")).lower() for row in summary_rows + refresh_rows + next_step_rows if row})
+    return [
+        {"check": "execution_approved", "value": ", ".join(execution_values) or "false"},
+        {"check": "scheduling_approved", "value": ", ".join(scheduling_values) or "false"},
+        {"check": "preview_promotion_approved", "value": value_set(summary_rows + refresh_rows + next_step_rows, "preview_promotion_approved") or "false"},
+        {"check": "panel_scope", "value": "static HTML only; no dashboard server, background service, auto-refresh, or strategy-to-execution wiring"},
+    ]
+
+
 def render_next_commands() -> str:
     commands = [
         "python bot.py --refresh-promoted-review",
@@ -259,6 +364,7 @@ def render_next_commands() -> str:
         "python bot.py --paper-kill-switch-readiness-report",
         "python bot.py --deployment-readiness-report",
         "python bot.py --execution-eligibility-report",
+        "python bot.py --project-research-state-refresh",
         "python bot.py --build-research-dashboard",
     ]
     return section(
@@ -517,6 +623,29 @@ def blocker_text(blockers: list[str]) -> str:
     if blockers == ["AAPL", "SPY"]:
         return "AAPL/SPY strategy disagreement"
     return f"{', '.join(blockers)} strategy disagreement"
+
+
+def summary_value(rows: list[dict[str, str]], metric_name: str) -> str:
+    for row in rows:
+        if row.get("metric_name") == metric_name or row.get("check_name") == metric_name or row.get("strategy_name") == metric_name:
+            return str(row.get("metric_value", ""))
+    return ""
+
+
+def status_value(rows: list[dict[str, str]], metric_name: str, fallback: str) -> str:
+    value = summary_value(rows, metric_name)
+    return value.split("; blocker=", 1)[0] if value else fallback
+
+
+def blocker_from_status(value: str) -> str:
+    if "; blocker=" not in value:
+        return ""
+    return value.split("; blocker=", 1)[1]
+
+
+def value_set(rows: list[dict[str, str]], column: str) -> str:
+    values = sorted({str(row.get(column, "")).lower() for row in rows if row.get(column, "") != ""})
+    return ", ".join(values)
 
 
 def crypto_summary(rows: list[dict[str, str]]) -> str:

@@ -73,6 +73,12 @@ def verify_fixture_dashboard(failures: list[str]) -> None:
         "No execution approval",
         "No execution approval. No orders. No Alpaca calls. No market-data refresh.",
         "What This Means",
+        "Project Research State",
+        "codex_ambitious_concentrated_growth_persistence",
+        "crypto_equal_weight_ex_highest_vol_2",
+        "execution_approved",
+        "scheduling_approved",
+        "pause_strategy_iterations_and_improve_reporting",
         "Next Useful Commands",
         "Execution Safety State",
         "Paper Execution Protection",
@@ -104,6 +110,7 @@ def verify_fixture_dashboard(failures: list[str]) -> None:
         "useful_diagnostic_not_strategy",
         "No localhost server was started. No execution approval was granted.",
         "python bot.py --refresh-promoted-review",
+        "python bot.py --project-research-state-refresh",
         "python bot.py --build-research-dashboard",
     ]:
         if expected not in html_text:
@@ -134,6 +141,9 @@ def verify_missing_inputs(failures: list[str]) -> None:
     for optional_path in [
         "data/paper_execution_protection_report.csv",
         "data/normal_bot_execution_policy_report.csv",
+        "data/project_research_state_summary.csv",
+        "data/project_research_state_refresh.csv",
+        "data/project_research_state_next_steps.csv",
     ]:
         if optional_path in {path for path, _ in result.missing_inputs}:
             failures.append(f"{optional_path} should remain optional, not required")
@@ -149,6 +159,17 @@ def verify_source_safety(failures: list[str]) -> None:
             failures.append(f"research dashboard runner should not reference {token}")
     if "config.json" in source:
         failures.append("research dashboard should not read or print config.json contents")
+    for token in [
+        "data/project_research_state_summary.csv",
+        "data/project_research_state_refresh.csv",
+        "data/project_research_state_next_steps.csv",
+        "codex_ambitious_concentrated_growth_persistence",
+        "crypto_equal_weight_ex_highest_vol_2",
+        "execution_approved",
+        "scheduling_approved",
+    ]:
+        if token not in source:
+            failures.append(f"research dashboard project-state panel missing token: {token}")
 
 
 def write_fixture_data(root: Path) -> None:
@@ -260,6 +281,42 @@ def write_fixture_data(root: Path) -> None:
     )
     write_csv(data_dir / "deployment_readiness_report.csv", [{"check_name": "repo_safety_verifier", "check_status": "pass", "execution_approved": "False"}])
     write_csv(data_dir / "paper_kill_switch_readiness_report.csv", [{"check_name": "no_existing_kill_switch_enforcement", "check_status": "not_implemented_future_work", "execution_approved": "False"}])
+    write_csv(
+        data_dir / "project_research_state_summary.csv",
+        [
+            {"metric_name": "stock_etf_active_research_lead", "metric_value": "codex_ambitious_concentrated_growth_persistence", "execution_approved": "False", "scheduling_approved": "False", "preview_promotion_approved": "False"},
+            {"metric_name": "stock_etf_status_and_blocker", "metric_value": "codex_ambitious_active_research_lead_cost_review_required; blocker=25 bps cost review not survived", "execution_approved": "False", "scheduling_approved": "False", "preview_promotion_approved": "False"},
+            {"metric_name": "crypto_research_lead", "metric_value": "crypto_equal_weight_ex_highest_vol_2", "execution_approved": "False", "scheduling_approved": "False", "preview_promotion_approved": "False"},
+            {"metric_name": "crypto_status_and_blockers", "metric_value": "crypto_manual_review_not_ready_for_preview_discussion; blockers=fixed split sensitivity; exclusion-rule instability; BNB/TRX outlier dependence", "execution_approved": "False", "scheduling_approved": "False", "preview_promotion_approved": "False"},
+            {"metric_name": "rejected_or_downgraded_families", "metric_value": "crypto hard crash gates rejected for return drag; crypto volatility/drawdown throttles downgraded because drawdown barely improved or return collapsed", "execution_approved": "False", "scheduling_approved": "False", "preview_promotion_approved": "False"},
+            {"metric_name": "recommended_next_step", "metric_value": "pause_strategy_iterations_and_improve_reporting", "execution_approved": "False", "scheduling_approved": "False", "preview_promotion_approved": "False"},
+        ],
+    )
+    write_csv(
+        data_dir / "project_research_state_refresh.csv",
+        [
+            {"section": "execution_safety_state", "metric_name": "execution_approved", "metric_value": "false", "execution_approved": "False", "scheduling_approved": "False", "preview_promotion_approved": "False"},
+            {"section": "scheduling_safety_state", "metric_name": "scheduling_approved", "metric_value": "false", "execution_approved": "False", "scheduling_approved": "False", "preview_promotion_approved": "False"},
+        ],
+    )
+    write_csv(
+        data_dir / "project_research_state_next_steps.csv",
+        [
+            {"check_name": "pause_strategy_iterations_and_improve_reporting", "metric_value": "Pause new variants and improve reporting.", "execution_approved": "False", "scheduling_approved": "False", "preview_promotion_approved": "False"},
+        ],
+    )
+    write_csv(
+        data_dir / "codex_ambitious_lead_decision_summary.csv",
+        [{"metric_name": "selected_research_lead", "metric_value": "codex_ambitious_concentrated_growth_persistence", "execution_approved": "False"}],
+    )
+    write_csv(
+        data_dir / "expanded_crypto_manual_review_summary.csv",
+        [{"metric_name": "blocker_counts", "metric_value": "blocked_for_manual_review=5", "execution_approved": "False"}],
+    )
+    write_csv(
+        data_dir / "expanded_crypto_lead_decision_summary.csv",
+        [{"metric_name": "selected_crypto_research_lead", "metric_value": "crypto_equal_weight_ex_highest_vol_2", "execution_approved": "False"}],
+    )
     write_csv(
         data_dir / "paper_execution_protection_report.csv",
         [
