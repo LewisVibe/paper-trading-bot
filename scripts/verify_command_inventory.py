@@ -37,6 +37,8 @@ REQUIRED_COMMANDS = [
     "--short-selling-readiness-report",
     "--short-hedge-backtest",
     "--short-strategy-lab",
+    "--short-leverage-research-lab",
+    "--show-short-leverage-research-lab",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",

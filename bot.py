@@ -101,6 +101,20 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    if sys.argv[1:] == ["--short-leverage-research-lab"]:
+        from trading_bot.research.short_leverage_research_lab import run_short_leverage_research_lab
+
+        result = run_short_leverage_research_lab()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-short-leverage-research-lab"]:
+        from trading_bot.research.short_leverage_research_lab import show_short_leverage_research_lab
+
+        code, lines = show_short_leverage_research_lab()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -4099,6 +4113,16 @@ def parse_args() -> argparse.Namespace:
         "--short-strategy-lab",
         action="store_true",
         help="Run a research-only multi-ETF synthetic short strategy lab without enabling short execution.",
+    )
+    parser.add_argument(
+        "--short-leverage-research-lab",
+        action="store_true",
+        help="Run a research-only synthetic short/leverage hypothesis lab without approving shorting, margin, leverage, or execution.",
+    )
+    parser.add_argument(
+        "--show-short-leverage-research-lab",
+        action="store_true",
+        help="Display the saved short/leverage research lab summary without refreshing data.",
     )
     parser.add_argument(
         "--vol-managed-etf-backtest",

@@ -1418,6 +1418,30 @@ data/short_strategy_lab_equity_curve.csv
 data/short_strategy_iteration_log.csv
 ```
 
+Short/leverage research lab mode tests a small fixed set of synthetic hypotheses only: trend-gated SPY/QQQ leverage, saved stock/ETF lead leverage proxies when a saved equity curve exists, a weak-regime SPY short hedge, a fixed sector relative long/short spread, and a fixed defensive-versus-cyclical spread. It writes full-period, split, placeholder cost/borrow/financing, and drawdown CSVs. The cost rows use fixed placeholder assumptions only; they are not broker-specific margin, borrow, or financing terms. This lab does not enable `allow_shorting`, margin, leverage, crypto shorting, Alpaca execution, preview promotion, scheduling, or strategy-to-execution wiring.
+
+Command:
+
+```text
+python bot.py --short-leverage-research-lab
+```
+
+Saved display:
+
+```text
+python bot.py --show-short-leverage-research-lab
+```
+
+Outputs:
+
+```text
+data/short_leverage_research_lab.csv
+data/short_leverage_research_lab_summary.csv
+data/short_leverage_research_lab_costs.csv
+data/short_leverage_research_lab_splits.csv
+data/short_leverage_research_lab_drawdowns.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:

@@ -97,7 +97,14 @@ The controlled multi-ticker ETF short research test comes from `python bot.py --
 - Out-of-sample result: CAGR `-2.8997%`, Sharpe `-0.3000`, max drawdown `18.8880%`, Calmar `-0.1535`.
 - Research status: `not_useful`.
 
-Conclusion: pause short-selling research for now. Do not add short preview or short execution. Only revisit short research if a new fixed hypothesis is supported by external research and includes borrow-fee, borrow-availability, recall, squeeze, and short-sale constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, or short crypto support is approved.
+The short/leverage research lab comes from `python bot.py --short-leverage-research-lab`, with saved display through `python bot.py --show-short-leverage-research-lab`:
+
+- It tests fixed synthetic hypotheses only: SPY/QQQ trend-gated leverage, saved stock/ETF lead leverage proxies when saved equity exists, weak-regime SPY short hedge, fixed sector relative long/short, and fixed defensive-versus-cyclical spread.
+- It writes `data/short_leverage_research_lab.csv`, summary, cost, split, and drawdown CSVs.
+- Cost, borrow-fee, and financing rows are placeholder sensitivities only, not broker-specific terms.
+- Every row keeps `execution_approved=false`, `short_execution_approved=false`, `leverage_execution_approved=false`, `margin_approved=false`, `scheduling_approved=false`, `alpaca_called=false`, and `orders_created=false`.
+
+Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
 
