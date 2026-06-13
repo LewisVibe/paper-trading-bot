@@ -34,6 +34,27 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    if sys.argv[1:] in (
+        ["--alpaca-paper-readiness-report"],
+        ["--alpaca-paper-readiness-report", "--confirm-readonly-alpaca-check"],
+    ):
+        from trading_bot.research.alpaca_paper_readiness import generate_alpaca_paper_readiness_report
+
+        result = generate_alpaca_paper_readiness_report(
+            confirm_readonly_alpaca_check="--confirm-readonly-alpaca-check" in sys.argv[1:]
+        )
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--paper-order-smoke-test-readiness-pack"]:
+        from trading_bot.research.paper_order_smoke_test_readiness import (
+            generate_paper_order_smoke_test_readiness_pack,
+        )
+
+        result = generate_paper_order_smoke_test_readiness_pack()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
 
 
 _early_report_only_route()
@@ -170,6 +191,10 @@ from trading_bot.research.current_research_state import show_current_research_st
 from trading_bot.research.project_research_state_quality_report import generate_project_research_state_quality_report
 from trading_bot.research.stock_etf_paper_execution_readiness import (
     generate_stock_etf_paper_execution_readiness_report,
+)
+from trading_bot.research.alpaca_paper_readiness import generate_alpaca_paper_readiness_report
+from trading_bot.research.paper_order_smoke_test_readiness import (
+    generate_paper_order_smoke_test_readiness_pack,
 )
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
@@ -4250,6 +4275,21 @@ def parse_args() -> argparse.Namespace:
         help="Create a saved-data report-only stock/ETF paper execution discussion readiness review.",
     )
     parser.add_argument(
+        "--alpaca-paper-readiness-report",
+        action="store_true",
+        help="Create an Alpaca paper readiness/preflight report without approving execution.",
+    )
+    parser.add_argument(
+        "--confirm-readonly-alpaca-check",
+        action="store_true",
+        help="With --alpaca-paper-readiness-report only, explicitly allow a read-only Alpaca paper account/status check.",
+    )
+    parser.add_argument(
+        "--paper-order-smoke-test-readiness-pack",
+        action="store_true",
+        help="Create a report-only readiness pack for discussing a future tiny manual paper-order smoke test.",
+    )
+    parser.add_argument(
         "--crypto-strategy-lab",
         action="store_true",
         help="Run a research-only crypto strategy lab with daily yfinance-compatible history.",
@@ -4894,6 +4934,26 @@ def main() -> int:
             result = generate_stock_etf_paper_execution_readiness_report()
         except Exception as exc:
             print(f"Stock/ETF paper execution readiness report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.alpaca_paper_readiness_report:
+        try:
+            result = generate_alpaca_paper_readiness_report(
+                confirm_readonly_alpaca_check=args.confirm_readonly_alpaca_check
+            )
+        except Exception as exc:
+            print(f"Alpaca paper readiness report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.paper_order_smoke_test_readiness_pack:
+        try:
+            result = generate_paper_order_smoke_test_readiness_pack()
+        except Exception as exc:
+            print(f"Paper-order smoke-test readiness pack failed: {exc}", file=sys.stderr)
             return 1
         for line in result.summary_lines:
             print(line)

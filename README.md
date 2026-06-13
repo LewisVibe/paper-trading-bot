@@ -1692,6 +1692,22 @@ python bot.py --stock-etf-paper-execution-readiness-report
 
 This writes `data/stock_etf_paper_execution_readiness_report.csv`. It reads saved project/research/gate reports only and checks the current stock/ETF lead, cost-review blocker, split/drawdown context, preview readiness, execution eligibility, paper-execution protection, kill-switch, portfolio-risk prerequisites, broker boundary, crypto out-of-scope boundary, and scheduling boundary. The expected current interpretation remains conservative: `codex_ambitious_concentrated_growth_persistence` is a research lead with 25 bps cost review still blocking execution discussion. This report does not read local credentials, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, or approve paper execution.
 
+To run an Alpaca paper readiness/preflight audit before any future manually confirmed paper smoke test discussion, use:
+
+```text
+python bot.py --alpaca-paper-readiness-report
+```
+
+This writes `data/alpaca_paper_readiness_report.csv`. Default mode is static and does not call Alpaca, read positions, submit/cancel/replace/create orders, write SQLite `trade_log`, send alerts, print config contents, or approve execution. A separate explicit read-only connectivity mode exists behind `--confirm-readonly-alpaca-check`; it may load local paper config and call only a read-only account/status endpoint, with identifiers and credentials redacted. Do not run the confirmed read-only mode until the static report has been reviewed.
+
+To review whether one tiny manually confirmed paper-order smoke test can even be discussed, run:
+
+```text
+python bot.py --paper-order-smoke-test-readiness-pack
+```
+
+This writes `data/paper_order_smoke_test_readiness_pack.csv`. It is saved-data/static/report-only: it summarises the saved Alpaca paper readiness report, stock/ETF execution-readiness context, project state, existing confirmation-gated smoke-test boundary, and saved kill-switch/protection reports where present. It may record a conservative future manual-review-only template such as AAPL buy 1, but it does not print a pasteable order command, call Alpaca, read positions, load config contents, create/submit/cancel/replace orders, write SQLite `trade_log`, send alerts, schedule anything, connect strategies to execution, or approve paper order execution.
+
 Crypto strategy lab mode backtests a tiny fixed research-only strategy set for `BTC/USD`, `ETH/USD`, and `LTC/USD` using yfinance-compatible daily symbols (`BTC-USD`, `ETH-USD`, `LTC-USD`). The per-symbol strategies are `crypto_buy_and_hold_baseline`, `crypto_sma_50_200_trend`, `crypto_buy_above_200_exit_below_200`, and one controlled iteration: `crypto_buy_above_200_with_vol_gate`. The volatility-gate strategy uses fixed parameters only: 20-day realised volatility, trailing 252-day median volatility, and a 1.5x gate for new entries. The lab also writes a separate portfolio-style BTC/ETH/cash rotation test, `crypto_monthly_btc_eth_momentum_rotation`, using fixed monthly rebalance, 126-day momentum ranking, and a 200-day SMA absolute trend filter. It writes full-period, in-sample, and out-of-sample rows, plus an iteration log to discourage tuning after seeing results. Results include simple crypto research cost assumptions: `crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, and `crypto_slippage_bps=10`. It does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, or approve execution.
 
 Outputs:
