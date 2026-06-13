@@ -1490,6 +1490,28 @@ data/qqq_adaptive_leverage_lab_splits.csv
 data/qqq_adaptive_leverage_lab_drawdowns.csv
 ```
 
+QQQ lead decision report mode reads saved QQQ leverage/adaptive outputs and saved Codex ambitious lead-decision context to decide whether the QQQ branch should challenge or replace the current stock/ETF active research lead. It compares `codex_ambitious_concentrated_growth_persistence`, `qqq_100_trend_gate`, `codex_qqq_adaptive_trend_exposure`, high-drawdown QQQ leverage references, and SPY/QQQ benchmark rows where saved inputs exist. This is a saved-output checkpoint only: it does not refresh market data, call yfinance or Alpaca, approve preview promotion, approve leverage or margin, or connect any strategy to execution.
+
+Command:
+
+```text
+python bot.py --qqq-lead-decision-report
+```
+
+Saved display:
+
+```text
+python bot.py --show-qqq-lead-decision-report
+```
+
+Outputs:
+
+```text
+data/qqq_lead_decision_report.csv
+data/qqq_lead_decision_summary.csv
+data/qqq_lead_decision_evidence.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:

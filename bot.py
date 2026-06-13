@@ -143,6 +143,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--qqq-lead-decision-report"]:
+        from trading_bot.research.qqq_lead_decision import generate_qqq_lead_decision_report
+
+        result = generate_qqq_lead_decision_report()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-qqq-lead-decision-report"]:
+        from trading_bot.research.qqq_lead_decision import show_qqq_lead_decision_report
+
+        code, lines = show_qqq_lead_decision_report()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -4171,6 +4185,16 @@ def parse_args() -> argparse.Namespace:
         "--show-qqq-adaptive-leverage-lab",
         action="store_true",
         help="Display the saved QQQ adaptive leverage lab without refreshing data.",
+    )
+    parser.add_argument(
+        "--qqq-lead-decision-report",
+        action="store_true",
+        help="Create a saved-output QQQ branch lead decision report without execution approval.",
+    )
+    parser.add_argument(
+        "--show-qqq-lead-decision-report",
+        action="store_true",
+        help="Display the saved QQQ branch lead decision report without refreshing data.",
     )
     parser.add_argument(
         "--vol-managed-etf-backtest",

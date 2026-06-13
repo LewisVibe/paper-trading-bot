@@ -119,6 +119,13 @@ The QQQ adaptive leverage lab comes from `python bot.py --qqq-adaptive-leverage-
 - It writes `data/qqq_adaptive_leverage_lab.csv`, summary, cost/financing, split, and drawdown CSVs.
 - It is research-only and does not approve leverage, margin, paper execution, live trading, scheduling, or strategy-to-execution wiring.
 
+The QQQ lead decision report comes from `python bot.py --qqq-lead-decision-report`, with saved display through `python bot.py --show-qqq-lead-decision-report`:
+
+- It reads saved QQQ leverage/adaptive outputs and saved Codex ambitious lead-decision context only.
+- It compares `codex_ambitious_concentrated_growth_persistence`, `qqq_100_trend_gate`, `codex_qqq_adaptive_trend_exposure`, high-drawdown QQQ leverage references, and SPY/QQQ benchmarks where saved inputs exist.
+- It writes `data/qqq_lead_decision_report.csv`, `data/qqq_lead_decision_summary.csv`, and `data/qqq_lead_decision_evidence.csv`.
+- It does not refresh data, call yfinance or Alpaca, approve preview promotion, approve leverage or margin, schedule anything, or connect research to execution.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
