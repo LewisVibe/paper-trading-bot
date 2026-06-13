@@ -1716,6 +1716,30 @@ python bot.py --paper-order-smoke-test-live-preflight --ticker AAPL --side buy -
 
 This writes `data/paper_order_smoke_test_live_preflight.csv`. Default mode validates the proposed ticker, side, and quantity and reads saved readiness context only; it does not call Alpaca. A confirmed read-only mode exists behind `--confirm-readonly-alpaca-check` for account, clock, asset, and open-order status checks, but it still does not submit, create, cancel, replace, or preview executable orders. The terminal summary never prints a pasteable paper-order command and always keeps order execution, execution, scheduling, and run-now approval false.
 
+After any future manually confirmed tiny paper-order smoke test, use the postcheck report:
+
+```text
+python bot.py --paper-order-smoke-test-postcheck --ticker AAPL --side buy --quantity 1
+```
+
+This writes `data/paper_order_smoke_test_postcheck.csv`. Default mode is saved-data/static only and does not call Alpaca. A confirmed read-only mode exists behind `--confirm-readonly-alpaca-check` to summarise recent orders, open orders, account block flags, and ticker position direction/quantity without printing account IDs, full order IDs, credentials, config contents, logs, databases, or full generated CSV contents. The postcheck never creates follow-up orders and always keeps follow-up order, order execution, execution, and scheduling approval false.
+
+To prepare tomorrow's manual automation review without creating automation, run:
+
+```text
+python bot.py --future-refresh-cron-readiness-pack
+```
+
+This writes `data/future_refresh_cron_readiness_pack.csv`. It statically checks the current single Hermes status cron boundary, the design-only future refresh candidate sequence, lockfile/manual-review status, generated-output ignore policy, and false cron/execution approvals. It does not create, edit, trigger, delete, enable, or schedule any cron job.
+
+The Monday manual smoke-test runbook is in `docs/PAPER_ORDER_SMOKE_TEST_RUNBOOK.md`. To verify the runbook text and false approval flags, run:
+
+```text
+python bot.py --paper-order-smoke-test-runbook-check
+```
+
+This writes `data/paper_order_smoke_test_runbook_check.csv`. The check is static/report-only and does not call Alpaca, create orders, read config contents, or schedule anything.
+
 Crypto strategy lab mode backtests a tiny fixed research-only strategy set for `BTC/USD`, `ETH/USD`, and `LTC/USD` using yfinance-compatible daily symbols (`BTC-USD`, `ETH-USD`, `LTC-USD`). The per-symbol strategies are `crypto_buy_and_hold_baseline`, `crypto_sma_50_200_trend`, `crypto_buy_above_200_exit_below_200`, and one controlled iteration: `crypto_buy_above_200_with_vol_gate`. The volatility-gate strategy uses fixed parameters only: 20-day realised volatility, trailing 252-day median volatility, and a 1.5x gate for new entries. The lab also writes a separate portfolio-style BTC/ETH/cash rotation test, `crypto_monthly_btc_eth_momentum_rotation`, using fixed monthly rebalance, 126-day momentum ranking, and a 200-day SMA absolute trend filter. It writes full-period, in-sample, and out-of-sample rows, plus an iteration log to discourage tuning after seeing results. Results include simple crypto research cost assumptions: `crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, and `crypto_slippage_bps=10`. It does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, or approve execution.
 
 Outputs:

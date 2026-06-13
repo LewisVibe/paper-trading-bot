@@ -70,6 +70,37 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    if "--paper-order-smoke-test-postcheck" in sys.argv[1:]:
+        from trading_bot.research.paper_order_smoke_test_postcheck import (
+            generate_paper_order_smoke_test_postcheck,
+        )
+
+        early_args = _parse_live_preflight_early_args(sys.argv[1:])
+        result = generate_paper_order_smoke_test_postcheck(
+            ticker=early_args.get("ticker", ""),
+            side=early_args.get("side", ""),
+            quantity=early_args.get("quantity", ""),
+            confirm_readonly_alpaca_check=early_args.get("confirm_readonly_alpaca_check", "") == "true",
+        )
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--future-refresh-cron-readiness-pack"]:
+        from trading_bot.research.future_refresh_cron_readiness import generate_future_refresh_cron_readiness_pack
+
+        result = generate_future_refresh_cron_readiness_pack()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--paper-order-smoke-test-runbook-check"]:
+        from trading_bot.research.paper_order_smoke_test_runbook_check import (
+            generate_paper_order_smoke_test_runbook_check,
+        )
+
+        result = generate_paper_order_smoke_test_runbook_check()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -233,6 +264,13 @@ from trading_bot.research.paper_order_smoke_test_readiness import (
 )
 from trading_bot.research.paper_order_smoke_test_live_preflight import (
     generate_paper_order_smoke_test_live_preflight,
+)
+from trading_bot.research.paper_order_smoke_test_postcheck import (
+    generate_paper_order_smoke_test_postcheck,
+)
+from trading_bot.research.future_refresh_cron_readiness import generate_future_refresh_cron_readiness_pack
+from trading_bot.research.paper_order_smoke_test_runbook_check import (
+    generate_paper_order_smoke_test_runbook_check,
 )
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
@@ -4333,6 +4371,21 @@ def parse_args() -> argparse.Namespace:
         help="Create a read-only/report-only live preflight for a future tiny manual paper-order smoke test.",
     )
     parser.add_argument(
+        "--paper-order-smoke-test-postcheck",
+        action="store_true",
+        help="Create a read-only/report-only postcheck after a future tiny manual paper-order smoke test.",
+    )
+    parser.add_argument(
+        "--future-refresh-cron-readiness-pack",
+        action="store_true",
+        help="Create a report-only readiness pack for a future safe refresh Hermes cron review.",
+    )
+    parser.add_argument(
+        "--paper-order-smoke-test-runbook-check",
+        action="store_true",
+        help="Create a static report-only check for the manual paper-order smoke-test runbook.",
+    )
+    parser.add_argument(
         "--ticker",
         default="",
         help="Ticker for read-only/report-only smoke-test preflight commands.",
@@ -5026,6 +5079,38 @@ def main() -> int:
             )
         except Exception as exc:
             print(f"Paper-order smoke-test live preflight failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.paper_order_smoke_test_postcheck:
+        try:
+            result = generate_paper_order_smoke_test_postcheck(
+                ticker=args.ticker,
+                side=args.side,
+                quantity=args.quantity,
+                confirm_readonly_alpaca_check=args.confirm_readonly_alpaca_check,
+            )
+        except Exception as exc:
+            print(f"Paper-order smoke-test postcheck failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.future_refresh_cron_readiness_pack:
+        try:
+            result = generate_future_refresh_cron_readiness_pack()
+        except Exception as exc:
+            print(f"Future refresh cron readiness pack failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.paper_order_smoke_test_runbook_check:
+        try:
+            result = generate_paper_order_smoke_test_runbook_check()
+        except Exception as exc:
+            print(f"Paper-order smoke-test runbook check failed: {exc}", file=sys.stderr)
             return 1
         for line in result.summary_lines:
             print(line)
