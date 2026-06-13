@@ -1512,6 +1512,29 @@ data/qqq_lead_decision_summary.csv
 data/qqq_lead_decision_evidence.csv
 ```
 
+QQQ trend-gate manual review pack mode reads saved QQQ lead-decision, leverage validation, adaptive leverage, project research state, and paper-readiness context where available. It explains why `qqq_100_trend_gate` is now the clean stock/ETF research lead, keeps `codex_qqq_adaptive_trend_exposure` as an ambitious alternative, keeps `qqq_150_trend_gate` as a rejected high-drawdown reference, and records remaining blockers before any future preview or execution discussion. This is research/report-only: it does not refresh market data, call yfinance or Alpaca, load config, read positions, write SQLite `trade_log`, send alerts, schedule anything, approve preview promotion, approve execution, or connect strategies to Alpaca or paper orders. Expected final status is `qqq_trend_gate_research_lead_confirmed_not_execution_ready`.
+
+Command:
+
+```text
+python bot.py --qqq-trend-gate-manual-review-pack
+```
+
+Saved display:
+
+```text
+python bot.py --show-qqq-trend-gate-manual-review-pack
+```
+
+Outputs:
+
+```text
+data/qqq_trend_gate_manual_review_pack.csv
+data/qqq_trend_gate_manual_review_summary.csv
+data/qqq_trend_gate_manual_review_evidence.csv
+data/qqq_trend_gate_manual_review_blockers.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:

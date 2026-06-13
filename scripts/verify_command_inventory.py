@@ -45,6 +45,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq-adaptive-leverage-lab",
     "--qqq-lead-decision-report",
     "--show-qqq-lead-decision-report",
+    "--qqq-trend-gate-manual-review-pack",
+    "--show-qqq-trend-gate-manual-review-pack",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",

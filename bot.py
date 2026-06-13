@@ -157,6 +157,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--qqq-trend-gate-manual-review-pack"]:
+        from trading_bot.research.qqq_trend_gate_manual_review import generate_qqq_trend_gate_manual_review_pack
+
+        result = generate_qqq_trend_gate_manual_review_pack()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-qqq-trend-gate-manual-review-pack"]:
+        from trading_bot.research.qqq_trend_gate_manual_review import show_qqq_trend_gate_manual_review_pack
+
+        code, lines = show_qqq_trend_gate_manual_review_pack()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -304,6 +318,10 @@ from trading_bot.research.crypto_lead_split_sensitivity_diagnosis import (
 from trading_bot.research.expanded_crypto_manual_review_pack import (
     generate_expanded_crypto_manual_review_pack,
     show_expanded_crypto_manual_review_pack_file,
+)
+from trading_bot.research.qqq_trend_gate_manual_review import (
+    generate_qqq_trend_gate_manual_review_pack,
+    show_qqq_trend_gate_manual_review_pack,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -4197,6 +4215,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ branch lead decision report without refreshing data.",
     )
     parser.add_argument(
+        "--qqq-trend-gate-manual-review-pack",
+        action="store_true",
+        help="Create a saved-output manual review pack for the QQQ trend-gate research lead.",
+    )
+    parser.add_argument(
+        "--show-qqq-trend-gate-manual-review-pack",
+        action="store_true",
+        help="Display the saved QQQ trend-gate manual review pack without refreshing data.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -5105,6 +5133,20 @@ def main() -> int:
         return 0
     if args.show_expanded_crypto_manual_review_pack:
         status_code, lines = show_expanded_crypto_manual_review_pack_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.qqq_trend_gate_manual_review_pack:
+        try:
+            result = generate_qqq_trend_gate_manual_review_pack()
+        except Exception as exc:
+            print(f"QQQ trend-gate manual review pack failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_qqq_trend_gate_manual_review_pack:
+        status_code, lines = show_qqq_trend_gate_manual_review_pack()
         for line in lines:
             print(line)
         return status_code

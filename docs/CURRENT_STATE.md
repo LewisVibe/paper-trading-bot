@@ -126,6 +126,14 @@ The QQQ lead decision report comes from `python bot.py --qqq-lead-decision-repor
 - It writes `data/qqq_lead_decision_report.csv`, `data/qqq_lead_decision_summary.csv`, and `data/qqq_lead_decision_evidence.csv`.
 - It does not refresh data, call yfinance or Alpaca, approve preview promotion, approve leverage or margin, schedule anything, or connect research to execution.
 
+The QQQ trend-gate manual review pack comes from `python bot.py --qqq-trend-gate-manual-review-pack`, with saved display through `python bot.py --show-qqq-trend-gate-manual-review-pack`:
+
+- It reads saved QQQ decision, validation, adaptive, project-state, and paper-readiness context only.
+- It confirms `qqq_100_trend_gate` as the stock/ETF research lead, keeps `codex_qqq_adaptive_trend_exposure` as the ambitious alternative, and keeps `qqq_150_trend_gate` as the rejected high-drawdown reference.
+- It writes `data/qqq_trend_gate_manual_review_pack.csv`, `data/qqq_trend_gate_manual_review_summary.csv`, `data/qqq_trend_gate_manual_review_evidence.csv`, and `data/qqq_trend_gate_manual_review_blockers.csv`.
+- Expected status is `qqq_trend_gate_research_lead_confirmed_not_execution_ready`.
+- It is research/report-only, does not approve preview promotion, does not approve execution, does not approve leverage or margin, does not schedule anything, and does not connect strategies to Alpaca or paper orders.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
