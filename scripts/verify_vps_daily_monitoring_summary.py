@@ -20,12 +20,26 @@ REQUIRED_OUTPUT_PHRASES = [
     "Defensive refresh summary:",
     "Saved-output freshness:",
     "final_status:",
+    "action_required:",
+    "action_reason:",
+    "suggested_manual_action:",
 ]
 
 REQUIRED_FINAL_STATES = [
     "healthy_monitoring_state",
     "monitoring_warning",
     "monitoring_stale_or_missing_inputs",
+]
+
+REQUIRED_ACTION_STATES = [
+    "no_action_required",
+    "refresh_stale_safe_reports",
+    "manual_review_required",
+    "all_status_inputs_fresh_or_acceptable",
+    "one_or_more_saved_report_inputs_warning_stale",
+    "one_or_more_saved_report_inputs_stale_or_missing",
+    "manually_run_safe_refresh_reports",
+    "refresh_or_investigate_saved_monitoring_inputs",
 ]
 
 FORBIDDEN_CALLS = [
@@ -76,12 +90,18 @@ def verify_module_source(failures: list[str]) -> None:
     for token in REQUIRED_FINAL_STATES:
         if token not in source:
             failures.append(f"Daily summary missing final state: {token}")
+    for token in REQUIRED_ACTION_STATES:
+        if token not in source:
+            failures.append(f"Daily summary missing action classifier token: {token}")
     for token in FORBIDDEN_CALLS:
         if token in source:
             failures.append(f"Daily summary contains forbidden token: {token}")
     for token in ["write_text(", "DictWriter", "with path.open(\"w\"", ".mkdir("]:
         if token in source:
             failures.append(f"Daily summary should not create generated files: {token}")
+    for high_risk in ["python bot.py", "--paper-order-test", "--execute-slow-sma-paper", "--confirm-slow-sma-paper", "--confirm-paper-order"]:
+        if high_risk in source:
+            failures.append(f"Daily summary should not suggest high-risk command text: {high_risk}")
 
 
 def verify_command_output(failures: list[str]) -> None:

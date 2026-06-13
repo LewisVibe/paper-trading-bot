@@ -8,7 +8,9 @@ orders, paper execution, live trading, or broader scheduling.
 
 - Job name: `paper-bot-vps-status-check`
 - Job ID: `345188fbb60c`
-- Cadence: once daily / every 1440m
+- Cadence: daily at 10:10am UK local time
+- Cron expression: `10 10 * * *`
+- Timezone: `Europe/London` / current next run shown as `+01:00` summer time
 - Delivery: Telegram
 - Mode: script-only / no-agent
 - Working directory: `C:\dev\paper-trading-bot`
@@ -27,6 +29,7 @@ Verified output:
 - hermes_cron_readiness: PASS
 - vps_daily_monitoring_summary: PASS
 - final_monitoring_status: healthy_monitoring_state
+- action_required: no_action_required
 - execution_approved: false
 - scheduling_approved: false
 - freshness_warnings: none
@@ -40,6 +43,7 @@ The current job:
 - sends concise output to Telegram;
 - does not run `--refresh-promoted-review`;
 - does not run `--refresh-defensive-research`;
+- does not create a refresh cron;
 - does not trade;
 - does not approve scheduling beyond this one status job;
 - does not approve execution;

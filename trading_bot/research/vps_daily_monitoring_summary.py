@@ -41,6 +41,11 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         decision_rows_present=bool(decision_rows),
         decisions_execution_false=decisions_execution_false,
     )
+    action = classify_action_required(
+        freshness_statuses,
+        decision_rows_present=bool(decision_rows),
+        decisions_execution_false=decisions_execution_false,
+    )
 
     lines = [
         "VPS DAILY MONITORING SUMMARY. REPORT ONLY. NOT EXECUTION.",
@@ -87,6 +92,9 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         [
             "",
             f"final_status: {final_status}",
+            f"action_required: {action['action_required']}",
+            f"action_reason: {action['action_reason']}",
+            f"suggested_manual_action: {action['suggested_manual_action']}",
             "Warning: this daily summary does not call Alpaca, yfinance, Discord, SQLite trade_log, or read config.json contents.",
         ]
     )
@@ -103,6 +111,35 @@ def determine_final_status(
     if has_warning(freshness_statuses) or not decisions_execution_false:
         return "monitoring_warning"
     return "healthy_monitoring_state"
+
+
+def classify_action_required(
+    freshness_statuses: list,
+    decision_rows_present: bool,
+    decisions_execution_false: bool,
+) -> dict[str, str]:
+    if has_stale_or_missing(freshness_statuses) or not decision_rows_present:
+        return {
+            "action_required": "manual_review_required",
+            "action_reason": "one_or_more_saved_report_inputs_stale_or_missing",
+            "suggested_manual_action": "refresh_or_investigate_saved_monitoring_inputs",
+        }
+    if has_warning(freshness_statuses) or not decisions_execution_false:
+        reason = (
+            "one_or_more_saved_report_inputs_warning_stale"
+            if has_warning(freshness_statuses)
+            else "one_or_more_saved_report_approval_flags_need_review"
+        )
+        return {
+            "action_required": "refresh_stale_safe_reports",
+            "action_reason": reason,
+            "suggested_manual_action": "manually_run_safe_refresh_reports",
+        }
+    return {
+        "action_required": "no_action_required",
+        "action_reason": "all_status_inputs_fresh_or_acceptable",
+        "suggested_manual_action": "none",
+    }
 
 
 def defensive_saved_inputs_present(root: Path) -> bool:

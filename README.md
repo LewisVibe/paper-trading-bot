@@ -580,7 +580,9 @@ This is report/display-only and terminal-only. It summarizes safety reminders,
 lock-wrapped safe commands, promoted decision-state counts, defensive refresh
 step counts, saved-output freshness labels, and a compact final status:
 `healthy_monitoring_state`, `monitoring_warning`, or
-`monitoring_stale_or_missing_inputs`. It does not refresh promoted/defensive
+`monitoring_stale_or_missing_inputs`. It also prints `action_required`,
+`action_reason`, and `suggested_manual_action` so Telegram output says what to
+do next without pasteable high-risk commands. It does not refresh promoted/defensive
 reports, call Alpaca, call yfinance, send Discord alerts, write SQLite
 `trade_log`, read config contents, create generated files, schedule anything, or
 approve execution.
@@ -634,12 +636,13 @@ python bot.py --execute-slow-sma-paper --confirm-slow-sma-paper
 ```
 
 The current daily Hermes status cron exists as `paper-bot-vps-status-check`
-with job ID `345188fbb60c`. It runs once daily / every 1440m, delivers to
-Telegram, uses script-only / no-agent mode, runs from
-`C:\dev\paper-trading-bot`, and executes repo safety, Hermes cron readiness, and
-`--vps-daily-monitoring-summary`. Verified output is repo_safety PASS,
-hermes_cron_readiness PASS, vps_daily_monitoring_summary PASS,
-final_monitoring_status `healthy_monitoring_state`, execution_approved false,
+with job ID `345188fbb60c`. It runs daily at 10:10am UK local time with cron
+expression `10 10 * * *` in `Europe/London`, delivers to Telegram, uses
+script-only / no-agent mode, runs from `C:\dev\paper-trading-bot`, and executes
+repo safety, Hermes cron readiness, and `--vps-daily-monitoring-summary`.
+Verified output is repo_safety PASS, hermes_cron_readiness PASS,
+vps_daily_monitoring_summary PASS, final_monitoring_status `healthy_monitoring_state`,
+action_required `no_action_required`, execution_approved false,
 scheduling_approved false, and freshness_warnings: none. It does not run refresh
 commands, trade, approve scheduling beyond this one status job, approve
 execution, pull/commit/push code, or inspect/print config contents, secrets,
@@ -1672,6 +1675,22 @@ python bot.py --show-current-research-state
 ```
 
 This reads saved project research state from `data/project_research_state_summary.csv`, `data/project_research_state_refresh.csv`, and `data/project_research_state_next_steps.csv`, with saved stock/ETF and crypto lead summaries as fallbacks. It does not refresh market data, does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
+
+To check whether the saved project research state is fresh and internally usable, run:
+
+```text
+python bot.py --project-research-state-quality-report
+```
+
+This writes `data/project_research_state_quality_report.csv`. It reads saved project-state CSVs only, checks freshness, required fields, and false approval flags, and degrades to warning/blocker rows if files are missing or stale. It does not refresh market data, call Alpaca, read positions, load config, write SQLite `trade_log`, send alerts, approve scheduling, or approve execution.
+
+To review whether the current stock/ETF research lead is ready even for a future manually reviewed paper-execution design discussion, run:
+
+```text
+python bot.py --stock-etf-paper-execution-readiness-report
+```
+
+This writes `data/stock_etf_paper_execution_readiness_report.csv`. It reads saved project/research/gate reports only and checks the current stock/ETF lead, cost-review blocker, split/drawdown context, preview readiness, execution eligibility, paper-execution protection, kill-switch, portfolio-risk prerequisites, broker boundary, crypto out-of-scope boundary, and scheduling boundary. The expected current interpretation remains conservative: `codex_ambitious_concentrated_growth_persistence` is a research lead with 25 bps cost review still blocking execution discussion. This report does not read local credentials, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, or approve paper execution.
 
 Crypto strategy lab mode backtests a tiny fixed research-only strategy set for `BTC/USD`, `ETH/USD`, and `LTC/USD` using yfinance-compatible daily symbols (`BTC-USD`, `ETH-USD`, `LTC-USD`). The per-symbol strategies are `crypto_buy_and_hold_baseline`, `crypto_sma_50_200_trend`, `crypto_buy_above_200_exit_below_200`, and one controlled iteration: `crypto_buy_above_200_with_vol_gate`. The volatility-gate strategy uses fixed parameters only: 20-day realised volatility, trailing 252-day median volatility, and a 1.5x gate for new entries. The lab also writes a separate portfolio-style BTC/ETH/cash rotation test, `crypto_monthly_btc_eth_momentum_rotation`, using fixed monthly rebalance, 126-day momentum ranking, and a 200-day SMA absolute trend filter. It writes full-period, in-sample, and out-of-sample rows, plus an iteration log to discourage tuning after seeing results. Results include simple crypto research cost assumptions: `crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, and `crypto_slippage_bps=10`. It does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, or approve execution.
 

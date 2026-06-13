@@ -9,7 +9,8 @@ trading.
 
 - Job name: `paper-bot-vps-status-check`
 - Job ID: `345188fbb60c`
-- Cadence: once daily / every 1440m
+- Cadence: daily at 10:10am UK local time
+- Cron expression: `10 10 * * *`
 - Delivery: Telegram
 - Mode: script-only / no-agent
 - Working directory: `C:\dev\paper-trading-bot`
@@ -24,8 +25,9 @@ Command sequence:
 
 Expected healthy output includes repo_safety PASS, hermes_cron_readiness PASS,
 vps_daily_monitoring_summary PASS, final_monitoring_status
-`healthy_monitoring_state`, `execution_approved=false`,
-`scheduling_approved=false`, and freshness_warnings: none.
+`healthy_monitoring_state`, action_required
+`no_action_required`, `execution_approved=false`, `scheduling_approved=false`,
+and freshness_warnings: none.
 
 ## Final States
 
@@ -37,6 +39,7 @@ Meaning:
 - repo safety passed;
 - Hermes cron readiness passed;
 - daily monitoring summary passed;
+- `action_required=no_action_required`;
 - no immediate action is needed.
 
 Suggested response:
@@ -51,6 +54,7 @@ Meaning:
 
 - monitoring ran, but a non-critical warning appeared;
 - likely a freshness warning, missing optional report, or stale saved output;
+- `action_required` should normally explain the safe manual follow-up category;
 - this is not execution approval.
 
 Suggested response:
@@ -67,6 +71,8 @@ Meaning:
 
 - key saved monitoring inputs are stale or missing;
 - monitoring state is not healthy enough for scheduling changes;
+- `action_required=manual_review_required` should point to saved monitoring input
+  review rather than any high-risk command;
 - this is not execution approval.
 
 Suggested response:

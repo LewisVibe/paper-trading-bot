@@ -28,7 +28,9 @@ REQUIRED_DESIGN_PHRASES = [
     "This document records the current verified first Hermes cron job.",
     "Job name: `paper-bot-vps-status-check`",
     "Job ID: `345188fbb60c`",
-    "Cadence: once daily / every 1440m",
+    "Cadence: daily at 10:10am UK local time",
+    "Cron expression: `10 10 * * *`",
+    "Timezone: `Europe/London` / current next run shown as `+01:00` summer time",
     "Delivery: Telegram",
     "Mode: script-only / no-agent",
     "Working directory: `C:\\dev\\paper-trading-bot`",
@@ -36,6 +38,7 @@ REQUIRED_DESIGN_PHRASES = [
     ".venv\\Scripts\\python.exe scripts\\verify_hermes_cron_readiness.py",
     ".venv\\Scripts\\python.exe bot.py --vps-daily-monitoring-summary",
     "final_monitoring_status: healthy_monitoring_state",
+    "action_required: no_action_required",
     "freshness_warnings: none",
     "does not run `--refresh-promoted-review`",
     "does not run `--refresh-defensive-research`",
@@ -51,6 +54,7 @@ REQUIRED_DESIGN_PHRASES = [
 FORBIDDEN_FIRST_JOB_APPROVAL_PHRASES = [
     "first status-only job should run --refresh-promoted-review",
     "first status-only job should run --refresh-defensive-research",
+    ".venv\\Scripts\\python.exe bot.py --show-current-research-state",
     "scheduling_approved=True",
     "execution_approved=True",
 ]
@@ -149,6 +153,7 @@ def first_job_excludes_refresh_check(design_text: str) -> CheckResult:
         "--refresh-promoted-review",
         "does not run `--refresh-defensive-research`",
         "--refresh-defensive-research",
+        "does not create a refresh cron",
         "Refresh cron jobs require a later separate review",
     ]
     missing = [phrase for phrase in required if phrase not in design_text]

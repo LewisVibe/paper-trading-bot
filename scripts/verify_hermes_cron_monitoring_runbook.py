@@ -11,6 +11,8 @@ REQUIRED_PHRASES = [
     "paper-bot-vps-status-check",
     "345188fbb60c",
     "healthy_monitoring_state",
+    "action_required",
+    "no_action_required",
     "monitoring_warning",
     "monitoring_stale_or_missing_inputs",
     "repo_safety: FAIL",
@@ -40,6 +42,7 @@ FORBIDDEN_APPROVAL_PHRASES = [
     "execution_approved=true",
     "scheduling_approved=true",
     "create the second cron now",
+    ".venv\\Scripts\\python.exe bot.py --show-current-research-state",
 ]
 
 

@@ -85,6 +85,8 @@ REQUIRED_COMMANDS = [
     "--project-research-state-refresh",
     "--show-project-research-state-refresh",
     "--show-current-research-state",
+    "--project-research-state-quality-report",
+    "--stock-etf-paper-execution-readiness-report",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",
     "--crypto-strategy-decision-report",

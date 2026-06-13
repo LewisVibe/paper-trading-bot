@@ -226,15 +226,17 @@ toolsets, output destination, and failure behaviour before any Hermes cron job
 is created.
 
 The current status-job checkpoint is `docs/HERMES_CRON_JOB_DESIGN.md`. It records
-the verified `paper-bot-vps-status-check` job, including job ID, once-daily
-cadence, Telegram delivery, script-only / no-agent mode, repo path, command
+the verified `paper-bot-vps-status-check` job, including job ID, daily 10:10am
+UK local time cadence, cron expression `10 10 * * *`, Telegram delivery,
+script-only / no-agent mode, repo path, command
 sequence, and healthy output. It confirms the job does not run
 `--refresh-promoted-review` or `--refresh-defensive-research`; refresh cron jobs
 require a later separate review. Verify the checkpoint with
 `python scripts\verify_hermes_cron_job_design.py`.
 
 The current daily Hermes status cron exists as `paper-bot-vps-status-check`
-with job ID `345188fbb60c`. It runs once daily / every 1440m, delivers to
+with job ID `345188fbb60c`. It runs daily at 10:10am UK local time using cron
+expression `10 10 * * *`, delivers to
 Telegram, uses script-only / no-agent mode, runs from
 `C:\dev\paper-trading-bot`, and executes:
 
@@ -246,8 +248,9 @@ Telegram, uses script-only / no-agent mode, runs from
 
 Verified output is repo_safety PASS, hermes_cron_readiness PASS,
 vps_daily_monitoring_summary PASS, final_monitoring_status
-`healthy_monitoring_state`, execution_approved false, scheduling_approved false,
-and freshness_warnings: none. This status-only job does not run refresh commands,
+`healthy_monitoring_state`, action_required
+`no_action_required`, execution_approved false, scheduling_approved false, and
+freshness_warnings: none. This status-only job does not run refresh commands,
 trade, approve scheduling beyond this one status job, approve execution,
 pull/commit/push code, or inspect/print config contents, secrets, logs,
 databases, or full generated CSV contents. Freshness labels (`fresh`,

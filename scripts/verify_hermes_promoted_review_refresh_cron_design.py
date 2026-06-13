@@ -27,13 +27,15 @@ LOCK_WRAPPED_REQUIRED = {
 CURRENT_STATUS_CRON_PHRASES = [
     "paper-bot-vps-status-check",
     "345188fbb60c",
-    "once daily / every 1440m",
+    "daily at 10:10am UK local time",
+    "10 10 * * *",
     "Telegram",
     "script-only / no-agent",
     ".venv\\Scripts\\python.exe scripts\\verify_repo_safety.py",
     ".venv\\Scripts\\python.exe scripts\\verify_hermes_cron_readiness.py",
     ".venv\\Scripts\\python.exe bot.py --vps-daily-monitoring-summary",
     "healthy_monitoring_state",
+    "no_action_required",
     "freshness_warnings: none",
 ]
 
@@ -111,6 +113,7 @@ def build_checks() -> list[CheckResult]:
     return [
         design_exists_check(design_text),
         design_required_phrases_check(design_text),
+        design_excludes_extra_status_display_command_check(design_text),
         legacy_pointer_check(),
         current_status_cron_documented_check(docs_text),
         lock_wrapped_set_check(set(LOCK_WRAPPED_COMMAND_NAMES)),
@@ -133,6 +136,15 @@ def design_required_phrases_check(text: str) -> CheckResult:
         "future_only_design_requirements_documented",
         "pass" if not missing else "error",
         "missing=" + (", ".join(missing) if missing else "none"),
+    )
+
+
+def design_excludes_extra_status_display_command_check(text: str) -> CheckResult:
+    forbidden = ".venv\\Scripts\\python.exe bot.py --show-current-research-state"
+    return CheckResult(
+        "future_cron_design_excludes_extra_status_display_command",
+        "pass" if forbidden not in text else "error",
+        "extra_status_display_command=" + ("present" if forbidden in text else "absent"),
     )
 
 

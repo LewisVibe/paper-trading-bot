@@ -25,6 +25,15 @@ def _early_report_only_route() -> None:
         from trading_bot.research.market_monitor_scheduling import print_market_monitor_scheduling_readiness_report
 
         raise SystemExit(print_market_monitor_scheduling_readiness_report())
+    if sys.argv[1:] == ["--stock-etf-paper-execution-readiness-report"]:
+        from trading_bot.research.stock_etf_paper_execution_readiness import (
+            generate_stock_etf_paper_execution_readiness_report,
+        )
+
+        result = generate_stock_etf_paper_execution_readiness_report()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
 
 
 _early_report_only_route()
@@ -158,6 +167,10 @@ from trading_bot.research.project_research_state_refresh import (
     show_project_research_state_refresh_file,
 )
 from trading_bot.research.current_research_state import show_current_research_state
+from trading_bot.research.project_research_state_quality_report import generate_project_research_state_quality_report
+from trading_bot.research.stock_etf_paper_execution_readiness import (
+    generate_stock_etf_paper_execution_readiness_report,
+)
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
 from trading_bot.research.crypto_robustness import generate_crypto_robustness_report
@@ -4227,6 +4240,16 @@ def parse_args() -> argparse.Namespace:
         help="Display a concise saved-state summary of the current stock/ETF and crypto research branches.",
     )
     parser.add_argument(
+        "--project-research-state-quality-report",
+        action="store_true",
+        help="Create a report-only quality check for saved project research state files.",
+    )
+    parser.add_argument(
+        "--stock-etf-paper-execution-readiness-report",
+        action="store_true",
+        help="Create a saved-data report-only stock/ETF paper execution discussion readiness review.",
+    )
+    parser.add_argument(
         "--crypto-strategy-lab",
         action="store_true",
         help="Run a research-only crypto strategy lab with daily yfinance-compatible history.",
@@ -4857,6 +4880,24 @@ def main() -> int:
         for line in lines:
             print(line)
         return status_code
+    if args.project_research_state_quality_report:
+        try:
+            result = generate_project_research_state_quality_report()
+        except Exception as exc:
+            print(f"Project research-state quality report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.stock_etf_paper_execution_readiness_report:
+        try:
+            result = generate_stock_etf_paper_execution_readiness_report()
+        except Exception as exc:
+            print(f"Stock/ETF paper execution readiness report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
     if args.crypto_strategy_lab:
         try:
             result = run_crypto_strategy_lab_files()

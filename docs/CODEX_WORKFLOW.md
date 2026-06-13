@@ -118,12 +118,13 @@ checkpoint. That checkpoint records the verified status-only Hermes cron and
 confirms refresh commands still require a later separate review.
 
 The current `paper-bot-vps-status-check` Hermes cron is status-only. Job ID is
-`345188fbb60c`; cadence is once daily / every 1440m; delivery is Telegram; mode
-is script-only / no-agent; working directory is `C:\dev\paper-trading-bot`; the
-command sequence is repo safety, Hermes cron readiness, and
-`--vps-daily-monitoring-summary`. Verified output is
-`healthy_monitoring_state`, execution_approved false, scheduling_approved false,
-and freshness_warnings: none. It does not run refresh commands, trade, approve
+`345188fbb60c`; cadence is daily at 10:10am UK local time with cron expression
+`10 10 * * *`; delivery is Telegram; mode is script-only / no-agent; working
+directory is `C:\dev\paper-trading-bot`; the command sequence is repo safety,
+Hermes cron readiness, and `--vps-daily-monitoring-summary`. Verified output is `healthy_monitoring_state`,
+action_required `no_action_required`, execution_approved false,
+scheduling_approved false, and freshness_warnings: none. It does not run refresh
+commands, trade, approve
 execution, approve scheduling beyond this one status job, pull/commit/push code,
 or inspect/print config contents, secrets, logs, databases, or full generated
 CSV contents. A possible promoted-review refresh cron remains a future
