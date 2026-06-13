@@ -82,6 +82,8 @@ REQUIRED_COMMANDS = [
     "--show-crypto-lead-split-sensitivity-diagnosis",
     "--expanded-crypto-manual-review-pack",
     "--show-expanded-crypto-manual-review-pack",
+    "--project-research-state-refresh",
+    "--show-project-research-state-refresh",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",
     "--crypto-strategy-decision-report",

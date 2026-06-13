@@ -1643,6 +1643,28 @@ data/expanded_crypto_manual_review_evidence.csv
 data/expanded_crypto_manual_review_blockers.csv
 ```
 
+Project research state refresh mode consolidates the current stock/ETF and crypto research state into one saved checkpoint before choosing the next research/reporting direction. It reads saved research CSVs where available, then writes a research/report-only summary of the stock/ETF active research lead, crypto manual-review-only lead, blockers, rejected or downgraded branches, safety boundaries, and suggested next research options. It does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
+
+Command:
+
+```text
+python bot.py --project-research-state-refresh
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-project-research-state-refresh
+```
+
+Outputs:
+
+```text
+data/project_research_state_refresh.csv
+data/project_research_state_summary.csv
+data/project_research_state_next_steps.csv
+```
+
 Crypto strategy lab mode backtests a tiny fixed research-only strategy set for `BTC/USD`, `ETH/USD`, and `LTC/USD` using yfinance-compatible daily symbols (`BTC-USD`, `ETH-USD`, `LTC-USD`). The per-symbol strategies are `crypto_buy_and_hold_baseline`, `crypto_sma_50_200_trend`, `crypto_buy_above_200_exit_below_200`, and one controlled iteration: `crypto_buy_above_200_with_vol_gate`. The volatility-gate strategy uses fixed parameters only: 20-day realised volatility, trailing 252-day median volatility, and a 1.5x gate for new entries. The lab also writes a separate portfolio-style BTC/ETH/cash rotation test, `crypto_monthly_btc_eth_momentum_rotation`, using fixed monthly rebalance, 126-day momentum ranking, and a 200-day SMA absolute trend filter. It writes full-period, in-sample, and out-of-sample rows, plus an iteration log to discourage tuning after seeing results. Results include simple crypto research cost assumptions: `crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, and `crypto_slippage_bps=10`. It does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, or approve execution.
 
 Outputs:

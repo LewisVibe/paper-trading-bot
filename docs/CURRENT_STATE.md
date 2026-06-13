@@ -204,6 +204,8 @@ Research chain:
 - `python bot.py --show-crypto-lead-split-sensitivity-diagnosis`
 - `python bot.py --expanded-crypto-manual-review-pack`
 - `python bot.py --show-expanded-crypto-manual-review-pack`
+- `python bot.py --project-research-state-refresh`
+- `python bot.py --show-project-research-state-refresh`
 
 Current crypto interpretation:
 
@@ -213,6 +215,8 @@ Current crypto interpretation:
 - `python bot.py --expanded-crypto-manual-review-pack` writes `data/expanded_crypto_manual_review_pack.csv`, `data/expanded_crypto_manual_review_summary.csv`, `data/expanded_crypto_manual_review_evidence.csv`, and `data/expanded_crypto_manual_review_blockers.csv`.
 - This is the manual review pack for the current crypto research lead. It summarises universe readiness, benchmark reality, failed/deprioritised risk-control families, split sensitivity, exclusion instability, outlier dependence, cost review, high-drawdown context, and remaining blockers.
 - The manual review pack is research/report-only; it does not approve crypto execution, does not approve preview promotion, and does not connect crypto to Alpaca or paper orders. The current crypto research lead remains manual-review-only unless future review changes that.
+- `python bot.py --project-research-state-refresh` writes `data/project_research_state_refresh.csv`, `data/project_research_state_summary.csv`, and `data/project_research_state_next_steps.csv`.
+- The project research state refresh consolidates current stock/ETF and crypto research state so the next research/reporting direction can be chosen cleanly. It does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
 - `BTC/USD`: useful but split-sensitive; keep monitoring.
 - `ETH/USD`: useful but research-only; keep monitoring.
 - `LTC/USD`: researched but not useful; pause.

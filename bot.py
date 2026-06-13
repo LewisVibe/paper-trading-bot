@@ -153,6 +153,10 @@ from trading_bot.research.expanded_crypto_manual_review_pack import (
     generate_expanded_crypto_manual_review_pack,
     show_expanded_crypto_manual_review_pack_file,
 )
+from trading_bot.research.project_research_state_refresh import (
+    generate_project_research_state_refresh,
+    show_project_research_state_refresh_file,
+)
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
 from trading_bot.research.crypto_robustness import generate_crypto_robustness_report
@@ -4207,6 +4211,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved expanded crypto manual review pack without refreshing data.",
     )
     parser.add_argument(
+        "--project-research-state-refresh",
+        action="store_true",
+        help="Create a saved-output research-only project-wide stock/ETF and crypto state refresh.",
+    )
+    parser.add_argument(
+        "--show-project-research-state-refresh",
+        action="store_true",
+        help="Display the saved project research state refresh without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-strategy-lab",
         action="store_true",
         help="Run a research-only crypto strategy lab with daily yfinance-compatible history.",
@@ -4815,6 +4829,20 @@ def main() -> int:
         return 0
     if args.show_expanded_crypto_manual_review_pack:
         status_code, lines = show_expanded_crypto_manual_review_pack_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.project_research_state_refresh:
+        try:
+            result = generate_project_research_state_refresh()
+        except Exception as exc:
+            print(f"Project research state refresh failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_project_research_state_refresh:
+        status_code, lines = show_project_research_state_refresh_file()
         for line in lines:
             print(line)
         return status_code
