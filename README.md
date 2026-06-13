@@ -1466,6 +1466,30 @@ data/qqq_leverage_validation_splits.csv
 data/qqq_leverage_validation_drawdowns.csv
 ```
 
+QQQ adaptive leverage lab mode compares the unlevered QQQ trend gate against a small fixed set of adaptive synthetic exposure candidates. The reference set is QQQ buy-and-hold, SPY buy-and-hold, `qqq_100_trend_gate`, `qqq_125_trend_gate`, and `qqq_150_trend_gate`. The first Codex-designed candidate, `codex_qqq_adaptive_trend_exposure`, holds cash below QQQ SMA200, uses 1.0x exposure in elevated volatility, 1.25x in normal positive trend, and 1.5x only when 20-day realised volatility is below 90% of its 252-day median. The second, `codex_qqq_drawdown_brake_trend`, holds cash below QQQ SMA200, uses 1.25x in positive trend, cuts to 0.75x after an 8% rolling 63-day drawdown, and requires 20-day recovery confirmation before re-leveraging. This is fixed research only: no optimisation loop, no machine learning, no intraday data, no options, no leveraged ETF product modelling, no margin execution, and no execution approval.
+
+Command:
+
+```text
+python bot.py --qqq-adaptive-leverage-lab
+```
+
+Saved display:
+
+```text
+python bot.py --show-qqq-adaptive-leverage-lab
+```
+
+Outputs:
+
+```text
+data/qqq_adaptive_leverage_lab.csv
+data/qqq_adaptive_leverage_lab_summary.csv
+data/qqq_adaptive_leverage_lab_costs.csv
+data/qqq_adaptive_leverage_lab_splits.csv
+data/qqq_adaptive_leverage_lab_drawdowns.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:

@@ -111,6 +111,14 @@ The focused QQQ leverage validation report comes from `python bot.py --qqq-lever
 - It compares against QQQ buy-and-hold, SPY buy-and-hold, and cash where market data is available.
 - It is validation only. It does not approve leverage, margin, shorting, paper execution, live trading, scheduling, or strategy-to-execution wiring.
 
+The QQQ adaptive leverage lab comes from `python bot.py --qqq-adaptive-leverage-lab`, with saved display through `python bot.py --show-qqq-adaptive-leverage-lab`:
+
+- It compares QQQ buy-and-hold, SPY buy-and-hold, `qqq_100_trend_gate`, `qqq_125_trend_gate`, `qqq_150_trend_gate`, and two fixed Codex adaptive candidates.
+- `codex_qqq_adaptive_trend_exposure` holds cash below QQQ SMA200, uses 1.0x in elevated volatility, 1.25x in normal positive trend, and 1.5x only when 20-day realised volatility is below 90% of its 252-day median.
+- `codex_qqq_drawdown_brake_trend` holds cash below QQQ SMA200, uses 1.25x in positive trend, cuts to 0.75x after an 8% rolling 63-day drawdown, and requires 20-day recovery confirmation before re-leveraging.
+- It writes `data/qqq_adaptive_leverage_lab.csv`, summary, cost/financing, split, and drawdown CSVs.
+- It is research-only and does not approve leverage, margin, paper execution, live trading, scheduling, or strategy-to-execution wiring.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
