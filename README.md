@@ -1708,6 +1708,14 @@ python bot.py --paper-order-smoke-test-readiness-pack
 
 This writes `data/paper_order_smoke_test_readiness_pack.csv`. It is saved-data/static/report-only: it summarises the saved Alpaca paper readiness report, stock/ETF execution-readiness context, project state, existing confirmation-gated smoke-test boundary, and saved kill-switch/protection reports where present. It may record a conservative future manual-review-only template such as AAPL buy 1, but it does not print a pasteable order command, call Alpaca, read positions, load config contents, create/submit/cancel/replace orders, write SQLite `trade_log`, send alerts, schedule anything, connect strategies to execution, or approve paper order execution.
 
+To run a live read-only preflight shortly before discussing a future tiny manually confirmed paper-order smoke test, use default non-confirmed mode first:
+
+```text
+python bot.py --paper-order-smoke-test-live-preflight --ticker AAPL --side buy --quantity 1
+```
+
+This writes `data/paper_order_smoke_test_live_preflight.csv`. Default mode validates the proposed ticker, side, and quantity and reads saved readiness context only; it does not call Alpaca. A confirmed read-only mode exists behind `--confirm-readonly-alpaca-check` for account, clock, asset, and open-order status checks, but it still does not submit, create, cancel, replace, or preview executable orders. The terminal summary never prints a pasteable paper-order command and always keeps order execution, execution, scheduling, and run-now approval false.
+
 Crypto strategy lab mode backtests a tiny fixed research-only strategy set for `BTC/USD`, `ETH/USD`, and `LTC/USD` using yfinance-compatible daily symbols (`BTC-USD`, `ETH-USD`, `LTC-USD`). The per-symbol strategies are `crypto_buy_and_hold_baseline`, `crypto_sma_50_200_trend`, `crypto_buy_above_200_exit_below_200`, and one controlled iteration: `crypto_buy_above_200_with_vol_gate`. The volatility-gate strategy uses fixed parameters only: 20-day realised volatility, trailing 252-day median volatility, and a 1.5x gate for new entries. The lab also writes a separate portfolio-style BTC/ETH/cash rotation test, `crypto_monthly_btc_eth_momentum_rotation`, using fixed monthly rebalance, 126-day momentum ranking, and a 200-day SMA absolute trend filter. It writes full-period, in-sample, and out-of-sample rows, plus an iteration log to discourage tuning after seeing results. Results include simple crypto research cost assumptions: `crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, and `crypto_slippage_bps=10`. It does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, or approve execution.
 
 Outputs:

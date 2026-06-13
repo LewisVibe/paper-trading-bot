@@ -55,6 +55,41 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    if "--paper-order-smoke-test-live-preflight" in sys.argv[1:]:
+        from trading_bot.research.paper_order_smoke_test_live_preflight import (
+            generate_paper_order_smoke_test_live_preflight,
+        )
+
+        early_args = _parse_live_preflight_early_args(sys.argv[1:])
+        result = generate_paper_order_smoke_test_live_preflight(
+            ticker=early_args.get("ticker", ""),
+            side=early_args.get("side", ""),
+            quantity=early_args.get("quantity", ""),
+            confirm_readonly_alpaca_check=early_args.get("confirm_readonly_alpaca_check", "") == "true",
+        )
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+
+
+def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
+    values = {
+        "ticker": "",
+        "side": "",
+        "quantity": "",
+        "confirm_readonly_alpaca_check": "false",
+    }
+    index = 0
+    while index < len(argv):
+        item = argv[index]
+        if item in {"--ticker", "--side", "--quantity"} and index + 1 < len(argv):
+            values[item.removeprefix("--")] = argv[index + 1]
+            index += 2
+            continue
+        if item == "--confirm-readonly-alpaca-check":
+            values["confirm_readonly_alpaca_check"] = "true"
+        index += 1
+    return values
 
 
 _early_report_only_route()
@@ -195,6 +230,9 @@ from trading_bot.research.stock_etf_paper_execution_readiness import (
 from trading_bot.research.alpaca_paper_readiness import generate_alpaca_paper_readiness_report
 from trading_bot.research.paper_order_smoke_test_readiness import (
     generate_paper_order_smoke_test_readiness_pack,
+)
+from trading_bot.research.paper_order_smoke_test_live_preflight import (
+    generate_paper_order_smoke_test_live_preflight,
 )
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
@@ -4290,6 +4328,26 @@ def parse_args() -> argparse.Namespace:
         help="Create a report-only readiness pack for discussing a future tiny manual paper-order smoke test.",
     )
     parser.add_argument(
+        "--paper-order-smoke-test-live-preflight",
+        action="store_true",
+        help="Create a read-only/report-only live preflight for a future tiny manual paper-order smoke test.",
+    )
+    parser.add_argument(
+        "--ticker",
+        default="",
+        help="Ticker for read-only/report-only smoke-test preflight commands.",
+    )
+    parser.add_argument(
+        "--side",
+        default="",
+        help="Side for read-only/report-only smoke-test preflight commands: buy or sell.",
+    )
+    parser.add_argument(
+        "--quantity",
+        default="",
+        help="Quantity for read-only/report-only smoke-test preflight commands.",
+    )
+    parser.add_argument(
         "--crypto-strategy-lab",
         action="store_true",
         help="Run a research-only crypto strategy lab with daily yfinance-compatible history.",
@@ -4954,6 +5012,20 @@ def main() -> int:
             result = generate_paper_order_smoke_test_readiness_pack()
         except Exception as exc:
             print(f"Paper-order smoke-test readiness pack failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.paper_order_smoke_test_live_preflight:
+        try:
+            result = generate_paper_order_smoke_test_live_preflight(
+                ticker=args.ticker,
+                side=args.side,
+                quantity=args.quantity,
+                confirm_readonly_alpaca_check=args.confirm_readonly_alpaca_check,
+            )
+        except Exception as exc:
+            print(f"Paper-order smoke-test live preflight failed: {exc}", file=sys.stderr)
             return 1
         for line in result.summary_lines:
             print(line)
