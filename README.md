@@ -1620,6 +1620,29 @@ data/crypto_lead_split_sensitivity_exclusions.csv
 data/crypto_lead_split_sensitivity_contributions.csv
 ```
 
+Expanded crypto manual review pack mode consolidates the current crypto research branch into a manual-review checkpoint for `crypto_equal_weight_ex_highest_vol_2`. It reads saved crypto universe, benchmark, risk-control, lead-decision, split-sensitivity, exclusion, and contribution CSVs where available, then writes a research/report-only manual review pack for the current crypto research lead. It summarises universe readiness, POL/MATIC transition blocks, equal-weight benchmark reality, current lead evidence, split sensitivity, exclusion-rule instability, outlier/top-contributor dependence, cost-review status, high-drawdown context, rejected hard crash gates, and downgraded volatility/drawdown throttles. This does not approve crypto execution, does not approve preview promotion, and does not connect crypto to Alpaca or paper orders; the current crypto research lead remains manual-review-only unless future review changes that.
+
+Command:
+
+```text
+python bot.py --expanded-crypto-manual-review-pack
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-expanded-crypto-manual-review-pack
+```
+
+Outputs:
+
+```text
+data/expanded_crypto_manual_review_pack.csv
+data/expanded_crypto_manual_review_summary.csv
+data/expanded_crypto_manual_review_evidence.csv
+data/expanded_crypto_manual_review_blockers.csv
+```
+
 Crypto strategy lab mode backtests a tiny fixed research-only strategy set for `BTC/USD`, `ETH/USD`, and `LTC/USD` using yfinance-compatible daily symbols (`BTC-USD`, `ETH-USD`, `LTC-USD`). The per-symbol strategies are `crypto_buy_and_hold_baseline`, `crypto_sma_50_200_trend`, `crypto_buy_above_200_exit_below_200`, and one controlled iteration: `crypto_buy_above_200_with_vol_gate`. The volatility-gate strategy uses fixed parameters only: 20-day realised volatility, trailing 252-day median volatility, and a 1.5x gate for new entries. The lab also writes a separate portfolio-style BTC/ETH/cash rotation test, `crypto_monthly_btc_eth_momentum_rotation`, using fixed monthly rebalance, 126-day momentum ranking, and a 200-day SMA absolute trend filter. It writes full-period, in-sample, and out-of-sample rows, plus an iteration log to discourage tuning after seeing results. Results include simple crypto research cost assumptions: `crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, and `crypto_slippage_bps=10`. It does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, or approve execution.
 
 Outputs:

@@ -149,6 +149,10 @@ from trading_bot.research.crypto_lead_split_sensitivity_diagnosis import (
     generate_crypto_lead_split_sensitivity_diagnosis,
     show_crypto_lead_split_sensitivity_diagnosis_file,
 )
+from trading_bot.research.expanded_crypto_manual_review_pack import (
+    generate_expanded_crypto_manual_review_pack,
+    show_expanded_crypto_manual_review_pack_file,
+)
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
 from trading_bot.research.crypto_robustness import generate_crypto_robustness_report
@@ -4193,6 +4197,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved crypto lead split-sensitivity diagnosis without refreshing data.",
     )
     parser.add_argument(
+        "--expanded-crypto-manual-review-pack",
+        action="store_true",
+        help="Create a saved-output research-only manual review pack for the expanded crypto branch.",
+    )
+    parser.add_argument(
+        "--show-expanded-crypto-manual-review-pack",
+        action="store_true",
+        help="Display the saved expanded crypto manual review pack without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-strategy-lab",
         action="store_true",
         help="Run a research-only crypto strategy lab with daily yfinance-compatible history.",
@@ -4787,6 +4801,20 @@ def main() -> int:
         return 0
     if args.show_crypto_lead_split_sensitivity_diagnosis:
         status_code, lines = show_crypto_lead_split_sensitivity_diagnosis_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.expanded_crypto_manual_review_pack:
+        try:
+            result = generate_expanded_crypto_manual_review_pack()
+        except Exception as exc:
+            print(f"Expanded crypto manual review pack failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_expanded_crypto_manual_review_pack:
+        status_code, lines = show_expanded_crypto_manual_review_pack_file()
         for line in lines:
             print(line)
         return status_code

@@ -202,12 +202,17 @@ Research chain:
 - `python bot.py --show-expanded-crypto-lead-decision`
 - `python bot.py --crypto-lead-split-sensitivity-diagnosis`
 - `python bot.py --show-crypto-lead-split-sensitivity-diagnosis`
+- `python bot.py --expanded-crypto-manual-review-pack`
+- `python bot.py --show-expanded-crypto-manual-review-pack`
 
 Current crypto interpretation:
 
 - `crypto_equal_weight_ex_highest_vol_2` is the current expanded crypto research lead as a research label only.
 - `python bot.py --crypto-lead-split-sensitivity-diagnosis` reads saved crypto research CSVs and writes `data/crypto_lead_split_sensitivity_diagnosis.csv`, `data/crypto_lead_split_sensitivity_summary.csv`, `data/crypto_lead_split_sensitivity_periods.csv`, `data/crypto_lead_split_sensitivity_exclusions.csv`, and `data/crypto_lead_split_sensitivity_contributions.csv`.
 - The split-sensitivity diagnosis for the current crypto research lead is research/report-only and does not approve crypto execution, paper execution, preview promotion, scheduling, order instructions, or strategy-to-execution wiring.
+- `python bot.py --expanded-crypto-manual-review-pack` writes `data/expanded_crypto_manual_review_pack.csv`, `data/expanded_crypto_manual_review_summary.csv`, `data/expanded_crypto_manual_review_evidence.csv`, and `data/expanded_crypto_manual_review_blockers.csv`.
+- This is the manual review pack for the current crypto research lead. It summarises universe readiness, benchmark reality, failed/deprioritised risk-control families, split sensitivity, exclusion instability, outlier dependence, cost review, high-drawdown context, and remaining blockers.
+- The manual review pack is research/report-only; it does not approve crypto execution, does not approve preview promotion, and does not connect crypto to Alpaca or paper orders. The current crypto research lead remains manual-review-only unless future review changes that.
 - `BTC/USD`: useful but split-sensitive; keep monitoring.
 - `ETH/USD`: useful but research-only; keep monitoring.
 - `LTC/USD`: researched but not useful; pause.
