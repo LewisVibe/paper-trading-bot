@@ -1768,7 +1768,7 @@ For quick terminal checks, use the concise current research state display helper
 python bot.py --show-current-research-state
 ```
 
-This reads saved project research state from `data/project_research_state_summary.csv`, `data/project_research_state_refresh.csv`, and `data/project_research_state_next_steps.csv`, with saved stock/ETF and crypto lead summaries as fallbacks. It does not refresh market data, does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
+This reads saved project research state from `data/project_research_state_summary.csv`, `data/project_research_state_refresh.csv`, and `data/project_research_state_next_steps.csv`, with saved stock/ETF and crypto lead summaries as fallbacks. Current saved interpretation surfaces `qqq_100_trend_gate` as the stock/ETF research lead, keeps `codex_qqq_adaptive_trend_exposure` as an ambitious alternative, marks `qqq_150_trend_gate` as the rejected high-drawdown QQQ reference, and preserves `crypto_equal_weight_ex_highest_vol_2` as the manual-review-only crypto lead. It does not refresh market data, does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
 
 To check whether the saved project research state is fresh and internally usable, run:
 
@@ -1784,7 +1784,7 @@ To review whether the current stock/ETF research lead is ready even for a future
 python bot.py --stock-etf-paper-execution-readiness-report
 ```
 
-This writes `data/stock_etf_paper_execution_readiness_report.csv`. It reads saved project/research/gate reports only and checks the current stock/ETF lead, cost-review blocker, split/drawdown context, preview readiness, execution eligibility, paper-execution protection, kill-switch, portfolio-risk prerequisites, broker boundary, crypto out-of-scope boundary, and scheduling boundary. The expected current interpretation remains conservative: `codex_ambitious_concentrated_growth_persistence` is a research lead with 25 bps cost review still blocking execution discussion. This report does not read local credentials, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, or approve paper execution.
+This writes `data/stock_etf_paper_execution_readiness_report.csv`. It reads saved project/research/gate reports only and checks the current stock/ETF lead, cost-review blocker, split/drawdown context, preview readiness, execution eligibility, paper-execution protection, kill-switch, portfolio-risk prerequisites, broker boundary, crypto out-of-scope boundary, and scheduling boundary. The expected current interpretation remains conservative: `qqq_100_trend_gate` is the stock/ETF research lead, `codex_qqq_adaptive_trend_exposure` remains an ambitious alternative, `qqq_150_trend_gate` remains rejected as a high-drawdown reference, and no paper execution discussion is approved. This report does not read local credentials, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, or approve paper execution.
 
 To run an Alpaca paper readiness/preflight audit before any future manually confirmed paper smoke test discussion, use:
 

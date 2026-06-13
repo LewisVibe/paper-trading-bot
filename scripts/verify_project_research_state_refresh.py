@@ -25,10 +25,16 @@ OUTPUTS = [
 ]
 
 REQUIRED_TOKENS = [
+    "qqq_100_trend_gate",
+    "qqq_100_trend_gate_new_research_lead",
+    "codex_qqq_adaptive_trend_exposure",
+    "qqq_150_trend_gate",
     "codex_ambitious_concentrated_growth_persistence",
-    "codex_ambitious_active_research_lead_cost_review_required",
     "crypto_equal_weight_ex_highest_vol_2",
     "crypto_manual_review_not_ready_for_preview_discussion",
+    "stock_etf_ambitious_alternative",
+    "stock_etf_rejected_high_drawdown_reference",
+    "review_qqq_trend_gate_as_new_stock_etf_research_lead",
     "stock_etf_blockers",
     "crypto_blockers",
     "stock_etf_cost_review_next",
@@ -43,6 +49,11 @@ REQUIRED_TOKENS = [
     '"scheduling_approved": False',
     '"paper_execution_approved": False',
     '"crypto_execution_approved": False',
+    '"leverage_execution_approved": False',
+    '"margin_approved": False',
+    '"short_execution_approved": False',
+    '"alpaca_called": False',
+    '"orders_created": False',
     '"preview_promotion_approved": False',
     "does not approve preview promotion",
 ]

@@ -7,9 +7,11 @@ from pathlib import Path
 from typing import Any
 
 
-STOCK_ETF_LEAD = "codex_ambitious_concentrated_growth_persistence"
-STOCK_ETF_STATUS = "codex_ambitious_active_research_lead_cost_review_required"
-STOCK_ETF_BLOCKER = "25 bps cost review not survived; survives 10 bps but not 25 bps"
+STOCK_ETF_LEAD = "qqq_100_trend_gate"
+STOCK_ETF_STATUS = "qqq_100_trend_gate_new_research_lead"
+STOCK_ETF_BLOCKER = "research-only lead label; no execution approval"
+STOCK_ETF_AMBITIOUS_ALTERNATIVE = "codex_qqq_adaptive_trend_exposure"
+STOCK_ETF_REJECTED_HIGH_DRAWDOWN_REFERENCE = "qqq_150_trend_gate"
 CRYPTO_LEAD = "crypto_equal_weight_ex_highest_vol_2"
 CRYPTO_STATUS = "crypto_manual_review_not_ready_for_preview_discussion"
 CRYPTO_BLOCKERS = "fixed split sensitivity; exclusion-rule instability; BNB/TRX outlier dependence; cost review; high drawdown review"
@@ -22,6 +24,7 @@ PROJECT_STATE_FILES = {
 }
 
 FALLBACK_FILES = {
+    "qqq_lead_summary": Path("data/qqq_lead_decision_summary.csv"),
     "stock_summary": Path("data/codex_ambitious_lead_decision_summary.csv"),
     "crypto_manual_summary": Path("data/expanded_crypto_manual_review_summary.csv"),
     "crypto_lead_summary": Path("data/expanded_crypto_lead_decision_summary.csv"),
@@ -50,13 +53,17 @@ def show_current_research_state(data_dir: Path | str = "data") -> tuple[int, lis
         ]
 
     stock_status_and_blocker = summary_value(summary, "stock_etf_status_and_blocker")
+    stock_ambitious_alternative = summary_value(summary, "stock_etf_ambitious_alternative") or fallback_summary_value(fallback_rows["qqq_lead_summary"], "ambitious_qqq_candidate") or STOCK_ETF_AMBITIOUS_ALTERNATIVE
+    stock_rejected_reference = summary_value(summary, "stock_etf_rejected_high_drawdown_reference") or fallback_summary_value(fallback_rows["qqq_lead_summary"], "rejected_high_drawdown_reference") or STOCK_ETF_REJECTED_HIGH_DRAWDOWN_REFERENCE
     crypto_status_and_blockers = summary_value(summary, "crypto_status_and_blockers")
     execution_values = approval_values(summary + refresh + next_steps, "execution_approved")
     scheduling_values = approval_values(summary + refresh + next_steps, "scheduling_approved")
     return 0, [
         "CURRENT RESEARCH STATE",
-        f"Stock/ETF lead: {summary_value(summary, 'stock_etf_active_research_lead') or fallback_value(fallback_rows['stock_summary'], 'selected_research_lead') or STOCK_ETF_LEAD}",
-        f"Stock/ETF status: {status_part(stock_status_and_blocker) or STOCK_ETF_STATUS}",
+        f"Stock/ETF lead: {summary_value(summary, 'stock_etf_active_research_lead') or fallback_summary_value(fallback_rows['qqq_lead_summary'], 'active_stock_etf_research_lead') or fallback_value(fallback_rows['stock_summary'], 'selected_research_lead') or STOCK_ETF_LEAD}",
+        f"Stock/ETF status: {status_part(stock_status_and_blocker) or fallback_summary_value(fallback_rows['qqq_lead_summary'], 'final_lead_decision') or STOCK_ETF_STATUS}",
+        f"Stock/ETF ambitious alternative: {stock_ambitious_alternative}",
+        f"Stock/ETF rejected high-drawdown reference: {stock_rejected_reference}",
         f"Stock/ETF blocker: {blocker_part(stock_status_and_blocker) or STOCK_ETF_BLOCKER}",
         "",
         f"Crypto lead: {summary_value(summary, 'crypto_research_lead') or fallback_value(fallback_rows['crypto_lead_summary'], 'selected_crypto_research_lead') or CRYPTO_LEAD}",
@@ -86,6 +93,13 @@ def summary_value(rows: list[dict[str, Any]], key: str) -> str:
 
 def fallback_value(rows: list[dict[str, Any]], key: str) -> str:
     return summary_value(rows, key)
+
+
+def fallback_summary_value(rows: list[dict[str, Any]], key: str) -> str:
+    for row in rows:
+        if row.get("summary_name") == key:
+            return str(row.get("summary_value", ""))
+    return ""
 
 
 def status_part(value: str) -> str:

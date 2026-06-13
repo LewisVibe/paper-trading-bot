@@ -15,12 +15,18 @@ from pathlib import Path
 from typing import Any
 
 
-STOCK_ETF_LEAD = "codex_ambitious_concentrated_growth_persistence"
-STOCK_ETF_STATUS = "codex_ambitious_active_research_lead_cost_review_required"
+STOCK_ETF_LEAD = "qqq_100_trend_gate"
+STOCK_ETF_STATUS = "qqq_100_trend_gate_new_research_lead"
+STOCK_ETF_AMBITIOUS_ALTERNATIVE = "codex_qqq_adaptive_trend_exposure"
+STOCK_ETF_REJECTED_HIGH_DRAWDOWN_REFERENCE = "qqq_150_trend_gate"
+PREVIOUS_STOCK_ETF_LEAD = "codex_ambitious_concentrated_growth_persistence"
 CRYPTO_LEAD = "crypto_equal_weight_ex_highest_vol_2"
 CRYPTO_STATUS = "crypto_manual_review_not_ready_for_preview_discussion"
 
 STOCK_INPUT_FILES = {
+    "qqq_lead_decision_summary": Path("data/qqq_lead_decision_summary.csv"),
+    "qqq_lead_decision_report": Path("data/qqq_lead_decision_report.csv"),
+    "qqq_lead_decision_evidence": Path("data/qqq_lead_decision_evidence.csv"),
     "codex_lead_summary": Path("data/codex_ambitious_lead_decision_summary.csv"),
     "codex_lead_evidence": Path("data/codex_ambitious_lead_decision_evidence.csv"),
     "codex_validation_summary": Path("data/codex_ambitious_validation_summary.csv"),
@@ -74,10 +80,16 @@ COMMON_COLUMNS = [
     "recommended_next_step",
     "research_only",
     "preview_promotion_approved",
+    "preview_only",
     "execution_approved",
     "paper_execution_approved",
     "crypto_execution_approved",
+    "leverage_execution_approved",
+    "margin_approved",
+    "short_execution_approved",
     "scheduling_approved",
+    "alpaca_called",
+    "orders_created",
 ]
 
 DEFAULT_RECOMMENDATION = "pause_strategy_iterations_and_improve_reporting"
@@ -146,10 +158,14 @@ def build_refresh_rows(
     stock_inputs: dict[str, list[dict[str, Any]]],
     crypto_inputs: dict[str, list[dict[str, Any]]],
 ) -> list[dict[str, Any]]:
+    qqq_summary = stock_inputs.get("qqq_lead_decision_summary", [])
     rows = [
         row(created_at, "stock_etf_research_lead", "active_lead", "stock_etf", STOCK_ETF_LEAD, "lead_status", stock_status(stock_inputs), STOCK_ETF_STATUS, "stock_etf_cost_review_next", stock_evidence(stock_inputs)),
+        row(created_at, "stock_etf_research_lead", "ambitious_alternative", "stock_etf", STOCK_ETF_AMBITIOUS_ALTERNATIVE, "lead_status", qqq_summary_value(qqq_summary, "ambitious_qqq_candidate") or STOCK_ETF_AMBITIOUS_ALTERNATIVE, "qqq_adaptive_higher_calmar_but_drawdown_tradeoff", "review_qqq_trend_gate_as_new_stock_etf_research_lead", "Higher CAGR/Calmar than qqq_100 trend gate, but lower Sharpe and deeper drawdown."),
+        row(created_at, "stock_etf_research_lead", "rejected_high_drawdown_reference", "stock_etf", STOCK_ETF_REJECTED_HIGH_DRAWDOWN_REFERENCE, "lead_status", qqq_summary_value(qqq_summary, "rejected_high_drawdown_reference") or STOCK_ETF_REJECTED_HIGH_DRAWDOWN_REFERENCE, "qqq_150_rejected_high_drawdown", "review_qqq_trend_gate_as_new_stock_etf_research_lead", "Higher leverage reference is not a lead candidate because drawdown/financing sensitivity are too high."),
+        row(created_at, "stock_etf_research_lead", "previous_lead", "stock_etf", PREVIOUS_STOCK_ETF_LEAD, "lead_status", "previous_stock_etf_research_lead", "superseded_by_qqq_100_trend_gate", "review_qqq_trend_gate_as_new_stock_etf_research_lead", "Previous Codex ambitious lead remains research context only."),
         row(created_at, "crypto_research_lead", "manual_review_lead", "crypto", CRYPTO_LEAD, "lead_status", crypto_status(crypto_inputs), CRYPTO_STATUS, "crypto_manual_review_next", crypto_evidence(crypto_inputs)),
-        row(created_at, "stock_etf_blockers", "main_blocker", "stock_etf", STOCK_ETF_LEAD, "blocker", stock_blockers(stock_inputs), "cost_review_required", "stock_etf_cost_review_next", "25 bps cost review remains the main blocker."),
+        row(created_at, "stock_etf_blockers", "main_blocker", "stock_etf", STOCK_ETF_LEAD, "blocker", stock_blockers(stock_inputs), "research_only_no_execution_approval", "review_qqq_trend_gate_as_new_stock_etf_research_lead", "QQQ lead remains research-only; no preview, paper execution, leverage, margin, or order approval."),
         row(created_at, "crypto_blockers", "main_blockers", "crypto", CRYPTO_LEAD, "blockers", crypto_blockers(crypto_inputs), "manual_review_required", "crypto_cost_and_outlier_review_next", "Crypto blockers remain manual-review-only."),
         row(created_at, "rejected_or_downgraded_stock_etf_branches", "stock_branch_context", "stock_etf", STOCK_ETF_LEAD, "branch_context", stock_rejected_summary(stock_inputs), "manual_review_required", "stock_etf_monitoring_dashboard_next", "Previous stock/ETF variants remain research context, not execution routes."),
         row(created_at, "rejected_or_downgraded_crypto_branches", "crypto_branch_context", "crypto", CRYPTO_LEAD, "branch_context", crypto_rejected_summary(crypto_inputs), "manual_review_required", "crypto_manual_review_next", "Rejected crypto risk-control families should not be revived without a fixed hypothesis."),
@@ -182,7 +198,8 @@ def build_next_step_rows(
     stock_missing = [name for name, rows_for_input in stock_inputs.items() if not rows_for_input]
     crypto_missing = [name for name, rows_for_input in crypto_inputs.items() if not rows_for_input]
     return [
-        row(created_at, "suggested_next_research_options", "stock_etf_cost_review_next", "stock_etf", STOCK_ETF_LEAD, "next_step_option", "Review why 25 bps cost stress is not survived before any preview-candidate discussion.", "open", "stock_etf_cost_review_next", stock_blockers(stock_inputs)),
+        row(created_at, "suggested_next_research_options", "review_qqq_trend_gate_as_new_stock_etf_research_lead", "stock_etf", STOCK_ETF_LEAD, "next_step_option", "Review qqq_100_trend_gate as the new stock/ETF research lead in docs and dashboards without approving execution.", "open", "review_qqq_trend_gate_as_new_stock_etf_research_lead", stock_evidence(stock_inputs)),
+        row(created_at, "suggested_next_research_options", "stock_etf_cost_review_next", "stock_etf", PREVIOUS_STOCK_ETF_LEAD, "next_step_option", "Keep the previous Codex ambitious cost-review context available, but do not treat it as the active lead.", "open", "stock_etf_cost_review_next", stock_blockers(stock_inputs)),
         row(created_at, "suggested_next_research_options", "stock_etf_monitoring_dashboard_next", "stock_etf", STOCK_ETF_LEAD, "next_step_option", "Improve stock/ETF monitoring dashboard/reporting for the active research lead.", "open", "stock_etf_monitoring_dashboard_next", stock_evidence(stock_inputs)),
         row(created_at, "suggested_next_research_options", "crypto_manual_review_next", "crypto", CRYPTO_LEAD, "next_step_option", "Manual crypto split/regime review before preview discussion.", "open", "crypto_manual_review_next", crypto_blockers(crypto_inputs)),
         row(created_at, "suggested_next_research_options", "crypto_cost_and_outlier_review_next", "crypto", CRYPTO_LEAD, "next_step_option", "Review crypto cost, outlier, BNB/TRX, exclusion-rule instability, and high drawdown.", "open", "crypto_cost_and_outlier_review_next", crypto_blockers(crypto_inputs)),
@@ -200,6 +217,8 @@ def choose_recommended_next_step(
 ) -> str:
     if not any(stock_inputs.values()) and not any(crypto_inputs.values()):
         return "insufficient_saved_inputs"
+    if qqq_summary_value(stock_inputs.get("qqq_lead_decision_summary", []), "final_lead_decision") == STOCK_ETF_STATUS:
+        return "review_qqq_trend_gate_as_new_stock_etf_research_lead"
     stock_has_cost_blocker = "25 bps" in stock_blockers(stock_inputs) or "cost" in stock_status(stock_inputs).lower()
     crypto_has_manual_blockers = "not_ready" in crypto_status(crypto_inputs) or "outlier" in crypto_blockers(crypto_inputs)
     if stock_has_cost_blocker and crypto_has_manual_blockers:
@@ -221,6 +240,9 @@ def build_summary_rows(
 ) -> list[dict[str, Any]]:
     return [
         summary_row(created_at, "stock_etf_active_research_lead", STOCK_ETF_LEAD, STOCK_ETF_STATUS, stock_evidence(stock_inputs), recommended),
+        summary_row(created_at, "stock_etf_ambitious_alternative", STOCK_ETF_AMBITIOUS_ALTERNATIVE, "qqq_adaptive_higher_calmar_but_drawdown_tradeoff", stock_ambitious_alternative_evidence(stock_inputs), recommended),
+        summary_row(created_at, "stock_etf_rejected_high_drawdown_reference", STOCK_ETF_REJECTED_HIGH_DRAWDOWN_REFERENCE, "qqq_150_rejected_high_drawdown", stock_rejected_high_drawdown_evidence(stock_inputs), recommended),
+        summary_row(created_at, "stock_etf_previous_research_lead", PREVIOUS_STOCK_ETF_LEAD, "superseded_by_qqq_100_trend_gate", previous_stock_lead_evidence(stock_inputs), recommended),
         summary_row(created_at, "stock_etf_status_and_blocker", f"{stock_status(stock_inputs)}; blocker={stock_blockers(stock_inputs)}", STOCK_ETF_STATUS, "Stock/ETF lead is an active research lead with cost review open.", recommended),
         summary_row(created_at, "crypto_research_lead", CRYPTO_LEAD, CRYPTO_STATUS, crypto_evidence(crypto_inputs), recommended),
         summary_row(created_at, "crypto_status_and_blockers", f"{crypto_status(crypto_inputs)}; blockers={crypto_blockers(crypto_inputs)}", CRYPTO_STATUS, "Crypto lead remains manual-review-only and not preview-ready.", recommended),
@@ -234,11 +256,19 @@ def build_summary_rows(
 
 
 def stock_status(stock_inputs: dict[str, list[dict[str, Any]]]) -> str:
+    qqq_status = qqq_summary_value(stock_inputs.get("qqq_lead_decision_summary", []), "final_lead_decision")
+    if qqq_status:
+        return qqq_status
     saved = summary_value(stock_inputs["codex_lead_summary"], "final_lead_decision_label")
     return saved if saved != "unavailable" else STOCK_ETF_STATUS
 
 
 def stock_evidence(stock_inputs: dict[str, list[dict[str, Any]]]) -> str:
+    qqq_summary = stock_inputs.get("qqq_lead_decision_summary", [])
+    conservative = qqq_summary_details(qqq_summary, "conservative_qqq_candidate")
+    tradeoff = qqq_summary_value(qqq_summary, "main_tradeoff")
+    if conservative:
+        return f"{conservative}; main_tradeoff={tradeoff}"
     saved = summary_value(stock_inputs["codex_lead_summary"], "full_period_evidence")
     if saved != "unavailable":
         return saved
@@ -246,6 +276,9 @@ def stock_evidence(stock_inputs: dict[str, list[dict[str, Any]]]) -> str:
 
 
 def stock_blockers(stock_inputs: dict[str, list[dict[str, Any]]]) -> str:
+    qqq_summary = stock_inputs.get("qqq_lead_decision_summary", [])
+    if qqq_summary_value(qqq_summary, "final_lead_decision") == STOCK_ETF_STATUS:
+        return "research_only_no_execution_approval; adaptive_QQQ remains ambitious alternative; high leverage references rejected"
     saved = summary_value(stock_inputs["codex_lead_summary"], "remaining_blockers")
     if saved != "unavailable":
         return saved
@@ -253,9 +286,29 @@ def stock_blockers(stock_inputs: dict[str, list[dict[str, Any]]]) -> str:
 
 
 def stock_rejected_summary(stock_inputs: dict[str, list[dict[str, Any]]]) -> str:
+    qqq_summary = stock_inputs.get("qqq_lead_decision_summary", [])
+    rejected = qqq_summary_value(qqq_summary, "rejected_high_drawdown_reference")
+    ambitious = qqq_summary_value(qqq_summary, "ambitious_qqq_candidate")
+    if rejected or ambitious:
+        return f"ambitious_alternative={ambitious or STOCK_ETF_AMBITIOUS_ALTERNATIVE}; rejected_high_drawdown_reference={rejected or STOCK_ETF_REJECTED_HIGH_DRAWDOWN_REFERENCE}; qqq_175_and_qqq_200_rejected_high_drawdown"
     persistence = summary_value(stock_inputs["stricter_persistence"], "final_summary_label")
     cost = summary_value(stock_inputs["stricter_cost_stress"], "final_summary_label")
     return f"previous stricter-gate branch superseded by {STOCK_ETF_LEAD}; persistence_context={persistence}; cost_context={cost}; rejected_or_downgraded_stock_etf_branches where available"
+
+
+def stock_ambitious_alternative_evidence(stock_inputs: dict[str, list[dict[str, Any]]]) -> str:
+    return qqq_summary_details(stock_inputs.get("qqq_lead_decision_summary", []), "ambitious_qqq_candidate") or "CAGR=20.2819; Sharpe=0.9749; MaxDD=-25.9889; Calmar=0.7804; higher Calmar but worse Sharpe/drawdown than qqq_100_trend_gate"
+
+
+def stock_rejected_high_drawdown_evidence(stock_inputs: dict[str, list[dict[str, Any]]]) -> str:
+    return qqq_summary_details(stock_inputs.get("qqq_lead_decision_summary", []), "rejected_high_drawdown_reference") or "CAGR=23.3903; Sharpe=0.9542; MaxDD=-33.892; Calmar=0.6901; rejected high-drawdown reference"
+
+
+def previous_stock_lead_evidence(stock_inputs: dict[str, list[dict[str, Any]]]) -> str:
+    saved = summary_value(stock_inputs["codex_lead_summary"], "full_period_evidence")
+    if saved != "unavailable":
+        return saved
+    return "CAGR=14.1039; Sharpe=0.7192; MaxDD=-29.5357; Calmar=0.4775; previous active stock/ETF lead"
 
 
 def crypto_status(crypto_inputs: dict[str, list[dict[str, Any]]]) -> str:
@@ -313,10 +366,16 @@ def row(
         "recommended_next_step": summary_label,
         "research_only": True,
         "preview_promotion_approved": False,
+        "preview_only": False,
         "execution_approved": False,
         "paper_execution_approved": False,
         "crypto_execution_approved": False,
+        "leverage_execution_approved": False,
+        "margin_approved": False,
+        "short_execution_approved": False,
         "scheduling_approved": False,
+        "alpaca_called": False,
+        "orders_created": False,
     }
 
 
@@ -331,6 +390,20 @@ def summary_value(rows: list[dict[str, Any]], key: str) -> str:
     return "unavailable"
 
 
+def qqq_summary_value(rows: list[dict[str, Any]], key: str) -> str:
+    for item in rows:
+        if item.get("summary_name") == key:
+            return str(item.get("summary_value", ""))
+    return ""
+
+
+def qqq_summary_details(rows: list[dict[str, Any]], key: str) -> str:
+    for item in rows:
+        if item.get("summary_name") == key:
+            return str(item.get("details", ""))
+    return ""
+
+
 def status_counts(rows: list[dict[str, Any]]) -> str:
     counts = Counter(str(item.get("status", "")) for item in rows if item)
     return ", ".join(f"{key}={value}" for key, value in sorted(counts.items())) or "unavailable"
@@ -340,6 +413,8 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], paths: dict[str, Pat
     return [
         "Project research state refresh complete. Research/report only; execution_approved=False; scheduling_approved=False.",
         f"Stock/ETF active research lead: {summary_value(summary_rows, 'stock_etf_active_research_lead')}",
+        f"Stock/ETF ambitious alternative: {summary_value(summary_rows, 'stock_etf_ambitious_alternative')}",
+        f"Stock/ETF rejected high-drawdown reference: {summary_value(summary_rows, 'stock_etf_rejected_high_drawdown_reference')}",
         f"Stock/ETF status and blocker: {summary_value(summary_rows, 'stock_etf_status_and_blocker')}",
         f"Crypto research lead: {summary_value(summary_rows, 'crypto_research_lead')}",
         f"Crypto status and blockers: {summary_value(summary_rows, 'crypto_status_and_blockers')}",

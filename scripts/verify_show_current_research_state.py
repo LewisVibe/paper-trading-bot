@@ -18,13 +18,17 @@ EXPECTED_INPUTS = [
     "data/project_research_state_summary.csv",
     "data/project_research_state_refresh.csv",
     "data/project_research_state_next_steps.csv",
+    "data/qqq_lead_decision_summary.csv",
     "data/codex_ambitious_lead_decision_summary.csv",
     "data/expanded_crypto_manual_review_summary.csv",
     "data/expanded_crypto_lead_decision_summary.csv",
 ]
 
 REQUIRED_TOKENS = [
-    "codex_ambitious_concentrated_growth_persistence",
+    "qqq_100_trend_gate",
+    "qqq_100_trend_gate_new_research_lead",
+    "codex_qqq_adaptive_trend_exposure",
+    "qqq_150_trend_gate",
     "crypto_equal_weight_ex_highest_vol_2",
     "execution_approved",
     "scheduling_approved",
