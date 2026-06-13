@@ -39,6 +39,8 @@ REQUIRED_COMMANDS = [
     "--short-strategy-lab",
     "--short-leverage-research-lab",
     "--show-short-leverage-research-lab",
+    "--qqq-leverage-validation-report",
+    "--show-qqq-leverage-validation-report",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",

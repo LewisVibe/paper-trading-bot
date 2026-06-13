@@ -115,6 +115,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--qqq-leverage-validation-report"]:
+        from trading_bot.research.qqq_leverage_validation import generate_qqq_leverage_validation_report
+
+        result = generate_qqq_leverage_validation_report()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-qqq-leverage-validation-report"]:
+        from trading_bot.research.qqq_leverage_validation import show_qqq_leverage_validation_report
+
+        code, lines = show_qqq_leverage_validation_report()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -4123,6 +4137,16 @@ def parse_args() -> argparse.Namespace:
         "--show-short-leverage-research-lab",
         action="store_true",
         help="Display the saved short/leverage research lab summary without refreshing data.",
+    )
+    parser.add_argument(
+        "--qqq-leverage-validation-report",
+        action="store_true",
+        help="Run a research-only fixed QQQ synthetic leverage validation report without approving leverage or execution.",
+    )
+    parser.add_argument(
+        "--show-qqq-leverage-validation-report",
+        action="store_true",
+        help="Display the saved QQQ leverage validation report without refreshing data.",
     )
     parser.add_argument(
         "--vol-managed-etf-backtest",

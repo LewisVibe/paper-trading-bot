@@ -104,6 +104,13 @@ The short/leverage research lab comes from `python bot.py --short-leverage-resea
 - Cost, borrow-fee, and financing rows are placeholder sensitivities only, not broker-specific terms.
 - Every row keeps `execution_approved=false`, `short_execution_approved=false`, `leverage_execution_approved=false`, `margin_approved=false`, `scheduling_approved=false`, `alpaca_called=false`, and `orders_created=false`.
 
+The focused QQQ leverage validation report comes from `python bot.py --qqq-leverage-validation-report`, with saved display through `python bot.py --show-qqq-leverage-validation-report`:
+
+- It tests fixed QQQ SMA200 trend-gated synthetic exposure levels: `1.0x`, `1.25x`, `1.5x`, `1.75x`, and `2.0x`.
+- It writes `data/qqq_leverage_validation_report.csv`, summary, cost/financing, split, and drawdown CSVs.
+- It compares against QQQ buy-and-hold, SPY buy-and-hold, and cash where market data is available.
+- It is validation only. It does not approve leverage, margin, shorting, paper execution, live trading, scheduling, or strategy-to-execution wiring.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

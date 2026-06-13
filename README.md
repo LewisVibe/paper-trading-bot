@@ -1442,6 +1442,30 @@ data/short_leverage_research_lab_splits.csv
 data/short_leverage_research_lab_drawdowns.csv
 ```
 
+QQQ leverage validation mode focuses the synthetic leverage branch on fixed QQQ trend-gated exposure levels: 1.0x, 1.25x, 1.5x, 1.75x, and 2.0x when QQQ is above its 200-day SMA, otherwise cash. It writes full-period, split, cost/financing, and drawdown validation CSVs, with QQQ buy-and-hold, SPY buy-and-hold, and cash benchmark context. Financing and trading-cost rows are placeholders only; they are not broker-specific terms and do not approve margin or leverage execution.
+
+Command:
+
+```text
+python bot.py --qqq-leverage-validation-report
+```
+
+Saved display:
+
+```text
+python bot.py --show-qqq-leverage-validation-report
+```
+
+Outputs:
+
+```text
+data/qqq_leverage_validation_report.csv
+data/qqq_leverage_validation_summary.csv
+data/qqq_leverage_validation_costs.csv
+data/qqq_leverage_validation_splits.csv
+data/qqq_leverage_validation_drawdowns.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:
