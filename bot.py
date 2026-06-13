@@ -157,6 +157,7 @@ from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
     show_project_research_state_refresh_file,
 )
+from trading_bot.research.current_research_state import show_current_research_state
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
 from trading_bot.research.crypto_robustness import generate_crypto_robustness_report
@@ -4221,6 +4222,11 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved project research state refresh without refreshing data.",
     )
     parser.add_argument(
+        "--show-current-research-state",
+        action="store_true",
+        help="Display a concise saved-state summary of the current stock/ETF and crypto research branches.",
+    )
+    parser.add_argument(
         "--crypto-strategy-lab",
         action="store_true",
         help="Run a research-only crypto strategy lab with daily yfinance-compatible history.",
@@ -4843,6 +4849,11 @@ def main() -> int:
         return 0
     if args.show_project_research_state_refresh:
         status_code, lines = show_project_research_state_refresh_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.show_current_research_state:
+        status_code, lines = show_current_research_state()
         for line in lines:
             print(line)
         return status_code

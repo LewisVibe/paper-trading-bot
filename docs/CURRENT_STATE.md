@@ -206,6 +206,7 @@ Research chain:
 - `python bot.py --show-expanded-crypto-manual-review-pack`
 - `python bot.py --project-research-state-refresh`
 - `python bot.py --show-project-research-state-refresh`
+- `python bot.py --show-current-research-state`
 
 Current crypto interpretation:
 
@@ -217,6 +218,7 @@ Current crypto interpretation:
 - The manual review pack is research/report-only; it does not approve crypto execution, does not approve preview promotion, and does not connect crypto to Alpaca or paper orders. The current crypto research lead remains manual-review-only unless future review changes that.
 - `python bot.py --project-research-state-refresh` writes `data/project_research_state_refresh.csv`, `data/project_research_state_summary.csv`, and `data/project_research_state_next_steps.csv`.
 - The project research state refresh consolidates current stock/ETF and crypto research state so the next research/reporting direction can be chosen cleanly. It does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
+- `python bot.py --show-current-research-state` is a concise terminal display helper. It reads saved project research state, does not refresh market data, does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
 - `BTC/USD`: useful but split-sensitive; keep monitoring.
 - `ETH/USD`: useful but research-only; keep monitoring.
 - `LTC/USD`: researched but not useful; pause.

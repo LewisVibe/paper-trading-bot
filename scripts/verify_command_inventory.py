@@ -84,6 +84,7 @@ REQUIRED_COMMANDS = [
     "--show-expanded-crypto-manual-review-pack",
     "--project-research-state-refresh",
     "--show-project-research-state-refresh",
+    "--show-current-research-state",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",
     "--crypto-strategy-decision-report",
