@@ -74,6 +74,8 @@ REQUIRED_COMMANDS = [
     "--show-crypto-equal-weight-crash-gate",
     "--crypto-equal-weight-volatility-scaling",
     "--show-crypto-equal-weight-volatility-scaling",
+    "--crypto-equal-weight-capped-risk-report",
+    "--show-crypto-equal-weight-capped-risk-report",
     "--crypto-strategy-lab",
     "--crypto-strategy-report",
     "--crypto-strategy-decision-report",

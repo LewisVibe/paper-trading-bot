@@ -137,6 +137,10 @@ from trading_bot.research.crypto_equal_weight_volatility_scaling import (
     generate_crypto_equal_weight_volatility_scaling,
     show_crypto_equal_weight_volatility_scaling_file,
 )
+from trading_bot.research.crypto_equal_weight_capped_risk_report import (
+    generate_crypto_equal_weight_capped_risk_report,
+    show_crypto_equal_weight_capped_risk_report_file,
+)
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
 from trading_bot.research.crypto_robustness import generate_crypto_robustness_report
@@ -4151,6 +4155,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved equal-weight crypto volatility-scaling report without refreshing data.",
     )
     parser.add_argument(
+        "--crypto-equal-weight-capped-risk-report",
+        action="store_true",
+        help="Run a research-only equal-weight crypto capped/equal-risk contribution report without execution.",
+    )
+    parser.add_argument(
+        "--show-crypto-equal-weight-capped-risk-report",
+        action="store_true",
+        help="Display the saved equal-weight crypto capped/equal-risk report without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-strategy-lab",
         action="store_true",
         help="Run a research-only crypto strategy lab with daily yfinance-compatible history.",
@@ -4703,6 +4717,20 @@ def main() -> int:
         return 0
     if args.show_crypto_equal_weight_volatility_scaling:
         status_code, lines = show_crypto_equal_weight_volatility_scaling_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.crypto_equal_weight_capped_risk_report:
+        try:
+            result = generate_crypto_equal_weight_capped_risk_report()
+        except Exception as exc:
+            print(f"Crypto equal-weight capped-risk report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_crypto_equal_weight_capped_risk_report:
+        status_code, lines = show_crypto_equal_weight_capped_risk_report_file()
         for line in lines:
             print(line)
         return status_code
