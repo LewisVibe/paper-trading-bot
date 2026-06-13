@@ -141,6 +141,10 @@ from trading_bot.research.crypto_equal_weight_capped_risk_report import (
     generate_crypto_equal_weight_capped_risk_report,
     show_crypto_equal_weight_capped_risk_report_file,
 )
+from trading_bot.research.expanded_crypto_lead_decision import (
+    generate_expanded_crypto_lead_decision,
+    show_expanded_crypto_lead_decision_file,
+)
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
 from trading_bot.research.crypto_robustness import generate_crypto_robustness_report
@@ -4165,6 +4169,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved equal-weight crypto capped/equal-risk report without refreshing data.",
     )
     parser.add_argument(
+        "--expanded-crypto-lead-decision",
+        action="store_true",
+        help="Create a saved-output research-only expanded crypto lead decision checkpoint.",
+    )
+    parser.add_argument(
+        "--show-expanded-crypto-lead-decision",
+        action="store_true",
+        help="Display the saved expanded crypto lead decision checkpoint without refreshing data.",
+    )
+    parser.add_argument(
         "--crypto-strategy-lab",
         action="store_true",
         help="Run a research-only crypto strategy lab with daily yfinance-compatible history.",
@@ -4731,6 +4745,20 @@ def main() -> int:
         return 0
     if args.show_crypto_equal_weight_capped_risk_report:
         status_code, lines = show_crypto_equal_weight_capped_risk_report_file()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.expanded_crypto_lead_decision:
+        try:
+            result = generate_expanded_crypto_lead_decision()
+        except Exception as exc:
+            print(f"Expanded crypto lead decision failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_expanded_crypto_lead_decision:
+        status_code, lines = show_expanded_crypto_lead_decision_file()
         for line in lines:
             print(line)
         return status_code

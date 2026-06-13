@@ -1574,6 +1574,28 @@ data/crypto_equal_weight_capped_risk_drawdowns.csv
 data/crypto_equal_weight_capped_risk_contributions.csv
 ```
 
+Expanded crypto lead-decision mode consolidates the expanded crypto research branch and decides the current crypto research lead as a research label only. It reads saved crypto universe, expanded strategy lab, equal-weight robustness, hard crash-gate, volatility-scaling, and capped-risk contribution outputs where available, then writes decision, summary, and evidence CSVs. Any selected crypto lead remains high-drawdown/manual-review-only; this does not approve crypto execution or connect crypto to Alpaca or paper orders.
+
+Command:
+
+```text
+python bot.py --expanded-crypto-lead-decision
+```
+
+Optional saved display:
+
+```text
+python bot.py --show-expanded-crypto-lead-decision
+```
+
+Outputs:
+
+```text
+data/expanded_crypto_lead_decision.csv
+data/expanded_crypto_lead_decision_summary.csv
+data/expanded_crypto_lead_decision_evidence.csv
+```
+
 Crypto strategy lab mode backtests a tiny fixed research-only strategy set for `BTC/USD`, `ETH/USD`, and `LTC/USD` using yfinance-compatible daily symbols (`BTC-USD`, `ETH-USD`, `LTC-USD`). The per-symbol strategies are `crypto_buy_and_hold_baseline`, `crypto_sma_50_200_trend`, `crypto_buy_above_200_exit_below_200`, and one controlled iteration: `crypto_buy_above_200_with_vol_gate`. The volatility-gate strategy uses fixed parameters only: 20-day realised volatility, trailing 252-day median volatility, and a 1.5x gate for new entries. The lab also writes a separate portfolio-style BTC/ETH/cash rotation test, `crypto_monthly_btc_eth_momentum_rotation`, using fixed monthly rebalance, 126-day momentum ranking, and a 200-day SMA absolute trend filter. It writes full-period, in-sample, and out-of-sample rows, plus an iteration log to discourage tuning after seeing results. Results include simple crypto research cost assumptions: `crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, and `crypto_slippage_bps=10`. It does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, or approve execution.
 
 Outputs:

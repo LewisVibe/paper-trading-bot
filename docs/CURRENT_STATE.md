@@ -428,6 +428,8 @@ python bot.py --crypto-equal-weight-volatility-scaling
 python bot.py --show-crypto-equal-weight-volatility-scaling
 python bot.py --crypto-equal-weight-capped-risk-report
 python bot.py --show-crypto-equal-weight-capped-risk-report
+python bot.py --expanded-crypto-lead-decision
+python bot.py --show-expanded-crypto-lead-decision
 python bot.py --crypto-strategy-lab
 python bot.py --crypto-strategy-report
 python bot.py --crypto-strategy-decision-report
@@ -444,6 +446,8 @@ Crypto equal-weight crash-gate report tests whether the robust equal-weight elig
 Crypto equal-weight volatility-scaling report follows the hard crash-gate return-drag result by testing partial volatility/drawdown exposure scaling instead of binary cash exits. `python bot.py --crypto-equal-weight-volatility-scaling` writes `data/crypto_equal_weight_volatility_scaling.csv`, `data/crypto_equal_weight_volatility_scaling_summary.csv`, `data/crypto_equal_weight_volatility_scaling_trades.csv`, `data/crypto_equal_weight_volatility_scaling_equity_curves.csv`, `data/crypto_equal_weight_volatility_scaling_costs.csv`, `data/crypto_equal_weight_volatility_scaling_splits.csv`, and `data/crypto_equal_weight_volatility_scaling_drawdowns.csv`. It tests fixed volatility, drawdown, and combined scalers plus one Codex-designed fixed-rule risk-control idea, `codex_ambitious_crypto_core_alt_volatility_throttle`, while comparing static equal weight, inception-aware equal weight, existing crypto candidates, BTC/ETH benchmarks, BTC/ETH 50/50, and cash. `python bot.py --show-crypto-equal-weight-volatility-scaling` reads saved CSVs only. This is research/report-only, does not approve crypto execution, and does not connect crypto to Alpaca or paper orders.
 
 Crypto equal-weight capped-risk report tests capped/equal-risk crypto allocation and outlier-dependence diagnostics while keeping broad crypto exposure. `python bot.py --crypto-equal-weight-capped-risk-report` writes `data/crypto_equal_weight_capped_risk_report.csv`, `data/crypto_equal_weight_capped_risk_summary.csv`, `data/crypto_equal_weight_capped_risk_trades.csv`, `data/crypto_equal_weight_capped_risk_equity_curves.csv`, `data/crypto_equal_weight_capped_risk_costs.csv`, `data/crypto_equal_weight_capped_risk_splits.csv`, `data/crypto_equal_weight_capped_risk_drawdowns.csv`, and `data/crypto_equal_weight_capped_risk_contributions.csv`. It tests fixed capped equal-weight, highest-volatility exclusion, top-contributor-pair exclusion, inverse-volatility, and equal-risk proxy variants while preserving false execution approval. `python bot.py --show-crypto-equal-weight-capped-risk-report` reads saved CSVs only. This is research/report-only, does not approve crypto execution, and does not connect crypto to Alpaca or paper orders.
+
+Expanded crypto lead decision consolidates the crypto research branch into the current crypto research lead as a research label only. `python bot.py --expanded-crypto-lead-decision` reads saved crypto universe, expanded strategy lab, equal-weight robustness, crash-gate, volatility-scaling, capped-risk, split, cost, drawdown, and contribution outputs where available, then writes `data/expanded_crypto_lead_decision.csv`, `data/expanded_crypto_lead_decision_summary.csv`, and `data/expanded_crypto_lead_decision_evidence.csv`. `python bot.py --show-expanded-crypto-lead-decision` reads saved CSVs only. Any lead remains high-drawdown/manual-review-only; this does not approve crypto execution and does not connect crypto to Alpaca or paper orders.
 
 Crypto signal and monitor refresh:
 
