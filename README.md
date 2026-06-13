@@ -1535,6 +1535,29 @@ data/qqq_trend_gate_manual_review_evidence.csv
 data/qqq_trend_gate_manual_review_blockers.csv
 ```
 
+QQQ preview-candidate readiness report mode reads the saved QQQ manual review pack, QQQ decision outputs, validation cost/split/drawdown rows, project research state, and paper-readiness context where available. It answers whether `qqq_100_trend_gate` is ready for manual preview-candidate discussion and what still blocks paper execution. Preview readiness is manual discussion only: it does not approve paper execution, does not approve execution, does not create order instructions, and does not connect strategies to Alpaca or paper orders.
+
+Command:
+
+```text
+python bot.py --qqq-preview-candidate-readiness-report
+```
+
+Saved display:
+
+```text
+python bot.py --show-qqq-preview-candidate-readiness-report
+```
+
+Outputs:
+
+```text
+data/qqq_preview_candidate_readiness_report.csv
+data/qqq_preview_candidate_readiness_summary.csv
+data/qqq_preview_candidate_readiness_evidence.csv
+data/qqq_preview_candidate_readiness_blockers.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:
