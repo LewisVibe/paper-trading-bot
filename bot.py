@@ -185,6 +185,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--high-growth-stock-lab"]:
+        from trading_bot.research.high_growth_stock_lab import generate_high_growth_stock_lab
+
+        result = generate_high_growth_stock_lab()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-high-growth-stock-lab"]:
+        from trading_bot.research.high_growth_stock_lab import show_high_growth_stock_lab
+
+        code, lines = show_high_growth_stock_lab()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -340,6 +354,10 @@ from trading_bot.research.qqq_trend_gate_manual_review import (
 from trading_bot.research.qqq_preview_candidate_readiness import (
     generate_qqq_preview_candidate_readiness_report,
     show_qqq_preview_candidate_readiness_report,
+)
+from trading_bot.research.high_growth_stock_lab import (
+    generate_high_growth_stock_lab,
+    show_high_growth_stock_lab,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -4253,6 +4271,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ preview-candidate readiness report without refreshing data.",
     )
     parser.add_argument(
+        "--high-growth-stock-lab",
+        action="store_true",
+        help="Run a research-only concentrated single-stock growth/momentum lab without execution.",
+    )
+    parser.add_argument(
+        "--show-high-growth-stock-lab",
+        action="store_true",
+        help="Display the saved high-growth stock lab summary without refreshing data.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -5189,6 +5217,20 @@ def main() -> int:
         return 0
     if args.show_qqq_preview_candidate_readiness_report:
         status_code, lines = show_qqq_preview_candidate_readiness_report()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.high_growth_stock_lab:
+        try:
+            result = generate_high_growth_stock_lab()
+        except Exception as exc:
+            print(f"High-growth stock lab failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_high_growth_stock_lab:
+        status_code, lines = show_high_growth_stock_lab()
         for line in lines:
             print(line)
         return status_code

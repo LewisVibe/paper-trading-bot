@@ -1558,6 +1558,32 @@ data/qqq_preview_candidate_readiness_evidence.csv
 data/qqq_preview_candidate_readiness_blockers.csv
 ```
 
+High-growth stock lab mode tests a fixed high-risk, high-return individual-stock universe only: `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`. SPY and QQQ are allowed only as benchmark/regime references, not as traded holdings. The lab compares fixed monthly concentrated momentum variants, including top 1/top 2/top 3 composite 63/126/252-day momentum with own SMA200 and QQQ/SPY SMA200 regime gates, plus `codex_high_conviction_growth_persistence` and `codex_growth_drawdown_reentry`. This is research-only and deliberately flags concentration risk, survivorship bias, single-name event risk, stock-specific gap risk, cost/split sensitivity, and drawdown risk. It may use yfinance daily data through the research path, but it does not call Alpaca, load config, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect strategies to Alpaca or paper orders.
+
+Command:
+
+```text
+python bot.py --high-growth-stock-lab
+```
+
+Saved display:
+
+```text
+python bot.py --show-high-growth-stock-lab
+```
+
+Outputs:
+
+```text
+data/high_growth_stock_lab.csv
+data/high_growth_stock_lab_summary.csv
+data/high_growth_stock_lab_trades.csv
+data/high_growth_stock_lab_costs.csv
+data/high_growth_stock_lab_splits.csv
+data/high_growth_stock_lab_drawdowns.csv
+data/high_growth_stock_lab_concentration.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:

@@ -141,6 +141,14 @@ The QQQ preview-candidate readiness report comes from `python bot.py --qqq-previ
 - It writes `data/qqq_preview_candidate_readiness_report.csv`, `data/qqq_preview_candidate_readiness_summary.csv`, `data/qqq_preview_candidate_readiness_evidence.csv`, and `data/qqq_preview_candidate_readiness_blockers.csv`.
 - Preview readiness is manual discussion only; it does not approve paper execution, does not approve execution, does not approve scheduling, and does not connect strategies to Alpaca or paper orders.
 
+The high-growth stock lab comes from `python bot.py --high-growth-stock-lab`, with saved display through `python bot.py --show-high-growth-stock-lab`:
+
+- It trades only the fixed individual-stock universe `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`.
+- SPY and QQQ are used only as benchmark/regime references.
+- It tests fixed monthly top 1/top 2/top 3 composite momentum, `codex_high_conviction_growth_persistence`, and `codex_growth_drawdown_reentry` without parameter search.
+- It writes `data/high_growth_stock_lab.csv`, `data/high_growth_stock_lab_summary.csv`, `data/high_growth_stock_lab_trades.csv`, `data/high_growth_stock_lab_costs.csv`, `data/high_growth_stock_lab_splits.csv`, `data/high_growth_stock_lab_drawdowns.csv`, and `data/high_growth_stock_lab_concentration.csv`.
+- It is research-only, flags survivorship bias and concentration risk, does not approve execution, and does not connect strategies to Alpaca or paper orders.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
