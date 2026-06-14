@@ -27,6 +27,10 @@ OUTPUT_FILES = {
 
 STOCK_UNIVERSE = ["AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "AVGO", "AMD", "TSLA", "NFLX"]
 BENCHMARK_TICKERS = ["QQQ", "SPY"]
+NEW_CODEX_STRATEGIES = {
+    "codex_high_growth_breakout_acceleration",
+    "codex_high_growth_crash_rebound_leader",
+}
 HISTORY_PERIOD = "10y"
 DAILY_INTERVAL = "1d"
 STARTING_EQUITY = 10000.0
@@ -43,6 +47,8 @@ STRATEGIES = [
     "concentrated_growth_momentum_top3",
     "codex_high_conviction_growth_persistence",
     "codex_growth_drawdown_reentry",
+    "codex_high_growth_breakout_acceleration",
+    "codex_high_growth_crash_rebound_leader",
 ]
 
 REPORT_COLUMNS = [
@@ -195,7 +201,9 @@ def show_high_growth_stock_lab(root_dir: Path | str = ".") -> tuple[int, list[st
     return 0, [
         "High-growth stock lab saved display. Research only; execution_approved=False.",
         f"Best high-growth stock candidate: {summary_value(summary, 'best_high_growth_stock_candidate')}",
+        f"Best new Codex-designed candidate: {summary_value(summary, 'best_new_codex_designed_candidate')}",
         f"Comparison versus qqq_100_trend_gate: {summary_value(summary, 'comparison_vs_qqq_100_trend_gate')}",
+        f"Comparison versus concentrated_growth_momentum_top3: {summary_value(summary, 'comparison_vs_concentrated_growth_momentum_top3')}",
         f"Biggest concentration/outlier warning: {summary_value(summary, 'biggest_concentration_outlier_warning')}",
         f"Worst drawdown warning: {summary_value(summary, 'worst_drawdown_warning')}",
         f"Cost/split sensitivity warning: {summary_value(summary, 'cost_split_sensitivity_warning')}",
@@ -265,6 +273,8 @@ def build_simulations(price_data: dict[str, list[dict[str, Any]]], data_errors: 
         simulate_momentum_strategy("concentrated_growth_momentum_top3", 3, price_data, dates),
         simulate_high_conviction_growth_persistence(price_data, dates),
         simulate_growth_drawdown_reentry(price_data, dates),
+        simulate_high_growth_breakout_acceleration(price_data, dates),
+        simulate_high_growth_crash_rebound_leader(price_data, dates),
         simulate_equal_weight_benchmark(price_data, dates),
     ]
     if "QQQ" in price_data:
@@ -352,6 +362,67 @@ def simulate_growth_drawdown_reentry(price_data: dict[str, list[dict[str, Any]]]
         dates,
         selector,
         "Fixed re-entry rules: QQQ/SPY regime gate; avoid new entries after >25% fall from 126-day high; require close above SMA50 and SMA200; hold top 1-2.",
+    )
+
+
+def simulate_high_growth_breakout_acceleration(price_data: dict[str, list[dict[str, Any]]], dates: list[str]) -> StrategySimulation:
+    def selector(index: int, current_weights: dict[str, float]) -> tuple[dict[str, float], str, str]:
+        if not regime_ok(price_data, dates[index]):
+            return {}, "QQQ/SPY regime below 200-day SMA; holding cash.", "risk_off_cash"
+        scores = []
+        for ticker in STOCK_UNIVERSE:
+            rows = price_data.get(ticker, [])
+            if not enough_history(rows, dates[index], 252):
+                continue
+            close = price_on(rows, dates[index])
+            high_252 = rolling_high(rows, dates[index], 252)
+            proximity = close / high_252 if high_252 > 0 else 0.0
+            acceleration = momentum_return(rows, dates[index], 63) - momentum_return(rows, dates[index], 126)
+            momentum = composite_momentum(rows, dates[index])
+            if above_sma(rows, dates[index], 50) and above_sma(rows, dates[index], 200) and proximity >= 0.95 and momentum > 0 and acceleration > -0.05:
+                scores.append((ticker, momentum + acceleration + proximity))
+        selected = [ticker for ticker, _score in sorted(scores, key=lambda item: item[1], reverse=True)[:2]]
+        if not selected:
+            return {}, "No stock is close enough to a 52-week high with positive momentum acceleration; holding cash.", "cash_no_breakout"
+        return equal_weights(selected), "Codex breakout acceleration: top 1-2 stocks near 52-week highs, above SMA50/SMA200, positive composite momentum, fixed acceleration filter.", "risk_on_breakout_acceleration"
+
+    return simulate_strategy(
+        "codex_high_growth_breakout_acceleration",
+        price_data,
+        dates,
+        selector,
+        "Fixed breakout rules: QQQ/SPY SMA200 regime gate; stock above SMA50 and SMA200; within 5% of 252-day high; positive 63/126/252 momentum; 63-vs-126 acceleration not deeply negative; hold top 1-2.",
+    )
+
+
+def simulate_high_growth_crash_rebound_leader(price_data: dict[str, list[dict[str, Any]]], dates: list[str]) -> StrategySimulation:
+    def selector(index: int, current_weights: dict[str, float]) -> tuple[dict[str, float], str, str]:
+        if not market_recovery_ok(price_data, dates[index]):
+            return {}, "QQQ/SPY recovery regime is not confirmed; holding cash.", "risk_off_no_recovery"
+        scores = []
+        for ticker in STOCK_UNIVERSE:
+            rows = price_data.get(ticker, [])
+            if not enough_history(rows, dates[index], 252):
+                continue
+            close = price_on(rows, dates[index])
+            low_126 = rolling_low(rows, dates[index], 126)
+            high_126 = rolling_high(rows, dates[index], 126)
+            rebound_from_low = close / low_126 - 1.0 if low_126 > 0 else 0.0
+            still_below_high = close / high_126 - 1.0 if high_126 > 0 else -1.0
+            recovery_momentum = momentum_return(rows, dates[index], 63)
+            if above_sma(rows, dates[index], 50) and above_sma(rows, dates[index], 200) and rebound_from_low >= 0.15 and recovery_momentum > 0.08 and still_below_high > -0.30:
+                scores.append((ticker, recovery_momentum + rebound_from_low + composite_momentum(rows, dates[index]) * 0.5))
+        selected = [ticker for ticker, _score in sorted(scores, key=lambda item: item[1], reverse=True)[:2]]
+        if not selected:
+            return {}, "No stock has reclaimed SMA50/SMA200 with fixed rebound leadership confirmation; holding cash.", "cash_no_rebound_leader"
+        return equal_weights(selected), "Codex crash-rebound leader: top 1-2 stocks that reclaimed SMA50/SMA200, rebounded at least 15% from 126-day low, and show positive 63-day recovery momentum.", "risk_on_rebound_leader"
+
+    return simulate_strategy(
+        "codex_high_growth_crash_rebound_leader",
+        price_data,
+        dates,
+        selector,
+        "Fixed rebound rules: QQQ/SPY recovery regime; stock above SMA50 and SMA200; at least 15% rebound from 126-day low; positive 63-day recovery momentum; avoid stocks still more than 30% below 126-day high; hold top 1-2.",
     )
 
 
@@ -447,6 +518,14 @@ def regime_ok(price_data: dict[str, list[dict[str, Any]]], date: str) -> bool:
     return False
 
 
+def market_recovery_ok(price_data: dict[str, list[dict[str, Any]]], date: str) -> bool:
+    for ticker in BENCHMARK_TICKERS:
+        rows = price_data.get(ticker, [])
+        if above_sma(rows, date, 50) and above_sma(rows, date, TREND_WINDOW) and momentum_return(rows, date, 63) > 0:
+            return True
+    return False
+
+
 def above_sma(rows: list[dict[str, Any]], date: str, window: int) -> bool:
     if not enough_history(rows, date, window):
         return False
@@ -486,6 +565,14 @@ def rolling_high(rows: list[dict[str, Any]], date: str, window: int) -> float:
         return 0.0
     values = [row["close"] for row in rows[max(0, index - window + 1) : index + 1]]
     return max(values) if values else 0.0
+
+
+def rolling_low(rows: list[dict[str, Any]], date: str, window: int) -> float:
+    index = row_index(rows, date)
+    if index is None:
+        return 0.0
+    values = [row["close"] for row in rows[max(0, index - window + 1) : index + 1]]
+    return min(values) if values else 0.0
 
 
 def realised_volatility(rows: list[dict[str, Any]], date: str, window: int) -> float:
@@ -628,6 +715,7 @@ def apply_decision_labels(report_rows: list[dict[str, Any]], cost_rows: list[dic
     cost_sensitive = {row["strategy_name"] for row in cost_rows if row.get("cost_sensitivity_label") == "high_growth_stock_cost_sensitive"}
     split_sensitive = {row["strategy_name"] for row in split_rows if row.get("split_sensitivity_label") == "high_growth_stock_split_sensitive"}
     outlier_dependent = {row["strategy_name"] for row in concentration_rows if str(row.get("ticker")) in {"NVDA", "TSLA", "AMD"} and float(row.get("contribution_pct", 0.0) or 0.0) > 50.0}
+    top3 = next((row for row in report_rows if row.get("strategy_name") == "concentrated_growth_momentum_top3" and row.get("data_status") == "ok"), {})
     for row in report_rows:
         if row["data_status"] != "ok":
             row["decision_label"] = "insufficient_market_data"
@@ -641,12 +729,27 @@ def apply_decision_labels(report_rows: list[dict[str, Any]], cost_rows: list[dic
             row["decision_label"] = "high_growth_stock_cost_sensitive"
         elif row["strategy_name"] in split_sensitive:
             row["decision_label"] = "high_growth_stock_split_sensitive"
+        elif row["strategy_name"] in NEW_CODEX_STRATEGIES and beats_top3_without_much_worse_drawdown(row, top3):
+            row["decision_label"] = "high_growth_stock_research_lead"
+        elif row["strategy_name"] in NEW_CODEX_STRATEGIES and float(row["cagr_pct"]) > QQQ_BASELINE["cagr_pct"] and float(row["sharpe_ratio"]) >= QQQ_BASELINE["sharpe_ratio"] * 0.7:
+            row["decision_label"] = "high_growth_stock_ambitious_alternative"
         elif float(row["cagr_pct"]) > QQQ_BASELINE["cagr_pct"] + 3.0 and float(row["sharpe_ratio"]) >= QQQ_BASELINE["sharpe_ratio"] * 0.8 and float(row["calmar_ratio"]) >= QQQ_BASELINE["calmar_ratio"] * 0.7:
             row["decision_label"] = "high_growth_stock_promising_but_concentrated"
         else:
             row["decision_label"] = "qqq_trend_gate_remains_cleaner_lead"
         row["cost_sensitivity_label"] = "high_growth_stock_cost_sensitive" if row["strategy_name"] in cost_sensitive else "cost_context_only"
         row["split_sensitivity_label"] = "high_growth_stock_split_sensitive" if row["strategy_name"] in split_sensitive else "split_context_only"
+
+
+def beats_top3_without_much_worse_drawdown(row: dict[str, Any], top3: dict[str, Any]) -> bool:
+    if not top3:
+        return False
+    return (
+        float(row.get("cagr_pct", 0.0)) > float(top3.get("cagr_pct", 0.0))
+        and float(row.get("sharpe_ratio", 0.0)) > float(top3.get("sharpe_ratio", 0.0))
+        and float(row.get("calmar_ratio", 0.0)) > float(top3.get("calmar_ratio", 0.0))
+        and float(row.get("max_drawdown_pct", 0.0)) >= float(top3.get("max_drawdown_pct", 0.0)) - 5.0
+    )
 
 
 def build_summary_rows(
@@ -660,6 +763,9 @@ def build_summary_rows(
 ) -> list[dict[str, Any]]:
     candidates = [row for row in report_rows if row["strategy_name"] in STRATEGIES and row.get("data_status") == "ok"]
     best = max(candidates, key=lambda row: (float(row.get("cagr_pct", 0.0)), float(row.get("calmar_ratio", 0.0))), default={})
+    new_candidates = [row for row in candidates if row["strategy_name"] in NEW_CODEX_STRATEGIES]
+    best_new = max(new_candidates, key=lambda row: (float(row.get("cagr_pct", 0.0)), float(row.get("calmar_ratio", 0.0))), default={})
+    top3 = next((row for row in report_rows if row.get("strategy_name") == "concentrated_growth_momentum_top3" and row.get("data_status") == "ok"), {})
     worst = min(candidates, key=lambda row: float(row.get("max_drawdown_pct", 0.0)), default={})
     largest_concentration = max(candidates, key=lambda row: float(row.get("max_single_name_concentration", 0.0)), default={})
     cost_flags = sorted({row["strategy_name"] for row in cost_rows if row.get("cost_sensitivity_label") == "high_growth_stock_cost_sensitive"})
@@ -667,7 +773,9 @@ def build_summary_rows(
     conclusion = final_conclusion(best)
     entries = [
         ("best_high_growth_stock_candidate", best.get("strategy_name", "none"), format_candidate(best)),
+        ("best_new_codex_designed_candidate", best_new.get("strategy_name", "none"), format_candidate(best_new)),
         ("comparison_vs_qqq_100_trend_gate", comparison_vs_qqq(best), "QQQ trend gate remains the cleaner lead unless concentration/drawdown review accepts the extra risk."),
+        ("comparison_vs_concentrated_growth_momentum_top3", comparison_between(best_new, top3, "concentrated_growth_momentum_top3"), "New Codex-designed candidates must beat top3 on CAGR, Sharpe, and Calmar without much worse drawdown before becoming the high-growth stock research lead."),
         ("biggest_concentration_outlier_warning", concentration_warning_text(largest_concentration, concentration_rows), "Survivorship and single-name event risk remain explicit."),
         ("worst_drawdown_warning", f"{worst.get('strategy_name', 'none')} max_drawdown_pct={worst.get('max_drawdown_pct', '')}", "Drawdown is the main high-growth stock lab risk."),
         ("cost_split_sensitivity_warning", f"cost_sensitive={','.join(cost_flags) or 'none'}; split_sensitive={','.join(split_flags) or 'none'}", "Cost and split warnings are research labels only."),
@@ -680,6 +788,10 @@ def build_summary_rows(
 def final_conclusion(best: dict[str, Any]) -> str:
     if not best:
         return "insufficient_market_data"
+    if best.get("decision_label") == "high_growth_stock_research_lead":
+        return "high_growth_stock_research_lead; qqq_trend_gate_remains_cleaner_lead_for_drawdown_and_diversification_review"
+    if best.get("decision_label") == "high_growth_stock_ambitious_alternative":
+        return "high_growth_stock_ambitious_alternative; qqq_trend_gate_remains_cleaner_lead"
     if best.get("decision_label") == "high_growth_stock_promising_but_concentrated":
         return "high_growth_stock_candidate_is_ambitious_high_risk_alternative; qqq_trend_gate_remains_cleaner_lead"
     return f"{best.get('decision_label', 'research_only_not_execution_ready')}; qqq_trend_gate_remains_cleaner_lead"
@@ -779,6 +891,19 @@ def comparison_vs_qqq(row: dict[str, Any]) -> str:
     )
 
 
+def comparison_between(row: dict[str, Any], benchmark: dict[str, Any], benchmark_name: str) -> str:
+    if not row:
+        return "no new Codex-designed candidate available"
+    if not benchmark:
+        return f"{row.get('strategy_name')}: benchmark {benchmark_name} unavailable"
+    return (
+        f"{row.get('strategy_name')}: CAGR_delta={round(float(row.get('cagr_pct', 0.0)) - float(benchmark.get('cagr_pct', 0.0)), 4)}; "
+        f"Sharpe_delta={round(float(row.get('sharpe_ratio', 0.0)) - float(benchmark.get('sharpe_ratio', 0.0)), 4)}; "
+        f"Calmar_delta={round(float(row.get('calmar_ratio', 0.0)) - float(benchmark.get('calmar_ratio', 0.0)), 4)}; "
+        f"MaxDD_delta={round(float(row.get('max_drawdown_pct', 0.0)) - float(benchmark.get('max_drawdown_pct', 0.0)), 4)}"
+    )
+
+
 def format_candidate(row: dict[str, Any]) -> str:
     if not row:
         return "unavailable"
@@ -808,7 +933,9 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
     return [
         "High-growth stock lab complete. Research only; execution_approved=False.",
         f"Best high-growth stock candidate: {summary_value(summary_rows, 'best_high_growth_stock_candidate')}",
+        f"Best new Codex-designed candidate: {summary_value(summary_rows, 'best_new_codex_designed_candidate')}",
         f"Comparison versus qqq_100_trend_gate: {summary_value(summary_rows, 'comparison_vs_qqq_100_trend_gate')}",
+        f"Comparison versus concentrated_growth_momentum_top3: {summary_value(summary_rows, 'comparison_vs_concentrated_growth_momentum_top3')}",
         f"Biggest concentration/outlier warning: {summary_value(summary_rows, 'biggest_concentration_outlier_warning')}",
         f"Worst drawdown warning: {summary_value(summary_rows, 'worst_drawdown_warning')}",
         f"Cost/split sensitivity warning: {summary_value(summary_rows, 'cost_split_sensitivity_warning')}",

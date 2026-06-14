@@ -145,7 +145,8 @@ The high-growth stock lab comes from `python bot.py --high-growth-stock-lab`, wi
 
 - It trades only the fixed individual-stock universe `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`.
 - SPY and QQQ are used only as benchmark/regime references.
-- It tests fixed monthly top 1/top 2/top 3 composite momentum, `codex_high_conviction_growth_persistence`, and `codex_growth_drawdown_reentry` without parameter search.
+- It tests fixed monthly top 1/top 2/top 3 composite momentum, `codex_high_conviction_growth_persistence`, `codex_growth_drawdown_reentry`, `codex_high_growth_breakout_acceleration`, and `codex_high_growth_crash_rebound_leader` without parameter search.
+- The two newer Codex-designed variants are ambitious stock-only research candidates: breakout acceleration near 52-week highs, and crash-rebound leadership after QQQ/SPY recovery confirmation.
 - It writes `data/high_growth_stock_lab.csv`, `data/high_growth_stock_lab_summary.csv`, `data/high_growth_stock_lab_trades.csv`, `data/high_growth_stock_lab_costs.csv`, `data/high_growth_stock_lab_splits.csv`, `data/high_growth_stock_lab_drawdowns.csv`, and `data/high_growth_stock_lab_concentration.csv`.
 - It is research-only, flags survivorship bias and concentration risk, does not approve execution, and does not connect strategies to Alpaca or paper orders.
 
