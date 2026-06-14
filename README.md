@@ -1682,6 +1682,29 @@ data/high_growth_stock_manual_review_evidence.csv
 data/high_growth_stock_manual_review_blockers.csv
 ```
 
+High-growth stock risk review pack mode is the saved-output blocker review for `codex_broad_growth_balanced_breakout_control`. It focuses on cost sensitivity, split sensitivity, concentration risk, outlier dependence, survivorship/current-constituent bias, drawdown severity, drawdown improvement versus broad Top1, and drawdown worsening versus `qqq_100_trend_gate`. It keeps `qqq_100_trend_gate` as the clean main lead, keeps broad Top1 rejected, keeps the high-growth branch research-only, and does not approve preview promotion or execution.
+
+Command:
+
+```text
+python bot.py --high-growth-stock-risk-review-pack
+```
+
+Saved display:
+
+```text
+python bot.py --show-high-growth-stock-risk-review-pack
+```
+
+Outputs:
+
+```text
+data/high_growth_stock_risk_review_pack.csv
+data/high_growth_stock_risk_review_summary.csv
+data/high_growth_stock_risk_review_evidence.csv
+data/high_growth_stock_risk_review_blockers.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:

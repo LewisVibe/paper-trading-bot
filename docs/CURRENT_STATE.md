@@ -178,6 +178,13 @@ The high-growth stock manual review pack comes from `python bot.py --high-growth
 - It keeps `qqq_100_trend_gate` as the clean main stock/ETF lead, keeps `codex_broad_growth_balanced_breakout_control` as a high-risk stock research lead candidate only, keeps broad Top1 rejected, and blocks preview-candidate and paper-execution discussion.
 - It is saved-output and research-only; it does not approve execution and does not connect strategies to Alpaca or paper orders.
 
+The high-growth stock risk review pack comes from `python bot.py --high-growth-stock-risk-review-pack`, with saved display through `python bot.py --show-high-growth-stock-risk-review-pack`:
+
+- It reads saved high-growth manual-review, lead-decision, lab, universe-expansion, drawdown-control, QQQ, and project research-state CSVs where present; it does not refresh yfinance data.
+- It writes `data/high_growth_stock_risk_review_pack.csv`, `data/high_growth_stock_risk_review_summary.csv`, `data/high_growth_stock_risk_review_evidence.csv`, and `data/high_growth_stock_risk_review_blockers.csv`.
+- It focuses on cost sensitivity, split sensitivity, concentration risk, outlier dependence, survivorship/current-constituent bias, drawdown severity, drawdown improvement versus broad Top1, and drawdown worsening versus `qqq_100_trend_gate`.
+- It keeps `qqq_100_trend_gate` as the clean main lead, keeps `codex_broad_growth_balanced_breakout_control` high-risk research-only, keeps broad Top1 rejected, and keeps preview and execution blocked.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
