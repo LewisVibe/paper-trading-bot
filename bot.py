@@ -253,6 +253,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--high-growth-stock-manual-review-pack"]:
+        from trading_bot.research.high_growth_stock_manual_review_pack import (
+            generate_high_growth_stock_manual_review_pack,
+        )
+
+        result = generate_high_growth_stock_manual_review_pack()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-high-growth-stock-manual-review-pack"]:
+        from trading_bot.research.high_growth_stock_manual_review_pack import (
+            show_high_growth_stock_manual_review_pack,
+        )
+
+        code, lines = show_high_growth_stock_manual_review_pack()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -424,6 +442,10 @@ from trading_bot.research.high_growth_stock_drawdown_control import (
 from trading_bot.research.high_growth_stock_lead_decision import (
     generate_high_growth_stock_lead_decision_report,
     show_high_growth_stock_lead_decision_report,
+)
+from trading_bot.research.high_growth_stock_manual_review_pack import (
+    generate_high_growth_stock_manual_review_pack,
+    show_high_growth_stock_manual_review_pack,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -4377,6 +4399,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved high-growth stock lead decision summary without refreshing data.",
     )
     parser.add_argument(
+        "--high-growth-stock-manual-review-pack",
+        action="store_true",
+        help="Create a saved-output high-growth stock manual review pack without refreshing data.",
+    )
+    parser.add_argument(
+        "--show-high-growth-stock-manual-review-pack",
+        action="store_true",
+        help="Display the saved high-growth stock manual review pack without refreshing data.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -5369,6 +5401,20 @@ def main() -> int:
         return 0
     if args.show_high_growth_stock_lead_decision_report:
         status_code, lines = show_high_growth_stock_lead_decision_report()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.high_growth_stock_manual_review_pack:
+        try:
+            result = generate_high_growth_stock_manual_review_pack()
+        except Exception as exc:
+            print(f"High-growth stock manual review pack failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_high_growth_stock_manual_review_pack:
+        status_code, lines = show_high_growth_stock_manual_review_pack()
         for line in lines:
             print(line)
         return status_code

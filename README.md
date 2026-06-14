@@ -1659,6 +1659,29 @@ data/high_growth_stock_lead_decision_evidence.csv
 data/high_growth_stock_lead_decision_blockers.csv
 ```
 
+High-growth stock manual review pack mode is the saved-output checkpoint for reviewing `codex_broad_growth_balanced_breakout_control` as the high-risk stock research lead candidate while keeping `qqq_100_trend_gate` as the clean main stock/ETF lead. It explains why the broad Top1 reference remains rejected, why the branch is still research-only, and what blocks preview-candidate and paper-execution discussion. It does not refresh market data, does not approve execution, and does not connect strategies to Alpaca or paper orders.
+
+Command:
+
+```text
+python bot.py --high-growth-stock-manual-review-pack
+```
+
+Saved display:
+
+```text
+python bot.py --show-high-growth-stock-manual-review-pack
+```
+
+Outputs:
+
+```text
+data/high_growth_stock_manual_review_pack.csv
+data/high_growth_stock_manual_review_summary.csv
+data/high_growth_stock_manual_review_evidence.csv
+data/high_growth_stock_manual_review_blockers.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:

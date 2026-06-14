@@ -171,6 +171,13 @@ The high-growth stock lead decision checkpoint comes from `python bot.py --high-
 - It keeps `qqq_100_trend_gate` as the clean main stock/ETF lead, keeps `codex_qqq_adaptive_trend_exposure` as the ambitious QQQ alternative, rejects `broad_liquid_growth_50:concentrated_growth_momentum_top1` as the extreme drawdown reference, and labels `codex_broad_growth_balanced_breakout_control` as the high-risk stock research lead candidate.
 - It is saved-output and research-only; it does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
 
+The high-growth stock manual review pack comes from `python bot.py --high-growth-stock-manual-review-pack`, with saved display through `python bot.py --show-high-growth-stock-manual-review-pack`:
+
+- It reads saved high-growth lead-decision, lab, universe-expansion, drawdown-control, QQQ, and project research-state CSVs where present; it does not refresh yfinance data.
+- It writes `data/high_growth_stock_manual_review_pack.csv`, `data/high_growth_stock_manual_review_summary.csv`, `data/high_growth_stock_manual_review_evidence.csv`, and `data/high_growth_stock_manual_review_blockers.csv`.
+- It keeps `qqq_100_trend_gate` as the clean main stock/ETF lead, keeps `codex_broad_growth_balanced_breakout_control` as a high-risk stock research lead candidate only, keeps broad Top1 rejected, and blocks preview-candidate and paper-execution discussion.
+- It is saved-output and research-only; it does not approve execution and does not connect strategies to Alpaca or paper orders.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
