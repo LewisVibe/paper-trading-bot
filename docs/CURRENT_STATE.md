@@ -157,6 +157,13 @@ The high-growth stock universe expansion report comes from `python bot.py --high
 - It writes `data/high_growth_stock_universe_expansion_report.csv`, `data/high_growth_stock_universe_expansion_summary.csv`, `data/high_growth_stock_universe_expansion_trades.csv`, `data/high_growth_stock_universe_expansion_costs.csv`, `data/high_growth_stock_universe_expansion_splits.csv`, `data/high_growth_stock_universe_expansion_drawdowns.csv`, and `data/high_growth_stock_universe_expansion_concentration.csv`.
 - It asks whether the top3 high-growth result improves, decays, or becomes more unstable as universe breadth expands. Current-constituent survivorship bias and concentration risk remain explicit; the report does not approve execution and does not connect strategies to Alpaca or paper orders.
 
+The high-growth stock drawdown-control report comes from `python bot.py --high-growth-stock-drawdown-control-report`, with saved display through `python bot.py --show-high-growth-stock-drawdown-control-report`:
+
+- It uses the fixed `broad_liquid_growth_50` individual-stock universe only; SPY and QQQ remain benchmark/regime references only.
+- It tests fixed drawdown-control variants: top2/top3 concentration references, Top1 drawdown brake, Top1 volatility gate, Top1 cooldown after crash, and `codex_broad_growth_balanced_breakout_control`.
+- It writes `data/high_growth_stock_drawdown_control_report.csv`, `data/high_growth_stock_drawdown_control_summary.csv`, `data/high_growth_stock_drawdown_control_trades.csv`, `data/high_growth_stock_drawdown_control_costs.csv`, `data/high_growth_stock_drawdown_control_splits.csv`, `data/high_growth_stock_drawdown_control_drawdowns.csv`, and `data/high_growth_stock_drawdown_control_concentration.csv`.
+- It asks whether drawdown can be reduced enough to justify the high-growth branch. Survivorship bias, current-constituent bias, concentration risk, outlier dependence, cost/split sensitivity, and drawdown risk remain explicit; the report does not approve execution and does not connect strategies to Alpaca or paper orders.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

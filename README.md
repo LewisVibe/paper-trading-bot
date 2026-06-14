@@ -1610,6 +1610,32 @@ data/high_growth_stock_universe_expansion_drawdowns.csv
 data/high_growth_stock_universe_expansion_concentration.csv
 ```
 
+High-growth stock drawdown-control mode is the fixed follow-up for the broad 50-stock high-growth result. It tests `broad_growth_top2_reference`, `broad_growth_top3_reference`, `broad_growth_top1_drawdown_brake`, `broad_growth_top1_volatility_gate`, `broad_growth_top1_cooldown_after_crash`, and `codex_broad_growth_balanced_breakout_control` against the saved broad Top1 reference and `qqq_100_trend_gate`. This is research-only, keeps QQQ/SPY as benchmark/regime references only, flags survivorship bias, concentration risk, outlier dependence, split/cost sensitivity, and drawdown risk, and does not approve execution or connect strategies to Alpaca or paper orders.
+
+Command:
+
+```text
+python bot.py --high-growth-stock-drawdown-control-report
+```
+
+Saved display:
+
+```text
+python bot.py --show-high-growth-stock-drawdown-control-report
+```
+
+Outputs:
+
+```text
+data/high_growth_stock_drawdown_control_report.csv
+data/high_growth_stock_drawdown_control_summary.csv
+data/high_growth_stock_drawdown_control_trades.csv
+data/high_growth_stock_drawdown_control_costs.csv
+data/high_growth_stock_drawdown_control_splits.csv
+data/high_growth_stock_drawdown_control_drawdowns.csv
+data/high_growth_stock_drawdown_control_concentration.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:
