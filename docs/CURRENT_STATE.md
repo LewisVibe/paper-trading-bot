@@ -150,6 +150,13 @@ The high-growth stock lab comes from `python bot.py --high-growth-stock-lab`, wi
 - It writes `data/high_growth_stock_lab.csv`, `data/high_growth_stock_lab_summary.csv`, `data/high_growth_stock_lab_trades.csv`, `data/high_growth_stock_lab_costs.csv`, `data/high_growth_stock_lab_splits.csv`, `data/high_growth_stock_lab_drawdowns.csv`, and `data/high_growth_stock_lab_concentration.csv`.
 - It is research-only, flags survivorship bias and concentration risk, does not approve execution, and does not connect strategies to Alpaca or paper orders.
 
+The high-growth stock universe expansion report comes from `python bot.py --high-growth-stock-universe-expansion-report`, with saved display through `python bot.py --show-high-growth-stock-universe-expansion-report`:
+
+- It compares `mega_cap_growth_10`, `expanded_growth_30`, and `broad_liquid_growth_50` using fixed individual-stock universes only.
+- SPY and QQQ remain benchmark/regime references only; ETFs are not traded holdings inside the stock strategies.
+- It writes `data/high_growth_stock_universe_expansion_report.csv`, `data/high_growth_stock_universe_expansion_summary.csv`, `data/high_growth_stock_universe_expansion_trades.csv`, `data/high_growth_stock_universe_expansion_costs.csv`, `data/high_growth_stock_universe_expansion_splits.csv`, `data/high_growth_stock_universe_expansion_drawdowns.csv`, and `data/high_growth_stock_universe_expansion_concentration.csv`.
+- It asks whether the top3 high-growth result improves, decays, or becomes more unstable as universe breadth expands. Current-constituent survivorship bias and concentration risk remain explicit; the report does not approve execution and does not connect strategies to Alpaca or paper orders.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

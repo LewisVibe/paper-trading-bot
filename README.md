@@ -1584,6 +1584,32 @@ data/high_growth_stock_lab_drawdowns.csv
 data/high_growth_stock_lab_concentration.csv
 ```
 
+High-growth stock universe expansion mode tests whether the concentrated high-growth stock momentum result survives broader fixed current-constituent universes. It compares `mega_cap_growth_10`, `expanded_growth_30`, and `broad_liquid_growth_50` using individual stocks only; SPY and QQQ remain benchmark/regime references only. The report keeps the same research-only boundary as the high-growth stock lab, explicitly flags survivorship bias and concentration risk, asks whether the edge improves or decays with breadth, and does not approve execution or connect strategies to Alpaca or paper orders.
+
+Command:
+
+```text
+python bot.py --high-growth-stock-universe-expansion-report
+```
+
+Saved display:
+
+```text
+python bot.py --show-high-growth-stock-universe-expansion-report
+```
+
+Outputs:
+
+```text
+data/high_growth_stock_universe_expansion_report.csv
+data/high_growth_stock_universe_expansion_summary.csv
+data/high_growth_stock_universe_expansion_trades.csv
+data/high_growth_stock_universe_expansion_costs.csv
+data/high_growth_stock_universe_expansion_splits.csv
+data/high_growth_stock_universe_expansion_drawdowns.csv
+data/high_growth_stock_universe_expansion_concentration.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:

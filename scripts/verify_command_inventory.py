@@ -51,6 +51,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq-preview-candidate-readiness-report",
     "--high-growth-stock-lab",
     "--show-high-growth-stock-lab",
+    "--high-growth-stock-universe-expansion-report",
+    "--show-high-growth-stock-universe-expansion-report",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",
