@@ -1728,6 +1728,29 @@ data/high_growth_stock_risk_evidence_details.csv
 data/high_growth_stock_risk_evidence_blockers.csv
 ```
 
+High-growth stock branch decision checkpoint mode is the saved-output decision layer after the risk evidence review. It converts saved evidence into a conservative branch decision: continue research-only, pause due to drawdown, require a final validation pack before preview discussion, or mark saved evidence insufficient. It keeps `qqq_100_trend_gate` as the clean main stock/ETF lead, keeps `broad_liquid_growth_50:concentrated_growth_momentum_top1` rejected as the extreme drawdown reference, keeps `codex_broad_growth_balanced_breakout_control` high-risk research-only unless paused, and does not approve execution, preview promotion, paper execution, or scheduling.
+
+Command:
+
+```text
+python bot.py --high-growth-stock-branch-decision-checkpoint
+```
+
+Saved display:
+
+```text
+python bot.py --show-high-growth-stock-branch-decision-checkpoint
+```
+
+Outputs:
+
+```text
+data/high_growth_stock_branch_decision_checkpoint.csv
+data/high_growth_stock_branch_decision_summary.csv
+data/high_growth_stock_branch_decision_evidence.csv
+data/high_growth_stock_branch_decision_blockers.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:

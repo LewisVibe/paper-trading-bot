@@ -192,6 +192,13 @@ The high-growth stock risk evidence review comes from `python bot.py --high-grow
 - It summarises return improvement versus `qqq_100_trend_gate`, drawdown worsening versus `qqq_100_trend_gate`, Calmar/Sharpe tradeoff, drawdown improvement versus broad Top1, fixed cost/split/concentration evidence, outlier dependence, and survivorship/current-constituent bias.
 - It keeps `qqq_100_trend_gate` as the clean main lead, keeps `codex_broad_growth_balanced_breakout_control` high-risk research-only, keeps broad Top1 rejected, and does not approve execution, preview promotion, paper execution, or scheduling.
 
+The high-growth stock branch decision checkpoint comes from `python bot.py --high-growth-stock-branch-decision-checkpoint`, with saved display through `python bot.py --show-high-growth-stock-branch-decision-checkpoint`:
+
+- It reads saved high-growth risk-evidence, risk-review, manual-review, lead-decision, lab, universe-expansion, drawdown-control, QQQ, and project research-state CSVs where present; it does not refresh yfinance data.
+- It writes `data/high_growth_stock_branch_decision_checkpoint.csv`, `data/high_growth_stock_branch_decision_summary.csv`, `data/high_growth_stock_branch_decision_evidence.csv`, and `data/high_growth_stock_branch_decision_blockers.csv`.
+- It converts saved evidence into one conservative branch decision: continue research-only, pause due to drawdown, require a final validation pack before preview discussion, or mark saved evidence insufficient.
+- It keeps `qqq_100_trend_gate` as the clean main lead, keeps broad Top1 rejected, keeps preview and execution blocked, and does not approve execution, preview promotion, paper execution, or scheduling.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
