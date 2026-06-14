@@ -55,6 +55,8 @@ REQUIRED_COMMANDS = [
     "--show-high-growth-stock-universe-expansion-report",
     "--high-growth-stock-drawdown-control-report",
     "--show-high-growth-stock-drawdown-control-report",
+    "--high-growth-stock-lead-decision-report",
+    "--show-high-growth-stock-lead-decision-report",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",

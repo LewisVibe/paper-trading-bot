@@ -1636,6 +1636,29 @@ data/high_growth_stock_drawdown_control_drawdowns.csv
 data/high_growth_stock_drawdown_control_concentration.csv
 ```
 
+High-growth stock lead decision mode is a saved-output checkpoint that compares the clean `qqq_100_trend_gate` lead, `codex_qqq_adaptive_trend_exposure`, the small-universe high-growth Top3 baseline, the rejected broad Top1 extreme-drawdown reference, and `codex_broad_growth_balanced_breakout_control`. It does not refresh market data. The intended research label is that `qqq_100_trend_gate` remains the clean main stock/ETF lead while `codex_broad_growth_balanced_breakout_control` becomes the high-risk stock research lead candidate. This is saved-output research-only, does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
+
+Command:
+
+```text
+python bot.py --high-growth-stock-lead-decision-report
+```
+
+Saved display:
+
+```text
+python bot.py --show-high-growth-stock-lead-decision-report
+```
+
+Outputs:
+
+```text
+data/high_growth_stock_lead_decision_report.csv
+data/high_growth_stock_lead_decision_summary.csv
+data/high_growth_stock_lead_decision_evidence.csv
+data/high_growth_stock_lead_decision_blockers.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:
