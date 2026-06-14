@@ -1558,6 +1558,29 @@ data/qqq_preview_candidate_readiness_evidence.csv
 data/qqq_preview_candidate_readiness_blockers.csv
 ```
 
+QQQ100 preview-candidate readiness pack mode is the saved-output checkpoint for the clean `qqq_100_trend_gate` lead. It reads saved QQQ lead/manual/readiness, adaptive/leverage validation, high-growth branch, project research-state, and paper-readiness outputs where present. It asks whether manual preview-candidate discussion is reasonable while keeping `codex_qqq_adaptive_trend_exposure` as an ambitious alternative only, keeping `qqq_150_trend_gate` rejected as the higher-drawdown reference, and keeping the high-growth branch out of preview discussion. It does not add preview implementation, does not approve paper execution, does not approve execution, and does not connect strategies to Alpaca or paper orders.
+
+Command:
+
+```text
+python bot.py --qqq100-preview-candidate-readiness-pack
+```
+
+Saved display:
+
+```text
+python bot.py --show-qqq100-preview-candidate-readiness-pack
+```
+
+Outputs:
+
+```text
+data/qqq100_preview_candidate_readiness_pack.csv
+data/qqq100_preview_candidate_readiness_summary.csv
+data/qqq100_preview_candidate_readiness_evidence.csv
+data/qqq100_preview_candidate_readiness_blockers.csv
+```
+
 High-growth stock lab mode tests a fixed high-risk, high-return individual-stock universe only: `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`. SPY and QQQ are allowed only as benchmark/regime references, not as traded holdings. The lab compares fixed monthly concentrated momentum variants, including top 1/top 2/top 3 composite 63/126/252-day momentum with own SMA200 and QQQ/SPY SMA200 regime gates, plus `codex_high_conviction_growth_persistence`, `codex_growth_drawdown_reentry`, `codex_high_growth_breakout_acceleration`, and `codex_high_growth_crash_rebound_leader`. The two Codex high-growth variants are fixed-rule ambitious stock-only candidates: one looks for breakout acceleration near 52-week highs, and one looks for crash-rebound leaders after recovery confirmation. This is research-only and deliberately flags concentration risk, survivorship bias, single-name event risk, stock-specific gap risk, cost/split sensitivity, and drawdown risk. It may use yfinance daily data through the research path, but it does not call Alpaca, load config, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect strategies to Alpaca or paper orders.
 
 Command:

@@ -49,6 +49,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq-trend-gate-manual-review-pack",
     "--qqq-preview-candidate-readiness-report",
     "--show-qqq-preview-candidate-readiness-report",
+    "--qqq100-preview-candidate-readiness-pack",
+    "--show-qqq100-preview-candidate-readiness-pack",
     "--high-growth-stock-lab",
     "--show-high-growth-stock-lab",
     "--high-growth-stock-universe-expansion-report",

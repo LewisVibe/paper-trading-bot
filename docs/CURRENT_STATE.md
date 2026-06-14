@@ -141,6 +141,13 @@ The QQQ preview-candidate readiness report comes from `python bot.py --qqq-previ
 - It writes `data/qqq_preview_candidate_readiness_report.csv`, `data/qqq_preview_candidate_readiness_summary.csv`, `data/qqq_preview_candidate_readiness_evidence.csv`, and `data/qqq_preview_candidate_readiness_blockers.csv`.
 - Preview readiness is manual discussion only; it does not approve paper execution, does not approve execution, does not approve scheduling, and does not connect strategies to Alpaca or paper orders.
 
+The QQQ100 preview-candidate readiness pack comes from `python bot.py --qqq100-preview-candidate-readiness-pack`, with saved display through `python bot.py --show-qqq100-preview-candidate-readiness-pack`:
+
+- It reads saved QQQ lead/manual/readiness, adaptive/leverage validation, high-growth branch, project research-state, and paper-readiness outputs where present.
+- It writes `data/qqq100_preview_candidate_readiness_pack.csv`, `data/qqq100_preview_candidate_readiness_summary.csv`, `data/qqq100_preview_candidate_readiness_evidence.csv`, and `data/qqq100_preview_candidate_readiness_blockers.csv`.
+- It keeps `qqq_100_trend_gate` as the clean main lead, keeps `codex_qqq_adaptive_trend_exposure` as an ambitious alternative only, keeps `qqq_150_trend_gate` rejected, and keeps the high-growth stock branch out of preview discussion.
+- It does not add preview implementation, does not approve paper execution, does not approve execution, does not approve scheduling, and does not connect strategies to Alpaca or paper orders.
+
 The high-growth stock lab comes from `python bot.py --high-growth-stock-lab`, with saved display through `python bot.py --show-high-growth-stock-lab`:
 
 - It trades only the fixed individual-stock universe `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`.
