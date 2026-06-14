@@ -61,6 +61,8 @@ REQUIRED_COMMANDS = [
     "--show-high-growth-stock-manual-review-pack",
     "--high-growth-stock-risk-review-pack",
     "--show-high-growth-stock-risk-review-pack",
+    "--high-growth-stock-risk-evidence-review",
+    "--show-high-growth-stock-risk-evidence-review",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",

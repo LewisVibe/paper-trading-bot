@@ -1705,6 +1705,29 @@ data/high_growth_stock_risk_review_evidence.csv
 data/high_growth_stock_risk_review_blockers.csv
 ```
 
+High-growth stock risk evidence review mode is the saved-output evidence checkpoint after the blocker review. It reads saved high-growth and QQQ research CSVs only, summarises return improvement versus `qqq_100_trend_gate`, drawdown worsening versus `qqq_100_trend_gate`, drawdown improvement versus the rejected broad Top1 reference, Calmar/Sharpe tradeoff, cost evidence, split evidence, concentration evidence, outlier dependence, and survivorship/current-constituent bias. It keeps `qqq_100_trend_gate` as the clean main lead, keeps `codex_broad_growth_balanced_breakout_control` high-risk research-only, keeps broad Top1 rejected, and does not approve execution, preview promotion, paper execution, or scheduling.
+
+Command:
+
+```text
+python bot.py --high-growth-stock-risk-evidence-review
+```
+
+Saved display:
+
+```text
+python bot.py --show-high-growth-stock-risk-evidence-review
+```
+
+Outputs:
+
+```text
+data/high_growth_stock_risk_evidence_review.csv
+data/high_growth_stock_risk_evidence_summary.csv
+data/high_growth_stock_risk_evidence_details.csv
+data/high_growth_stock_risk_evidence_blockers.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:
