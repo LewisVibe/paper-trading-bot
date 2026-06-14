@@ -203,6 +203,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--qqq100-preview-signal-pack"]:
+        from trading_bot.research.qqq100_preview_signal_pack import (
+            generate_qqq100_preview_signal_pack,
+        )
+
+        result = generate_qqq100_preview_signal_pack()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-qqq100-preview-signal-pack"]:
+        from trading_bot.research.qqq100_preview_signal_pack import (
+            show_qqq100_preview_signal_pack,
+        )
+
+        code, lines = show_qqq100_preview_signal_pack()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--high-growth-stock-lab"]:
         from trading_bot.research.high_growth_stock_lab import generate_high_growth_stock_lab
 
@@ -520,6 +538,10 @@ from trading_bot.research.qqq_preview_candidate_readiness import (
 from trading_bot.research.qqq100_preview_candidate_readiness_pack import (
     generate_qqq100_preview_candidate_readiness_pack,
     show_qqq100_preview_candidate_readiness_pack,
+)
+from trading_bot.research.qqq100_preview_signal_pack import (
+    generate_qqq100_preview_signal_pack,
+    show_qqq100_preview_signal_pack,
 )
 from trading_bot.research.high_growth_stock_lab import (
     generate_high_growth_stock_lab,
@@ -4479,6 +4501,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ100 preview-candidate readiness pack without refreshing data.",
     )
     parser.add_argument(
+        "--qqq100-preview-signal-pack",
+        action="store_true",
+        help="Create a non-execution QQQ100 preview signal pack.",
+    )
+    parser.add_argument(
+        "--show-qqq100-preview-signal-pack",
+        action="store_true",
+        help="Display the saved QQQ100 preview signal pack without refreshing data.",
+    )
+    parser.add_argument(
         "--high-growth-stock-lab",
         action="store_true",
         help="Run a research-only concentrated single-stock growth/momentum lab without execution.",
@@ -5519,6 +5551,20 @@ def main() -> int:
         return 0
     if args.show_qqq100_preview_candidate_readiness_pack:
         status_code, lines = show_qqq100_preview_candidate_readiness_pack()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.qqq100_preview_signal_pack:
+        try:
+            result = generate_qqq100_preview_signal_pack()
+        except Exception as exc:
+            print(f"QQQ100 preview signal pack failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_qqq100_preview_signal_pack:
+        status_code, lines = show_qqq100_preview_signal_pack()
         for line in lines:
             print(line)
         return status_code

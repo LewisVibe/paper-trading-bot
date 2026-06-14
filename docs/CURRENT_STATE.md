@@ -148,6 +148,13 @@ The QQQ100 preview-candidate readiness pack comes from `python bot.py --qqq100-p
 - It keeps `qqq_100_trend_gate` as the clean main lead, keeps `codex_qqq_adaptive_trend_exposure` as an ambitious alternative only, keeps `qqq_150_trend_gate` rejected, and keeps the high-growth stock branch out of preview discussion.
 - It does not add preview implementation, does not approve paper execution, does not approve execution, does not approve scheduling, and does not connect strategies to Alpaca or paper orders.
 
+The QQQ100 preview signal pack comes from `python bot.py --qqq100-preview-signal-pack`, with saved display through `python bot.py --show-qqq100-preview-signal-pack`:
+
+- It may fetch QQQ daily data, calculate close versus the fixed 100-day SMA trend gate, and write `data/qqq100_preview_signal_pack.csv`, `data/qqq100_preview_signal_summary.csv`, `data/qqq100_preview_signal_design.csv`, and `data/qqq100_preview_signal_blockers.csv`.
+- It records a non-execution preview signal only: `desired_position=long` above SMA100 or `desired_position=flat` at or below SMA100.
+- It excludes the high-growth branch from preview, keeps `codex_qqq_adaptive_trend_exposure` alternative-only, keeps `qqq_150_trend_gate` rejected, and keeps action preview versus paper positions out of scope.
+- It does not approve execution, does not create order instructions, does not read positions, does not approve scheduling, and does not connect strategies to Alpaca or paper orders.
+
 The high-growth stock lab comes from `python bot.py --high-growth-stock-lab`, with saved display through `python bot.py --show-high-growth-stock-lab`:
 
 - It trades only the fixed individual-stock universe `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`.
