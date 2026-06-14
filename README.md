@@ -1751,6 +1751,29 @@ data/high_growth_stock_branch_decision_evidence.csv
 data/high_growth_stock_branch_decision_blockers.csv
 ```
 
+High-growth stock final validation pack mode is the saved-output validation checkpoint before any manual preview-candidate discussion. It reads saved high-growth branch-decision, risk-evidence, risk-review, manual-review, lead-decision, lab, universe-expansion, drawdown-control, QQQ, and project research-state CSVs where present. It checks return improvement versus `qqq_100_trend_gate`, drawdown worsening versus `qqq_100_trend_gate`, drawdown improvement versus broad Top1, Calmar/Sharpe tradeoff, cost sensitivity, split sensitivity, concentration risk, outlier dependence, survivorship/current-constituent bias, whether high drawdown is compensated by enough return/risk improvement, and whether the branch has a clear portfolio role separate from `qqq_100_trend_gate`. It does not approve execution, preview promotion, paper execution, or scheduling.
+
+Command:
+
+```text
+python bot.py --high-growth-stock-final-validation-pack
+```
+
+Saved display:
+
+```text
+python bot.py --show-high-growth-stock-final-validation-pack
+```
+
+Outputs:
+
+```text
+data/high_growth_stock_final_validation_pack.csv
+data/high_growth_stock_final_validation_summary.csv
+data/high_growth_stock_final_validation_evidence.csv
+data/high_growth_stock_final_validation_blockers.csv
+```
+
 Crypto research preview mode starts the crypto phase as a scaffold only. It writes the current research universe (`BTC/USD`, `ETH/USD`, `LTC/USD`) with execution, shorting, margin, and execution approval all disabled. It does not refresh data, call Alpaca, read positions, submit or cancel orders, write SQLite `trade_log`, or send Discord alerts.
 
 Output:

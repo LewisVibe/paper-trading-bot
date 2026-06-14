@@ -199,6 +199,13 @@ The high-growth stock branch decision checkpoint comes from `python bot.py --hig
 - It converts saved evidence into one conservative branch decision: continue research-only, pause due to drawdown, require a final validation pack before preview discussion, or mark saved evidence insufficient.
 - It keeps `qqq_100_trend_gate` as the clean main lead, keeps broad Top1 rejected, keeps preview and execution blocked, and does not approve execution, preview promotion, paper execution, or scheduling.
 
+The high-growth stock final validation pack comes from `python bot.py --high-growth-stock-final-validation-pack`, with saved display through `python bot.py --show-high-growth-stock-final-validation-pack`:
+
+- It reads saved high-growth branch-decision, risk-evidence, risk-review, manual-review, lead-decision, lab, universe-expansion, drawdown-control, QQQ, and project research-state CSVs where present; it does not refresh yfinance data.
+- It writes `data/high_growth_stock_final_validation_pack.csv`, `data/high_growth_stock_final_validation_summary.csv`, `data/high_growth_stock_final_validation_evidence.csv`, and `data/high_growth_stock_final_validation_blockers.csv`.
+- It checks return improvement, drawdown tradeoff, broad Top1 improvement, Calmar/Sharpe tradeoff, cost, split, concentration, outlier, survivorship/current-constituent bias, and whether the high-risk branch has a clear role separate from `qqq_100_trend_gate`.
+- It keeps `qqq_100_trend_gate` as the clean main lead, keeps broad Top1 rejected, keeps preview and execution blocked, and does not approve execution, preview promotion, paper execution, or scheduling.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
