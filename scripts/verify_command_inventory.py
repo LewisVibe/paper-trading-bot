@@ -132,6 +132,8 @@ REQUIRED_COMMANDS = [
     "--paper-order-smoke-test-postcheck",
     "--future-refresh-cron-readiness-pack",
     "--paper-order-smoke-test-runbook-check",
+    "--paper-smoke-test-kill-switch-diagnosis",
+    "--show-paper-smoke-test-kill-switch-diagnosis",
     "--ticker",
     "--side",
     "--quantity",

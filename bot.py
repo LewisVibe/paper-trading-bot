@@ -101,6 +101,24 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    if sys.argv[1:] == ["--paper-smoke-test-kill-switch-diagnosis"]:
+        from trading_bot.research.paper_smoke_test_kill_switch_diagnosis import (
+            generate_paper_smoke_test_kill_switch_diagnosis,
+        )
+
+        result = generate_paper_smoke_test_kill_switch_diagnosis()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-smoke-test-kill-switch-diagnosis"]:
+        from trading_bot.research.paper_smoke_test_kill_switch_diagnosis import (
+            show_paper_smoke_test_kill_switch_diagnosis,
+        )
+
+        code, lines = show_paper_smoke_test_kill_switch_diagnosis()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--short-leverage-research-lab"]:
         from trading_bot.research.short_leverage_research_lab import run_short_leverage_research_lab
 
@@ -657,6 +675,10 @@ from trading_bot.research.paper_order_smoke_test_postcheck import (
 from trading_bot.research.future_refresh_cron_readiness import generate_future_refresh_cron_readiness_pack
 from trading_bot.research.paper_order_smoke_test_runbook_check import (
     generate_paper_order_smoke_test_runbook_check,
+)
+from trading_bot.research.paper_smoke_test_kill_switch_diagnosis import (
+    generate_paper_smoke_test_kill_switch_diagnosis,
+    show_paper_smoke_test_kill_switch_diagnosis,
 )
 from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
 from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
@@ -4962,6 +4984,16 @@ def parse_args() -> argparse.Namespace:
         help="Create a static report-only check for the manual paper-order smoke-test runbook.",
     )
     parser.add_argument(
+        "--paper-smoke-test-kill-switch-diagnosis",
+        action="store_true",
+        help="Create a saved-output diagnosis for paper smoke-test kill-switch blockers without execution.",
+    )
+    parser.add_argument(
+        "--show-paper-smoke-test-kill-switch-diagnosis",
+        action="store_true",
+        help="Display the saved paper smoke-test kill-switch diagnosis without refreshing data.",
+    )
+    parser.add_argument(
         "--ticker",
         default="",
         help="Ticker for read-only/report-only smoke-test preflight commands.",
@@ -5904,6 +5936,20 @@ def main() -> int:
         for line in result.summary_lines:
             print(line)
         return 0
+    if args.paper_smoke_test_kill_switch_diagnosis:
+        try:
+            result = generate_paper_smoke_test_kill_switch_diagnosis()
+        except Exception as exc:
+            print(f"Paper smoke-test kill-switch diagnosis failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_smoke_test_kill_switch_diagnosis:
+        status_code, lines = show_paper_smoke_test_kill_switch_diagnosis()
+        for line in lines:
+            print(line)
+        return status_code
     if args.crypto_strategy_lab:
         try:
             result = run_crypto_strategy_lab_files()

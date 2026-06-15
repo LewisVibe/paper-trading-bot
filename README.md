@@ -2193,6 +2193,20 @@ python bot.py --paper-order-smoke-test-runbook-check
 
 This writes `data/paper_order_smoke_test_runbook_check.csv`. The check is static/report-only and does not call Alpaca, create orders, read config contents, or schedule anything.
 
+Diagnose why the manual paper smoke-test order was blocked by the kill-switch gate:
+
+```text
+python bot.py --paper-smoke-test-kill-switch-diagnosis
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-smoke-test-kill-switch-diagnosis
+```
+
+This writes `data/paper_smoke_test_kill_switch_diagnosis.csv`, `data/paper_smoke_test_kill_switch_diagnosis_summary.csv`, `data/paper_smoke_test_kill_switch_diagnosis_blockers.csv`, and `data/paper_smoke_test_kill_switch_diagnosis_recommendations.csv`. The report is saved-output-only: it classifies whether blockers belong to smoke-test connectivity safety or broader strategy-execution safety, preserves that the live preflight passed but the order gate blocked the attempt, confirms no matching order was found after the blocked attempt, and recommends manual gate review before any retry. It does not weaken the kill-switch, change `--paper-order-test`, call Alpaca, read paper positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord/Telegram alerts, change config defaults, schedule anything, or approve smoke-test execution.
+
 Crypto strategy lab mode backtests a tiny fixed research-only strategy set for `BTC/USD`, `ETH/USD`, and `LTC/USD` using yfinance-compatible daily symbols (`BTC-USD`, `ETH-USD`, `LTC-USD`). The per-symbol strategies are `crypto_buy_and_hold_baseline`, `crypto_sma_50_200_trend`, `crypto_buy_above_200_exit_below_200`, and one controlled iteration: `crypto_buy_above_200_with_vol_gate`. The volatility-gate strategy uses fixed parameters only: 20-day realised volatility, trailing 252-day median volatility, and a 1.5x gate for new entries. The lab also writes a separate portfolio-style BTC/ETH/cash rotation test, `crypto_monthly_btc_eth_momentum_rotation`, using fixed monthly rebalance, 126-day momentum ranking, and a 200-day SMA absolute trend filter. It writes full-period, in-sample, and out-of-sample rows, plus an iteration log to discourage tuning after seeing results. Results include simple crypto research cost assumptions: `crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, and `crypto_slippage_bps=10`. It does not call Alpaca, read positions, create/submit/cancel orders, write SQLite `trade_log`, send Discord alerts, enable shorting, enable margin, or approve execution.
 
 Outputs:
