@@ -1632,6 +1632,29 @@ data/qqq100_action_preview_summary.csv
 data/qqq100_action_preview_blockers.csv
 ```
 
+QQQ100 paper-readiness blocker report mode is the saved-output blocker checkpoint after the QQQ100 action preview. It reads saved preview-signal, action-preview, QQQ readiness, portfolio-risk, execution-eligibility, paper kill-switch, paper-order smoke-test, project research-state, and high-growth contrast outputs where present. It explains what still blocks any future manually confirmed QQQ100 paper execution design: the separate AAPL smoke test, QQQ100 execution design, sizing, portfolio risk limits, kill-switch enforcement, execution eligibility, open-order and duplicate-exposure handling, manual confirmation wording, postcheck design, scheduling, and strategy-to-execution integration. It is saved-output only; it does not call Alpaca, read positions, refresh market data, create order instructions, write SQLite `trade_log`, send alerts, schedule anything, or approve paper execution.
+
+Command:
+
+```text
+python bot.py --qqq100-paper-readiness-blocker-report
+```
+
+Saved display:
+
+```text
+python bot.py --show-qqq100-paper-readiness-blocker-report
+```
+
+Outputs:
+
+```text
+data/qqq100_paper_readiness_blocker_report.csv
+data/qqq100_paper_readiness_blocker_summary.csv
+data/qqq100_paper_readiness_blocker_evidence.csv
+data/qqq100_paper_readiness_blocker_blockers.csv
+```
+
 High-growth stock lab mode tests a fixed high-risk, high-return individual-stock universe only: `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`. SPY and QQQ are allowed only as benchmark/regime references, not as traded holdings. The lab compares fixed monthly concentrated momentum variants, including top 1/top 2/top 3 composite 63/126/252-day momentum with own SMA200 and QQQ/SPY SMA200 regime gates, plus `codex_high_conviction_growth_persistence`, `codex_growth_drawdown_reentry`, `codex_high_growth_breakout_acceleration`, and `codex_high_growth_crash_rebound_leader`. The two Codex high-growth variants are fixed-rule ambitious stock-only candidates: one looks for breakout acceleration near 52-week highs, and one looks for crash-rebound leaders after recovery confirmation. This is research-only and deliberately flags concentration risk, survivorship bias, single-name event risk, stock-specific gap risk, cost/split sensitivity, and drawdown risk. It may use yfinance daily data through the research path, but it does not call Alpaca, load config, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect strategies to Alpaca or paper orders.
 
 Command:

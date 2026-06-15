@@ -55,6 +55,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq100-preview-signal-pack",
     "--qqq100-action-preview",
     "--show-qqq100-action-preview",
+    "--qqq100-paper-readiness-blocker-report",
+    "--show-qqq100-paper-readiness-blocker-report",
     "--high-growth-stock-lab",
     "--show-high-growth-stock-lab",
     "--high-growth-stock-universe-expansion-report",

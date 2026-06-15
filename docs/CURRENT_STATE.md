@@ -162,6 +162,13 @@ The QQQ100 action preview shell comes from `python bot.py --qqq100-action-previe
 - Optional read-only paper-position context requires both `--use-paper-positions-readonly` and `--confirm-readonly-alpaca-check`; that mode is limited to QQQ paper-position comparison context and must not print secrets or account identifiers.
 - The output uses alignment/manual-review wording only and does not create order instructions, approve paper execution, approve execution, approve scheduling, or connect the strategy to Alpaca or paper orders.
 
+The QQQ100 paper-readiness blocker report comes from `python bot.py --qqq100-paper-readiness-blocker-report`, with saved display through `python bot.py --show-qqq100-paper-readiness-blocker-report`:
+
+- It reads saved preview-signal, action-preview, QQQ readiness, portfolio risk, execution eligibility, paper kill-switch, paper-order smoke-test, project research-state, and high-growth contrast outputs where present.
+- It writes `data/qqq100_paper_readiness_blocker_report.csv`, `data/qqq100_paper_readiness_blocker_summary.csv`, `data/qqq100_paper_readiness_blocker_evidence.csv`, and `data/qqq100_paper_readiness_blocker_blockers.csv`.
+- It records blockers including the separate AAPL smoke test, QQQ100 execution design, sizing, portfolio risk enforcement, kill-switch enforcement, execution eligibility, open-order and duplicate-exposure handling, manual confirmation wording, postcheck design, scheduling, and strategy-to-execution integration.
+- It is saved-output only and does not call Alpaca, read positions, refresh market data, create order instructions, approve paper execution, approve execution, approve scheduling, or connect strategies to paper orders.
+
 The high-growth stock lab comes from `python bot.py --high-growth-stock-lab`, with saved display through `python bot.py --show-high-growth-stock-lab`:
 
 - It trades only the fixed individual-stock universe `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`.

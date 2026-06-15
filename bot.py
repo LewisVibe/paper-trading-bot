@@ -242,6 +242,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--qqq100-paper-readiness-blocker-report"]:
+        from trading_bot.research.qqq100_paper_readiness_blocker_report import (
+            generate_qqq100_paper_readiness_blocker_report,
+        )
+
+        result = generate_qqq100_paper_readiness_blocker_report()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-qqq100-paper-readiness-blocker-report"]:
+        from trading_bot.research.qqq100_paper_readiness_blocker_report import (
+            show_qqq100_paper_readiness_blocker_report,
+        )
+
+        code, lines = show_qqq100_paper_readiness_blocker_report()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--high-growth-stock-lab"]:
         from trading_bot.research.high_growth_stock_lab import generate_high_growth_stock_lab
 
@@ -576,6 +594,10 @@ from trading_bot.research.qqq100_preview_signal_pack import (
 from trading_bot.research.qqq100_action_preview import (
     generate_qqq100_action_preview,
     show_qqq100_action_preview,
+)
+from trading_bot.research.qqq100_paper_readiness_blocker_report import (
+    generate_qqq100_paper_readiness_blocker_report,
+    show_qqq100_paper_readiness_blocker_report,
 )
 from trading_bot.research.high_growth_stock_lab import (
     generate_high_growth_stock_lab,
@@ -4555,6 +4577,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ100 action preview without refreshing data or reading positions.",
     )
     parser.add_argument(
+        "--qqq100-paper-readiness-blocker-report",
+        action="store_true",
+        help="Create a saved-output QQQ100 paper-readiness blocker report without execution.",
+    )
+    parser.add_argument(
+        "--show-qqq100-paper-readiness-blocker-report",
+        action="store_true",
+        help="Display the saved QQQ100 paper-readiness blocker report without refreshing data.",
+    )
+    parser.add_argument(
         "--high-growth-stock-lab",
         action="store_true",
         help="Run a research-only concentrated single-stock growth/momentum lab without execution.",
@@ -5626,6 +5658,20 @@ def main() -> int:
         return 0
     if args.show_qqq100_action_preview:
         status_code, lines = show_qqq100_action_preview()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.qqq100_paper_readiness_blocker_report:
+        try:
+            result = generate_qqq100_paper_readiness_blocker_report()
+        except Exception as exc:
+            print(f"QQQ100 paper-readiness blocker report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_qqq100_paper_readiness_blocker_report:
+        status_code, lines = show_qqq100_paper_readiness_blocker_report()
         for line in lines:
             print(line)
         return status_code
