@@ -802,6 +802,11 @@ from trading_bot.runners.research_reports import (
     run_vps_operations_readiness_report_command,
 )
 from trading_bot.safety.paper_kill_switch import evaluate_paper_kill_switch_gate
+from trading_bot.safety.manual_paper_smoke_test_gate import (
+    evaluate_manual_paper_smoke_test_gate,
+    read_saved_smoke_test_preflight_context,
+    write_manual_paper_smoke_test_gate_report,
+)
 from trading_bot.strategies.adaptive import select_adaptive_momentum_assets
 from trading_bot.strategies.rotation import (
     buy_and_hold_equity_curve,
@@ -1266,41 +1271,61 @@ def run_paper_order_test(
         if not config.alpaca_paper:
             raise ManualOrderError("alpaca.paper must be true for manual paper-order tests.")
 
+        smoke_test_gate_decision = None
+        is_aapl_buy_one_template = ticker == "AAPL" and side == "buy" and quantity == Decimal("1")
+        if is_aapl_buy_one_template:
+            smoke_test_gate_decision = evaluate_manual_paper_smoke_test_gate(
+                ticker=ticker,
+                side=side,
+                quantity=quantity,
+                confirm_paper_order=confirm_paper_order,
+                alpaca_paper=config.alpaca_paper,
+                allow_shorting=config.allow_shorting,
+                credentials_present=bool(config.alpaca_api_key and config.alpaca_secret_key),
+                preflight=read_saved_smoke_test_preflight_context(),
+            )
+            print_manual_smoke_test_gate_decision(smoke_test_gate_decision)
+            write_manual_paper_smoke_test_gate_report(smoke_test_gate_decision)
+            if not smoke_test_gate_decision.allowed:
+                logger.warning(
+                    "Manual paper smoke-test gate blocked: %s",
+                    "; ".join(smoke_test_gate_decision.reasons),
+                )
+                return 2
+
         if config.dry_run and not confirm_paper_order:
             raise ManualOrderError(
                 "config.json has dry_run=true. Re-run with --confirm-paper-order to submit one paper order."
             )
 
-        kill_switch_decision = evaluate_paper_kill_switch_gate(
-            alpaca_paper=config.alpaca_paper,
-            dry_run=config.dry_run,
-            explicit_paper_execution_requested=confirm_paper_order,
-            allow_shorting=config.allow_shorting,
-            paper_kill_switch_enabled=getattr(config, "paper_kill_switch_enabled", None),
-            execution_eligibility_blocked=manual_paper_order_execution_eligibility_blocked(),
-            defensive_decision_blocked=manual_paper_order_defensive_decision_blocked(),
-            explicit_confirmation=confirm_paper_order,
-            command_name="paper_order_test",
-        )
-        if not kill_switch_decision.allowed:
-            print("PAPER ORDER TEST BLOCKED BY PAPER KILL-SWITCH PREFLIGHT.")
-            print("No orders were created, submitted, or cancelled.")
-            print("Reasons:")
-            for reason in kill_switch_decision.reasons:
-                print(f"- {reason}")
-            print(kill_switch_decision.required_next_step)
-            print("No execution approval was granted.")
-            logger.warning(
-                "Manual paper-order test blocked by paper kill-switch preflight: %s",
-                "; ".join(kill_switch_decision.reasons),
+        if smoke_test_gate_decision is None:
+            kill_switch_decision = evaluate_paper_kill_switch_gate(
+                alpaca_paper=config.alpaca_paper,
+                dry_run=config.dry_run,
+                explicit_paper_execution_requested=confirm_paper_order,
+                allow_shorting=config.allow_shorting,
+                paper_kill_switch_enabled=getattr(config, "paper_kill_switch_enabled", None),
+                execution_eligibility_blocked=manual_paper_order_execution_eligibility_blocked(),
+                defensive_decision_blocked=manual_paper_order_defensive_decision_blocked(),
+                explicit_confirmation=confirm_paper_order,
+                command_name="paper_order_test",
             )
-            return 2
+            if not kill_switch_decision.allowed:
+                print("PAPER ORDER TEST BLOCKED BY PAPER KILL-SWITCH PREFLIGHT.")
+                print("No orders were created, submitted, or cancelled.")
+                print("Reasons:")
+                for reason in kill_switch_decision.reasons:
+                    print(f"- {reason}")
+                print(kill_switch_decision.required_next_step)
+                print("No execution approval was granted.")
+                logger.warning(
+                    "Manual paper-order test blocked by paper kill-switch preflight: %s",
+                    "; ".join(kill_switch_decision.reasons),
+                )
+                return 2
 
         if not config.alpaca_api_key or not config.alpaca_secret_key:
             raise ManualOrderError("Alpaca paper API key and secret key are required.")
-
-        conn = init_database(config.database_path)
-        order_config = replace(config, dry_run=False)
 
         alpaca_client = TradingClient(
             config.alpaca_api_key,
@@ -1311,6 +1336,55 @@ def run_paper_order_test(
         positions = get_alpaca_positions(alpaca_client)
         position_before = positions.get(ticker, Position())
 
+        open_orders = get_open_orders_for_ticker(alpaca_client, ticker)
+        if smoke_test_gate_decision is not None:
+            smoke_test_gate_decision = evaluate_manual_paper_smoke_test_gate(
+                ticker=ticker,
+                side=side,
+                quantity=quantity,
+                confirm_paper_order=confirm_paper_order,
+                alpaca_paper=config.alpaca_paper,
+                allow_shorting=config.allow_shorting,
+                credentials_present=bool(config.alpaca_api_key and config.alpaca_secret_key),
+                preflight=read_saved_smoke_test_preflight_context(),
+                direct_open_order_count=len(open_orders),
+            )
+            print_manual_smoke_test_gate_decision(smoke_test_gate_decision)
+            write_manual_paper_smoke_test_gate_report(smoke_test_gate_decision)
+            if not smoke_test_gate_decision.allowed:
+                logger.warning(
+                    "Manual paper smoke-test gate blocked after open-order check: %s",
+                    "; ".join(smoke_test_gate_decision.reasons),
+                )
+                return 2
+
+            duplicate_recent_order_exists = recent_matching_manual_smoke_test_order_exists(
+                alpaca_client,
+                ticker,
+                side,
+                quantity,
+            )
+            smoke_test_gate_decision = evaluate_manual_paper_smoke_test_gate(
+                ticker=ticker,
+                side=side,
+                quantity=quantity,
+                confirm_paper_order=confirm_paper_order,
+                alpaca_paper=config.alpaca_paper,
+                allow_shorting=config.allow_shorting,
+                credentials_present=bool(config.alpaca_api_key and config.alpaca_secret_key),
+                preflight=read_saved_smoke_test_preflight_context(),
+                direct_open_order_count=len(open_orders),
+                duplicate_recent_order_exists=duplicate_recent_order_exists,
+            )
+            print_manual_smoke_test_gate_decision(smoke_test_gate_decision)
+            write_manual_paper_smoke_test_gate_report(smoke_test_gate_decision)
+            if not smoke_test_gate_decision.allowed:
+                logger.warning(
+                    "Manual paper smoke-test gate blocked after duplicate-order check: %s",
+                    "; ".join(smoke_test_gate_decision.reasons),
+                )
+                return 2
+
         is_valid_asset, asset_error = validate_alpaca_asset_for_order(
             alpaca_client,
             ticker,
@@ -1319,10 +1393,11 @@ def run_paper_order_test(
         if not is_valid_asset:
             raise ManualOrderError(asset_error)
 
-        open_orders = get_open_orders_for_ticker(alpaca_client, ticker)
         if open_orders:
             message = f"An open Alpaca order already exists for {ticker}; manual test order skipped."
             logger.warning(message)
+            conn = init_database(config.database_path)
+            order_config = replace(config, dry_run=False)
             insert_trade_log(
                 conn=conn,
                 config=order_config,
@@ -1339,6 +1414,8 @@ def run_paper_order_test(
             send_discord_alert(config, logger, f"Warning: {message}")
             return 1
 
+        conn = init_database(config.database_path)
+        order_config = replace(config, dry_run=False)
         order = submit_alpaca_order(alpaca_client, ticker, side, quantity)
         order_id = str(getattr(order, "id", ""))
         order_status = normalize_order_status(getattr(order, "status", "submitted"))
@@ -1371,6 +1448,8 @@ def run_paper_order_test(
         )
         logger.info(message)
         send_discord_alert(config, logger, message)
+        if smoke_test_gate_decision is not None:
+            write_manual_paper_smoke_test_gate_report(smoke_test_gate_decision, order_event="order_submitted")
         return 0
     except ManualOrderError as exc:
         message = f"Manual paper-order test refused: {exc}"
@@ -1416,6 +1495,50 @@ def read_saved_csv_rows(path: Path) -> list[dict[str, str]]:
         return []
     with path.open(newline="", encoding="utf-8") as file:
         return list(csv.DictReader(file))
+
+
+def print_manual_smoke_test_gate_decision(decision: Any) -> None:
+    print("PAPER ORDER TEST MANUAL CONNECTIVITY SMOKE-TEST GATE.")
+    print(f"gate_type={decision.gate_type}")
+    print(f"ticker={decision.ticker}")
+    print(f"side={decision.side}")
+    print(f"quantity={decision.quantity}")
+    print(f"market_status={decision.market_status}")
+    print(f"live_preflight_status={decision.live_preflight_status}")
+    print(f"open_order_check={decision.open_order_check}")
+    print(f"duplicate_recent_order_check={decision.duplicate_recent_order_check}")
+    print(f"smoke_test_order_approved={decision.smoke_test_order_approved}")
+    print(f"execution_approved={decision.execution_approved}")
+    print(f"scheduling_approved={decision.scheduling_approved}")
+    print(f"strategy_execution_approved={decision.strategy_execution_approved}")
+    if not decision.allowed:
+        print("No orders were created, submitted, or cancelled.")
+        print("Reasons:")
+        for reason in decision.reasons:
+            print(f"- {reason}")
+        print(decision.required_next_step)
+    else:
+        print("Narrow smoke-test gate passed for the exact manual AAPL buy 1 connectivity test only.")
+        print("Strategy execution remains blocked; this is not scheduling or strategy approval.")
+
+
+def recent_matching_manual_smoke_test_order_exists(
+    client: TradingClient,
+    ticker: str,
+    side: str,
+    quantity: Decimal,
+) -> bool:
+    from alpaca.trading.enums import QueryOrderStatus
+    from alpaca.trading.requests import GetOrdersRequest
+
+    request = GetOrdersRequest(status=QueryOrderStatus.ALL, symbols=[ticker], limit=50)
+    recent_orders = list(client.get_orders(filter=request))
+    for order in recent_orders:
+        order_side = normalize_order_side(getattr(order, "side", ""))
+        order_quantity = decimal_from_any(getattr(order, "qty", "0"))
+        if order_side == side and order_quantity == quantity:
+            return True
+    return False
 
 
 def estimate_manual_position_after(

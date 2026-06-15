@@ -228,6 +228,8 @@ python bot.py --paper-order-test MSFT buy 1 --confirm-paper-order
 
 The manual paper-order smoke test is explicitly confirmation-gated and performs an early paper kill-switch preflight before opening the database, creating an Alpaca client, checking open orders, or submitting an order. If the saved execution-eligibility/defensive-decision prerequisites or the explicit future kill-switch setting are not satisfied, it refuses before order work begins. This preflight does not change normal `python bot.py` behavior, open-order blocking, SQLite execution writes, or Discord alerts.
 
+The manual `--paper-order-test` path also has a separate narrow connectivity-only smoke-test gate for the exact `AAPL buy 1 --confirm-paper-order` template. That gate can bypass broader strategy-execution blockers only for the one-share AAPL paper connectivity test when saved/read-only live preflight is ready, market status is open, Alpaca is paper mode, credentials are present, there are no open AAPL orders, and no recent matching AAPL buy 1 order is found. It writes `data/paper_order_smoke_test_gate_report.csv`, `data/paper_order_smoke_test_gate_summary.csv`, and `data/paper_order_smoke_test_gate_blockers.csv` when the manual path is run. It does not approve strategy execution, normal bot execution, slow-SMA execution, QQQ100 execution, scheduling, follow-up orders, live trading, shorting, or config-default changes.
+
 Run the regime-filtered SMA volatility backtest:
 
 ```powershell
