@@ -11,6 +11,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from trading_bot.safety.manual_paper_smoke_test_gate import (  # noqa: E402
+    BROKER_CONFIRMED_RECENT_ORDER_STATUSES,
     GATE_TYPE,
     READY_PREFLIGHT_STATUS,
     SavedSmokeTestPreflightContext,
@@ -60,7 +61,9 @@ def verify_helper_cases(failures: list[str]) -> None:
         credentials_present=True,
         preflight=preflight,
         direct_open_order_count=0,
-        duplicate_recent_order_exists=False,
+        duplicate_recent_order_check="pass",
+        duplicate_recent_order_source="alpaca_paper_recent_orders",
+        duplicate_recent_order_status_if_any="none",
     )
     if not allowed.allowed or allowed.gate_type != GATE_TYPE:
         failures.append("exact AAPL buy 1 confirmed smoke-test context should pass the dedicated gate")
@@ -68,6 +71,8 @@ def verify_helper_cases(failures: list[str]) -> None:
         failures.append("smoke_test_order_approved should be true only for the exact passing smoke-test gate")
     if allowed.execution_approved or allowed.strategy_execution_approved or allowed.scheduling_approved:
         failures.append("passing smoke-test gate must not approve strategy execution or scheduling")
+    if allowed.current_position_context_ignored_for_duplicate_check is not True:
+        failures.append("existing AAPL position context must be ignored for duplicate-order checks")
 
     cases = [
         ("wrong_ticker", {"ticker": "MSFT"}),
@@ -80,7 +85,9 @@ def verify_helper_cases(failures: list[str]) -> None:
         ("market_closed", {"preflight": SavedSmokeTestPreflightContext(READY_PREFLIGHT_STATUS, "closed", "AAPL", "buy", "1", "pass")}),
         ("preflight_not_ready", {"preflight": SavedSmokeTestPreflightContext("blocked", "open", "AAPL", "buy", "1", "pass")}),
         ("open_order_exists", {"direct_open_order_count": 1}),
-        ("duplicate_recent_order", {"duplicate_recent_order_exists": True}),
+        ("duplicate_recent_order", {"duplicate_recent_order_check": "blocked_recent_matching_order_exists"}),
+        ("duplicate_order_history_uncertain", {"duplicate_recent_order_check": "blocked_duplicate_order_history_uncertain"}),
+        ("ambiguous_duplicate_status", {"duplicate_recent_order_check": "blocked_ambiguous_recent_matching_order_status"}),
     ]
     defaults = {
         "ticker": "AAPL",
@@ -92,7 +99,9 @@ def verify_helper_cases(failures: list[str]) -> None:
         "credentials_present": True,
         "preflight": preflight,
         "direct_open_order_count": 0,
-        "duplicate_recent_order_exists": False,
+        "duplicate_recent_order_check": "pass",
+        "duplicate_recent_order_source": "alpaca_paper_recent_orders",
+        "duplicate_recent_order_status_if_any": "none",
     }
     for name, override in cases:
         params = dict(defaults)
@@ -114,7 +123,7 @@ def verify_wiring_scope(bot_source: str, failures: list[str]) -> None:
         "is_aapl_buy_one_template = ticker == \"AAPL\" and side == \"buy\" and quantity == Decimal(\"1\")",
         "if smoke_test_gate_decision is None:",
         "evaluate_paper_kill_switch_gate(",
-        "recent_matching_manual_smoke_test_order_exists(",
+        "recent_matching_manual_smoke_test_order_check(",
         "write_manual_paper_smoke_test_gate_report(",
         "print_manual_smoke_test_gate_decision(",
     ]
@@ -136,6 +145,41 @@ def verify_order_path_boundaries(bot_source: str, failures: list[str]) -> None:
         failures.append("slow SMA paper execution path must not use the smoke-test gate")
     if "qqq100" in function_block(bot_source, "def run_paper_order_test(", "def manual_paper_order_execution_eligibility_blocked(").lower():
         failures.append("paper-order smoke-test gate must not mention or wire QQQ100 strategy execution")
+    duplicate_source = function_block(
+        bot_source,
+        "def recent_matching_manual_smoke_test_order_check(",
+        "def estimate_manual_position_after(",
+    )
+    if not duplicate_source:
+        failures.append("could not locate status-aware duplicate-order check")
+        return
+    for token in [
+        "QueryOrderStatus.ALL",
+        "client.get_orders",
+        "BROKER_CONFIRMED_RECENT_ORDER_STATUSES",
+        "NON_BLOCKING_RECENT_ORDER_STATUSES",
+        "blocked_duplicate_order_history_uncertain",
+        "blocked_ambiguous_recent_matching_order_status",
+        "blocked_recent_matching_order_exists",
+        "duplicate_recent_order_source",
+        "duplicate_recent_order_status_if_any",
+    ]:
+        if token not in duplicate_source:
+            failures.append(f"duplicate-order check missing required broker/status token: {token}")
+    forbidden_duplicate_tokens = [
+        "get_open_position",
+        "position_before",
+        "positions",
+        "read_saved_csv_rows",
+        "paper_order_smoke_test",
+        ".csv",
+        "trade_log",
+    ]
+    for token in forbidden_duplicate_tokens:
+        if token in duplicate_source:
+            failures.append(f"duplicate-order check must not use saved reports, positions, or trade logs: {token}")
+    if "filled" not in BROKER_CONFIRMED_RECENT_ORDER_STATUSES or "new" not in BROKER_CONFIRMED_RECENT_ORDER_STATUSES:
+        failures.append("broker-confirmed duplicate status set must include filled and new")
 
 
 def verify_helper_safety(helper_source: str, failures: list[str]) -> None:
@@ -170,6 +214,9 @@ def verify_helper_safety(helper_source: str, failures: list[str]) -> None:
         "paper_order_smoke_test_gate_report.csv",
         "paper_order_smoke_test_gate_summary.csv",
         "paper_order_smoke_test_gate_blockers.csv",
+        "duplicate_recent_order_source",
+        "duplicate_recent_order_status_if_any",
+        "current_position_context_ignored_for_duplicate_check",
     ]
     for token in required:
         if token not in helper_source:

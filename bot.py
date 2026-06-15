@@ -803,6 +803,8 @@ from trading_bot.runners.research_reports import (
 )
 from trading_bot.safety.paper_kill_switch import evaluate_paper_kill_switch_gate
 from trading_bot.safety.manual_paper_smoke_test_gate import (
+    BROKER_CONFIRMED_RECENT_ORDER_STATUSES,
+    NON_BLOCKING_RECENT_ORDER_STATUSES,
     evaluate_manual_paper_smoke_test_gate,
     read_saved_smoke_test_preflight_context,
     write_manual_paper_smoke_test_gate_report,
@@ -1284,9 +1286,9 @@ def run_paper_order_test(
                 credentials_present=bool(config.alpaca_api_key and config.alpaca_secret_key),
                 preflight=read_saved_smoke_test_preflight_context(),
             )
-            print_manual_smoke_test_gate_decision(smoke_test_gate_decision)
-            write_manual_paper_smoke_test_gate_report(smoke_test_gate_decision)
             if not smoke_test_gate_decision.allowed:
+                print_manual_smoke_test_gate_decision(smoke_test_gate_decision)
+                write_manual_paper_smoke_test_gate_report(smoke_test_gate_decision)
                 logger.warning(
                     "Manual paper smoke-test gate blocked: %s",
                     "; ".join(smoke_test_gate_decision.reasons),
@@ -1349,16 +1351,16 @@ def run_paper_order_test(
                 preflight=read_saved_smoke_test_preflight_context(),
                 direct_open_order_count=len(open_orders),
             )
-            print_manual_smoke_test_gate_decision(smoke_test_gate_decision)
-            write_manual_paper_smoke_test_gate_report(smoke_test_gate_decision)
             if not smoke_test_gate_decision.allowed:
+                print_manual_smoke_test_gate_decision(smoke_test_gate_decision)
+                write_manual_paper_smoke_test_gate_report(smoke_test_gate_decision)
                 logger.warning(
                     "Manual paper smoke-test gate blocked after open-order check: %s",
                     "; ".join(smoke_test_gate_decision.reasons),
                 )
                 return 2
 
-            duplicate_recent_order_exists = recent_matching_manual_smoke_test_order_exists(
+            duplicate_recent_order = recent_matching_manual_smoke_test_order_check(
                 alpaca_client,
                 ticker,
                 side,
@@ -1374,7 +1376,9 @@ def run_paper_order_test(
                 credentials_present=bool(config.alpaca_api_key and config.alpaca_secret_key),
                 preflight=read_saved_smoke_test_preflight_context(),
                 direct_open_order_count=len(open_orders),
-                duplicate_recent_order_exists=duplicate_recent_order_exists,
+                duplicate_recent_order_check=duplicate_recent_order.duplicate_recent_order_check,
+                duplicate_recent_order_source=duplicate_recent_order.duplicate_recent_order_source,
+                duplicate_recent_order_status_if_any=duplicate_recent_order.duplicate_recent_order_status_if_any,
             )
             print_manual_smoke_test_gate_decision(smoke_test_gate_decision)
             write_manual_paper_smoke_test_gate_report(smoke_test_gate_decision)
@@ -1507,6 +1511,12 @@ def print_manual_smoke_test_gate_decision(decision: Any) -> None:
     print(f"live_preflight_status={decision.live_preflight_status}")
     print(f"open_order_check={decision.open_order_check}")
     print(f"duplicate_recent_order_check={decision.duplicate_recent_order_check}")
+    print(f"duplicate_recent_order_source={decision.duplicate_recent_order_source}")
+    print(f"duplicate_recent_order_status_if_any={decision.duplicate_recent_order_status_if_any or 'none'}")
+    print(
+        "current_position_context_ignored_for_duplicate_check="
+        f"{decision.current_position_context_ignored_for_duplicate_check}"
+    )
     print(f"smoke_test_order_approved={decision.smoke_test_order_approved}")
     print(f"execution_approved={decision.execution_approved}")
     print(f"scheduling_approved={decision.scheduling_approved}")
@@ -1522,23 +1532,56 @@ def print_manual_smoke_test_gate_decision(decision: Any) -> None:
         print("Strategy execution remains blocked; this is not scheduling or strategy approval.")
 
 
-def recent_matching_manual_smoke_test_order_exists(
+@dataclass(frozen=True)
+class ManualSmokeTestDuplicateOrderCheck:
+    duplicate_recent_order_check: str
+    duplicate_recent_order_source: str
+    duplicate_recent_order_status_if_any: str
+
+
+def recent_matching_manual_smoke_test_order_check(
     client: TradingClient,
     ticker: str,
     side: str,
     quantity: Decimal,
-) -> bool:
+) -> ManualSmokeTestDuplicateOrderCheck:
     from alpaca.trading.enums import QueryOrderStatus
     from alpaca.trading.requests import GetOrdersRequest
 
     request = GetOrdersRequest(status=QueryOrderStatus.ALL, symbols=[ticker], limit=50)
-    recent_orders = list(client.get_orders(filter=request))
+    try:
+        recent_orders = list(client.get_orders(filter=request))
+    except Exception as exc:
+        return ManualSmokeTestDuplicateOrderCheck(
+            duplicate_recent_order_check="blocked_duplicate_order_history_uncertain",
+            duplicate_recent_order_source=f"alpaca_paper_recent_orders_read_failed:{type(exc).__name__}",
+            duplicate_recent_order_status_if_any="",
+        )
+
     for order in recent_orders:
         order_side = normalize_order_side(getattr(order, "side", ""))
         order_quantity = decimal_from_any(getattr(order, "qty", "0"))
-        if order_side == side and order_quantity == quantity:
-            return True
-    return False
+        if order_side != side or order_quantity != quantity:
+            continue
+        order_status = normalize_order_status(getattr(order, "status", ""))
+        if order_status in BROKER_CONFIRMED_RECENT_ORDER_STATUSES:
+            return ManualSmokeTestDuplicateOrderCheck(
+                duplicate_recent_order_check="blocked_recent_matching_order_exists",
+                duplicate_recent_order_source="alpaca_paper_recent_orders",
+                duplicate_recent_order_status_if_any=order_status,
+            )
+        if order_status in NON_BLOCKING_RECENT_ORDER_STATUSES:
+            continue
+        return ManualSmokeTestDuplicateOrderCheck(
+            duplicate_recent_order_check="blocked_ambiguous_recent_matching_order_status",
+            duplicate_recent_order_source="alpaca_paper_recent_orders",
+            duplicate_recent_order_status_if_any=order_status or "missing_status",
+        )
+    return ManualSmokeTestDuplicateOrderCheck(
+        duplicate_recent_order_check="pass",
+        duplicate_recent_order_source="alpaca_paper_recent_orders",
+        duplicate_recent_order_status_if_any="none",
+    )
 
 
 def estimate_manual_position_after(

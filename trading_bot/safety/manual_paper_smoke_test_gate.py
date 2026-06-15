@@ -22,6 +22,32 @@ ALLOWED_SIDE = "buy"
 ALLOWED_QUANTITY = Decimal("1")
 READY_PREFLIGHT_STATUS = "live_preflight_ready_for_manual_confirmation"
 OPEN_MARKET_STATUS = "open"
+BROKER_CONFIRMED_RECENT_ORDER_STATUSES = {
+    "accepted",
+    "accepted_for_bidding",
+    "calculated",
+    "done_for_day",
+    "filled",
+    "held",
+    "new",
+    "partially_filled",
+    "pending_cancel",
+    "pending_new",
+    "pending_replace",
+    "stopped",
+    "suspended",
+}
+NON_BLOCKING_RECENT_ORDER_STATUSES = {
+    "canceled",
+    "cancelled",
+    "expired",
+    "rejected",
+    "replaced",
+}
+UNCERTAIN_DUPLICATE_ORDER_CHECKS = {
+    "blocked_duplicate_order_history_uncertain",
+    "blocked_ambiguous_recent_matching_order_status",
+}
 
 GATE_REPORT_PATH = Path("data/paper_order_smoke_test_gate_report.csv")
 GATE_SUMMARY_PATH = Path("data/paper_order_smoke_test_gate_summary.csv")
@@ -38,6 +64,9 @@ REPORT_COLUMNS = [
     "live_preflight_status",
     "open_order_check",
     "duplicate_recent_order_check",
+    "duplicate_recent_order_source",
+    "duplicate_recent_order_status_if_any",
+    "current_position_context_ignored_for_duplicate_check",
     "blocker",
     "required_next_step",
     "smoke_test_order_approved",
@@ -113,6 +142,9 @@ class ManualPaperSmokeTestGateDecision:
     live_preflight_status: str
     open_order_check: str
     duplicate_recent_order_check: str
+    duplicate_recent_order_source: str
+    duplicate_recent_order_status_if_any: str
+    current_position_context_ignored_for_duplicate_check: bool
     reasons: list[str]
     required_next_step: str
     smoke_test_order_approved: bool
@@ -169,7 +201,9 @@ def evaluate_manual_paper_smoke_test_gate(
     credentials_present: bool,
     preflight: SavedSmokeTestPreflightContext,
     direct_open_order_count: int | None = None,
-    duplicate_recent_order_exists: bool | None = None,
+    duplicate_recent_order_check: str | None = None,
+    duplicate_recent_order_source: str = "not_checked_yet",
+    duplicate_recent_order_status_if_any: str = "",
 ) -> ManualPaperSmokeTestGateDecision:
     normalized_ticker = ticker.strip().upper()
     normalized_side = side.strip().lower()
@@ -204,19 +238,20 @@ def evaluate_manual_paper_smoke_test_gate(
         reasons.append("saved live preflight open-order context is not clear")
     if direct_open_order_count is not None and direct_open_order_count > 0:
         reasons.append("an open AAPL order already exists")
-    if duplicate_recent_order_exists is True:
+    duplicate_check = duplicate_recent_order_check or "not_checked_yet"
+    if duplicate_check == "blocked_recent_matching_order_exists":
         reasons.append("a recent matching AAPL buy 1 smoke-test order already exists")
+    if duplicate_check == "blocked_duplicate_order_history_uncertain":
+        reasons.append("recent matching-order history could not be read from Alpaca paper")
+    if duplicate_check == "blocked_ambiguous_recent_matching_order_status":
+        reasons.append("a recent matching AAPL buy 1 order has an ambiguous broker status")
 
     open_order_check = (
         "not_checked_yet"
         if direct_open_order_count is None
         else ("pass" if direct_open_order_count == 0 else "blocked_open_order_exists")
     )
-    duplicate_check = (
-        "not_checked_yet"
-        if duplicate_recent_order_exists is None
-        else ("pass" if duplicate_recent_order_exists is False else "blocked_recent_matching_order_exists")
-    )
+    smoke_test_order_approved = open_order_check == "pass" and duplicate_check == "pass" and not reasons
     if reasons:
         return ManualPaperSmokeTestGateDecision(
             allowed=False,
@@ -229,6 +264,9 @@ def evaluate_manual_paper_smoke_test_gate(
             live_preflight_status=preflight.live_preflight_status,
             open_order_check=open_order_check,
             duplicate_recent_order_check=duplicate_check,
+            duplicate_recent_order_source=duplicate_recent_order_source,
+            duplicate_recent_order_status_if_any=duplicate_recent_order_status_if_any,
+            current_position_context_ignored_for_duplicate_check=True,
             reasons=reasons,
             required_next_step="Keep smoke test blocked until the dedicated manual connectivity gate is reviewed.",
             smoke_test_order_approved=False,
@@ -244,9 +282,12 @@ def evaluate_manual_paper_smoke_test_gate(
         live_preflight_status=preflight.live_preflight_status,
         open_order_check=open_order_check,
         duplicate_recent_order_check=duplicate_check,
+        duplicate_recent_order_source=duplicate_recent_order_source,
+        duplicate_recent_order_status_if_any=duplicate_recent_order_status_if_any,
+        current_position_context_ignored_for_duplicate_check=True,
         reasons=["exact AAPL buy 1 manual connectivity smoke-test gate passed"],
         required_next_step="Proceed only with the existing manual --paper-order-test path; this does not approve strategy execution.",
-        smoke_test_order_approved=True,
+        smoke_test_order_approved=smoke_test_order_approved,
     )
 
 
@@ -267,6 +308,11 @@ def write_manual_paper_smoke_test_gate_report(
         "live_preflight_status": decision.live_preflight_status,
         "open_order_check": decision.open_order_check,
         "duplicate_recent_order_check": decision.duplicate_recent_order_check,
+        "duplicate_recent_order_source": decision.duplicate_recent_order_source,
+        "duplicate_recent_order_status_if_any": decision.duplicate_recent_order_status_if_any,
+        "current_position_context_ignored_for_duplicate_check": (
+            decision.current_position_context_ignored_for_duplicate_check
+        ),
         "blocker": "; ".join(decision.reasons) if not decision.allowed else "none_for_manual_connectivity_smoke_test",
         "required_next_step": decision.required_next_step,
         **approval_flags(decision, order_event=order_event),
@@ -278,6 +324,27 @@ def write_manual_paper_smoke_test_gate_report(
         summary_row("live_preflight_status", decision.live_preflight_status, "Saved live preflight status.", decision, order_event),
         summary_row("open_order_check", decision.open_order_check, "Open-order gate status.", decision, order_event),
         summary_row("duplicate_recent_order_check", decision.duplicate_recent_order_check, "Recent matching-order gate status.", decision, order_event),
+        summary_row(
+            "duplicate_recent_order_source",
+            decision.duplicate_recent_order_source,
+            "Source used for the duplicate-order gate.",
+            decision,
+            order_event,
+        ),
+        summary_row(
+            "duplicate_recent_order_status_if_any",
+            decision.duplicate_recent_order_status_if_any or "none",
+            "Broker order status that triggered duplicate blocking, if any.",
+            decision,
+            order_event,
+        ),
+        summary_row(
+            "current_position_context_ignored_for_duplicate_check",
+            str(decision.current_position_context_ignored_for_duplicate_check),
+            "Existing AAPL position context is not proof of a duplicate broker order.",
+            decision,
+            order_event,
+        ),
         summary_row("smoke_test_order_approved", str(decision.smoke_test_order_approved), "True only for the exact manually confirmed AAPL buy 1 smoke test.", decision, order_event),
         summary_row("execution_approved", "False", "Strategy execution remains blocked.", decision, order_event),
         summary_row("strategy_execution_approved", "False", "No strategy-to-execution approval is granted.", decision, order_event),
