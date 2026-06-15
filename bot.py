@@ -221,6 +221,27 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if _is_qqq100_action_preview_early_args(sys.argv[1:]):
+        from trading_bot.research.qqq100_action_preview import (
+            generate_qqq100_action_preview,
+        )
+
+        result = generate_qqq100_action_preview(
+            use_paper_positions_readonly="--use-paper-positions-readonly" in sys.argv[1:],
+            confirm_readonly_alpaca_check="--confirm-readonly-alpaca-check" in sys.argv[1:],
+        )
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-qqq100-action-preview"]:
+        from trading_bot.research.qqq100_action_preview import (
+            show_qqq100_action_preview,
+        )
+
+        code, lines = show_qqq100_action_preview()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--high-growth-stock-lab"]:
         from trading_bot.research.high_growth_stock_lab import generate_high_growth_stock_lab
 
@@ -401,6 +422,15 @@ def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
     return values
 
 
+def _is_qqq100_action_preview_early_args(argv: list[str]) -> bool:
+    allowed = {
+        "--qqq100-action-preview",
+        "--use-paper-positions-readonly",
+        "--confirm-readonly-alpaca-check",
+    }
+    return "--qqq100-action-preview" in argv and set(argv).issubset(allowed)
+
+
 _early_report_only_route()
 
 from alpaca.trading.client import TradingClient
@@ -542,6 +572,10 @@ from trading_bot.research.qqq100_preview_candidate_readiness_pack import (
 from trading_bot.research.qqq100_preview_signal_pack import (
     generate_qqq100_preview_signal_pack,
     show_qqq100_preview_signal_pack,
+)
+from trading_bot.research.qqq100_action_preview import (
+    generate_qqq100_action_preview,
+    show_qqq100_action_preview,
 )
 from trading_bot.research.high_growth_stock_lab import (
     generate_high_growth_stock_lab,
@@ -4511,6 +4545,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ100 preview signal pack without refreshing data.",
     )
     parser.add_argument(
+        "--qqq100-action-preview",
+        action="store_true",
+        help="Create a saved-signal-only QQQ100 action preview; optional paper positions require explicit read-only confirmation.",
+    )
+    parser.add_argument(
+        "--show-qqq100-action-preview",
+        action="store_true",
+        help="Display the saved QQQ100 action preview without refreshing data or reading positions.",
+    )
+    parser.add_argument(
         "--high-growth-stock-lab",
         action="store_true",
         help="Run a research-only concentrated single-stock growth/momentum lab without execution.",
@@ -4993,7 +5037,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--use-paper-positions-readonly",
         action="store_true",
-        help="With --preview-promoted-actions only, read Alpaca paper positions for preview context without trading.",
+        help="With --preview-promoted-actions or --qqq100-action-preview only, read Alpaca paper positions for preview context without trading.",
     )
     parser.add_argument(
         "--show-promoted-actions",
@@ -5130,8 +5174,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    if args.use_paper_positions_readonly and not args.preview_promoted_actions:
-        print("--use-paper-positions-readonly can only be used with --preview-promoted-actions.", file=sys.stderr)
+    if args.use_paper_positions_readonly and not (args.preview_promoted_actions or args.qqq100_action_preview):
+        print("--use-paper-positions-readonly can only be used with --preview-promoted-actions or --qqq100-action-preview.", file=sys.stderr)
         return 2
     if args.plot_strategy_results:
         return plot_strategy_results()
@@ -5565,6 +5609,23 @@ def main() -> int:
         return 0
     if args.show_qqq100_preview_signal_pack:
         status_code, lines = show_qqq100_preview_signal_pack()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.qqq100_action_preview:
+        try:
+            result = generate_qqq100_action_preview(
+                use_paper_positions_readonly=args.use_paper_positions_readonly,
+                confirm_readonly_alpaca_check=args.confirm_readonly_alpaca_check,
+            )
+        except Exception as exc:
+            print(f"QQQ100 action preview failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_qqq100_action_preview:
+        status_code, lines = show_qqq100_action_preview()
         for line in lines:
             print(line)
         return status_code

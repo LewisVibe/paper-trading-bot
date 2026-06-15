@@ -53,6 +53,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq100-preview-candidate-readiness-pack",
     "--qqq100-preview-signal-pack",
     "--show-qqq100-preview-signal-pack",
+    "--qqq100-action-preview",
+    "--show-qqq100-action-preview",
     "--high-growth-stock-lab",
     "--show-high-growth-stock-lab",
     "--high-growth-stock-universe-expansion-report",

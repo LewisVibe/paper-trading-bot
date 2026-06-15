@@ -155,6 +155,13 @@ The QQQ100 preview signal pack comes from `python bot.py --qqq100-preview-signal
 - It excludes the high-growth branch from preview, keeps `codex_qqq_adaptive_trend_exposure` alternative-only, keeps `qqq_150_trend_gate` rejected, and keeps action preview versus paper positions out of scope.
 - It does not approve execution, does not create order instructions, does not read positions, does not approve scheduling, and does not connect strategies to Alpaca or paper orders.
 
+The QQQ100 action preview shell comes from `python bot.py --qqq100-action-preview`, with saved display through `python bot.py --show-qqq100-action-preview`:
+
+- Default mode reads only `data/qqq100_preview_signal_pack.csv` and writes `data/qqq100_action_preview.csv`, `data/qqq100_action_preview_summary.csv`, and `data/qqq100_action_preview_blockers.csv`.
+- Default mode does not call Alpaca or read positions; it records `position_not_read` and `saved_signal_only`.
+- Optional read-only paper-position context requires both `--use-paper-positions-readonly` and `--confirm-readonly-alpaca-check`; that mode is limited to QQQ paper-position comparison context and must not print secrets or account identifiers.
+- The output uses alignment/manual-review wording only and does not create order instructions, approve paper execution, approve execution, approve scheduling, or connect the strategy to Alpaca or paper orders.
+
 The high-growth stock lab comes from `python bot.py --high-growth-stock-lab`, with saved display through `python bot.py --show-high-growth-stock-lab`:
 
 - It trades only the fixed individual-stock universe `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`.

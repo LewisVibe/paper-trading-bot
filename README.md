@@ -1604,6 +1604,34 @@ data/qqq100_preview_signal_design.csv
 data/qqq100_preview_signal_blockers.csv
 ```
 
+QQQ100 action preview mode is the saved-signal action-preview shell for `qqq_100_trend_gate`. Default mode reads only `data/qqq100_preview_signal_pack.csv`, does not call Alpaca, does not read positions, and records `current_position_status=position_not_read` with `current_position_source=saved_signal_only`. A separate read-only paper-position comparison can be requested only with both `--use-paper-positions-readonly` and `--confirm-readonly-alpaca-check`; that mode may load the existing paper config and read QQQ paper position context only, without printing secrets or account identifiers. The output uses manual-review/alignment language only, never order instructions. It does not approve preview promotion, paper execution, live execution, scheduling, or strategy-to-execution wiring.
+
+Command:
+
+```text
+python bot.py --qqq100-action-preview
+```
+
+Optional read-only position context:
+
+```text
+python bot.py --qqq100-action-preview --use-paper-positions-readonly --confirm-readonly-alpaca-check
+```
+
+Saved display:
+
+```text
+python bot.py --show-qqq100-action-preview
+```
+
+Outputs:
+
+```text
+data/qqq100_action_preview.csv
+data/qqq100_action_preview_summary.csv
+data/qqq100_action_preview_blockers.csv
+```
+
 High-growth stock lab mode tests a fixed high-risk, high-return individual-stock universe only: `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`. SPY and QQQ are allowed only as benchmark/regime references, not as traded holdings. The lab compares fixed monthly concentrated momentum variants, including top 1/top 2/top 3 composite 63/126/252-day momentum with own SMA200 and QQQ/SPY SMA200 regime gates, plus `codex_high_conviction_growth_persistence`, `codex_growth_drawdown_reentry`, `codex_high_growth_breakout_acceleration`, and `codex_high_growth_crash_rebound_leader`. The two Codex high-growth variants are fixed-rule ambitious stock-only candidates: one looks for breakout acceleration near 52-week highs, and one looks for crash-rebound leaders after recovery confirmation. This is research-only and deliberately flags concentration risk, survivorship bias, single-name event risk, stock-specific gap risk, cost/split sensitivity, and drawdown risk. It may use yfinance daily data through the research path, but it does not call Alpaca, load config, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect strategies to Alpaca or paper orders.
 
 Command:
