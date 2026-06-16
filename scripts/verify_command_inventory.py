@@ -69,6 +69,8 @@ REQUIRED_COMMANDS = [
     "--show-multi-sleeve-strategy-monitor",
     "--sleeve-research-scoreboard",
     "--show-sleeve-research-scoreboard",
+    "--codex-qqq-defensive-crash-gate-research-pack",
+    "--show-codex-qqq-defensive-crash-gate-research-pack",
     "--paper-execution-state-summary",
     "--show-paper-execution-state-summary",
     "--execute-qqq100-paper",

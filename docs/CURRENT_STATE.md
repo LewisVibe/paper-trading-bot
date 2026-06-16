@@ -215,6 +215,14 @@ The sleeve research scoreboard comes from `python bot.py --sleeve-research-score
 - Missing metrics are labelled `missing_saved_metrics`; they are not invented.
 - It preserves false execution, follow-up, repeat, scheduling, live, high-growth, crypto, and Codex-experimental execution approval flags.
 
+The Codex QQQ defensive crash-gate research pack comes from `python bot.py --codex-qqq-defensive-crash-gate-research-pack`, with saved display through `python bot.py --show-codex-qqq-defensive-crash-gate-research-pack`:
+
+- It reads saved CSV metrics/context only, including the sleeve scoreboard, QQQ100 signal/action/postcheck/state context, QQQ lead context, portfolio risk, growth/defensive research outputs, and project research state where present.
+- It writes `data/codex_qqq_defensive_crash_gate_research_pack.csv`, `data/codex_qqq_defensive_crash_gate_candidates.csv`, `data/codex_qqq_defensive_crash_gate_rankings.csv`, `data/codex_qqq_defensive_crash_gate_splits.csv`, `data/codex_qqq_defensive_crash_gate_blockers.csv`, and `data/codex_qqq_defensive_crash_gate_next_steps.csv`.
+- It compares `qqq100_trend_gate_reference`, `codex_qqq_cash_crash_gate_sleeve`, `codex_qqq_spy_defensive_gate_sleeve`, `codex_qqq_partial_defensive_sleeve`, `codex_qqq_fast_crash_exit_reentry_sleeve`, and `codex_qqq_calmar_optimised_defensive_gate_sleeve`.
+- It labels missing candidate metrics, split metrics, and defensive ETF data as `missing_saved_metrics`, `missing_saved_split_metrics`, or `missing_saved_data` rather than inventing values.
+- It keeps the Codex experimental sleeve research-only and preserves false execution, Codex-experimental execution, repeat, follow-up, live, and scheduling approval flags.
+
 The paper execution state summary comes from `python bot.py --paper-execution-state-summary`, with saved display through `python bot.py --show-paper-execution-state-summary`:
 
 - It reads saved CSV outputs only, including AAPL smoke-test postcheck, QQQ100 paper execution result/summary or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution eligibility, portfolio preview, and portfolio-risk context where available.

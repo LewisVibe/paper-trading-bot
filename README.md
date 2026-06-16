@@ -1770,6 +1770,26 @@ data/sleeve_research_codex_experimental_sleeve.csv
 
 The expected scoreboard status is `sleeve_research_scoreboard_created`. `qqq100_core_trend_sleeve` remains the best active paper sleeve and the only active paper sleeve. The Codex experimental research sleeve is a research-only adaptive QQQ plus defensive crash-gate hypothesis, currently labelled `codex_qqq_defensive_crash_gate_research_sleeve`; it can score high on ambition but has `codex_experimental_execution_approved=false`. Defensive, high-growth, and crypto sleeves remain research-only, with blockers around validation, allocation policy, drawdown/concentration/split/cost, volatility, overlap, repeat execution, and scheduling.
 
+Codex QQQ defensive crash-gate research pack is a saved-output-only targeted research pack for `codex_qqq_defensive_crash_gate_research_sleeve`. It uses QQQ100 as the reference and compares fixed defensive/crash-gate hypotheses: `qqq100_trend_gate_reference`, `codex_qqq_cash_crash_gate_sleeve`, `codex_qqq_spy_defensive_gate_sleeve`, `codex_qqq_partial_defensive_sleeve`, `codex_qqq_fast_crash_exit_reentry_sleeve`, and `codex_qqq_calmar_optimised_defensive_gate_sleeve`. It reads saved metrics where available and labels missing metrics as `missing_saved_metrics` or `missing_saved_data`; it does not fetch market data, call Alpaca, read live positions, create/submit/cancel/replace orders, write SQLite `trade_log`, send alerts, create schedules, expand QQQ100 execution, add repeat execution, or wire the Codex experimental sleeve to execution.
+
+```text
+python bot.py --codex-qqq-defensive-crash-gate-research-pack
+python bot.py --show-codex-qqq-defensive-crash-gate-research-pack
+```
+
+Outputs:
+
+```text
+data/codex_qqq_defensive_crash_gate_research_pack.csv
+data/codex_qqq_defensive_crash_gate_candidates.csv
+data/codex_qqq_defensive_crash_gate_rankings.csv
+data/codex_qqq_defensive_crash_gate_splits.csv
+data/codex_qqq_defensive_crash_gate_blockers.csv
+data/codex_qqq_defensive_crash_gate_next_steps.csv
+```
+
+The expected status is `codex_qqq_defensive_research_pack_created`. Candidate labels are research prompts only, with blockers for missing saved metrics, split validation, cost/turnover stress, reference underperformance, execution wiring, repeat execution, and scheduling. The recommended next step is `run_saved_or_research_data_backtest_for_codex_qqq_defensive_candidates`.
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:

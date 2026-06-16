@@ -390,6 +390,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--codex-qqq-defensive-crash-gate-research-pack"]:
+        from trading_bot.research.codex_qqq_defensive_crash_gate_research_pack import (
+            generate_codex_qqq_defensive_crash_gate_research_pack,
+        )
+
+        result = generate_codex_qqq_defensive_crash_gate_research_pack()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-codex-qqq-defensive-crash-gate-research-pack"]:
+        from trading_bot.research.codex_qqq_defensive_crash_gate_research_pack import (
+            show_codex_qqq_defensive_crash_gate_research_pack,
+        )
+
+        code, lines = show_codex_qqq_defensive_crash_gate_research_pack()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-execution-state-summary"]:
         from trading_bot.research.paper_execution_state_summary import generate_paper_execution_state_summary
 
@@ -766,6 +784,10 @@ from trading_bot.research.multi_sleeve_strategy_monitor import (
 from trading_bot.research.sleeve_research_scoreboard import (
     generate_sleeve_research_scoreboard,
     show_sleeve_research_scoreboard,
+)
+from trading_bot.research.codex_qqq_defensive_crash_gate_research_pack import (
+    generate_codex_qqq_defensive_crash_gate_research_pack,
+    show_codex_qqq_defensive_crash_gate_research_pack,
 )
 from trading_bot.research.paper_execution_state_summary import (
     generate_paper_execution_state_summary,
@@ -5255,6 +5277,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved sleeve research scoreboard without broker or market-data reads.",
     )
     parser.add_argument(
+        "--codex-qqq-defensive-crash-gate-research-pack",
+        action="store_true",
+        help="Create a saved-output-only Codex QQQ defensive crash-gate research pack.",
+    )
+    parser.add_argument(
+        "--show-codex-qqq-defensive-crash-gate-research-pack",
+        action="store_true",
+        help="Display the saved Codex QQQ defensive crash-gate research pack without broker reads.",
+    )
+    parser.add_argument(
         "--paper-execution-state-summary",
         action="store_true",
         help="Create a saved-output-only paper execution milestone/state summary without broker calls.",
@@ -6466,6 +6498,20 @@ def main() -> int:
         return 0
     if args.show_sleeve_research_scoreboard:
         status_code, lines = show_sleeve_research_scoreboard()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.codex_qqq_defensive_crash_gate_research_pack:
+        try:
+            result = generate_codex_qqq_defensive_crash_gate_research_pack()
+        except Exception as exc:
+            print(f"Codex QQQ defensive crash-gate research pack failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_codex_qqq_defensive_crash_gate_research_pack:
+        status_code, lines = show_codex_qqq_defensive_crash_gate_research_pack()
         for line in lines:
             print(line)
         return status_code
