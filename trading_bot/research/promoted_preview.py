@@ -26,12 +26,23 @@ SUPPORTED_PREVIEW_STRATEGIES = {
     "buy_above_200_exit_below_200",
     "fifty_two_week_high_breakout",
 }
+QQQ100_STRATEGY = "qqq_100_trend_gate"
+QQQ100_TICKER = "QQQ"
+QQQ100_SIGNAL_PATH = Path("data/qqq100_preview_signal_pack.csv")
+HIGH_GROWTH_BRANCH = "codex_broad_growth_balanced_breakout_control"
+QQQ150_REJECTED = "qqq_150_trend_gate"
+BLOCKED_PROMOTED_PREVIEW_STRATEGIES = {
+    QQQ100_STRATEGY,
+    HIGH_GROWTH_BRANCH,
+    QQQ150_REJECTED,
+}
 
 PROMOTED_PREVIEW_COLUMNS = [
     "created_at",
     "strategy_name",
     "strategy_family",
     "ticker",
+    "signal_source",
     "latest_close",
     "signal",
     "desired_position",
@@ -55,8 +66,17 @@ PROMOTED_PREVIEW_COLUMNS = [
     "close_above_sma_200",
     "trend_state",
     "promotion_status",
+    "promotion_label",
     "required_next_step",
+    "preview_candidate",
+    "research_only",
     "preview_only",
+    "execution_approved",
+    "paper_execution_approved",
+    "scheduling_approved",
+    "orders_created",
+    "orders_submitted",
+    "orders_cancelled",
 ]
 
 
@@ -78,6 +98,7 @@ def read_preview_candidates(path: Path) -> list[dict[str, str]]:
             for row in reader
             if row.get("promotion_status") == "preview_candidate"
             and row.get("ticker_or_portfolio") == "portfolio"
+            and row.get("strategy_name") not in BLOCKED_PROMOTED_PREVIEW_STRATEGIES
         ]
 
 
@@ -94,6 +115,7 @@ def unsupported_preview_row(
         "strategy_name": candidate.get("strategy_name", ""),
         "strategy_family": candidate.get("strategy_family", ""),
         "ticker": ticker,
+        "signal_source": "promoted_strategy_preview",
         "latest_close": "",
         "signal": "SKIP",
         "desired_position": "unknown",
@@ -117,8 +139,9 @@ def unsupported_preview_row(
         "close_above_sma_200": "",
         "trend_state": "unknown",
         "promotion_status": candidate.get("promotion_status", ""),
+        "promotion_label": reason,
         "required_next_step": candidate.get("required_next_step", ""),
-        "preview_only": True,
+        **preview_safety_flags(),
     }
 
 
@@ -242,6 +265,7 @@ def preview_strategy_for_ticker(
         "strategy_name": strategy_name,
         "strategy_family": candidate.get("strategy_family", ""),
         "ticker": ticker,
+        "signal_source": "promoted_strategy_preview",
         "latest_close": round(latest_close, 4),
         "signal": signal,
         "desired_position": desired_position,
@@ -265,8 +289,135 @@ def preview_strategy_for_ticker(
         "close_above_sma_200": close_above_sma_200,
         "trend_state": trend_state,
         "promotion_status": candidate.get("promotion_status", ""),
+        "promotion_label": "legacy_promoted_preview_candidate",
         "required_next_step": candidate.get("required_next_step", ""),
+        **preview_safety_flags(),
+    }
+
+
+def append_qqq100_promoted_preview_candidate(
+    rows: list[dict[str, Any]],
+    warnings: list[str],
+    root_dir: Path | str = ".",
+    created_at: str | None = None,
+) -> None:
+    timestamp = created_at or datetime.now(timezone.utc).isoformat()
+    row = build_qqq100_promoted_preview_row(timestamp, Path(root_dir) / QQQ100_SIGNAL_PATH)
+    rows.append(row)
+    if row.get("diagnostic_warning"):
+        warnings.append(str(row["diagnostic_warning"]))
+
+
+def build_qqq100_promoted_preview_row(created_at: str, signal_path: Path) -> dict[str, Any]:
+    signal_rows = read_csv_rows(signal_path)
+    if not signal_rows:
+        return qqq100_missing_signal_row(created_at)
+    signal = signal_rows[0]
+    if signal.get("strategy_name") != QQQ100_STRATEGY or signal.get("ticker") != QQQ100_TICKER:
+        row = qqq100_missing_signal_row(created_at)
+        row["reason"] = "saved QQQ100 preview signal input does not match qqq_100_trend_gate / QQQ."
+        row["diagnostic_warning"] = "invalid_qqq100_preview_signal_input"
+        row["promotion_label"] = "missing_qqq100_preview_signal_input"
+        return row
+    data_status = str(signal.get("data_status", ""))
+    ok = data_status == "ok"
+    desired_position = normalize_desired_position(signal.get("desired_position", ""))
+    if desired_position not in {"long", "flat"}:
+        desired_position = "unknown"
+    return {
+        "created_at": created_at,
+        "strategy_name": QQQ100_STRATEGY,
+        "strategy_family": "qqq_trend_gate",
+        "ticker": QQQ100_TICKER,
+        "signal_source": "qqq100_preview_signal_pack",
+        "latest_close": signal.get("latest_close", ""),
+        "signal": "TARGET_LONG" if desired_position == "long" else ("TARGET_FLAT" if desired_position == "flat" else "SKIP"),
+        "desired_position": desired_position,
+        "reason": signal.get("signal_reason", "") or "Saved QQQ100 preview signal imported for promoted review.",
+        "regime_ticker": "",
+        "regime_latest_close": "",
+        "regime_sma_200": "",
+        "regime_state": "not_applicable_saved_qqq100_signal",
+        "close_sma_200": "",
+        "distance_to_sma_200_pct": "",
+        "trailing_252_high": "",
+        "distance_to_252_high_pct": "",
+        "volume": "",
+        "volume_20_day_avg": "",
+        "volume_confirmation": "",
+        "diagnostic_warning": "" if ok else f"qqq100_preview_signal_data_status={data_status or 'missing'}",
+        "sma_50": "",
+        "sma_200": "",
+        "sma_50_vs_200_state": "",
+        "distance_sma_50_to_sma_200_pct": "",
+        "close_above_sma_200": "",
+        "trend_state": signal.get("trend_state", ""),
+        "promotion_status": "preview_candidate" if ok else "blocked_missing_or_invalid_signal",
+        "promotion_label": (
+            "qqq100_clean_lead_promoted_to_preview_review"
+            if ok
+            else "missing_qqq100_preview_signal_input"
+        ),
+        "required_next_step": (
+            "Continue promoted preview review only; do not create execution wiring."
+            if ok
+            else "Run python bot.py --qqq100-preview-signal-pack before promoted preview review."
+        ),
+        **preview_safety_flags(),
+    }
+
+
+def qqq100_missing_signal_row(created_at: str) -> dict[str, Any]:
+    return {
+        "created_at": created_at,
+        "strategy_name": QQQ100_STRATEGY,
+        "strategy_family": "qqq_trend_gate",
+        "ticker": QQQ100_TICKER,
+        "signal_source": "qqq100_preview_signal_pack",
+        "latest_close": "",
+        "signal": "SKIP",
+        "desired_position": "unknown",
+        "reason": "Missing saved QQQ100 preview signal input.",
+        "regime_ticker": "",
+        "regime_latest_close": "",
+        "regime_sma_200": "",
+        "regime_state": "not_applicable_saved_qqq100_signal",
+        "close_sma_200": "",
+        "distance_to_sma_200_pct": "",
+        "trailing_252_high": "",
+        "distance_to_252_high_pct": "",
+        "volume": "",
+        "volume_20_day_avg": "",
+        "volume_confirmation": "",
+        "diagnostic_warning": "missing_qqq100_preview_signal_input",
+        "sma_50": "",
+        "sma_200": "",
+        "sma_50_vs_200_state": "",
+        "distance_sma_50_to_sma_200_pct": "",
+        "close_above_sma_200": "",
+        "trend_state": "unknown",
+        "promotion_status": "blocked_missing_signal_input",
+        "promotion_label": "missing_qqq100_preview_signal_input",
+        "required_next_step": "Run python bot.py --qqq100-preview-signal-pack before promoted preview review.",
+        **preview_safety_flags(),
+    }
+
+
+def normalize_desired_position(value: Any) -> str:
+    return str(value or "").strip().lower()
+
+
+def preview_safety_flags() -> dict[str, bool]:
+    return {
+        "preview_candidate": True,
+        "research_only": True,
         "preview_only": True,
+        "execution_approved": False,
+        "paper_execution_approved": False,
+        "scheduling_approved": False,
+        "orders_created": False,
+        "orders_submitted": False,
+        "orders_cancelled": False,
     }
 
 
@@ -329,4 +480,20 @@ def build_promoted_preview_summary(rows: list[dict[str, Any]], warnings: list[st
         f"Strategies previewed: {', '.join(strategies) if strategies else 'none'}",
         f"Tickers previewed: {len(tickers)}",
         f"Warnings: {len(warnings)}",
+        "QQQ100 promoted preview candidate is sourced from saved qqq100_preview_signal_pack only.",
     ]
+
+
+def read_csv_rows(path: Path) -> list[dict[str, str]]:
+    try:
+        with path.open(newline="", encoding="utf-8") as file:
+            reader = csv.DictReader(file)
+            if reader.fieldnames is None:
+                return []
+            return [
+                row
+                for row in reader
+                if any((value or "").strip() for value in row.values())
+            ]
+    except FileNotFoundError:
+        return []

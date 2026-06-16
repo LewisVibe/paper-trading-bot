@@ -711,6 +711,7 @@ from trading_bot.research.promoted_actions import (
     write_promoted_action_preview,
 )
 from trading_bot.research.promoted_preview import (
+    append_qqq100_promoted_preview_candidate,
     build_promoted_preview_rows,
     build_promoted_preview_summary,
     read_preview_candidates,
@@ -3080,8 +3081,17 @@ def run_promoted_strategy_preview(config: AppConfig, logger: logging.Logger) -> 
 
     candidates = read_preview_candidates(promotion_path)
     if not candidates:
-        print("No preview_candidate portfolio rows found.")
-        write_promoted_preview(Path("data") / "promoted_strategy_preview.csv", [])
+        print("No legacy preview_candidate portfolio rows found.")
+        rows: list[dict[str, Any]] = []
+        warnings: list[str] = []
+        append_qqq100_promoted_preview_candidate(rows, warnings)
+        output_path = Path("data") / "promoted_strategy_preview.csv"
+        write_promoted_preview(output_path, rows)
+        for warning in warnings:
+            print(f"Warning: {warning}")
+        for line in build_promoted_preview_summary(rows, warnings):
+            print(line)
+        print(f"Saved promoted strategy preview to {output_path}")
         return 0
 
     tickers = get_strategy_comparison_tickers(config, force_research_universe=False)
@@ -3123,6 +3133,7 @@ def run_promoted_strategy_preview(config: AppConfig, logger: logging.Logger) -> 
             )
     if not data_by_ticker:
         warnings.append("No market data available for promoted strategy preview.")
+    append_qqq100_promoted_preview_candidate(rows, warnings)
 
     output_path = Path("data") / "promoted_strategy_preview.csv"
     write_promoted_preview(output_path, rows)

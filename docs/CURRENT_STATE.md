@@ -259,6 +259,8 @@ Current promoted interpretation:
 - `execution_approved=False` for all rows.
 - AAPL and SPY remain blocked by strategy disagreement.
 - MSFT remains no-action/unanimous flat.
+- `qqq_100_trend_gate` / QQQ is now included as a promoted preview-review candidate from the saved `qqq100_preview_signal_pack` output only; if the saved signal is missing, the promoted row is blocked as missing input.
+- The high-growth branch `codex_broad_growth_balanced_breakout_control` remains research-only and is not promoted; `qqq_150_trend_gate` remains rejected/not promoted.
 - All promoted strategy outputs remain preview-only or research-only.
 
 `--refresh-promoted-review` writes `data/promoted_review_refresh_summary.csv` and runs the promoted review chain in order. It remains preview/report/display only and is protected by the monitor lockfile helper to prevent overlapping refresh runs. The lock does not connect promoted candidates to execution, approve scheduling, or approve execution.

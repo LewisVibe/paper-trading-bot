@@ -2302,7 +2302,7 @@ Output:
 data/crypto_research_state_report.csv
 ```
 
-Promoted strategy preview mode reads `data/strategy_promotion_report.csv`, previews current desired states for supported `preview_candidate` strategies, and writes `data/promoted_strategy_preview.csv`. It includes SPY regime, 50/200 SMA, 200-day threshold, 252-day high, and volume diagnostics where available. The `sma_50_200_trend` preview uses 50-day SMA versus 200-day SMA, while `buy_above_200_exit_below_200` uses close versus 200-day SMA. It does not call Alpaca, read paper positions, write to SQLite `trade_log`, send Discord alerts, or approve execution.
+Promoted strategy preview mode reads `data/strategy_promotion_report.csv`, previews current desired states for supported `preview_candidate` strategies, and writes `data/promoted_strategy_preview.csv`. It includes SPY regime, 50/200 SMA, 200-day threshold, 252-day high, and volume diagnostics where available. The `sma_50_200_trend` preview uses 50-day SMA versus 200-day SMA, while `buy_above_200_exit_below_200` uses close versus 200-day SMA. The clean QQQ lead `qqq_100_trend_gate` is also added as a promoted preview-review candidate from the saved `data/qqq100_preview_signal_pack.csv` output only; if that saved signal is missing, the QQQ100 row is blocked as missing input rather than refreshing data. `codex_broad_growth_balanced_breakout_control` remains high-growth research-only and is not promoted, and `qqq_150_trend_gate` remains rejected/not promoted. It does not call Alpaca, read paper positions, write to SQLite `trade_log`, send Discord alerts, or approve execution.
 
 Output:
 
