@@ -2155,6 +2155,15 @@ python bot.py --alpaca-paper-readiness-report
 
 This writes `data/alpaca_paper_readiness_report.csv`. Default mode is static and does not call Alpaca, read positions, submit/cancel/replace/create orders, write SQLite `trade_log`, send alerts, print config contents, or approve execution. A separate explicit read-only connectivity mode exists behind `--confirm-readonly-alpaca-check`; it may load local paper config and call only a read-only account/status endpoint, with identifiers and credentials redacted. Do not run the confirmed read-only mode until the static report has been reviewed.
 
+To diagnose VPS network reachability to Alpaca API hosts without credentials or authenticated API calls, run:
+
+```text
+python bot.py --alpaca-connectivity-diagnostics
+python bot.py --show-alpaca-connectivity-diagnostics
+```
+
+This writes `data/alpaca_connectivity_diagnostics.csv`, `data/alpaca_connectivity_diagnostics_summary.csv`, and `data/alpaca_connectivity_diagnostics_blockers.csv`. It performs DNS and raw TCP 443 checks only for `paper-api.alpaca.markets`, `api.alpaca.markets`, `alpaca.markets`, `github.com`, `google.com`, and `pypi.org`. It is intended for cases where the VPS cannot reach Alpaca API hosts while a laptop and normal HTTPS control sites work. It does not load config, use or print keys, call authenticated Alpaca endpoints, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, or approve execution.
+
 To review whether one tiny manually confirmed paper-order smoke test can even be discussed, run:
 
 ```text

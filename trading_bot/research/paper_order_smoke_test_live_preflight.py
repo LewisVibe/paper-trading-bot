@@ -8,6 +8,7 @@ submits, cancels, replaces, or previews executable orders.
 from __future__ import annotations
 
 import csv
+import socket
 from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -234,6 +235,7 @@ def build_confirmed_readonly_rows(root: Path, created_at: str, inputs: dict[str,
         open_orders = list(client.get_orders(filter=request))
         rows.append(open_orders_row(created_at, inputs, len(open_orders), "open" if bool(getattr(clock, "is_open", False)) else "closed"))
     except Exception as exc:  # noqa: BLE001 - report-only failure capture
+        error_type = classify_readonly_alpaca_exception(exc)
         rows.append(
             preflight_row(
                 created_at,
@@ -245,7 +247,11 @@ def build_confirmed_readonly_rows(root: Path, created_at: str, inputs: dict[str,
                 inputs["quantity"],
                 "unknown",
                 "Alpaca read-only endpoints",
-                f"Read-only check failed safely: {type(exc).__name__}. Sensitive values were not printed.",
+                (
+                    "Read-only check failed safely: "
+                    f"error_type={error_type}; exception_type={type(exc).__name__}. "
+                    "Sensitive values were not printed."
+                ),
                 False,
                 "manual_review_readonly_failure_before_any_smoke_test",
                 True,
@@ -473,6 +479,22 @@ def open_orders_row(created_at: str, inputs: dict[str, str], count: int, market_
         True,
         MANUAL_REVIEW_LABEL,
     )
+
+
+def classify_readonly_alpaca_exception(exc: BaseException) -> str:
+    name = type(exc).__name__.lower()
+    text = str(exc).lower()
+    if "timeout" in name or "timeout" in text:
+        return "connection_timeout"
+    if isinstance(exc, socket.gaierror) or "name resolution" in text or "getaddrinfo" in text:
+        return "dns_resolution_failed"
+    if "connecterror" in name or "connectionerror" in name or "connection refused" in text:
+        return "tcp_connect_failed"
+    if "unauthorized" in text or "forbidden" in text or "401" in text or "403" in text:
+        return "auth_or_api_rejected"
+    if "api" in name or "pydantic" in name or "validation" in name:
+        return "api_or_response_parsing_failed"
+    return "readonly_alpaca_check_failed"
 
 
 def preflight_row(

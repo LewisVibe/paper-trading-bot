@@ -81,6 +81,10 @@ Expected caveat:
 
 - Network-backed yfinance or Discord checks may fail if the VPS firewall,
   network, DNS, or webhook configuration blocks them.
+- If Alpaca API hosts time out while normal HTTPS sites work, run
+  `python bot.py --alpaca-connectivity-diagnostics` for DNS/TCP 443 diagnostics
+  only. This does not use credentials, call authenticated Alpaca APIs, read
+  positions, create orders, or approve execution.
 - No-network verifiers are still useful for code safety and repository hygiene.
 - Treat any new failure, traceback, or warning as something to investigate
   before scheduling or relying on the VPS.
@@ -386,6 +390,11 @@ checks pass should safe report, preview, or display commands be run manually.
   `python -m pip install -r requirements.txt`.
 - Alpaca credential issue: confirm `config.json` exists locally and contains
   paper credentials only. Do not print or paste the values.
+- Alpaca API TCP timeout from the VPS: compare
+  `paper-api.alpaca.markets:443` and `api.alpaca.markets:443` against general
+  HTTPS controls using `--alpaca-connectivity-diagnostics`; if a laptop can
+  reach Alpaca but the VPS cannot, review VPS firewall/provider routing/DNS
+  before any paper smoke-test discussion.
 - yfinance or network issue: check VPS firewall, DNS, outbound HTTPS access, and
   whether the data provider is temporarily unavailable.
 - Discord webhook issue: confirm webhook presence locally if alerts are needed,

@@ -46,6 +46,20 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    if sys.argv[1:] == ["--alpaca-connectivity-diagnostics"]:
+        from trading_bot.research.alpaca_connectivity_diagnostics import generate_alpaca_connectivity_diagnostics
+
+        result = generate_alpaca_connectivity_diagnostics()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-alpaca-connectivity-diagnostics"]:
+        from trading_bot.research.alpaca_connectivity_diagnostics import show_alpaca_connectivity_diagnostics
+
+        status_code, lines = show_alpaca_connectivity_diagnostics()
+        for line in lines:
+            print(line)
+        raise SystemExit(status_code)
     if sys.argv[1:] == ["--paper-order-smoke-test-readiness-pack"]:
         from trading_bot.research.paper_order_smoke_test_readiness import (
             generate_paper_order_smoke_test_readiness_pack,
@@ -663,6 +677,10 @@ from trading_bot.research.stock_etf_paper_execution_readiness import (
     generate_stock_etf_paper_execution_readiness_report,
 )
 from trading_bot.research.alpaca_paper_readiness import generate_alpaca_paper_readiness_report
+from trading_bot.research.alpaca_connectivity_diagnostics import (
+    generate_alpaca_connectivity_diagnostics,
+    show_alpaca_connectivity_diagnostics,
+)
 from trading_bot.research.paper_order_smoke_test_readiness import (
     generate_paper_order_smoke_test_readiness_pack,
 )
@@ -5120,6 +5138,16 @@ def parse_args() -> argparse.Namespace:
         help="Create an Alpaca paper readiness/preflight report without approving execution.",
     )
     parser.add_argument(
+        "--alpaca-connectivity-diagnostics",
+        action="store_true",
+        help="Create unauthenticated DNS/TCP 443 diagnostics for Alpaca API and general HTTPS endpoints.",
+    )
+    parser.add_argument(
+        "--show-alpaca-connectivity-diagnostics",
+        action="store_true",
+        help="Display the saved Alpaca connectivity diagnostics summary without refreshing checks.",
+    )
+    parser.add_argument(
         "--confirm-readonly-alpaca-check",
         action="store_true",
         help="With --alpaca-paper-readiness-report only, explicitly allow a read-only Alpaca paper account/status check.",
@@ -6047,6 +6075,20 @@ def main() -> int:
         for line in result.summary_lines:
             print(line)
         return 0
+    if args.alpaca_connectivity_diagnostics:
+        try:
+            result = generate_alpaca_connectivity_diagnostics()
+        except Exception as exc:
+            print(f"Alpaca connectivity diagnostics failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_alpaca_connectivity_diagnostics:
+        status_code, lines = show_alpaca_connectivity_diagnostics()
+        for line in lines:
+            print(line)
+        return status_code
     if args.paper_order_smoke_test_readiness_pack:
         try:
             result = generate_paper_order_smoke_test_readiness_pack()

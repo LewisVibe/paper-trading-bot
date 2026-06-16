@@ -126,6 +126,8 @@ REQUIRED_COMMANDS = [
     "--project-research-state-quality-report",
     "--stock-etf-paper-execution-readiness-report",
     "--alpaca-paper-readiness-report",
+    "--alpaca-connectivity-diagnostics",
+    "--show-alpaca-connectivity-diagnostics",
     "--confirm-readonly-alpaca-check",
     "--paper-order-smoke-test-readiness-pack",
     "--paper-order-smoke-test-live-preflight",
