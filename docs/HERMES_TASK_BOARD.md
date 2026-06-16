@@ -11,6 +11,26 @@ Cross-references:
 
 ## 1. Safe now
 
+### Task: QQQ100 repeat/alignment workflow design review
+- **Purpose:** Review the saved-output-only QQQ100 repeat/alignment design before any future repeat execution command change.
+- **Risk level:** Medium / report-only design, because it is adjacent to a manual paper execution path.
+- **Allowed files:**
+  - `trading_bot/research/qqq100_repeat_alignment_workflow_design.py`
+  - `scripts/verify_qqq100_repeat_alignment_workflow_design.py`
+  - `README.md`
+  - `docs/CURRENT_STATE.md`
+  - `docs/V2_RESEARCH_CHECKPOINT.md`
+  - `docs/HERMES_TASK_BOARD.md`
+- **Forbidden files:**
+  - `config.json`
+  - `.env`
+  - generated `data/` outputs
+  - logs/databases/charts
+  - Alpaca/order submission modules unless a separate explicit execution review allows it
+  - scheduling, Hermes cron, Task Scheduler, service, or loop files
+- **Allowed commands:** `python scripts\verify_qqq100_repeat_alignment_workflow_design.py` and repo safety/inventory verifiers only.
+- **Stop condition:** Stop if the task starts adding a repeat execution command, expanding `--execute-qqq100-paper`, reading broker state, calling Alpaca, changing config defaults, approving scheduling, or approving follow-up/repeat orders.
+
 ### Task: Documentation safety alignment review
 - **Purpose:** Compare the workflow and safety docs explicitly named by the user for inconsistent safety wording. Common candidates are `HERMES_WORKFLOW.md`, `HERMES_TASK_BOARD.md`, `CODEX_WORKFLOW.md`, `CURRENT_STATE.md`, VPS checklist docs, and refactor inventory docs.
 - **Risk level:** Low / docs-only.

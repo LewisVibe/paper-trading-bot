@@ -187,6 +187,15 @@ The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-pap
 
 The QQQ100 paper postcheck comes from `python bot.py --qqq100-paper-postcheck --confirm-readonly-alpaca-check`, with saved display through `python bot.py --show-qqq100-paper-postcheck`. It is read-only: it checks recent QQQ buy 1 paper order history and current QQQ paper position only after explicit read-only confirmation, writes `data/qqq100_paper_postcheck.csv`, `data/qqq100_paper_postcheck_summary.csv`, and `data/qqq100_paper_postcheck_blockers.csv`, and approves no follow-up, repeat, scheduling, or general execution.
 
+The QQQ100 repeat/alignment workflow design comes from `python bot.py --qqq100-repeat-alignment-workflow-design`, with saved display through `python bot.py --show-qqq100-repeat-alignment-workflow-design`:
+
+- It reads saved CSV context only, including QQQ100 signal/action preview, QQQ100 paper postcheck, paper execution state summary, readiness, portfolio preview/risk, and connectivity diagnostics where present.
+- It writes `data/qqq100_repeat_alignment_workflow_design.csv`, `data/qqq100_repeat_alignment_workflow_states.csv`, `data/qqq100_repeat_alignment_workflow_blockers.csv`, and `data/qqq100_repeat_alignment_workflow_checklist.csv`.
+- It is QQQ only and `qqq_100_trend_gate` only, with a planned maximum of one QQQ paper share for the current manual workflow.
+- It records future design states such as `possible_manual_open_long_candidate`, `aligned_long_no_action`, `aligned_flat_no_action`, `possible_manual_flatten_review`, `block_due_to_open_order`, and `block_due_to_recent_order_cooldown`.
+- It explicitly blocks duplicate buys when already long one share, scaling above one share, automatic flattening, high-growth/crypto linkage, scheduling, and repeat execution approval.
+- It does not call Alpaca, read live positions, refresh market data, create orders, write SQLite `trade_log`, send alerts, schedule anything, or approve follow-up/repeat/general execution.
+
 The paper execution state summary comes from `python bot.py --paper-execution-state-summary`, with saved display through `python bot.py --show-paper-execution-state-summary`:
 
 - It reads saved CSV outputs only, including AAPL smoke-test postcheck, QQQ100 paper execution result/summary or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution eligibility, portfolio preview, and portfolio-risk context where available.

@@ -63,6 +63,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq100-paper-execution-readiness-report",
     "--qqq100-paper-postcheck",
     "--show-qqq100-paper-postcheck",
+    "--qqq100-repeat-alignment-workflow-design",
+    "--show-qqq100-repeat-alignment-workflow-design",
     "--paper-execution-state-summary",
     "--show-paper-execution-state-summary",
     "--execute-qqq100-paper",

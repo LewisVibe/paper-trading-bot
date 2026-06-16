@@ -1713,6 +1713,24 @@ data/qqq100_paper_postcheck_summary.csv
 data/qqq100_paper_postcheck_blockers.csv
 ```
 
+QQQ100 repeat/alignment workflow design is a saved-output-only design report for a future manual repeat/alignment review. It reads saved CSV context such as the QQQ100 preview signal, action preview, paper postcheck, paper execution state summary, readiness, portfolio preview/risk, and connectivity diagnostics where available. It does not call Alpaca, read positions, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord/Telegram alerts, change config defaults, create schedules, or approve repeat execution. The design is QQQ only, `qqq_100_trend_gate` only, max one paper share, no duplicate buy when already long one share, no scaling above one share, no shorting, no leverage, and no high-growth/crypto linkage.
+
+```text
+python bot.py --qqq100-repeat-alignment-workflow-design
+python bot.py --show-qqq100-repeat-alignment-workflow-design
+```
+
+Outputs:
+
+```text
+data/qqq100_repeat_alignment_workflow_design.csv
+data/qqq100_repeat_alignment_workflow_states.csv
+data/qqq100_repeat_alignment_workflow_blockers.csv
+data/qqq100_repeat_alignment_workflow_checklist.csv
+```
+
+The expected design status is `qqq100_repeat_alignment_design_created`. Allowed future states are limited to manual-review/no-action design labels such as `possible_manual_open_long_candidate`, `aligned_long_no_action`, and `aligned_flat_no_action`; blocked states include over-allocation, missing/stale desired position, open QQQ orders, recent-order cooldown, closed/unknown market status, and broker read failure. `followup_order_approved=false`, `repeat_execution_approved=false`, `execution_approved=false`, and `scheduling_approved=false` remain hard boundaries.
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:
