@@ -28,6 +28,7 @@ def main() -> int:
     failures: list[str] = []
     verify_shared_helper_cases(failures)
     verify_postcheck_uses_shared_helper(failures)
+    verify_order_history_request_design(failures)
     verify_source_boundaries(failures)
 
     if failures:
@@ -55,6 +56,8 @@ def verify_shared_helper_cases(failures: list[str]) -> None:
         failures.append("filled broker order inside lookback should be a duplicate")
     if helper.recent_order_match_status != "filled" or helper.recent_order_match_count != 1:
         failures.append("filled broker order diagnostics should include status and count")
+    if helper.recent_order_match_time_field_used != "submitted_at":
+        failures.append("submitted_at fixture should report submitted_at as match time field")
     if helper.recent_order_match_lookback_minutes != RECENT_ORDER_LOOKBACK_MINUTES:
         failures.append("helper should expose the shared lookback window")
 
@@ -77,6 +80,27 @@ def verify_shared_helper_cases(failures: list[str]) -> None:
     if evaluate_recent_manual_smoke_test_order_match([missing_time], ticker="AAPL", side="buy", quantity=Decimal("1"), now=now).duplicate_recent_order_check != "blocked_duplicate_order_history_uncertain":
         failures.append("matching broker order with no timestamp should block/manual-review as uncertain")
 
+    filled_at_order = SimpleNamespace(
+        symbol="AAPL",
+        side=enum_value("buy"),
+        qty="1",
+        status=enum_value("filled"),
+        filled_at=now - timedelta(minutes=3),
+    )
+    filled_at_result = evaluate_recent_manual_smoke_test_order_match(
+        [filled_at_order],
+        ticker="AAPL",
+        side="buy",
+        quantity=Decimal("1"),
+        now=now,
+    )
+    if filled_at_result.duplicate_recent_order_check != "blocked_recent_matching_order_exists":
+        failures.append("filled_at closed broker order fixture should be detected")
+    if filled_at_result.recent_order_match_status != "filled":
+        failures.append("enum-like filled status should normalize to filled")
+    if filled_at_result.recent_order_match_time_field_used != "filled_at":
+        failures.append("filled_at should be preferred as match time field for filled orders")
+
 
 def verify_postcheck_uses_shared_helper(failures: list[str]) -> None:
     now = datetime.now(timezone.utc)
@@ -86,6 +110,8 @@ def verify_postcheck_uses_shared_helper(failures: list[str]) -> None:
         failures.append("postcheck should report filled matching broker order with filled label")
     if str(filled["recent_order_match_found"]).lower() != "true":
         failures.append("postcheck filled row should expose recent_order_match_found=true")
+    if filled["broker_order_history_matching_candidate_count"] != 1:
+        failures.append("postcheck filled row should expose matching candidate count")
 
     submitted = recent_orders_row("2026-06-16T10:00:00+00:00", inputs, [order("AAPL", "buy", "1", "new", now)])
     if submitted["check_status"] != OPEN_LABEL:
@@ -137,8 +163,37 @@ def verify_source_boundaries(failures: list[str]) -> None:
                 failures.append(f"{source_name} source must not touch execution/alert/scheduling path: {forbidden}")
 
 
+def verify_order_history_request_design(failures: list[str]) -> None:
+    postcheck_source = read_text(ROOT / "trading_bot" / "research" / "paper_order_smoke_test_postcheck.py")
+    bot_source = read_text(ROOT / "bot.py")
+    for source_name, source in [("postcheck", postcheck_source), ("gate", bot_source)]:
+        for token in [
+            "QueryOrderStatus.CLOSED",
+            "RECENT_ORDER_LOOKBACK_MINUTES",
+            "after",
+            "Sort.DESC",
+            "limit",
+            "500",
+        ]:
+            if token not in source:
+                failures.append(f"{source_name} broker order history request missing {token}")
+    for token in [
+        "broker_order_history_status_filter_used",
+        "broker_order_history_rows_seen",
+        "broker_order_history_symbol_rows_seen",
+        "broker_order_history_matching_candidate_count",
+        "recent_order_match_time_field_used",
+    ]:
+        if token not in postcheck_source:
+            failures.append(f"postcheck diagnostics missing {token}")
+
+
 def order(symbol: str, side: str, qty: str, status: str, submitted_at: datetime) -> SimpleNamespace:
     return SimpleNamespace(symbol=symbol, side=side, qty=qty, status=status, submitted_at=submitted_at)
+
+
+def enum_value(value: str) -> SimpleNamespace:
+    return SimpleNamespace(value=value)
 
 
 def read_text(path: Path) -> str:

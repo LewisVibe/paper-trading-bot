@@ -183,6 +183,7 @@ class ManualSmokeTestRecentOrderMatch:
     recent_order_match_source: str
     recent_order_match_count: int
     recent_order_match_lookback_minutes: int
+    recent_order_match_time_field_used: str
 
 
 def read_saved_smoke_test_preflight_context(
@@ -354,16 +355,16 @@ def evaluate_recent_manual_smoke_test_order_match(
     normalized_ticker = str(ticker or "").strip().upper()
     normalized_side = str(side or "").strip().lower()
     now_utc = normalize_datetime(now) or datetime.now(timezone.utc)
-    matches: list[tuple[Any, str, datetime | None, str]] = []
+    matches: list[tuple[Any, str, datetime | None, str, str]] = []
     missing_time_match = False
     for order in orders:
-        if str(getattr(order, "symbol", "")).strip().upper() != normalized_ticker:
+        if normalize_order_field(getattr(order, "symbol", "")).upper() != normalized_ticker:
             continue
-        if str(getattr(order, "side", "")).strip().lower() != normalized_side:
+        if normalize_order_field(getattr(order, "side", "")).lower() != normalized_side:
             continue
         if decimal_from_order_value(getattr(order, "qty", "")) != quantity:
             continue
-        timestamp = order_timestamp(order)
+        timestamp, time_field = order_timestamp(order)
         if timestamp is None:
             missing_time_match = True
             continue
@@ -372,7 +373,7 @@ def evaluate_recent_manual_smoke_test_order_match(
             age_minutes = 0
         if age_minutes <= lookback_minutes:
             status = normalize_status(getattr(order, "status", ""))
-            matches.append((order, status, timestamp, f"{age_minutes:.1f}"))
+            matches.append((order, status, timestamp, f"{age_minutes:.1f}", time_field))
 
     if missing_time_match:
         return ManualSmokeTestRecentOrderMatch(
@@ -386,9 +387,10 @@ def evaluate_recent_manual_smoke_test_order_match(
             recent_order_match_source="alpaca_paper_recent_orders",
             recent_order_match_count=len(matches),
             recent_order_match_lookback_minutes=lookback_minutes,
+            recent_order_match_time_field_used="missing",
         )
 
-    for _order, status, timestamp, age_minutes in matches:
+    for _order, status, timestamp, age_minutes, time_field in matches:
         if status in BROKER_CONFIRMED_RECENT_ORDER_STATUSES:
             return ManualSmokeTestRecentOrderMatch(
                 duplicate_recent_order_check="blocked_recent_matching_order_exists",
@@ -401,6 +403,7 @@ def evaluate_recent_manual_smoke_test_order_match(
                 recent_order_match_source="alpaca_paper_recent_orders",
                 recent_order_match_count=len(matches),
                 recent_order_match_lookback_minutes=lookback_minutes,
+                recent_order_match_time_field_used=time_field,
             )
         if status not in NON_BLOCKING_RECENT_ORDER_STATUSES:
             return ManualSmokeTestRecentOrderMatch(
@@ -414,6 +417,7 @@ def evaluate_recent_manual_smoke_test_order_match(
                 recent_order_match_source="alpaca_paper_recent_orders",
                 recent_order_match_count=len(matches),
                 recent_order_match_lookback_minutes=lookback_minutes,
+                recent_order_match_time_field_used=time_field,
             )
 
     return ManualSmokeTestRecentOrderMatch(
@@ -427,6 +431,7 @@ def evaluate_recent_manual_smoke_test_order_match(
         recent_order_match_source="alpaca_paper_recent_orders",
         recent_order_match_count=0,
         recent_order_match_lookback_minutes=lookback_minutes,
+        recent_order_match_time_field_used="none",
     )
 
 
@@ -589,12 +594,12 @@ def decimal_from_order_value(value: Any) -> Decimal | None:
         return None
 
 
-def order_timestamp(order: Any) -> datetime | None:
-    for name in ["submitted_at", "created_at", "updated_at"]:
+def order_timestamp(order: Any) -> tuple[datetime | None, str]:
+    for name in ["filled_at", "submitted_at", "created_at", "updated_at"]:
         timestamp = normalize_datetime(getattr(order, name, None))
         if timestamp is not None:
-            return timestamp
-    return None
+            return timestamp, name
+    return None, ""
 
 
 def normalize_datetime(value: Any) -> datetime | None:
@@ -620,7 +625,13 @@ def safe_iso_timestamp(value: datetime | None) -> str:
 
 
 def normalize_status(value: Any) -> str:
-    return str(value or "").strip().lower()
+    return normalize_order_field(value).lower()
+
+
+def normalize_order_field(value: Any) -> str:
+    if hasattr(value, "value"):
+        return str(getattr(value, "value") or "").strip()
+    return str(value or "").strip()
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:

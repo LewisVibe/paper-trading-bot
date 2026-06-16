@@ -156,9 +156,12 @@ def verify_order_path_boundaries(bot_source: str, failures: list[str]) -> None:
         failures.append("could not locate status-aware duplicate-order check")
         return
     for token in [
-        "QueryOrderStatus.ALL",
+        "QueryOrderStatus.CLOSED",
         "client.get_orders",
         "evaluate_recent_manual_smoke_test_order_match(",
+        "RECENT_ORDER_LOOKBACK_MINUTES",
+        "Sort.DESC",
+        "limit=500",
         "blocked_duplicate_order_history_uncertain",
         "duplicate_recent_order_source",
         "duplicate_recent_order_status_if_any",

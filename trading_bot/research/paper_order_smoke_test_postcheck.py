@@ -9,13 +9,15 @@ from __future__ import annotations
 
 import csv
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 
 from trading_bot.safety.manual_paper_smoke_test_gate import (
+    RECENT_ORDER_LOOKBACK_MINUTES,
     evaluate_recent_manual_smoke_test_order_match,
+    normalize_order_field,
 )
 
 
@@ -47,6 +49,12 @@ REPORT_COLUMNS = [
     "recent_order_match_source",
     "recent_order_match_count",
     "recent_order_match_lookback_minutes",
+    "recent_order_match_time_field_used",
+    "broker_order_history_status_filter_used",
+    "broker_order_history_limit",
+    "broker_order_history_rows_seen",
+    "broker_order_history_symbol_rows_seen",
+    "broker_order_history_matching_candidate_count",
     "open_order_summary",
     "position_summary",
     "blocker",
@@ -169,16 +177,38 @@ def build_confirmed_readonly_rows(root: Path, created_at: str, inputs: dict[str,
 
     try:
         from alpaca.trading.client import TradingClient
-        from alpaca.trading.enums import QueryOrderStatus
+        from alpaca.common.enums import Sort
+        from alpaca.trading.enums import OrderSide, QueryOrderStatus
         from alpaca.trading.requests import GetOrdersRequest
 
         client = TradingClient(getattr(config, "alpaca_api_key"), getattr(config, "alpaca_secret_key"), paper=True)
         rows.append(postcheck_row(created_at, "readonly_trading_client_created", "pass", "info", inputs, "Alpaca TradingClient paper mode", "TradingClient created with paper=True. Sensitive identifiers were not printed.", "", "", "", False, "continue_readonly_postcheck", True, MANUAL_REVIEW_LABEL))
         account = client.get_account()
         rows.append(account_status_row(created_at, inputs, account))
-        request = GetOrdersRequest(status=QueryOrderStatus.ALL, symbols=[inputs["ticker"]], limit=50)
-        recent_orders = list(client.get_orders(filter=request))
-        rows.append(recent_orders_row(created_at, inputs, recent_orders))
+        after = datetime.now(timezone.utc) - timedelta(minutes=RECENT_ORDER_LOOKBACK_MINUTES)
+        limit = 500
+        common_request_args = {
+            "symbols": [inputs["ticker"]],
+            "side": OrderSide.BUY if inputs["side"] == "buy" else OrderSide.SELL,
+            "limit": limit,
+            "after": after,
+            "direction": Sort.DESC,
+        }
+        closed_request = GetOrdersRequest(status=QueryOrderStatus.CLOSED, **common_request_args)
+        closed_orders = list(client.get_orders(filter=closed_request))
+        all_request = GetOrdersRequest(status=QueryOrderStatus.ALL, **common_request_args)
+        all_orders = list(client.get_orders(filter=all_request))
+        recent_orders = merge_order_history(closed_orders, all_orders)
+        rows.append(
+            recent_orders_row(
+                created_at,
+                inputs,
+                recent_orders,
+                status_filter_used="closed,all",
+                history_limit=limit,
+                rows_seen=len(recent_orders),
+            )
+        )
         open_request = GetOrdersRequest(status=QueryOrderStatus.OPEN, symbols=[inputs["ticker"]], limit=50)
         open_orders = list(client.get_orders(filter=open_request))
         rows.append(open_orders_row(created_at, inputs, open_orders))
@@ -337,7 +367,15 @@ def account_status_row(created_at: str, inputs: dict[str, str], account: Any) ->
     )
 
 
-def recent_orders_row(created_at: str, inputs: dict[str, str], orders: list[Any]) -> dict[str, Any]:
+def recent_orders_row(
+    created_at: str,
+    inputs: dict[str, str],
+    orders: list[Any],
+    *,
+    status_filter_used: str = "fixture",
+    history_limit: int = 0,
+    rows_seen: int | None = None,
+) -> dict[str, Any]:
     match = evaluate_recent_manual_smoke_test_order_match(
         orders,
         ticker=inputs["ticker"],
@@ -382,6 +420,12 @@ def recent_orders_row(created_at: str, inputs: dict[str, str], orders: list[Any]
             "recent_order_match_source": match.recent_order_match_source,
             "recent_order_match_count": match.recent_order_match_count,
             "recent_order_match_lookback_minutes": match.recent_order_match_lookback_minutes,
+            "recent_order_match_time_field_used": match.recent_order_match_time_field_used,
+            "broker_order_history_status_filter_used": status_filter_used,
+            "broker_order_history_limit": history_limit,
+            "broker_order_history_rows_seen": len(orders) if rows_seen is None else rows_seen,
+            "broker_order_history_symbol_rows_seen": count_symbol_rows(orders, inputs["ticker"]),
+            "broker_order_history_matching_candidate_count": count_matching_candidates(orders, inputs),
         }
     )
     return row
@@ -469,6 +513,12 @@ def postcheck_row(
         "recent_order_match_source": "",
         "recent_order_match_count": "",
         "recent_order_match_lookback_minutes": "",
+        "recent_order_match_time_field_used": "",
+        "broker_order_history_status_filter_used": "",
+        "broker_order_history_limit": "",
+        "broker_order_history_rows_seen": "",
+        "broker_order_history_symbol_rows_seen": "",
+        "broker_order_history_matching_candidate_count": "",
         "open_order_summary": open_order_summary,
         "position_summary": position_summary,
         "blocker": blocker,
@@ -550,7 +600,55 @@ def format_match_summary(match: Any) -> str:
     ]
     if match.recent_order_match_age_minutes:
         parts.append(f"age_minutes={match.recent_order_match_age_minutes}")
+    if match.recent_order_match_time_field_used:
+        parts.append(f"time_field={match.recent_order_match_time_field_used}")
     return "; ".join(parts)
+
+
+def merge_order_history(*order_groups: list[Any]) -> list[Any]:
+    merged: list[Any] = []
+    seen: set[str] = set()
+    for orders in order_groups:
+        for order in orders:
+            key = str(getattr(order, "id", "") or "")
+            if not key:
+                key = "|".join(
+                    [
+                        str(getattr(order, "symbol", "")),
+                        str(getattr(order, "side", "")),
+                        str(getattr(order, "qty", "")),
+                        str(getattr(order, "status", "")),
+                        str(getattr(order, "filled_at", "") or getattr(order, "submitted_at", "") or getattr(order, "created_at", "")),
+                    ]
+                )
+            if key in seen:
+                continue
+            seen.add(key)
+            merged.append(order)
+    return merged
+
+
+def count_symbol_rows(orders: list[Any], ticker: str) -> int:
+    return sum(1 for order in orders if normalize_order_field(getattr(order, "symbol", "")).upper() == ticker)
+
+
+def count_matching_candidates(orders: list[Any], inputs: dict[str, str]) -> int:
+    ticker = inputs["ticker"]
+    side = inputs["side"]
+    quantity = Decimal(inputs["quantity"])
+    count = 0
+    for order in orders:
+        if normalize_order_field(getattr(order, "symbol", "")).upper() != ticker:
+            continue
+        if normalize_order_field(getattr(order, "side", "")).lower() != side:
+            continue
+        try:
+            if Decimal(str(getattr(order, "qty", ""))) != quantity:
+                continue
+        except (InvalidOperation, ValueError):
+            continue
+        count += 1
+    return count
 
 
 def normalise_inputs(ticker: str, side: str, quantity: str | int | float | Decimal) -> dict[str, str]:

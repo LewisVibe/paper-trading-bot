@@ -6,7 +6,7 @@ import logging
 import math
 import sys
 from dataclasses import dataclass, replace
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
@@ -1600,6 +1600,7 @@ class ManualSmokeTestDuplicateOrderCheck:
     recent_order_match_source: str = "alpaca_paper_recent_orders"
     recent_order_match_count: int = 0
     recent_order_match_lookback_minutes: int = RECENT_ORDER_LOOKBACK_MINUTES
+    recent_order_match_time_field_used: str = ""
 
 
 def recent_matching_manual_smoke_test_order_check(
@@ -1608,10 +1609,19 @@ def recent_matching_manual_smoke_test_order_check(
     side: str,
     quantity: Decimal,
 ) -> ManualSmokeTestDuplicateOrderCheck:
+    from alpaca.common.enums import Sort
+    from alpaca.trading.enums import OrderSide
     from alpaca.trading.enums import QueryOrderStatus
     from alpaca.trading.requests import GetOrdersRequest
 
-    request = GetOrdersRequest(status=QueryOrderStatus.ALL, symbols=[ticker], limit=50)
+    request = GetOrdersRequest(
+        status=QueryOrderStatus.CLOSED,
+        symbols=[ticker],
+        side=OrderSide.BUY if side == "buy" else OrderSide.SELL,
+        limit=500,
+        after=datetime.now(timezone.utc) - timedelta(minutes=RECENT_ORDER_LOOKBACK_MINUTES),
+        direction=Sort.DESC,
+    )
     try:
         recent_orders = list(client.get_orders(filter=request))
     except Exception as exc:
@@ -1619,6 +1629,7 @@ def recent_matching_manual_smoke_test_order_check(
             duplicate_recent_order_check="blocked_duplicate_order_history_uncertain",
             duplicate_recent_order_source=f"alpaca_paper_recent_orders_read_failed:{type(exc).__name__}",
             duplicate_recent_order_status_if_any="",
+            recent_order_match_time_field_used="unavailable",
         )
 
     result = evaluate_recent_manual_smoke_test_order_match(
