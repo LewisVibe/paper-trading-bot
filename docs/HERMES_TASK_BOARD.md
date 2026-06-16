@@ -51,6 +51,27 @@ Cross-references:
 - **Allowed commands:** `python scripts\verify_multi_sleeve_strategy_monitor.py` and repo safety/inventory verifiers only.
 - **Stop condition:** Stop if the task starts adding new execution commands, expanding `--execute-qqq100-paper`, reading broker state, calling Alpaca, refreshing market data, changing config defaults, approving scheduling, or wiring defensive/high-growth/crypto sleeves to execution.
 
+### Task: QQQ100 stream reconciliation review
+- **Purpose:** Review why the generated `qqq_100_trend_gate` daily return stream differs from saved QQQ100 benchmark metrics before changing any stream configuration or portfolio labels.
+- **Risk level:** Medium / research-only reconciliation, because it sits near the active QQQ100 paper sleeve and generated multi-sleeve research metrics.
+- **Allowed files:**
+  - `trading_bot/research/qqq100_stream_reconciliation.py`
+  - `scripts/verify_qqq100_stream_reconciliation.py`
+  - `README.md`
+  - `docs/CURRENT_STATE.md`
+  - `docs/V2_RESEARCH_CHECKPOINT.md`
+  - `docs/HERMES_TASK_BOARD.md`
+- **Forbidden files:**
+  - `config.json`
+  - `.env`
+  - generated `data/` outputs
+  - logs/databases/charts
+  - Alpaca/order submission modules
+  - QQQ100 paper execution code unless a separate explicit execution review allows it
+  - scheduling, Hermes cron, Task Scheduler, service, or loop files
+- **Allowed commands:** `python scripts\verify_qqq100_stream_reconciliation.py` and repo safety/inventory verifiers only.
+- **Stop condition:** Stop if the task starts expanding `--execute-qqq100-paper`, adding repeat execution, calling Alpaca, reading broker state, changing config defaults, approving scheduling, or treating a reconciliation candidate as execution approval.
+
 ### Task: Sleeve research scoreboard review
 - **Purpose:** Review the saved-output-only scoreboard that ranks QQQ100, defensive ETF, high-growth, crypto, and Codex experimental candidate sleeves before choosing the next research pack.
 - **Risk level:** Medium / report-only research ranking, because it compares future candidate sleeves near an active manual paper milestone.

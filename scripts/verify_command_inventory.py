@@ -73,6 +73,8 @@ REQUIRED_COMMANDS = [
     "--show-codex-qqq-defensive-crash-gate-research-pack",
     "--sleeve-return-streams",
     "--show-sleeve-return-streams",
+    "--qqq100-stream-reconciliation",
+    "--show-qqq100-stream-reconciliation",
     "--multi-sleeve-portfolio-backtest",
     "--show-multi-sleeve-portfolio-backtest",
     "--paper-execution-state-summary",

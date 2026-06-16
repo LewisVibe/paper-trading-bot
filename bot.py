@@ -422,6 +422,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--qqq100-stream-reconciliation"]:
+        from trading_bot.research.qqq100_stream_reconciliation import generate_qqq100_stream_reconciliation
+
+        result = generate_qqq100_stream_reconciliation()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-qqq100-stream-reconciliation"]:
+        from trading_bot.research.qqq100_stream_reconciliation import show_qqq100_stream_reconciliation
+
+        code, lines = show_qqq100_stream_reconciliation()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--multi-sleeve-portfolio-backtest"]:
         from trading_bot.research.multi_sleeve_portfolio_backtest import generate_multi_sleeve_portfolio_backtest
 
@@ -5331,6 +5345,16 @@ def parse_args() -> argparse.Namespace:
         "--show-sleeve-return-streams",
         action="store_true",
         help="Display the saved sleeve return-stream summary without broker reads.",
+    )
+    parser.add_argument(
+        "--qqq100-stream-reconciliation",
+        action="store_true",
+        help="Create a research-only QQQ100 generated-stream reconciliation report.",
+    )
+    parser.add_argument(
+        "--show-qqq100-stream-reconciliation",
+        action="store_true",
+        help="Display the saved QQQ100 stream reconciliation summary without broker reads.",
     )
     parser.add_argument(
         "--multi-sleeve-portfolio-backtest",

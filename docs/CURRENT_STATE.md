@@ -231,12 +231,20 @@ The sleeve return-stream generator comes from `python bot.py --sleeve-return-str
 - It labels high-growth and crypto as `missing_saved_return_stream` when no real daily stream exists and does not invent daily returns from summary metrics.
 - The expected status is `sleeve_return_streams_partial_created` while high-growth and crypto are missing; all execution, follow-up, repeat, scheduling, live, high-growth, crypto, and Codex-experimental approval flags remain false.
 
+The QQQ100 stream reconciliation checkpoint comes from `python bot.py --qqq100-stream-reconciliation`, with saved display through `python bot.py --show-qqq100-stream-reconciliation`:
+
+- It compares saved `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` benchmark metrics with the generated QQQ100 daily stream from `data/sleeve_return_streams.csv`.
+- It writes `data/qqq100_stream_reconciliation.csv`, `data/qqq100_stream_reconciliation_candidates.csv`, `data/qqq100_stream_reconciliation_diagnostics.csv`, `data/qqq100_stream_reconciliation_blockers.csv`, and `data/qqq100_stream_reconciliation_summary.csv`.
+- It tests close versus adjusted-close availability, signal shift, SMA100 warmup, date range, cash/flat handling, and cost/slippage assumption gaps where saved research price data exists.
+- It labels missing original benchmark source data, date range, price adjustment, cash, and cost assumptions rather than forcing generated-stream parity.
+- It does not update `--sleeve-return-streams` automatically; QQQ100 remains the only active paper sleeve and all execution, follow-up, repeat, scheduling, and live-trading approval flags remain false.
+
 The multi-sleeve portfolio backtest checkpoint comes from `python bot.py --multi-sleeve-portfolio-backtest`, with saved display through `python bot.py --show-multi-sleeve-portfolio-backtest`:
 
-- It reads saved CSV outputs only, uses exact `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` metrics as the QQQ100 reference, and can consume `data/sleeve_return_streams.csv` to compute feasible reduced QQQ/cash/defensive portfolio metrics.
+- It reads saved CSV outputs only, keeps exact saved `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` benchmark metrics separate from generated QQQ100 stream metrics, and consumes `data/sleeve_return_streams.csv` to compute feasible reduced QQQ/cash/defensive portfolio metrics.
 - It writes `data/multi_sleeve_portfolio_backtest.csv`, `data/multi_sleeve_portfolio_backtest_sleeves.csv`, `data/multi_sleeve_portfolio_backtest_allocations.csv`, `data/multi_sleeve_portfolio_backtest_rankings.csv`, `data/multi_sleeve_portfolio_backtest_splits.csv`, `data/multi_sleeve_portfolio_backtest_trades.csv`, `data/multi_sleeve_portfolio_backtest_blockers.csv`, and `data/multi_sleeve_portfolio_backtest_summary.csv`.
-- It compares `qqq100_only_reference`, `qqq100_plus_cash_defensive_reference`, `qqq100_plus_defensive_crash_gate`, `qqq100_plus_high_growth_research`, `qqq100_plus_crypto_research`, `balanced_multi_sleeve_research_portfolio`, and `codex_ambitious_multi_sleeve_candidate`.
-- It labels missing defensive, high-growth, crypto, and Codex experimental daily return streams as `missing_saved_return_stream` and keeps combined metrics as `missing_saved_metrics` rather than inventing portfolio results.
+- It compares `qqq100_only_reference`, `qqq100_plus_cash_defensive_reference`, `qqq100_plus_spy_sma200_defensive_gate`, `qqq100_plus_rolling_drawdown_defensive_gate`, `qqq100_plus_combined_defensive_gate`, `codex_defensive_qqq_research_portfolio`, high-growth, crypto, balanced multi-sleeve, and Codex ambitious candidates.
+- It consumes defensive and Codex generated streams when present, while high-growth and crypto remain labelled as missing unless real daily streams exist.
 - The expected status is `multi_sleeve_candidate_needs_more_data`; `qqq100_core_trend_sleeve` remains the only active paper sleeve and all execution, follow-up, repeat, scheduling, live, high-growth, crypto, and Codex-experimental approval flags remain false.
 
 The paper execution state summary comes from `python bot.py --paper-execution-state-summary`, with saved display through `python bot.py --show-paper-execution-state-summary`:
