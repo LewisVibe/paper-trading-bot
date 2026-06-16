@@ -408,6 +408,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--multi-sleeve-portfolio-backtest"]:
+        from trading_bot.research.multi_sleeve_portfolio_backtest import generate_multi_sleeve_portfolio_backtest
+
+        result = generate_multi_sleeve_portfolio_backtest()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-multi-sleeve-portfolio-backtest"]:
+        from trading_bot.research.multi_sleeve_portfolio_backtest import show_multi_sleeve_portfolio_backtest
+
+        code, lines = show_multi_sleeve_portfolio_backtest()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-execution-state-summary"]:
         from trading_bot.research.paper_execution_state_summary import generate_paper_execution_state_summary
 
@@ -788,6 +802,10 @@ from trading_bot.research.sleeve_research_scoreboard import (
 from trading_bot.research.codex_qqq_defensive_crash_gate_research_pack import (
     generate_codex_qqq_defensive_crash_gate_research_pack,
     show_codex_qqq_defensive_crash_gate_research_pack,
+)
+from trading_bot.research.multi_sleeve_portfolio_backtest import (
+    generate_multi_sleeve_portfolio_backtest,
+    show_multi_sleeve_portfolio_backtest,
 )
 from trading_bot.research.paper_execution_state_summary import (
     generate_paper_execution_state_summary,
@@ -5287,6 +5305,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved Codex QQQ defensive crash-gate research pack without broker reads.",
     )
     parser.add_argument(
+        "--multi-sleeve-portfolio-backtest",
+        action="store_true",
+        help="Create a saved-output-only multi-sleeve portfolio research backtest checkpoint.",
+    )
+    parser.add_argument(
+        "--show-multi-sleeve-portfolio-backtest",
+        action="store_true",
+        help="Display the saved multi-sleeve portfolio backtest without broker or market-data reads.",
+    )
+    parser.add_argument(
         "--paper-execution-state-summary",
         action="store_true",
         help="Create a saved-output-only paper execution milestone/state summary without broker calls.",
@@ -6512,6 +6540,20 @@ def main() -> int:
         return 0
     if args.show_codex_qqq_defensive_crash_gate_research_pack:
         status_code, lines = show_codex_qqq_defensive_crash_gate_research_pack()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.multi_sleeve_portfolio_backtest:
+        try:
+            result = generate_multi_sleeve_portfolio_backtest()
+        except Exception as exc:
+            print(f"Multi-sleeve portfolio backtest failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_multi_sleeve_portfolio_backtest:
+        status_code, lines = show_multi_sleeve_portfolio_backtest()
         for line in lines:
             print(line)
         return status_code

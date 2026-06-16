@@ -1790,6 +1790,28 @@ data/codex_qqq_defensive_crash_gate_next_steps.csv
 
 The expected status is `codex_qqq_defensive_research_pack_created`. Candidate labels are research prompts only, with blockers for missing saved metrics, split validation, cost/turnover stress, reference underperformance, execution wiring, repeat execution, and scheduling. The recommended next step is `run_saved_or_research_data_backtest_for_codex_qqq_defensive_candidates`.
 
+Multi-sleeve portfolio backtest mode is a saved-output-only research checkpoint for testing portfolio combinations conceptually before any new preview/action/execution wiring. It uses the exact saved `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` metrics as the QQQ100 reference, then defines QQQ100-plus-cash, QQQ100-plus-defensive-crash-gate, QQQ100-plus-high-growth, QQQ100-plus-crypto, balanced multi-sleeve, and Codex ambitious allocation candidates. When daily return streams are missing for defensive, high-growth, crypto, or Codex experimental sleeves, it labels those rows as `missing_saved_return_stream` and keeps combined portfolio metrics as `missing_saved_metrics` rather than inventing results. It does not fetch market data, call Alpaca, read live positions, create/submit/cancel/replace orders, write SQLite `trade_log`, send alerts, schedule anything, expand QQQ100 execution, add repeat execution, or wire any sleeve to execution.
+
+```text
+python bot.py --multi-sleeve-portfolio-backtest
+python bot.py --show-multi-sleeve-portfolio-backtest
+```
+
+Outputs:
+
+```text
+data/multi_sleeve_portfolio_backtest.csv
+data/multi_sleeve_portfolio_backtest_sleeves.csv
+data/multi_sleeve_portfolio_backtest_allocations.csv
+data/multi_sleeve_portfolio_backtest_rankings.csv
+data/multi_sleeve_portfolio_backtest_splits.csv
+data/multi_sleeve_portfolio_backtest_trades.csv
+data/multi_sleeve_portfolio_backtest_blockers.csv
+data/multi_sleeve_portfolio_backtest_summary.csv
+```
+
+The expected status is `multi_sleeve_candidate_needs_more_data` until saved daily return streams, split metrics, and trade/turnover streams exist. `qqq100_core_trend_sleeve` remains the only active paper sleeve, high-growth and crypto remain research-only, and all execution, follow-up, repeat, scheduling, and live-trading approval flags remain false.
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:

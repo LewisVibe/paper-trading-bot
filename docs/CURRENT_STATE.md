@@ -223,6 +223,14 @@ The Codex QQQ defensive crash-gate research pack comes from `python bot.py --cod
 - It labels missing candidate metrics, split metrics, and defensive ETF data as `missing_saved_metrics`, `missing_saved_split_metrics`, or `missing_saved_data` rather than inventing values.
 - It keeps the Codex experimental sleeve research-only and preserves false execution, Codex-experimental execution, repeat, follow-up, live, and scheduling approval flags.
 
+The multi-sleeve portfolio backtest checkpoint comes from `python bot.py --multi-sleeve-portfolio-backtest`, with saved display through `python bot.py --show-multi-sleeve-portfolio-backtest`:
+
+- It reads saved CSV outputs only and uses exact `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` metrics as the QQQ100 reference.
+- It writes `data/multi_sleeve_portfolio_backtest.csv`, `data/multi_sleeve_portfolio_backtest_sleeves.csv`, `data/multi_sleeve_portfolio_backtest_allocations.csv`, `data/multi_sleeve_portfolio_backtest_rankings.csv`, `data/multi_sleeve_portfolio_backtest_splits.csv`, `data/multi_sleeve_portfolio_backtest_trades.csv`, `data/multi_sleeve_portfolio_backtest_blockers.csv`, and `data/multi_sleeve_portfolio_backtest_summary.csv`.
+- It compares `qqq100_only_reference`, `qqq100_plus_cash_defensive_reference`, `qqq100_plus_defensive_crash_gate`, `qqq100_plus_high_growth_research`, `qqq100_plus_crypto_research`, `balanced_multi_sleeve_research_portfolio`, and `codex_ambitious_multi_sleeve_candidate`.
+- It labels missing defensive, high-growth, crypto, and Codex experimental daily return streams as `missing_saved_return_stream` and keeps combined metrics as `missing_saved_metrics` rather than inventing portfolio results.
+- The expected status is `multi_sleeve_candidate_needs_more_data`; `qqq100_core_trend_sleeve` remains the only active paper sleeve and all execution, follow-up, repeat, scheduling, live, high-growth, crypto, and Codex-experimental approval flags remain false.
+
 The paper execution state summary comes from `python bot.py --paper-execution-state-summary`, with saved display through `python bot.py --show-paper-execution-state-summary`:
 
 - It reads saved CSV outputs only, including AAPL smoke-test postcheck, QQQ100 paper execution result/summary or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution eligibility, portfolio preview, and portfolio-risk context where available.
