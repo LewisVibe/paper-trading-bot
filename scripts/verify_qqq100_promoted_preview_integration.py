@@ -69,6 +69,24 @@ def verify_source_wiring(bot_source: str, module_source: str, failures: list[str
             failures.append(f"missing promoted preview integration token: {token}")
     if "append_qqq100_promoted_preview_candidate(rows, warnings)" not in bot_source:
         failures.append("--preview-promoted-strategies should append QQQ100 promoted preview candidate")
+    missing_report_branch = function_block(
+        bot_source,
+        'if not promotion_path.exists():',
+        'candidates = read_preview_candidates(promotion_path)',
+    )
+    if not missing_report_branch:
+        failures.append("could not locate missing strategy_promotion_report branch")
+    else:
+        for token in [
+            "Missing legacy strategy promotion report",
+            "append_qqq100_promoted_preview_candidate(rows, warnings)",
+            "write_promoted_preview(output_path, rows)",
+            "qqq100_available",
+            "return 0",
+            "return 1",
+        ]:
+            if token not in missing_report_branch:
+                failures.append(f"missing legacy-report branch should handle QQQ100-only output: {token}")
     if HIGH_GROWTH not in module_source or QQQ150 not in module_source:
         failures.append("high-growth and QQQ150 exclusions should be explicit in promoted preview module")
     if "BLOCKED_PROMOTED_PREVIEW_STRATEGIES" not in module_source:
@@ -80,6 +98,7 @@ def verify_helper_rows(failures: list[str]) -> None:
         PROMOTED_PREVIEW_COLUMNS,
         append_qqq100_promoted_preview_candidate,
         read_preview_candidates,
+        write_promoted_preview,
     )
 
     forbidden_present = sorted(FORBIDDEN_PROMOTED_PREVIEW_COLUMNS.intersection(PROMOTED_PREVIEW_COLUMNS))
@@ -138,6 +157,17 @@ def verify_helper_rows(failures: list[str]) -> None:
                 failures.append(f"{flag} should be false for QQQ100 promoted row")
         if warnings:
             failures.append("saved ok QQQ100 row should not emit warnings")
+        output_path = data_dir / "promoted_strategy_preview.csv"
+        write_promoted_preview(output_path, rows)
+        with output_path.open(newline="", encoding="utf-8") as handle:
+            written_rows = list(csv.DictReader(handle))
+        if not written_rows or written_rows[0].get("strategy_name") != QQQ100:
+            failures.append("promoted_strategy_preview.csv should be writable with only the saved QQQ100 signal")
+        if written_rows and written_rows[0].get("signal_source") != "qqq100_preview_signal_pack":
+            failures.append("written QQQ100-only promoted row should preserve qqq100_preview_signal_pack source")
+        for flag in ["execution_approved", "paper_execution_approved", "scheduling_approved"]:
+            if written_rows and written_rows[0].get(flag, "").lower() != "false":
+                failures.append(f"written QQQ100-only promoted row should keep {flag}=false")
 
     with TemporaryDirectory() as tmp:
         root = Path(tmp)

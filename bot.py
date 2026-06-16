@@ -3076,7 +3076,29 @@ def run_promoted_strategy_preview(config: AppConfig, logger: logging.Logger) -> 
     configure_yfinance_cache(config, logger)
     promotion_path = Path("data") / "strategy_promotion_report.csv"
     if not promotion_path.exists():
-        print(f"Missing strategy promotion report: {promotion_path}", file=sys.stderr)
+        print(f"Missing legacy strategy promotion report: {promotion_path}")
+        rows: list[dict[str, Any]] = []
+        warnings: list[str] = []
+        append_qqq100_promoted_preview_candidate(rows, warnings)
+        output_path = Path("data") / "promoted_strategy_preview.csv"
+        write_promoted_preview(output_path, rows)
+        for warning in warnings:
+            print(f"Warning: {warning}")
+        for line in build_promoted_preview_summary(rows, warnings):
+            print(line)
+        print(f"Saved promoted strategy preview to {output_path}")
+        qqq100_available = any(
+            row.get("strategy_name") == "qqq_100_trend_gate"
+            and row.get("ticker") == "QQQ"
+            and row.get("promotion_status") == "preview_candidate"
+            for row in rows
+        )
+        if qqq100_available:
+            return 0
+        print(
+            "Missing both legacy strategy promotion report and usable QQQ100 preview signal input.",
+            file=sys.stderr,
+        )
         return 1
 
     candidates = read_preview_candidates(promotion_path)
