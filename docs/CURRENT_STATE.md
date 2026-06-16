@@ -231,6 +231,13 @@ The sleeve return-stream generator comes from `python bot.py --sleeve-return-str
 - It labels high-growth and crypto as `missing_saved_return_stream` when no real daily stream exists and does not invent daily returns from summary metrics.
 - The expected status is `sleeve_return_streams_partial_created` while high-growth and crypto are missing; all execution, follow-up, repeat, scheduling, live, high-growth, crypto, and Codex-experimental approval flags remain false.
 
+The high-growth return-stream generator comes from `python bot.py --high-growth-return-streams`, with saved display through `python bot.py --show-high-growth-return-streams`:
+
+- It reuses the fixed high-growth drawdown-control research logic to create saved daily stream rows for `codex_broad_growth_balanced_breakout_control` and the broad Top1 reference where research market data exists.
+- It writes `data/high_growth_return_streams.csv`, `data/high_growth_return_stream_metrics.csv`, `data/high_growth_return_stream_summary.csv`, and `data/high_growth_return_stream_blockers.csv`.
+- It keeps the high-growth branch research-only, preserves concentration/survivorship/outlier warnings, and does not approve preview promotion, execution, paper execution, repeat execution, scheduling, or Alpaca/order paths.
+- The multi-sleeve backtest can consume `data/high_growth_return_streams.csv` as saved daily stream input; crypto remains missing unless a separate real daily stream exists.
+
 The QQQ100 stream reconciliation checkpoint comes from `python bot.py --qqq100-stream-reconciliation`, with saved display through `python bot.py --show-qqq100-stream-reconciliation`:
 
 - It compares saved `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` benchmark metrics with the generated QQQ100 daily stream from `data/sleeve_return_streams.csv`.

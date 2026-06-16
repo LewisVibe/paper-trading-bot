@@ -436,6 +436,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--high-growth-return-streams"]:
+        from trading_bot.research.high_growth_return_streams import generate_high_growth_return_streams
+
+        result = generate_high_growth_return_streams()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-high-growth-return-streams"]:
+        from trading_bot.research.high_growth_return_streams import show_high_growth_return_streams
+
+        code, lines = show_high_growth_return_streams()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--multi-sleeve-portfolio-backtest"]:
         from trading_bot.research.multi_sleeve_portfolio_backtest import generate_multi_sleeve_portfolio_backtest
 
@@ -5355,6 +5369,16 @@ def parse_args() -> argparse.Namespace:
         "--show-qqq100-stream-reconciliation",
         action="store_true",
         help="Display the saved QQQ100 stream reconciliation summary without broker reads.",
+    )
+    parser.add_argument(
+        "--high-growth-return-streams",
+        action="store_true",
+        help="Create research-only saved daily return streams for high-growth stock candidates.",
+    )
+    parser.add_argument(
+        "--show-high-growth-return-streams",
+        action="store_true",
+        help="Display saved high-growth return-stream metrics without refreshing broker state.",
     )
     parser.add_argument(
         "--multi-sleeve-portfolio-backtest",

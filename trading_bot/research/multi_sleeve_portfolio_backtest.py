@@ -46,6 +46,7 @@ INPUT_FILES = {
     "crypto_lead": Path("data/expanded_crypto_lead_decision.csv"),
     "multi_sleeve_monitor": Path("data/multi_sleeve_strategy_monitor.csv"),
     "sleeve_return_streams": Path("data/sleeve_return_streams.csv"),
+    "high_growth_return_streams": Path("data/high_growth_return_streams.csv"),
 }
 
 OUTPUT_FILES = {
@@ -270,14 +271,15 @@ def generate_multi_sleeve_portfolio_backtest(root_dir: Path | str = ".") -> Mult
     created_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     inputs = {name: read_csv_rows(root / path) for name, path in INPUT_FILES.items()}
     qqq_metrics = qqq100_metric_bundle(inputs)
-    sleeve_rows = build_sleeve_rows(created_at, inputs, qqq_metrics, inputs["sleeve_return_streams"])
-    portfolios = build_portfolio_rows(created_at, qqq_metrics, sleeve_rows, inputs["sleeve_return_streams"])
+    return_streams = inputs["sleeve_return_streams"] + normalize_high_growth_stream_rows(inputs["high_growth_return_streams"])
+    sleeve_rows = build_sleeve_rows(created_at, inputs, qqq_metrics, return_streams)
+    portfolios = build_portfolio_rows(created_at, qqq_metrics, sleeve_rows, return_streams)
     allocations = build_allocation_rows(created_at, sleeve_rows)
     rankings = build_ranking_rows(created_at, portfolios)
     splits = build_split_rows(created_at, portfolios, qqq_metrics)
     trades = build_trade_rows(created_at, portfolios)
     blockers = build_blocker_rows(created_at)
-    summary = build_summary_rows(created_at, portfolios, qqq_metrics, inputs["sleeve_return_streams"])
+    summary = build_summary_rows(created_at, portfolios, qqq_metrics, return_streams)
     output_paths = {name: root / path for name, path in OUTPUT_FILES.items()}
     write_rows(output_paths["backtest"], BACKTEST_COLUMNS, portfolios)
     write_rows(output_paths["sleeves"], SLEEVE_COLUMNS, sleeve_rows)
@@ -353,6 +355,11 @@ def build_sleeve_rows(
         if "codex_qqq_calmar_optimised_defensive_gate_sleeve" in stream_candidates
         else ("missing_saved_return_stream" if metrics_missing(codex_metrics) else "saved_metric_reference_only")
     )
+    high_growth_stream_status = (
+        "saved_return_stream_metrics_available"
+        if "codex_broad_growth_balanced_breakout_control" in stream_candidates
+        else "missing_saved_return_stream"
+    )
     return [
         sleeve_row(
             created_at,
@@ -392,7 +399,7 @@ def build_sleeve_rows(
             "codex_broad_growth_balanced_breakout_control",
             "high-growth stocks",
             "high-risk research sleeve",
-            "missing_saved_return_stream",
+            high_growth_stream_status,
             "summary_metrics_only_or_unavailable",
             high_growth_metrics,
             "cost_review_required",
@@ -400,7 +407,7 @@ def build_sleeve_rows(
             "high_concentration_and_outlier_risk",
             "high_growth_overlap_with_qqq",
             "research_only_missing_return_stream",
-            "Do not include in portfolio metrics until saved daily returns exist.",
+            "Use saved high-growth daily returns for research metrics only; do not approve preview or execution.",
         ),
         sleeve_row(
             created_at,
@@ -799,6 +806,11 @@ def portfolio_metrics_from_streams(portfolio_name: str, rows: list[dict[str, str
             "codex_qqq_calmar_optimised_defensive_gate_sleeve": 0.30,
             "cash_default_defensive_sleeve": 0.05,
         },
+        "qqq100_plus_high_growth_research": {
+            "qqq_100_trend_gate": 0.80,
+            "codex_broad_growth_balanced_breakout_control": 0.15,
+            "cash_default_defensive_sleeve": 0.05,
+        },
     }
     weights = specs.get(portfolio_name)
     if not weights:
@@ -875,6 +887,21 @@ def missing_stream_warnings_from_streams(rows: list[dict[str, str]]) -> str:
     if "codex_qqq_calmar_optimised_defensive_gate_sleeve" not in present:
         missing.append("codex_experimental")
     return ", ".join(missing) + " return streams missing" if missing else "none"
+
+
+def normalize_high_growth_stream_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    normalized = []
+    for row in rows:
+        candidate = row.get("candidate_name") or row.get("strategy_name")
+        date = row.get("date")
+        daily_return = row.get("daily_strategy_return") or row.get("daily_return")
+        if not candidate or not date or daily_return in {"", None}:
+            continue
+        new_row = dict(row)
+        new_row["candidate_name"] = str(candidate)
+        new_row["daily_strategy_return"] = str(daily_return)
+        normalized.append(new_row)
+    return normalized
 
 
 def stream_returns_by_candidate(rows: list[dict[str, str]]) -> dict[str, dict[str, float]]:

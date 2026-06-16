@@ -1810,6 +1810,24 @@ data/sleeve_return_streams_next_steps.csv
 
 The expected status is `sleeve_return_streams_partial_created` while high-growth and crypto streams are missing. These streams are research data only; all order, follow-up, repeat, scheduling, live, high-growth, crypto, and Codex-experimental execution approval flags remain false.
 
+High-growth return-stream mode is a research-only saved daily stream generator for existing high-growth stock candidates. It reuses the fixed high-growth drawdown-control research logic and can write daily streams for `codex_broad_growth_balanced_breakout_control` plus the broad Top1 reference where research market data exists. These streams are for multi-sleeve research only; they do not approve preview promotion, paper execution, repeat execution, scheduling, or any Alpaca/order path.
+
+```text
+python bot.py --high-growth-return-streams
+python bot.py --show-high-growth-return-streams
+```
+
+Outputs:
+
+```text
+data/high_growth_return_streams.csv
+data/high_growth_return_stream_metrics.csv
+data/high_growth_return_stream_summary.csv
+data/high_growth_return_stream_blockers.csv
+```
+
+The expected status is `high_growth_return_streams_created` when enough research price data exists. If market data is unavailable, the report labels the data gap instead of inventing returns. High-growth remains research-only and `execution_approved=false`.
+
 QQQ100 stream reconciliation mode is a research-only checkpoint for comparing the generated `qqq_100_trend_gate` daily stream against the saved QQQ100 benchmark metrics. It tests close/adjusted-close availability, same-day versus next-day signal timing, SMA100 warmup behaviour, date range, cash/flat handling, and missing cost/slippage assumptions. It writes labelled diagnostics rather than forcing a match, and it does not update `--sleeve-return-streams` unless a future manual review approves a better configuration.
 
 ```text

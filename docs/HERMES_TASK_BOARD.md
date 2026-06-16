@@ -72,6 +72,28 @@ Cross-references:
 - **Allowed commands:** `python scripts\verify_qqq100_stream_reconciliation.py` and repo safety/inventory verifiers only.
 - **Stop condition:** Stop if the task starts expanding `--execute-qqq100-paper`, adding repeat execution, calling Alpaca, reading broker state, changing config defaults, approving scheduling, or treating a reconciliation candidate as execution approval.
 
+### Task: High-growth return-stream review
+- **Purpose:** Review saved daily high-growth stock return streams before they are used in any multi-sleeve research conclusion.
+- **Risk level:** Medium / research-only stream generation, because it introduces high-risk stock branch returns near portfolio research.
+- **Allowed files:**
+  - `trading_bot/research/high_growth_return_streams.py`
+  - `scripts/verify_high_growth_return_streams.py`
+  - `trading_bot/research/multi_sleeve_portfolio_backtest.py`
+  - `README.md`
+  - `docs/CURRENT_STATE.md`
+  - `docs/V2_RESEARCH_CHECKPOINT.md`
+  - `docs/HERMES_TASK_BOARD.md`
+- **Forbidden files:**
+  - `config.json`
+  - `.env`
+  - generated `data/` outputs
+  - logs/databases/charts
+  - Alpaca/order submission modules
+  - QQQ100 paper execution code
+  - scheduling, Hermes cron, Task Scheduler, service, or loop files
+- **Allowed commands:** `python scripts\verify_high_growth_return_streams.py` and repo safety/inventory verifiers only.
+- **Stop condition:** Stop if the task starts approving preview, execution, paper execution, repeat execution, scheduling, or connecting high-growth streams to Alpaca/order paths.
+
 ### Task: Sleeve research scoreboard review
 - **Purpose:** Review the saved-output-only scoreboard that ranks QQQ100, defensive ETF, high-growth, crypto, and Codex experimental candidate sleeves before choosing the next research pack.
 - **Risk level:** Medium / report-only research ranking, because it compares future candidate sleeves near an active manual paper milestone.
