@@ -51,6 +51,26 @@ Cross-references:
 - **Allowed commands:** `python scripts\verify_multi_sleeve_strategy_monitor.py` and repo safety/inventory verifiers only.
 - **Stop condition:** Stop if the task starts adding new execution commands, expanding `--execute-qqq100-paper`, reading broker state, calling Alpaca, refreshing market data, changing config defaults, approving scheduling, or wiring defensive/high-growth/crypto sleeves to execution.
 
+### Task: Sleeve research scoreboard review
+- **Purpose:** Review the saved-output-only scoreboard that ranks QQQ100, defensive ETF, high-growth, crypto, and Codex experimental candidate sleeves before choosing the next research pack.
+- **Risk level:** Medium / report-only research ranking, because it compares future candidate sleeves near an active manual paper milestone.
+- **Allowed files:**
+  - `trading_bot/research/sleeve_research_scoreboard.py`
+  - `scripts/verify_sleeve_research_scoreboard.py`
+  - `README.md`
+  - `docs/CURRENT_STATE.md`
+  - `docs/V2_RESEARCH_CHECKPOINT.md`
+  - `docs/HERMES_TASK_BOARD.md`
+- **Forbidden files:**
+  - `config.json`
+  - `.env`
+  - generated `data/` outputs
+  - logs/databases/charts
+  - Alpaca/order submission modules unless a separate explicit execution review allows it
+  - scheduling, Hermes cron, Task Scheduler, service, or loop files
+- **Allowed commands:** `python scripts\verify_sleeve_research_scoreboard.py` and repo safety/inventory verifiers only.
+- **Stop condition:** Stop if the task starts adding preview/action/execution wiring, expanding `--execute-qqq100-paper`, reading broker state, calling Alpaca, refreshing market data, changing config defaults, approving scheduling, or wiring high-growth/defensive/crypto/Codex experimental sleeves to execution.
+
 ### Task: Documentation safety alignment review
 - **Purpose:** Compare the workflow and safety docs explicitly named by the user for inconsistent safety wording. Common candidates are `HERMES_WORKFLOW.md`, `HERMES_TASK_BOARD.md`, `CODEX_WORKFLOW.md`, `CURRENT_STATE.md`, VPS checklist docs, and refactor inventory docs.
 - **Risk level:** Low / docs-only.

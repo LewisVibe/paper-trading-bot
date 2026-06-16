@@ -67,6 +67,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq100-repeat-alignment-workflow-design",
     "--multi-sleeve-strategy-monitor",
     "--show-multi-sleeve-strategy-monitor",
+    "--sleeve-research-scoreboard",
+    "--show-sleeve-research-scoreboard",
     "--paper-execution-state-summary",
     "--show-paper-execution-state-summary",
     "--execute-qqq100-paper",

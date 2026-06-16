@@ -1750,6 +1750,26 @@ data/multi_sleeve_strategy_next_steps.csv
 
 The expected monitor status is `multi_sleeve_monitor_created`. The only active paper sleeve may be `qqq100_core_trend_sleeve` when saved evidence confirms QQQ long 1 and aligned. Defensive ETF, high-growth stock, and crypto sleeves remain research-only; cash/no-position remains design-only. Major warnings include `high_growth_and_qqq_overlap_risk`, `crypto_volatility_sleeve_not_ready`, `defensive_sleeve_not_validated_for_execution`, `sleeve_allocation_policy_missing`, `repeat_execution_not_approved`, and `scheduling_not_approved`.
 
+Sleeve research scoreboard is a saved-output-only research ranking report for current and candidate sleeves. It reads saved CSV context only, scores QQQ100, defensive ETF, high-growth stock, crypto, and a Codex experimental research sleeve side by side, and labels missing metrics as `missing_saved_metrics` rather than inventing values. It does not call Alpaca, read live positions, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord/Telegram alerts, change config defaults, create Hermes/scheduler jobs, expand QQQ100 execution, add repeat execution, or wire any sleeve to execution.
+
+```text
+python bot.py --sleeve-research-scoreboard
+python bot.py --show-sleeve-research-scoreboard
+```
+
+Outputs:
+
+```text
+data/sleeve_research_scoreboard.csv
+data/sleeve_research_candidates.csv
+data/sleeve_research_rankings.csv
+data/sleeve_research_blockers.csv
+data/sleeve_research_next_steps.csv
+data/sleeve_research_codex_experimental_sleeve.csv
+```
+
+The expected scoreboard status is `sleeve_research_scoreboard_created`. `qqq100_core_trend_sleeve` remains the best active paper sleeve and the only active paper sleeve. The Codex experimental research sleeve is a research-only adaptive QQQ plus defensive crash-gate hypothesis, currently labelled `codex_qqq_defensive_crash_gate_research_sleeve`; it can score high on ambition but has `codex_experimental_execution_approved=false`. Defensive, high-growth, and crypto sleeves remain research-only, with blockers around validation, allocation policy, drawdown/concentration/split/cost, volatility, overlap, repeat execution, and scheduling.
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:
