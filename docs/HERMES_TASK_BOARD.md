@@ -31,6 +31,26 @@ Cross-references:
 - **Allowed commands:** `python scripts\verify_qqq100_repeat_alignment_workflow_design.py` and repo safety/inventory verifiers only.
 - **Stop condition:** Stop if the task starts adding a repeat execution command, expanding `--execute-qqq100-paper`, reading broker state, calling Alpaca, changing config defaults, approving scheduling, or approving follow-up/repeat orders.
 
+### Task: Multi-sleeve strategy monitor review
+- **Purpose:** Review the saved-output-only monitor that places QQQ100 beside defensive, high-growth, crypto, and cash/no-position sleeves without connecting those sleeves to execution.
+- **Risk level:** Medium / report-only design, because it describes future portfolio-style sleeves near an existing manual paper milestone.
+- **Allowed files:**
+  - `trading_bot/research/multi_sleeve_strategy_monitor.py`
+  - `scripts/verify_multi_sleeve_strategy_monitor.py`
+  - `README.md`
+  - `docs/CURRENT_STATE.md`
+  - `docs/V2_RESEARCH_CHECKPOINT.md`
+  - `docs/HERMES_TASK_BOARD.md`
+- **Forbidden files:**
+  - `config.json`
+  - `.env`
+  - generated `data/` outputs
+  - logs/databases/charts
+  - Alpaca/order submission modules unless a separate explicit execution review allows it
+  - scheduling, Hermes cron, Task Scheduler, service, or loop files
+- **Allowed commands:** `python scripts\verify_multi_sleeve_strategy_monitor.py` and repo safety/inventory verifiers only.
+- **Stop condition:** Stop if the task starts adding new execution commands, expanding `--execute-qqq100-paper`, reading broker state, calling Alpaca, refreshing market data, changing config defaults, approving scheduling, or wiring defensive/high-growth/crypto sleeves to execution.
+
 ### Task: Documentation safety alignment review
 - **Purpose:** Compare the workflow and safety docs explicitly named by the user for inconsistent safety wording. Common candidates are `HERMES_WORKFLOW.md`, `HERMES_TASK_BOARD.md`, `CODEX_WORKFLOW.md`, `CURRENT_STATE.md`, VPS checklist docs, and refactor inventory docs.
 - **Risk level:** Low / docs-only.

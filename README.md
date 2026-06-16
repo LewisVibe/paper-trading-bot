@@ -1731,6 +1731,25 @@ data/qqq100_repeat_alignment_workflow_checklist.csv
 
 The expected design status is `qqq100_repeat_alignment_design_created`. Allowed future states are limited to manual-review/no-action design labels such as `possible_manual_open_long_candidate`, `aligned_long_no_action`, and `aligned_flat_no_action`; blocked states include over-allocation, missing/stale desired position, open QQQ orders, recent-order cooldown, closed/unknown market status, and broker read failure. `followup_order_approved=false`, `repeat_execution_approved=false`, `execution_approved=false`, and `scheduling_approved=false` remain hard boundaries.
 
+Multi-sleeve strategy monitor is a saved-output-only monitoring/design report that lets the active QQQ100 paper sleeve sit conceptually beside defensive ETF, high-growth stock, crypto, and cash/no-position sleeves without connecting those other sleeves to execution. It reads saved CSV context only, including paper execution state, QQQ100 postcheck/action preview/repeat design, multi-strategy portfolio preview, portfolio risk, high-growth checkpoints, crypto research summaries, and project research state where present. It does not call Alpaca, read live positions, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord/Telegram alerts, change config defaults, create Hermes/scheduler jobs, or approve execution.
+
+```text
+python bot.py --multi-sleeve-strategy-monitor
+python bot.py --show-multi-sleeve-strategy-monitor
+```
+
+Outputs:
+
+```text
+data/multi_sleeve_strategy_monitor.csv
+data/multi_sleeve_strategy_sleeves.csv
+data/multi_sleeve_strategy_positions.csv
+data/multi_sleeve_strategy_blockers.csv
+data/multi_sleeve_strategy_next_steps.csv
+```
+
+The expected monitor status is `multi_sleeve_monitor_created`. The only active paper sleeve may be `qqq100_core_trend_sleeve` when saved evidence confirms QQQ long 1 and aligned. Defensive ETF, high-growth stock, and crypto sleeves remain research-only; cash/no-position remains design-only. Major warnings include `high_growth_and_qqq_overlap_risk`, `crypto_volatility_sleeve_not_ready`, `defensive_sleeve_not_validated_for_execution`, `sleeve_allocation_policy_missing`, `repeat_execution_not_approved`, and `scheduling_not_approved`.
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:
