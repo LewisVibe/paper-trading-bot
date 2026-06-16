@@ -671,6 +671,14 @@ from trading_bot.research.qqq100_paper_execution_readiness_report import (
     generate_qqq100_paper_execution_readiness_report,
     show_qqq100_paper_execution_readiness_report,
 )
+from trading_bot.safety.qqq100_paper_execution import (
+    FIXED_QUANTITY as QQQ100_FIXED_QUANTITY,
+    TICKER as QQQ100_TICKER,
+    evaluate_qqq100_paper_execution_preflight,
+    print_qqq100_paper_execution_decision,
+    read_saved_qqq100_preview_signal,
+    write_qqq100_paper_execution_report,
+)
 from trading_bot.research.high_growth_stock_lab import (
     generate_high_growth_stock_lab,
     show_high_growth_stock_lab,
@@ -1532,6 +1540,242 @@ def run_paper_order_test(
         message = f"Manual paper-order test failed: {exc}"
         logger.error(message)
         send_discord_alert(config, logger, f"Error: {message}")
+        return 1
+    finally:
+        if conn is not None:
+            conn.close()
+
+
+def run_execute_qqq100_paper(
+    config: AppConfig,
+    logger: logging.Logger,
+    confirm_qqq100_paper: bool,
+) -> int:
+    conn = None
+    signal = read_saved_qqq100_preview_signal()
+    credentials_present = bool(config.alpaca_api_key and config.alpaca_secret_key)
+
+    basic_decision = evaluate_qqq100_paper_execution_preflight(
+        confirm_qqq100_paper=confirm_qqq100_paper,
+        alpaca_paper=config.alpaca_paper,
+        allow_shorting=config.allow_shorting,
+        credentials_present=credentials_present,
+        market_status="unknown",
+        signal=signal,
+        current_position=None,
+        position_readable=False,
+        open_order_count=None,
+    )
+    basic_blockers = [
+        reason
+        for reason in basic_decision.reasons
+        if reason
+        in {
+            "--confirm-qqq100-paper is required",
+            "alpaca.paper must be true; live trading is refused",
+            "allow_shorting must remain false",
+            "Alpaca paper credentials are required",
+            "saved QQQ100 preview signal is missing",
+            "saved signal strategy must be qqq_100_trend_gate",
+            "saved signal ticker must be QQQ",
+            "saved desired_position must be long or flat",
+            "saved QQQ100 preview signal data_status must be ok",
+            "saved QQQ100 preview signal contains data_error",
+        }
+    ]
+    if basic_blockers:
+        print_qqq100_paper_execution_decision(basic_decision)
+        write_qqq100_paper_execution_report(basic_decision)
+        return 2
+
+    try:
+        alpaca_client = TradingClient(
+            config.alpaca_api_key,
+            config.alpaca_secret_key,
+            paper=True,
+        )
+
+        try:
+            clock = alpaca_client.get_clock()
+            market_status = "open" if bool(getattr(clock, "is_open", False)) else "closed"
+        except Exception as exc:
+            market_status = "unknown"
+            market_error = f"Alpaca paper market clock check failed: {type(exc).__name__}"
+        else:
+            market_error = ""
+
+        try:
+            positions = get_alpaca_positions(alpaca_client)
+            current_position = positions.get(QQQ100_TICKER, Position())
+            position_readable = True
+            position_error = ""
+        except Exception as exc:
+            current_position = None
+            position_readable = False
+            position_error = f"current QQQ paper position read failed: {type(exc).__name__}"
+
+        try:
+            open_orders = get_open_orders_for_ticker(alpaca_client, QQQ100_TICKER)
+            open_order_count: int | None = len(open_orders)
+            open_order_error = ""
+        except Exception as exc:
+            open_order_count = None
+            open_order_error = f"open QQQ order read failed: {type(exc).__name__}"
+
+        preliminary_decision = evaluate_qqq100_paper_execution_preflight(
+            confirm_qqq100_paper=confirm_qqq100_paper,
+            alpaca_paper=config.alpaca_paper,
+            allow_shorting=config.allow_shorting,
+            credentials_present=credentials_present,
+            market_status=market_status,
+            signal=signal,
+            current_position=current_position,
+            position_readable=position_readable,
+            open_order_count=open_order_count,
+            extra_blockers=[item for item in [market_error, position_error, open_order_error] if item],
+        )
+
+        recent_order_match = None
+        if preliminary_decision.intended_action in {"buy_1", "sell_1"}:
+            recent_order_match = recent_matching_manual_smoke_test_order_check(
+                alpaca_client,
+                QQQ100_TICKER,
+                preliminary_decision.order_side,
+                QQQ100_FIXED_QUANTITY,
+            )
+
+        decision = evaluate_qqq100_paper_execution_preflight(
+            confirm_qqq100_paper=confirm_qqq100_paper,
+            alpaca_paper=config.alpaca_paper,
+            allow_shorting=config.allow_shorting,
+            credentials_present=credentials_present,
+            market_status=market_status,
+            signal=signal,
+            current_position=current_position,
+            position_readable=position_readable,
+            open_order_count=open_order_count,
+            recent_order_match=recent_order_match,
+            extra_blockers=[item for item in [market_error, position_error, open_order_error] if item],
+        )
+        print_qqq100_paper_execution_decision(decision)
+
+        if not decision.allowed:
+            write_qqq100_paper_execution_report(decision)
+            logger.warning("QQQ100 paper execution blocked: %s", "; ".join(decision.reasons))
+            return 2
+
+        if decision.intended_action not in {"buy_1", "sell_1"}:
+            conn = init_database(config.database_path)
+            execution_config = replace(config, dry_run=False)
+            insert_trade_log(
+                conn=conn,
+                config=execution_config,
+                ticker=QQQ100_TICKER,
+                signal="QQQ100_TARGET",
+                action=decision.intended_action,
+                position_before=current_position or Position(),
+                position_after=current_position or Position(),
+                quantity=0,
+                order_status="skipped_no_order_needed",
+                error="QQQ100 paper position already aligned with saved signal.",
+            )
+            write_qqq100_paper_execution_report(
+                decision,
+                order_status="skipped_no_order_needed",
+                order_event="order_skipped_no_order_needed",
+            )
+            return 0
+
+        is_valid_asset, asset_error = validate_alpaca_asset_for_order(
+            alpaca_client,
+            QQQ100_TICKER,
+            requires_shortable=False,
+        )
+        if not is_valid_asset:
+            blocked = evaluate_qqq100_paper_execution_preflight(
+                confirm_qqq100_paper=confirm_qqq100_paper,
+                alpaca_paper=config.alpaca_paper,
+                allow_shorting=config.allow_shorting,
+                credentials_present=credentials_present,
+                market_status=market_status,
+                signal=signal,
+                current_position=current_position,
+                position_readable=position_readable,
+                open_order_count=open_order_count,
+                recent_order_match=recent_order_match,
+                extra_blockers=[asset_error],
+            )
+            print_qqq100_paper_execution_decision(blocked)
+            write_qqq100_paper_execution_report(blocked)
+            return 2
+
+        conn = init_database(config.database_path)
+        execution_config = replace(config, dry_run=False)
+        order = submit_alpaca_order(
+            alpaca_client,
+            QQQ100_TICKER,
+            decision.order_side,
+            QQQ100_FIXED_QUANTITY,
+        )
+        order_id = str(getattr(order, "id", ""))
+        order_status = normalize_order_status(getattr(order, "status", "submitted"))
+        order_status = refresh_order_status(
+            alpaca_client,
+            logger,
+            order_id,
+            order_status,
+            timeout_seconds=10,
+        )
+        position_after = estimate_manual_position_after(
+            current_position or Position(),
+            decision.order_side,
+            QQQ100_FIXED_QUANTITY,
+            order_status,
+        )
+
+        insert_trade_log(
+            conn=conn,
+            config=execution_config,
+            ticker=QQQ100_TICKER,
+            signal="QQQ100_TARGET",
+            side=decision.order_side,
+            action=f"qqq100_{decision.intended_action}",
+            position_before=current_position or Position(),
+            position_after=position_after,
+            quantity=decimal_to_float(QQQ100_FIXED_QUANTITY),
+            order_id=order_id,
+            order_status=order_status,
+        )
+        write_qqq100_paper_execution_report(
+            decision,
+            order_status=order_status,
+            order_event="order_submitted",
+        )
+        message = (
+            f"QQQ100 manual paper order submitted: {QQQ100_TICKER} "
+            f"{decision.order_side.upper()} {format_decimal(QQQ100_FIXED_QUANTITY)} share(s), "
+            f"status {order_status}"
+        )
+        logger.info(message)
+        send_discord_alert(config, logger, message)
+        return 0
+    except Exception as exc:
+        message = f"QQQ100 paper execution failed safely: {type(exc).__name__}"
+        logger.error(message)
+        blocked = evaluate_qqq100_paper_execution_preflight(
+            confirm_qqq100_paper=confirm_qqq100_paper,
+            alpaca_paper=config.alpaca_paper,
+            allow_shorting=config.allow_shorting,
+            credentials_present=credentials_present,
+            market_status="unknown",
+            signal=signal,
+            current_position=None,
+            position_readable=False,
+            open_order_count=None,
+            extra_blockers=[message],
+        )
+        write_qqq100_paper_execution_report(blocked)
+        print(message)
         return 1
     finally:
         if conn is not None:
@@ -4906,6 +5150,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ100 paper execution readiness report without refreshing data.",
     )
     parser.add_argument(
+        "--execute-qqq100-paper",
+        action="store_true",
+        help="Manually align the saved QQQ100 preview signal with exactly one QQQ paper share; requires --confirm-qqq100-paper.",
+    )
+    parser.add_argument(
+        "--confirm-qqq100-paper",
+        action="store_true",
+        help="Required confirmation for --execute-qqq100-paper.",
+    )
+    parser.add_argument(
         "--high-growth-stock-lab",
         action="store_true",
         help="Run a research-only concentrated single-stock growth/momentum lab without execution.",
@@ -6418,6 +6672,12 @@ def main() -> int:
             ),
         )
         logger = setup_logging(config.log_file)
+        if args.execute_qqq100_paper:
+            return run_execute_qqq100_paper(
+                config=config,
+                logger=logger,
+                confirm_qqq100_paper=args.confirm_qqq100_paper,
+            )
         if args.execute_slow_sma_paper:
             return run_slow_sma_paper_execution(
                 config,

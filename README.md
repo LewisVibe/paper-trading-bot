@@ -1657,7 +1657,7 @@ data/qqq100_paper_readiness_blocker_evidence.csv
 data/qqq100_paper_readiness_blocker_blockers.csv
 ```
 
-QQQ100 paper execution readiness report mode reads saved readiness evidence only and asks whether `qqq_100_trend_gate` is ready for a future, separately reviewed manual paper-execution command design. It can recognise the saved AAPL smoke-test postcheck, QQQ100 preview signal/action preview, promoted preview row, multi-strategy portfolio overlap warnings, portfolio-risk, execution eligibility, kill-switch, and paper-execution protection context. It may label the branch ready for manual execution-design review, but it does not add a QQQ100 execution command and does not approve paper execution.
+QQQ100 paper execution readiness report mode reads saved readiness evidence only and asks whether `qqq_100_trend_gate` is ready for a separately reviewed manual paper-execution command design. It can recognise the saved AAPL smoke-test postcheck, QQQ100 preview signal/action preview, promoted preview row, multi-strategy portfolio overlap warnings, portfolio-risk, execution eligibility, kill-switch, and paper-execution protection context. It may label the branch ready for manual execution-design review, but it does not itself submit orders or approve broad paper execution.
 
 Command:
 
@@ -1679,6 +1679,24 @@ data/qqq100_paper_execution_readiness_summary.csv
 data/qqq100_paper_execution_readiness_evidence.csv
 data/qqq100_paper_execution_readiness_blockers.csv
 ```
+
+QQQ100 manual paper execution is a separate high-risk, confirmation-gated command for the clean QQQ lead only. It reads `data/qqq100_preview_signal_pack.csv`, requires `--confirm-qqq100-paper`, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, checks the QQQ paper position, blocks on open QQQ orders or recent matching QQQ one-share broker orders, and can only align `qqq_100_trend_gate` / `QQQ` by one share. It does not use the normal config ticker universe and does not apply to high-growth, crypto, QQQ150, or adaptive QQQ alternatives. General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false; only the narrow `strategy_execution_approved` / `qqq100_one_share_alignment_approved` flags can be true for the exact manually confirmed QQQ100 path.
+
+Command:
+
+```text
+python bot.py --execute-qqq100-paper --confirm-qqq100-paper
+```
+
+If the saved signal is `long` and the QQQ paper position is flat, the command may submit one paper `BUY 1 QQQ` order. If the saved signal is `flat` and the QQQ paper position is long, it may submit one paper `SELL 1 QQQ` order without overselling. Already-aligned long/flat states write a skipped/no-order-needed result. Blocked, skipped, or submitted runs write:
+
+```text
+data/qqq100_paper_execution_result.csv
+data/qqq100_paper_execution_summary.csv
+data/qqq100_paper_execution_blockers.csv
+```
+
+Do not schedule this command. Do not use it as a template for normal `python bot.py`, `--paper-order-test`, slow-SMA paper execution, live trading, or any other strategy-to-execution path.
 
 High-growth stock lab mode tests a fixed high-risk, high-return individual-stock universe only: `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`. SPY and QQQ are allowed only as benchmark/regime references, not as traded holdings. The lab compares fixed monthly concentrated momentum variants, including top 1/top 2/top 3 composite 63/126/252-day momentum with own SMA200 and QQQ/SPY SMA200 regime gates, plus `codex_high_conviction_growth_persistence`, `codex_growth_drawdown_reentry`, `codex_high_growth_breakout_acceleration`, and `codex_high_growth_crash_rebound_leader`. The two Codex high-growth variants are fixed-rule ambitious stock-only candidates: one looks for breakout acceleration near 52-week highs, and one looks for crash-rebound leaders after recovery confirmation. This is research-only and deliberately flags concentration risk, survivorship bias, single-name event risk, stock-specific gap risk, cost/split sensitivity, and drawdown risk. It may use yfinance daily data through the research path, but it does not call Alpaca, load config, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect strategies to Alpaca or paper orders.
 

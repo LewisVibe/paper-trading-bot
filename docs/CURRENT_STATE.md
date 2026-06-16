@@ -173,7 +173,17 @@ The QQQ100 paper execution readiness report comes from `python bot.py --qqq100-p
 
 - It reads saved readiness evidence only, including the AAPL smoke-test postcheck, QQQ100 preview signal/action preview, promoted preview row, multi-strategy portfolio overlap warnings, portfolio-risk, execution eligibility, kill-switch, protection, and project-state outputs where present.
 - It writes `data/qqq100_paper_execution_readiness_report.csv`, `data/qqq100_paper_execution_readiness_summary.csv`, `data/qqq100_paper_execution_readiness_evidence.csv`, and `data/qqq100_paper_execution_readiness_blockers.csv`.
-- It may say QQQ100 is ready for future manual execution-design review, but it does not approve paper execution, add a QQQ100 execution command, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, or connect strategies to paper orders.
+- It may say QQQ100 is ready for manual execution-design review, but it does not itself approve broad paper execution, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, or connect strategies to paper orders.
+
+The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
+
+- It is high-risk and manually confirmed.
+- It reads only the saved `data/qqq100_preview_signal_pack.csv` signal for `qqq_100_trend_gate` / `QQQ`.
+- It is fixed to one QQQ share, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, and does not use the normal config ticker universe.
+- It checks QQQ paper position, open QQQ orders, market-open status, and recent matching QQQ one-share broker orders before any submission.
+- It may buy one QQQ share when the saved signal is `long` and QQQ is flat, may sell one QQQ share when the saved signal is `flat` and QQQ is long without overselling, and otherwise writes a no-order-needed or blocked result.
+- It writes `data/qqq100_paper_execution_result.csv`, `data/qqq100_paper_execution_summary.csv`, and `data/qqq100_paper_execution_blockers.csv` when run.
+- General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false. It must not be scheduled and must not be generalized to normal `python bot.py`, `--paper-order-test`, slow-SMA paper execution, high-growth, crypto, QQQ150, or adaptive QQQ paths.
 
 The multi-strategy portfolio preview combiner comes from `python bot.py --multi-strategy-portfolio-preview`, with saved display through `python bot.py --show-multi-strategy-portfolio-preview`:
 
