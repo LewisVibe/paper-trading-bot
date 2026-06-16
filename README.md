@@ -1698,6 +1698,31 @@ data/qqq100_paper_execution_blockers.csv
 
 Do not schedule this command. Do not use it as a template for normal `python bot.py`, `--paper-order-test`, slow-SMA paper execution, live trading, or any other strategy-to-execution path.
 
+Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
+
+Command:
+
+```text
+python bot.py --paper-execution-state-summary
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-execution-state-summary
+```
+
+Outputs:
+
+```text
+data/paper_execution_state_summary.csv
+data/paper_execution_state_positions.csv
+data/paper_execution_state_milestones.csv
+data/paper_execution_state_blockers.csv
+```
+
+The report can label historical milestones such as `aapl_smoke_test_filled_confirmed`, `qqq100_manual_paper_execution_filled_confirmed`, and `qqq100_aligned_long_confirmed` from saved evidence. Current approvals remain false: `execution_approved=false`, `general_execution_approved=false`, `qqq100_execution_approved=false`, `followup_order_approved=false`, `repeat_execution_approved=false`, and `scheduling_approved=false`.
+
 High-growth stock lab mode tests a fixed high-risk, high-return individual-stock universe only: `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`. SPY and QQQ are allowed only as benchmark/regime references, not as traded holdings. The lab compares fixed monthly concentrated momentum variants, including top 1/top 2/top 3 composite 63/126/252-day momentum with own SMA200 and QQQ/SPY SMA200 regime gates, plus `codex_high_conviction_growth_persistence`, `codex_growth_drawdown_reentry`, `codex_high_growth_breakout_acceleration`, and `codex_high_growth_crash_rebound_leader`. The two Codex high-growth variants are fixed-rule ambitious stock-only candidates: one looks for breakout acceleration near 52-week highs, and one looks for crash-rebound leaders after recovery confirmation. This is research-only and deliberately flags concentration risk, survivorship bias, single-name event risk, stock-specific gap risk, cost/split sensitivity, and drawdown risk. It may use yfinance daily data through the research path, but it does not call Alpaca, load config, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect strategies to Alpaca or paper orders.
 
 Command:

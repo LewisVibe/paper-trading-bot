@@ -324,6 +324,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-execution-state-summary"]:
+        from trading_bot.research.paper_execution_state_summary import generate_paper_execution_state_summary
+
+        result = generate_paper_execution_state_summary()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-execution-state-summary"]:
+        from trading_bot.research.paper_execution_state_summary import show_paper_execution_state_summary
+
+        code, lines = show_paper_execution_state_summary()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--high-growth-stock-lab"]:
         from trading_bot.research.high_growth_stock_lab import generate_high_growth_stock_lab
 
@@ -670,6 +684,10 @@ from trading_bot.research.qqq100_paper_readiness_blocker_report import (
 from trading_bot.research.qqq100_paper_execution_readiness_report import (
     generate_qqq100_paper_execution_readiness_report,
     show_qqq100_paper_execution_readiness_report,
+)
+from trading_bot.research.paper_execution_state_summary import (
+    generate_paper_execution_state_summary,
+    show_paper_execution_state_summary,
 )
 from trading_bot.safety.qqq100_paper_execution import (
     FIXED_QUANTITY as QQQ100_FIXED_QUANTITY,
@@ -5150,6 +5168,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ100 paper execution readiness report without refreshing data.",
     )
     parser.add_argument(
+        "--paper-execution-state-summary",
+        action="store_true",
+        help="Create a saved-output-only paper execution milestone/state summary without broker calls.",
+    )
+    parser.add_argument(
+        "--show-paper-execution-state-summary",
+        action="store_true",
+        help="Display the saved paper execution state summary without reading broker state.",
+    )
+    parser.add_argument(
         "--execute-qqq100-paper",
         action="store_true",
         help="Manually align the saved QQQ100 preview signal with exactly one QQQ paper share; requires --confirm-qqq100-paper.",
@@ -6293,6 +6321,20 @@ def main() -> int:
         return 0
     if args.show_qqq100_paper_execution_readiness_report:
         status_code, lines = show_qqq100_paper_execution_readiness_report()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_execution_state_summary:
+        try:
+            result = generate_paper_execution_state_summary()
+        except Exception as exc:
+            print(f"Paper execution state summary failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_execution_state_summary:
+        status_code, lines = show_paper_execution_state_summary()
         for line in lines:
             print(line)
         return status_code

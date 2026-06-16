@@ -185,6 +185,13 @@ The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-pap
 - It writes `data/qqq100_paper_execution_result.csv`, `data/qqq100_paper_execution_summary.csv`, and `data/qqq100_paper_execution_blockers.csv` when run.
 - General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false. It must not be scheduled and must not be generalized to normal `python bot.py`, `--paper-order-test`, slow-SMA paper execution, high-growth, crypto, QQQ150, or adaptive QQQ paths.
 
+The paper execution state summary comes from `python bot.py --paper-execution-state-summary`, with saved display through `python bot.py --show-paper-execution-state-summary`:
+
+- It reads saved CSV outputs only, including AAPL smoke-test postcheck, QQQ100 paper execution result/summary, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution eligibility, portfolio preview, and portfolio-risk context where available.
+- It writes `data/paper_execution_state_summary.csv`, `data/paper_execution_state_positions.csv`, `data/paper_execution_state_milestones.csv`, and `data/paper_execution_state_blockers.csv`.
+- It can record historical milestone labels such as `aapl_smoke_test_filled_confirmed`, `qqq100_manual_paper_execution_filled_confirmed`, and `qqq100_aligned_long_confirmed` when saved evidence exists.
+- It does not call Alpaca, read paper positions live, refresh market data, create/submit/cancel orders, write SQLite `trade_log`, send alerts, schedule anything, approve follow-up orders, approve repeat execution, or approve general execution.
+
 The multi-strategy portfolio preview combiner comes from `python bot.py --multi-strategy-portfolio-preview`, with saved display through `python bot.py --show-multi-strategy-portfolio-preview`:
 
 - It reads saved CSV outputs only, including QQQ100 preview/action outputs, promoted preview rows, defensive context, high-growth branch checkpoints, crypto research/manual-review outputs, project research state, execution eligibility, and portfolio-risk policy outputs where present.
