@@ -254,6 +254,13 @@ The multi-sleeve portfolio backtest checkpoint comes from `python bot.py --multi
 - It consumes defensive and Codex generated streams when present, while high-growth and crypto remain labelled as missing unless real daily streams exist.
 - The expected status is `multi_sleeve_candidate_needs_more_data`; `qqq100_core_trend_sleeve` remains the only active paper sleeve and all execution, follow-up, repeat, scheduling, live, high-growth, crypto, and Codex-experimental approval flags remain false.
 
+The multi-sleeve robustness checkpoint comes from `python bot.py --multi-sleeve-robustness`, with saved display through `python bot.py --show-multi-sleeve-robustness`:
+
+- It reads saved return streams and multi-sleeve backtest CSVs only, then tests `qqq100_plus_high_growth_research` against the generated QQQ100 reference across fixed `split_60_40`, `split_70_30`, and `split_80_20` out-of-sample windows.
+- It writes `data/multi_sleeve_robustness_report.csv` and `data/multi_sleeve_robustness_summary.csv`.
+- It reports Calmar and Sharpe split wins, worst split by Calmar/MaxDD, key blockers, and the next review step.
+- It remains blocked by QQQ100 generated-stream reconciliation until saved/generated benchmark parity is resolved, and it does not approve preview promotion, execution, scheduling, Alpaca/order paths, or any sleeve-to-execution wiring.
+
 The paper execution state summary comes from `python bot.py --paper-execution-state-summary`, with saved display through `python bot.py --show-paper-execution-state-summary`:
 
 - It reads saved CSV outputs only, including AAPL smoke-test postcheck, QQQ100 paper execution result/summary or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution eligibility, portfolio preview, and portfolio-risk context where available.

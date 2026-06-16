@@ -79,6 +79,8 @@ REQUIRED_COMMANDS = [
     "--show-high-growth-return-streams",
     "--multi-sleeve-portfolio-backtest",
     "--show-multi-sleeve-portfolio-backtest",
+    "--multi-sleeve-robustness",
+    "--show-multi-sleeve-robustness",
     "--paper-execution-state-summary",
     "--show-paper-execution-state-summary",
     "--execute-qqq100-paper",

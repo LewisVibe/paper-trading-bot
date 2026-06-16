@@ -464,6 +464,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--multi-sleeve-robustness"]:
+        from trading_bot.research.multi_sleeve_robustness import generate_multi_sleeve_robustness
+
+        result = generate_multi_sleeve_robustness()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-multi-sleeve-robustness"]:
+        from trading_bot.research.multi_sleeve_robustness import show_multi_sleeve_robustness
+
+        code, lines = show_multi_sleeve_robustness()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-execution-state-summary"]:
         from trading_bot.research.paper_execution_state_summary import generate_paper_execution_state_summary
 
@@ -852,6 +866,10 @@ from trading_bot.research.sleeve_return_streams import (
 from trading_bot.research.multi_sleeve_portfolio_backtest import (
     generate_multi_sleeve_portfolio_backtest,
     show_multi_sleeve_portfolio_backtest,
+)
+from trading_bot.research.multi_sleeve_robustness import (
+    generate_multi_sleeve_robustness,
+    show_multi_sleeve_robustness,
 )
 from trading_bot.research.paper_execution_state_summary import (
     generate_paper_execution_state_summary,
@@ -5391,6 +5409,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved multi-sleeve portfolio backtest without broker or market-data reads.",
     )
     parser.add_argument(
+        "--multi-sleeve-robustness",
+        action="store_true",
+        help="Create a saved-output-only split robustness report for the high-growth multi-sleeve candidate.",
+    )
+    parser.add_argument(
+        "--show-multi-sleeve-robustness",
+        action="store_true",
+        help="Display the saved multi-sleeve robustness report without broker or market-data reads.",
+    )
+    parser.add_argument(
         "--paper-execution-state-summary",
         action="store_true",
         help="Create a saved-output-only paper execution milestone/state summary without broker calls.",
@@ -6644,6 +6672,20 @@ def main() -> int:
         return 0
     if args.show_multi_sleeve_portfolio_backtest:
         status_code, lines = show_multi_sleeve_portfolio_backtest()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.multi_sleeve_robustness:
+        try:
+            result = generate_multi_sleeve_robustness()
+        except Exception as exc:
+            print(f"Multi-sleeve robustness failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_multi_sleeve_robustness:
+        status_code, lines = show_multi_sleeve_robustness()
         for line in lines:
             print(line)
         return status_code

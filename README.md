@@ -1869,6 +1869,22 @@ data/multi_sleeve_portfolio_backtest_summary.csv
 
 The expected status is `multi_sleeve_candidate_needs_more_data` until saved daily return streams, split metrics, and trade/turnover streams exist. `qqq100_core_trend_sleeve` remains the only active paper sleeve, high-growth and crypto remain research-only, and all execution, follow-up, repeat, scheduling, and live-trading approval flags remain false.
 
+Multi-sleeve robustness mode is the saved-output-only split validation checkpoint for `qqq100_plus_high_growth_research`. It reads saved QQQ100, high-growth, cash, and multi-sleeve backtest CSVs only, then tests fixed `split_60_40`, `split_70_30`, and `split_80_20` chronological out-of-sample windows against the generated QQQ100 reference. It does not refresh yfinance data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, or label the candidate promotion-ready while QQQ100 stream reconciliation remains unresolved.
+
+```text
+python bot.py --multi-sleeve-robustness
+python bot.py --show-multi-sleeve-robustness
+```
+
+Outputs:
+
+```text
+data/multi_sleeve_robustness_report.csv
+data/multi_sleeve_robustness_summary.csv
+```
+
+The expected blocker is `multi_sleeve_robustness_blocked_qqq100_reconciliation` until the generated QQQ100 stream is reconciled with the saved QQQ100 benchmark. The report is research-only and keeps execution and scheduling approval false.
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:
