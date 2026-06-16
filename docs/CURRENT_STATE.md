@@ -242,8 +242,9 @@ The QQQ100 stream reconciliation checkpoint comes from `python bot.py --qqq100-s
 
 - It compares saved `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` benchmark metrics with the generated QQQ100 daily stream from `data/sleeve_return_streams.csv`.
 - It writes `data/qqq100_stream_reconciliation.csv`, `data/qqq100_stream_reconciliation_candidates.csv`, `data/qqq100_stream_reconciliation_diagnostics.csv`, `data/qqq100_stream_reconciliation_blockers.csv`, and `data/qqq100_stream_reconciliation_summary.csv`.
-- It tests close versus adjusted-close availability, signal shift, SMA100 warmup, date range, cash/flat handling, and cost/slippage assumption gaps where saved research price data exists.
-- It labels missing original benchmark source data, date range, price adjustment, cash, and cost assumptions rather than forcing generated-stream parity.
+- It tests the current saved generated stream, close versus adjusted-close availability, signal shift, SMA100 warmup/date alignment, cash/flat handling, and cost/slippage assumption gaps where saved research price data exists.
+- It applies fixed gap thresholds for CAGR, Sharpe, MaxDD, and Calmar before any candidate can be called close enough for research review; current saved outputs remain `qqq100_reconciliation_still_blocked` while a material CAGR gap remains.
+- It labels missing original benchmark source stream/data, date range, price adjustment, cash, and cost assumptions rather than forcing generated-stream parity.
 - It does not update `--sleeve-return-streams` automatically; QQQ100 remains the only active paper sleeve and all execution, follow-up, repeat, scheduling, and live-trading approval flags remain false.
 
 The multi-sleeve portfolio backtest checkpoint comes from `python bot.py --multi-sleeve-portfolio-backtest`, with saved display through `python bot.py --show-multi-sleeve-portfolio-backtest`:

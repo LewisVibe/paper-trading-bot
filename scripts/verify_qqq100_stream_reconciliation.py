@@ -95,10 +95,19 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "qqq100_stream_reconciliation_candidates.csv",
         "qqq100_stream_close_shift0",
         "qqq100_stream_close_shift1",
+        "qqq100_stream_close_shift1_drop_warmup",
+        "qqq100_current_saved_stream",
         "qqq100_stream_adjclose_shift0",
         "qqq100_stream_adjclose_shift1",
+        "qqq100_stream_adjclose_shift1_drop_warmup",
         "qqq100_stream_min_periods_100_shift1",
         "qqq100_stream_saved_benchmark_like_best_candidate",
+        "all_metric_gaps_within_research_review_thresholds",
+        "material_metric_gap_remains",
+        "qqq100_reconciliation_candidate_close_enough_for_research_review",
+        "qqq100_reconciliation_improved_not_final",
+        "qqq100_reconciliation_still_blocked",
+        "qqq100_reconciliation_blocked_missing_original_benchmark_stream",
         "missing_cost_assumption",
         "cash_or_risk_free_assumption_unknown",
         "price_adjustment_or_dividend_split_treatment_unknown",
@@ -172,6 +181,20 @@ def verify_temp_generation(failures: list[str]) -> None:
             failures.append("best aligned candidate should be a QQQ100 stream candidate")
         if report.get("sleeve_return_streams_updated") not in {False, "False", "false"}:
             failures.append("reconciliation should not update sleeve_return_streams automatically")
+        if report.get("final_reconciliation_status") in {"promotion_ready", "execution_ready", "reconciled_for_execution"}:
+            failures.append("reconciliation status must never be promotion-ready or execution-ready")
+        if report.get("gap_threshold_status") not in {
+            "all_metric_gaps_within_research_review_thresholds",
+            "material_metric_gap_remains",
+            "missing_metrics",
+        }:
+            failures.append("report should include explicit fixed metric gap threshold status")
+        if report.get("final_reconciliation_status") == "qqq100_reconciliation_candidate_close_enough_for_research_review":
+            if report.get("gap_threshold_status") != "all_metric_gaps_within_research_review_thresholds":
+                failures.append("close-enough status requires all metric gaps inside fixed thresholds")
+        if report.get("gap_threshold_status") == "material_metric_gap_remains":
+            if report.get("final_reconciliation_status") == "qqq100_reconciliation_candidate_close_enough_for_research_review":
+                failures.append("material metric gaps must remain blocked/manual-review, not close-enough")
         if "missing" not in report.get("likely_mismatch_cause", "") and "unknown" not in report.get("likely_mismatch_cause", "") and "mismatch" not in report.get("likely_mismatch_cause", ""):
             failures.append("likely mismatch cause should be labelled conservatively")
         if "saved QQQ100 benchmark metrics" not in " ".join(result.summary_lines):
@@ -183,8 +206,11 @@ def verify_temp_generation(failures: list[str]) -> None:
         for expected in [
             "qqq100_stream_close_shift0",
             "qqq100_stream_close_shift1",
+            "qqq100_stream_close_shift1_drop_warmup",
+            "qqq100_current_saved_stream",
             "qqq100_stream_adjclose_shift0",
             "qqq100_stream_adjclose_shift1",
+            "qqq100_stream_adjclose_shift1_drop_warmup",
             "qqq100_stream_min_periods_100_shift1",
             "qqq100_stream_saved_benchmark_like_best_candidate",
         ]:
@@ -192,7 +218,7 @@ def verify_temp_generation(failures: list[str]) -> None:
                 failures.append(f"missing reconciliation candidate: {expected}")
 
         diagnostic_text = " ".join(str(value) for row in result.diagnostic_rows for value in row.values())
-        for expected in ["missing_cost_assumption", "cash_or_risk_free_assumption_unknown", "signal_timing_mismatch_possible"]:
+        for expected in ["missing_cost_assumption", "cash_or_risk_free_assumption_unknown", "signal_timing_mismatch_possible", "thresholds: CAGR<="]:
             if expected not in diagnostic_text:
                 failures.append(f"diagnostics should label missing assumption/cause: {expected}")
 

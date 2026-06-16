@@ -70,7 +70,7 @@ Cross-references:
   - QQQ100 paper execution code unless a separate explicit execution review allows it
   - scheduling, Hermes cron, Task Scheduler, service, or loop files
 - **Allowed commands:** `python scripts\verify_qqq100_stream_reconciliation.py` and repo safety/inventory verifiers only.
-- **Stop condition:** Stop if the task starts expanding `--execute-qqq100-paper`, adding repeat execution, calling Alpaca, reading broker state, changing config defaults, approving scheduling, or treating a reconciliation candidate as execution approval.
+- **Stop condition:** Stop if the task starts expanding `--execute-qqq100-paper`, adding repeat execution, calling Alpaca, reading broker state, changing config defaults, approving scheduling, treating a material metric-gap candidate as reconciled, or treating a reconciliation candidate as execution approval.
 
 ### Task: High-growth return-stream review
 - **Purpose:** Review saved daily high-growth stock return streams before they are used in any multi-sleeve research conclusion.

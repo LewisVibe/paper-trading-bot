@@ -1828,7 +1828,7 @@ data/high_growth_return_stream_blockers.csv
 
 The expected status is `high_growth_return_streams_created` when enough research price data exists. If market data is unavailable, the report labels the data gap instead of inventing returns. High-growth remains research-only and `execution_approved=false`.
 
-QQQ100 stream reconciliation mode is a research-only checkpoint for comparing the generated `qqq_100_trend_gate` daily stream against the saved QQQ100 benchmark metrics. It tests close/adjusted-close availability, same-day versus next-day signal timing, SMA100 warmup behaviour, date range, cash/flat handling, and missing cost/slippage assumptions. It writes labelled diagnostics rather than forcing a match, and it does not update `--sleeve-return-streams` unless a future manual review approves a better configuration.
+QQQ100 stream reconciliation mode is a research-only checkpoint for comparing the generated `qqq_100_trend_gate` daily stream against the saved QQQ100 benchmark metrics. It tests the current saved generated stream, close/adjusted-close availability, same-day versus next-day signal timing, SMA100 warmup/date-alignment behaviour, cash/flat handling, and missing cost/slippage assumptions. It now applies fixed metric-gap thresholds before any candidate can be called close enough for research review. If a material CAGR, Sharpe, MaxDD, or Calmar gap remains, the report stays blocked/manual-review and does not update `--sleeve-return-streams`.
 
 ```text
 python bot.py --qqq100-stream-reconciliation
@@ -1845,7 +1845,7 @@ data/qqq100_stream_reconciliation_blockers.csv
 data/qqq100_stream_reconciliation_summary.csv
 ```
 
-This reconciliation is research/report-only. QQQ100 remains the only active paper sleeve, repeat execution approval remains false, follow-up order approval remains false, scheduling approval remains false, and general execution approval remains false.
+This reconciliation is research/report-only. Current saved outputs remain `qqq100_reconciliation_still_blocked` while the generated QQQ100 stream trails the saved benchmark materially and the original benchmark source stream/parameters are unknown. QQQ100 remains the only active paper sleeve, repeat execution approval remains false, follow-up order approval remains false, scheduling approval remains false, and general execution approval remains false.
 
 Multi-sleeve portfolio backtest mode is a saved-output-only research checkpoint for testing portfolio combinations conceptually before any new preview/action/execution wiring. It keeps saved QQQ100 benchmark metrics separate from generated QQQ100 stream metrics, then defines QQQ100-only, QQQ100-plus-cash, QQQ100-plus-SPY-SMA200 defensive gate, QQQ100-plus-rolling-drawdown defensive gate, QQQ100-plus-combined defensive gate, Codex defensive QQQ research, high-growth, crypto, balanced multi-sleeve, and Codex ambitious allocation candidates. When `data/sleeve_return_streams.csv` contains defensive and Codex streams, those candidates are consumed; high-growth and crypto remain labelled as missing unless real daily streams exist. It does not fetch market data, call Alpaca, read live positions, create/submit/cancel/replace orders, write SQLite `trade_log`, send alerts, schedule anything, expand QQQ100 execution, add repeat execution, or wire any sleeve to execution.
 

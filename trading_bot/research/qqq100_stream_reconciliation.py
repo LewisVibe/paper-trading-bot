@@ -35,10 +35,22 @@ from trading_bot.research.sleeve_return_streams import (
 
 
 FINAL_STATUS = "qqq100_stream_reconciliation_needs_manual_review"
+STATUS_CLOSE_ENOUGH = "qqq100_reconciliation_candidate_close_enough_for_research_review"
+STATUS_IMPROVED_NOT_FINAL = "qqq100_reconciliation_improved_not_final"
+STATUS_STILL_BLOCKED = "qqq100_reconciliation_still_blocked"
+STATUS_BLOCKED_MISSING_ORIGINAL_STREAM = "qqq100_reconciliation_blocked_missing_original_benchmark_stream"
+STATUS_BLOCKED_UNKNOWN_DEFINITION = "qqq100_reconciliation_blocked_benchmark_definition_unknown"
 BEST_CANDIDATE_FALLBACK = "qqq100_stream_saved_benchmark_like_best_candidate"
 QQQ100_STRATEGY_IDENTITY = "qqq_100_trend_gate"
 BIGGEST_BLOCKER = "missing_original_benchmark_source_data_and_exact_backtest_parameters"
 RECOMMENDED_NEXT_STEP = "document_original_qqq100_backtest_inputs_before_updating_stream_generation"
+REVIEW_NEXT_STEP = "review_improved_qqq100_reconciliation_candidate_before_updating_stream_generation"
+GAP_THRESHOLDS = {
+    "cagr": 0.5,
+    "sharpe": 0.05,
+    "max_drawdown": 0.5,
+    "calmar": 0.05,
+}
 
 OUTPUT_FILES = {
     "report": Path("data/qqq100_stream_reconciliation.csv"),
@@ -115,6 +127,7 @@ REPORT_COLUMNS = [
     "delta_max_drawdown_vs_saved_benchmark",
     "delta_calmar_vs_saved_benchmark",
     "reconciliation_distance_score",
+    "gap_threshold_status",
     "likely_mismatch_cause",
     "sleeve_return_streams_updated",
     "biggest_blocker",
@@ -145,6 +158,7 @@ CANDIDATE_COLUMNS = [
     "delta_MaxDD_vs_saved_benchmark",
     "delta_Calmar_vs_saved_benchmark",
     "reconciliation_distance_score",
+    "gap_threshold_status",
     "reconciliation_status",
     "mismatch_reason",
     *SAFETY_COLUMNS,
@@ -194,9 +208,10 @@ def generate_qqq100_stream_reconciliation(root_dir: Path | str = ".") -> QQQ100S
     root = Path(root_dir)
     created_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     saved_metrics = saved_qqq100_metrics(root)
-    current_metrics = portfolio_metrics_from_streams(QQQ100_REFERENCE, read_csv_rows(root / "data/sleeve_return_streams.csv")) or missing_metrics()
+    saved_stream_rows = read_csv_rows(root / "data/sleeve_return_streams.csv")
+    current_metrics = portfolio_metrics_from_streams(QQQ100_REFERENCE, saved_stream_rows) or missing_metrics()
     price_rows, price_source, price_basis_status = load_qqq_price_rows(root)
-    candidate_rows = build_candidate_rows(created_at, price_rows, saved_metrics, price_basis_status)
+    candidate_rows = build_candidate_rows(created_at, price_rows, saved_stream_rows, saved_metrics, current_metrics, price_basis_status)
     best_candidate = choose_best_candidate(candidate_rows)
     diagnostic_rows = build_diagnostic_rows(created_at, saved_metrics, current_metrics, candidate_rows, price_source, price_basis_status)
     blocker_rows = build_blocker_rows(created_at, diagnostic_rows)
@@ -237,6 +252,7 @@ def show_qqq100_stream_reconciliation(root_dir: Path | str = ".") -> tuple[int, 
         f"best aligned candidate: {summary.get('best_aligned_candidate', 'missing')}",
         f"best aligned candidate metrics: {summary.get('best_aligned_candidate_metrics', 'missing')}",
         f"deltas vs saved benchmark: {summary.get('deltas_vs_saved_benchmark', 'missing')}",
+        f"gap threshold status: {summary.get('gap_threshold_status', 'missing')}",
         f"likely mismatch cause: {summary.get('likely_mismatch_cause', 'missing')}",
         f"sleeve_return_streams updated: {summary.get('sleeve_return_streams_updated', 'false')}",
         f"biggest blocker: {summary.get('biggest_blocker', BIGGEST_BLOCKER)}",
@@ -273,20 +289,25 @@ def load_qqq_price_rows(root: Path) -> tuple[list[dict[str, Any]], str, str]:
 def build_candidate_rows(
     created_at: str,
     price_rows: list[dict[str, Any]],
+    saved_stream_rows: list[dict[str, str]],
     saved_metrics: dict[str, str],
+    current_metrics: dict[str, str],
     price_basis_status: str,
 ) -> list[dict[str, Any]]:
     specs = [
-        ("qqq100_stream_close_shift0", "close", 0, 100, 100, "same_day_signal_reference"),
-        ("qqq100_stream_close_shift1", "close", 1, 100, 100, "next_day_signal_reference"),
-        ("qqq100_stream_adjclose_shift0", "adj_close", 0, 100, 100, "same_day_signal_reference"),
-        ("qqq100_stream_adjclose_shift1", "adj_close", 1, 100, 100, "next_day_signal_reference"),
-        ("qqq100_stream_min_periods_100_shift1", "close", 1, 100, 100, "next_day_signal_reference"),
+        ("qqq100_stream_close_shift0", "close", 0, 100, 100, "same_day_signal_reference", False),
+        ("qqq100_stream_close_shift1", "close", 1, 100, 100, "next_day_signal_reference", False),
+        ("qqq100_stream_close_shift1_drop_warmup", "close", 1, 100, 100, "next_day_signal_reference_drop_warmup", True),
+        ("qqq100_stream_adjclose_shift0", "adj_close", 0, 100, 100, "same_day_signal_reference", False),
+        ("qqq100_stream_adjclose_shift1", "adj_close", 1, 100, 100, "next_day_signal_reference", False),
+        ("qqq100_stream_adjclose_shift1_drop_warmup", "adj_close", 1, 100, 100, "next_day_signal_reference_drop_warmup", True),
+        ("qqq100_stream_min_periods_100_shift1", "close", 1, 100, 100, "next_day_signal_reference", False),
     ]
-    rows = [
+    rows = [current_saved_stream_candidate(created_at, saved_stream_rows, saved_metrics, current_metrics)]
+    rows.extend(
         candidate_row_from_spec(created_at, price_rows, saved_metrics, price_basis_status, *spec)
         for spec in specs
-    ]
+    )
     best = choose_best_candidate(rows)
     if best:
         clone = dict(best)
@@ -308,18 +329,20 @@ def candidate_row_from_spec(
     sma_window: int,
     min_periods: int,
     timing: str,
+    drop_warmup: bool,
 ) -> dict[str, Any]:
     if not price_rows or len(price_rows) <= sma_window:
         return data_unavailable_candidate(created_at, candidate_name, "data_unavailable", saved_metrics)
     if price_basis == "adj_close" and "adjusted_close_unavailable" in price_basis_status:
         return data_unavailable_candidate(created_at, candidate_name, "data_unavailable", saved_metrics, price_basis=price_basis)
-    streams = build_candidate_stream(price_rows, price_basis, signal_shift_rows, sma_window, min_periods)
+    streams = build_candidate_stream(price_rows, price_basis, signal_shift_rows, sma_window, min_periods, drop_warmup)
     if len(streams) < 2:
         return data_unavailable_candidate(created_at, candidate_name, "data_unavailable", saved_metrics, price_basis=price_basis)
     metrics = metrics_for_returns([row["daily_strategy_return"] for row in streams], [row["cash_weight"] for row in streams])
     deltas = candidate_deltas(metrics, saved_metrics)
     distance = reconciliation_distance(deltas)
-    status = reconciliation_status(distance)
+    gap_status = gap_threshold_status(deltas)
+    status = reconciliation_status(distance, gap_status)
     mismatch = mismatch_reason(status, price_basis_status)
     return {
         "created_at": created_at,
@@ -344,6 +367,7 @@ def candidate_row_from_spec(
         "delta_MaxDD_vs_saved_benchmark": deltas["max_drawdown"],
         "delta_Calmar_vs_saved_benchmark": deltas["calmar"],
         "reconciliation_distance_score": distance,
+        "gap_threshold_status": gap_status,
         "reconciliation_status": status,
         "mismatch_reason": mismatch,
         **safety_flags(),
@@ -356,10 +380,13 @@ def build_candidate_stream(
     signal_shift_rows: int,
     sma_window: int,
     min_periods: int,
+    drop_warmup: bool,
 ) -> list[dict[str, Any]]:
     normalized = [{"date": row["date"], "close": float(row[price_basis])} for row in price_rows if row.get(price_basis) not in {"", None}]
     rows = []
     for index in range(1, len(normalized)):
+        if drop_warmup and index < min_periods:
+            continue
         signal_index = index - signal_shift_rows
         exposure = 1.0 if signal_index >= 0 and above_sma_with_min_periods(normalized, signal_index, sma_window, min_periods) else 0.0
         asset_return = daily_return(normalized, index)
@@ -372,6 +399,54 @@ def build_candidate_stream(
             }
         )
     return rows
+
+
+def current_saved_stream_candidate(
+    created_at: str,
+    rows: list[dict[str, str]],
+    saved_metrics: dict[str, str],
+    current_metrics: dict[str, str],
+) -> dict[str, Any]:
+    qqq_rows = [
+        row
+        for row in rows
+        if row.get("candidate_name") == QQQ100_STRATEGY_IDENTITY
+        or row.get("sleeve_name") == QQQ100_SLEEVE
+    ]
+    if len(qqq_rows) < 2 or metrics_missing(current_metrics):
+        return data_unavailable_candidate(created_at, "qqq100_current_saved_stream", "data_unavailable", saved_metrics)
+    qqq_rows.sort(key=lambda row: str(row.get("date", "")))
+    deltas = candidate_deltas(current_metrics, saved_metrics)
+    distance = reconciliation_distance(deltas)
+    gap_status = gap_threshold_status(deltas)
+    return {
+        "created_at": created_at,
+        "candidate_name": "qqq100_current_saved_stream",
+        "price_basis": "saved_sleeve_return_stream",
+        "signal_shift_rows": "saved",
+        "sma_window": "saved",
+        "min_periods": "saved",
+        "execution_timing": "saved_current_stream",
+        "start_date": qqq_rows[0].get("date", ""),
+        "end_date": qqq_rows[-1].get("date", ""),
+        "row_count": len(qqq_rows),
+        "cagr": current_metrics["cagr"],
+        "sharpe": current_metrics["sharpe"],
+        "max_drawdown": current_metrics["max_drawdown"],
+        "calmar": current_metrics["calmar"],
+        "annual_volatility": current_metrics.get("annualised_volatility", MISSING),
+        "cash_percentage": current_metrics.get("cash_percentage", MISSING),
+        "trade_signal_change_count": signal_changes([{"signal_state": row.get("signal_state", "")} for row in qqq_rows]),
+        "delta_CAGR_vs_saved_benchmark": deltas["cagr"],
+        "delta_Sharpe_vs_saved_benchmark": deltas["sharpe"],
+        "delta_MaxDD_vs_saved_benchmark": deltas["max_drawdown"],
+        "delta_Calmar_vs_saved_benchmark": deltas["calmar"],
+        "reconciliation_distance_score": distance,
+        "gap_threshold_status": gap_status,
+        "reconciliation_status": reconciliation_status(distance, gap_status),
+        "mismatch_reason": mismatch_reason(reconciliation_status(distance, gap_status), "saved_sleeve_return_stream"),
+        **safety_flags(),
+    }
 
 
 def above_sma_with_min_periods(rows: list[dict[str, Any]], index: int, window: int, min_periods: int) -> bool:
@@ -415,6 +490,7 @@ def data_unavailable_candidate(
         "delta_MaxDD_vs_saved_benchmark": deltas["max_drawdown"],
         "delta_Calmar_vs_saved_benchmark": deltas["calmar"],
         "reconciliation_distance_score": MISSING,
+        "gap_threshold_status": "missing_metrics",
         "reconciliation_status": status,
         "mismatch_reason": "missing_saved_data_or_adjusted_close_unavailable",
         **safety_flags(),
@@ -442,6 +518,7 @@ def build_diagnostic_rows(
         ("saved_benchmark_metrics", "available" if not metrics_missing(saved_metrics) else "missing_saved_metrics", format_metrics(saved_metrics), "none" if not metrics_missing(saved_metrics) else "missing_original_benchmark_source_data", "Keep exact QQQ100 benchmark source labelled."),
         ("current_generated_stream_metrics", "available" if not metrics_missing(current_metrics) else "missing_saved_stream", format_metrics(current_metrics), "current_generated_stream_differs_from_saved_benchmark", "Use reconciliation candidate rows before changing labels."),
         ("current_generated_delta_vs_saved", "warning", format_deltas(current_deltas), "generated_stream_metrics_do_not_match_saved_benchmark", "Do not compare generated candidates against saved benchmark as if identical."),
+        ("close_enough_thresholds", gap_threshold_status(current_deltas), format_thresholds(current_deltas), "material_cagr_gap_remains" if not gap_passes(current_deltas) else "within_research_review_thresholds", "Require all metric gaps inside fixed thresholds before considering a stream update."),
         ("price_basis", price_basis_status, f"price_source={price_source}", "price_adjustment_or_dividend_split_treatment_unknown" if "adjusted_close_unavailable" in price_basis_status else "price_basis_tested", "Obtain exact benchmark price basis before replacing stream config."),
         ("signal_timing", "tested", "shift0 and shift1 variants tested where data exists", "signal_timing_mismatch_possible", "Retain best candidate as research-only unless close match is confirmed."),
         ("sma_window_threshold", "tested", "SMA100 with min_periods=100 tested", "warmup_or_threshold_mismatch_possible", "Document original warmup and threshold rules."),
@@ -518,10 +595,11 @@ def build_report_rows(
             "delta_max_drawdown_vs_saved_benchmark": best["delta_MaxDD_vs_saved_benchmark"],
             "delta_calmar_vs_saved_benchmark": best["delta_Calmar_vs_saved_benchmark"],
             "reconciliation_distance_score": best["reconciliation_distance_score"],
+            "gap_threshold_status": best["gap_threshold_status"],
             "likely_mismatch_cause": likely_mismatch_cause(diagnostics, best),
             "sleeve_return_streams_updated": False,
             "biggest_blocker": BIGGEST_BLOCKER,
-            "recommended_next_step": RECOMMENDED_NEXT_STEP,
+            "recommended_next_step": next_step_for_best_candidate(best),
             **safety_flags(),
         }
     ]
@@ -542,6 +620,7 @@ def build_summary_rows(
         ("best_aligned_candidate", best.get("candidate_name", "none"), "Best candidate by reconciliation distance score."),
         ("best_aligned_candidate_metrics", format_candidate_metrics(best), "Candidate metrics remain research-only."),
         ("deltas_vs_saved_benchmark", format_candidate_deltas(best), "Deltas are against the saved QQQ100 benchmark."),
+        ("gap_threshold_status", report["gap_threshold_status"], "Fixed threshold status for CAGR, Sharpe, MaxDD, and Calmar gaps."),
         ("likely_mismatch_cause", report["likely_mismatch_cause"], "Likely causes are labelled rather than forced into a match."),
         ("sleeve_return_streams_updated", "false", "The generator remains unchanged until exact source assumptions are confirmed."),
         ("biggest_blocker", BIGGEST_BLOCKER, "Exact original benchmark source data and assumptions are missing."),
@@ -552,19 +631,21 @@ def build_summary_rows(
 
 def final_status_for(best: dict[str, Any]) -> str:
     status = str(best.get("reconciliation_status", ""))
-    if status == "exact_or_close_match":
-        return "qqq100_stream_reconciliation_close_match_found_manual_review_required"
+    if status == "close_enough_for_research_review":
+        return STATUS_CLOSE_ENOUGH
     if status == "improved_but_still_mismatch":
-        return "qqq100_stream_reconciliation_improved_but_still_mismatch"
+        return STATUS_IMPROVED_NOT_FINAL
     if status == "data_unavailable":
         return "qqq100_stream_reconciliation_data_unavailable"
     if status == "cannot_reconcile_from_saved_inputs":
-        return "qqq100_stream_reconciliation_cannot_reconcile_from_saved_inputs"
-    return FINAL_STATUS
+        return STATUS_BLOCKED_MISSING_ORIGINAL_STREAM
+    if metrics_missing(best):
+        return STATUS_BLOCKED_UNKNOWN_DEFINITION
+    return STATUS_STILL_BLOCKED
 
 
 def likely_mismatch_cause(diagnostics: list[dict[str, Any]], best: dict[str, Any]) -> str:
-    if best.get("reconciliation_status") == "exact_or_close_match":
+    if best.get("reconciliation_status") == "close_enough_for_research_review":
         return "candidate_close_to_saved_benchmark_manual_review_required"
     causes = [
         row["likely_mismatch_cause"]
@@ -623,15 +704,49 @@ def reconciliation_distance(deltas: dict[str, str]) -> str:
     return str(round(score, 4))
 
 
-def reconciliation_status(distance_text: str) -> str:
+def reconciliation_status(distance_text: str, gap_status: str) -> str:
     distance = parse_float(distance_text)
     if distance == float("inf"):
         return "cannot_reconcile_from_saved_inputs"
-    if distance <= 0.25:
-        return "exact_or_close_match"
+    if gap_status == "all_metric_gaps_within_research_review_thresholds":
+        return "close_enough_for_research_review"
     if distance <= 1.0:
         return "improved_but_still_mismatch"
     return "approximate_or_needs_reconciliation"
+
+
+def gap_threshold_status(deltas: dict[str, str]) -> str:
+    return (
+        "all_metric_gaps_within_research_review_thresholds"
+        if gap_passes(deltas)
+        else "material_metric_gap_remains"
+    )
+
+
+def gap_passes(deltas: dict[str, str]) -> bool:
+    try:
+        return (
+            abs(float(deltas["cagr"])) <= GAP_THRESHOLDS["cagr"]
+            and abs(float(deltas["sharpe"])) <= GAP_THRESHOLDS["sharpe"]
+            and abs(float(deltas["max_drawdown"])) <= GAP_THRESHOLDS["max_drawdown"]
+            and abs(float(deltas["calmar"])) <= GAP_THRESHOLDS["calmar"]
+        )
+    except (TypeError, ValueError):
+        return False
+
+
+def format_thresholds(deltas: dict[str, str]) -> str:
+    return (
+        f"thresholds: CAGR<={GAP_THRESHOLDS['cagr']}; Sharpe<={GAP_THRESHOLDS['sharpe']}; "
+        f"MaxDD<={GAP_THRESHOLDS['max_drawdown']}; Calmar<={GAP_THRESHOLDS['calmar']}; "
+        f"observed: {format_deltas(deltas)}"
+    )
+
+
+def next_step_for_best_candidate(best: dict[str, Any]) -> str:
+    if best.get("reconciliation_status") in {"close_enough_for_research_review", "improved_but_still_mismatch"}:
+        return REVIEW_NEXT_STEP
+    return RECOMMENDED_NEXT_STEP
 
 
 def mismatch_reason(status: str, price_basis_status: str) -> str:
@@ -711,6 +826,7 @@ def summary_lines(summary_rows: list[dict[str, Any]], output_path: Path) -> list
         f"best aligned candidate: {summary['best_aligned_candidate']}",
         f"best aligned candidate metrics: {summary['best_aligned_candidate_metrics']}",
         f"deltas vs saved benchmark: {summary['deltas_vs_saved_benchmark']}",
+        f"gap threshold status: {summary['gap_threshold_status']}",
         f"likely mismatch cause: {summary['likely_mismatch_cause']}",
         f"sleeve_return_streams updated: {summary['sleeve_return_streams_updated']}",
         f"biggest blocker: {summary['biggest_blocker']}",
