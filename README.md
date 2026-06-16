@@ -2310,6 +2310,28 @@ Output:
 data/promoted_strategy_preview.csv
 ```
 
+Multi-strategy portfolio preview mode combines saved preview/research outputs into one non-executable portfolio-overlap review. It reads saved CSVs where present, including QQQ100 preview/action outputs, promoted preview rows, defensive context, high-growth branch checkpoints, crypto research/manual-review outputs, project research state, execution eligibility, and portfolio-risk policy outputs. It writes portfolio rows, summary, exposure grouping, conflict warnings, and blockers. QQQ100 is treated as the core growth trend candidate, defensive context is optional, high-growth and crypto remain research-only/blocked, and missing saved inputs are labelled as unavailable rather than refreshed. It does not call yfinance, call Alpaca, read paper positions, create order instructions, write SQLite `trade_log`, send Discord or Telegram alerts, approve scheduling, or approve execution.
+
+```bash
+python bot.py --multi-strategy-portfolio-preview
+```
+
+Saved display:
+
+```bash
+python bot.py --show-multi-strategy-portfolio-preview
+```
+
+Outputs:
+
+```text
+data/multi_strategy_portfolio_preview.csv
+data/multi_strategy_portfolio_preview_summary.csv
+data/multi_strategy_portfolio_preview_exposures.csv
+data/multi_strategy_portfolio_preview_conflicts.csv
+data/multi_strategy_portfolio_preview_blockers.csv
+```
+
 Promoted action preview mode reads `data/promoted_strategy_preview.csv` and compares desired positions with current Alpaca paper positions when read-only access is available. By default, dry-run mode does not read paper positions. To explicitly read paper positions for preview context without changing `dry_run`, use `python bot.py --preview-promoted-actions --use-paper-positions-readonly`. It never submits orders, cancels orders, writes `trade_log`, sends Discord alerts, or approves execution.
 
 Output:

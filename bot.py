@@ -274,6 +274,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--multi-strategy-portfolio-preview"]:
+        from trading_bot.research.multi_strategy_portfolio_preview import generate_multi_strategy_portfolio_preview
+
+        result = generate_multi_strategy_portfolio_preview()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-multi-strategy-portfolio-preview"]:
+        from trading_bot.research.multi_strategy_portfolio_preview import show_multi_strategy_portfolio_preview
+
+        code, lines = show_multi_strategy_portfolio_preview()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--qqq100-paper-readiness-blocker-report"]:
         from trading_bot.research.qqq100_paper_readiness_blocker_report import (
             generate_qqq100_paper_readiness_blocker_report,
@@ -626,6 +640,10 @@ from trading_bot.research.qqq100_preview_signal_pack import (
 from trading_bot.research.qqq100_action_preview import (
     generate_qqq100_action_preview,
     show_qqq100_action_preview,
+)
+from trading_bot.research.multi_strategy_portfolio_preview import (
+    generate_multi_strategy_portfolio_preview,
+    show_multi_strategy_portfolio_preview,
 )
 from trading_bot.research.qqq100_paper_readiness_blocker_report import (
     generate_qqq100_paper_readiness_blocker_report,
@@ -4816,6 +4834,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ100 action preview without refreshing data or reading positions.",
     )
     parser.add_argument(
+        "--multi-strategy-portfolio-preview",
+        action="store_true",
+        help="Create a saved-output-only combined strategy sleeve exposure/conflict preview.",
+    )
+    parser.add_argument(
+        "--show-multi-strategy-portfolio-preview",
+        action="store_true",
+        help="Display the saved multi-strategy portfolio preview without refreshing data.",
+    )
+    parser.add_argument(
         "--qqq100-paper-readiness-blocker-report",
         action="store_true",
         help="Create a saved-output QQQ100 paper-readiness blocker report without execution.",
@@ -5917,6 +5945,20 @@ def main() -> int:
         return 0
     if args.show_qqq100_action_preview:
         status_code, lines = show_qqq100_action_preview()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.multi_strategy_portfolio_preview:
+        try:
+            result = generate_multi_strategy_portfolio_preview()
+        except Exception as exc:
+            print(f"Multi-strategy portfolio preview failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_multi_strategy_portfolio_preview:
+        status_code, lines = show_multi_strategy_portfolio_preview()
         for line in lines:
             print(line)
         return status_code

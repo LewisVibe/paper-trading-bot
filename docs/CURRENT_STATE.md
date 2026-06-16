@@ -169,6 +169,13 @@ The QQQ100 paper-readiness blocker report comes from `python bot.py --qqq100-pap
 - It records blockers including the separate AAPL smoke test, QQQ100 execution design, sizing, portfolio risk enforcement, kill-switch enforcement, execution eligibility, open-order and duplicate-exposure handling, manual confirmation wording, postcheck design, scheduling, and strategy-to-execution integration.
 - It is saved-output only and does not call Alpaca, read positions, refresh market data, create order instructions, approve paper execution, approve execution, approve scheduling, or connect strategies to paper orders.
 
+The multi-strategy portfolio preview combiner comes from `python bot.py --multi-strategy-portfolio-preview`, with saved display through `python bot.py --show-multi-strategy-portfolio-preview`:
+
+- It reads saved CSV outputs only, including QQQ100 preview/action outputs, promoted preview rows, defensive context, high-growth branch checkpoints, crypto research/manual-review outputs, project research state, execution eligibility, and portfolio-risk policy outputs where present.
+- It writes `data/multi_strategy_portfolio_preview.csv`, `data/multi_strategy_portfolio_preview_summary.csv`, `data/multi_strategy_portfolio_preview_exposures.csv`, `data/multi_strategy_portfolio_preview_conflicts.csv`, and `data/multi_strategy_portfolio_preview_blockers.csv`.
+- It treats QQQ100 as the core growth trend candidate, defensive context as optional, high-growth and crypto as research-only/blocked, and missing saved inputs as unavailable context rather than refreshing data.
+- It is portfolio preview/report only and does not call yfinance, call Alpaca, read paper positions, create order instructions, write SQLite `trade_log`, send Discord or Telegram alerts, approve scheduling, approve execution, or connect strategies to paper orders.
+
 The high-growth stock lab comes from `python bot.py --high-growth-stock-lab`, with saved display through `python bot.py --show-high-growth-stock-lab`:
 
 - It trades only the fixed individual-stock universe `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`.

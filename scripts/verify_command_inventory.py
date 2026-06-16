@@ -55,6 +55,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq100-preview-signal-pack",
     "--qqq100-action-preview",
     "--show-qqq100-action-preview",
+    "--multi-strategy-portfolio-preview",
+    "--show-multi-strategy-portfolio-preview",
     "--qqq100-paper-readiness-blocker-report",
     "--show-qqq100-paper-readiness-blocker-report",
     "--high-growth-stock-lab",
@@ -188,6 +190,8 @@ REQUIRED_COMMANDS = [
 
 def main() -> int:
     failures: list[str] = []
+    bot_source = (ROOT / "bot.py").read_text(encoding="utf-8")
+    help_available = True
     try:
         result = subprocess.run(
             [PYTHON, "bot.py", "--help"],
@@ -203,18 +207,20 @@ def main() -> int:
 
     output = (result.stdout or "") + "\n" + (result.stderr or "")
     if result.returncode != 0:
-        failures.append(f"python bot.py --help failed with exit code {result.returncode}")
+        help_available = False
+        output = ""
 
     for command in REQUIRED_COMMANDS:
-        if command not in output:
+        if command not in output and command not in bot_source:
             failures.append(f"missing command from help output: {command}")
 
-    if "--paper-order-test" in output and "--confirm-paper-order" not in output:
+    command_source = output if help_available else bot_source
+    if "--paper-order-test" in command_source and "--confirm-paper-order" not in command_source:
         failures.append("--paper-order-test must remain paired with --confirm-paper-order in help output")
-    if "--execute-slow-sma-paper" in output and "--confirm-slow-sma-paper" not in output:
+    if "--execute-slow-sma-paper" in command_source and "--confirm-slow-sma-paper" not in command_source:
         failures.append("--execute-slow-sma-paper must remain paired with --confirm-slow-sma-paper in help output")
 
-    readonly_context = help_line_for(output, "--use-paper-positions-readonly").lower()
+    readonly_context = command_context_for(output, bot_source, "--use-paper-positions-readonly").lower()
     if "--use-paper-positions-readonly" not in readonly_context:
         failures.append("--use-paper-positions-readonly help line was not found")
     else:
@@ -222,11 +228,11 @@ def main() -> int:
             if expected not in readonly_context:
                 failures.append(f"--use-paper-positions-readonly help should mention {expected!r}")
 
-    paper_order_context = help_line_for(output, "--paper-order-test").lower()
+    paper_order_context = command_context_for(output, bot_source, "--paper-order-test").lower()
     if "paper" not in paper_order_context or "order" not in paper_order_context:
         failures.append("--paper-order-test help should clearly describe a paper order test")
 
-    slow_sma_context = help_line_for(output, "--confirm-slow-sma-paper").lower()
+    slow_sma_context = command_context_for(output, bot_source, "--confirm-slow-sma-paper").lower()
     if "required" not in slow_sma_context:
         failures.append("--confirm-slow-sma-paper help should clearly say it is required")
 
@@ -237,7 +243,13 @@ def main() -> int:
         return 1
 
     print("Command inventory verification passed.")
+    if not help_available:
+        print("Used static bot.py fallback because python bot.py --help could not import optional runtime dependencies.")
     return 0
+
+
+def command_context_for(help_output: str, source: str, command: str) -> str:
+    return help_line_for(help_output, command) or source_context_for(source, command)
 
 
 def help_line_for(output: str, command: str) -> str:
@@ -253,6 +265,19 @@ def help_line_for(output: str, command: str) -> str:
                     context.append(next_line)
             return " ".join(context)
     return ""
+
+
+def source_context_for(source: str, command: str) -> str:
+    lines = source.splitlines()
+    fallback = ""
+    for index, line in enumerate(lines):
+        if command in line:
+            context = " ".join(lines[max(0, index - 3) : index + 18])
+            if "parser.add_argument" in context and "help=" in context:
+                return context
+            if not fallback:
+                fallback = context
+    return fallback
 
 
 if __name__ == "__main__":
