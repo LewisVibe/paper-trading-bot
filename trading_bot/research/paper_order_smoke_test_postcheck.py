@@ -8,12 +8,15 @@ replaces, or modifies orders.
 from __future__ import annotations
 
 import csv
-from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
+
+from trading_bot.safety.manual_paper_smoke_test_gate import (
+    evaluate_recent_manual_smoke_test_order_match,
+)
 
 
 OUTPUT_PATH = Path("data/paper_order_smoke_test_postcheck.csv")
@@ -37,6 +40,13 @@ REPORT_COLUMNS = [
     "evidence_source",
     "details",
     "matching_recent_order_status_summary",
+    "recent_order_match_found",
+    "recent_order_match_status",
+    "recent_order_match_submitted_at_or_created_at",
+    "recent_order_match_age_minutes",
+    "recent_order_match_source",
+    "recent_order_match_count",
+    "recent_order_match_lookback_minutes",
     "open_order_summary",
     "position_summary",
     "blocker",
@@ -328,32 +338,33 @@ def account_status_row(created_at: str, inputs: dict[str, str], account: Any) ->
 
 
 def recent_orders_row(created_at: str, inputs: dict[str, str], orders: list[Any]) -> dict[str, Any]:
-    matching = [order for order in orders if order_matches(order, inputs)]
-    counts = Counter(str(getattr(order, "status", "unknown")).lower() for order in matching)
-    summary = format_counts(counts)
-    if not matching:
+    match = evaluate_recent_manual_smoke_test_order_match(
+        orders,
+        ticker=inputs["ticker"],
+        side=inputs["side"],
+        quantity=Decimal(inputs["quantity"]),
+    )
+    summary = format_match_summary(match)
+    if match.duplicate_recent_order_check == "pass":
         status = NO_MATCH_LABEL
         next_step = "review_whether_manual_smoke_test_was_submitted_or_use_confirmed_postcheck_later"
-    elif any(key in counts for key in ["filled"]):
+    elif match.duplicate_recent_order_check == "blocked_recent_matching_order_exists" and match.recent_order_match_status == "filled":
         status = FILLED_LABEL
         next_step = "review_terminal_output_and_saved_postcheck"
-    elif any(key in counts for key in ["new", "accepted", "pending_new", "partially_filled", "queued"]):
+    elif match.duplicate_recent_order_check == "blocked_recent_matching_order_exists":
         status = OPEN_LABEL
         next_step = "investigate_open_or_queued_order"
-    elif any(key in counts for key in ["rejected", "cancelled", "expired", "stopped", "suspended"]):
-        status = NOT_FILLED_LABEL
-        next_step = "investigate_open_or_rejected_order"
     else:
         status = MANUAL_REVIEW_LABEL
-        next_step = "review_recent_order_status_summary"
-    return postcheck_row(
+        next_step = "manual_review_recent_order_history_uncertain"
+    row = postcheck_row(
         created_at,
         "readonly_recent_matching_orders",
         status,
         "warning" if status != FILLED_LABEL else "info",
         inputs,
         "Alpaca read-only recent orders endpoint",
-        f"matching_order_count={len(matching)}; order identifiers omitted.",
+        "Broker recent-order matching used the shared manual smoke-test helper; order identifiers omitted.",
         summary,
         "",
         "",
@@ -362,6 +373,18 @@ def recent_orders_row(created_at: str, inputs: dict[str, str], orders: list[Any]
         True,
         status,
     )
+    row.update(
+        {
+            "recent_order_match_found": match.recent_order_match_found,
+            "recent_order_match_status": match.recent_order_match_status,
+            "recent_order_match_submitted_at_or_created_at": match.recent_order_match_submitted_at_or_created_at,
+            "recent_order_match_age_minutes": match.recent_order_match_age_minutes,
+            "recent_order_match_source": match.recent_order_match_source,
+            "recent_order_match_count": match.recent_order_match_count,
+            "recent_order_match_lookback_minutes": match.recent_order_match_lookback_minutes,
+        }
+    )
+    return row
 
 
 def open_orders_row(created_at: str, inputs: dict[str, str], open_orders: list[Any]) -> dict[str, Any]:
@@ -439,6 +462,13 @@ def postcheck_row(
         "evidence_source": evidence_source,
         "details": details,
         "matching_recent_order_status_summary": matching_recent_order_status_summary,
+        "recent_order_match_found": "",
+        "recent_order_match_status": "",
+        "recent_order_match_submitted_at_or_created_at": "",
+        "recent_order_match_age_minutes": "",
+        "recent_order_match_source": "",
+        "recent_order_match_count": "",
+        "recent_order_match_lookback_minutes": "",
         "open_order_summary": open_order_summary,
         "position_summary": position_summary,
         "blocker": blocker,
@@ -511,18 +541,16 @@ def build_summary_lines(output_path: Path, rows: list[dict[str, Any]]) -> list[s
     ]
 
 
-def order_matches(order: Any, inputs: dict[str, str]) -> bool:
-    symbol = str(getattr(order, "symbol", "")).upper()
-    side = str(getattr(order, "side", "")).lower()
-    qty = str(getattr(order, "qty", "") or getattr(order, "notional", ""))
-    return symbol == inputs["ticker"] and side == inputs["side"] and numeric_equal(qty, inputs["quantity"])
-
-
-def numeric_equal(left: str, right: str) -> bool:
-    try:
-        return Decimal(str(left)) == Decimal(str(right))
-    except (InvalidOperation, ValueError):
-        return False
+def format_match_summary(match: Any) -> str:
+    parts = [
+        f"recent_order_match_found={str(match.recent_order_match_found).lower()}",
+        f"recent_order_match_status={match.recent_order_match_status or 'none'}",
+        f"recent_order_match_count={match.recent_order_match_count}",
+        f"lookback_minutes={match.recent_order_match_lookback_minutes}",
+    ]
+    if match.recent_order_match_age_minutes:
+        parts.append(f"age_minutes={match.recent_order_match_age_minutes}")
+    return "; ".join(parts)
 
 
 def normalise_inputs(ticker: str, side: str, quantity: str | int | float | Decimal) -> dict[str, str]:
@@ -585,10 +613,6 @@ def redact_account_status(status: str) -> str:
 
 def truthy(value: Any) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "y"}
-
-
-def format_counts(counts: Counter[str]) -> str:
-    return ", ".join(f"{key}={value}" for key, value in sorted(counts.items())) or "none"
 
 
 def read_csv(path: Path, limit: int = 100) -> list[dict[str, Any]]:

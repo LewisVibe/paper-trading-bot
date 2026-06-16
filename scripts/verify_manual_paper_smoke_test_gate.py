@@ -14,6 +14,7 @@ from trading_bot.safety.manual_paper_smoke_test_gate import (  # noqa: E402
     BROKER_CONFIRMED_RECENT_ORDER_STATUSES,
     GATE_TYPE,
     READY_PREFLIGHT_STATUS,
+    evaluate_recent_manual_smoke_test_order_match,
     SavedSmokeTestPreflightContext,
     evaluate_manual_paper_smoke_test_gate,
 )
@@ -25,6 +26,7 @@ def main() -> int:
     helper_source = read_text(ROOT / "trading_bot" / "safety" / "manual_paper_smoke_test_gate.py")
 
     verify_helper_cases(failures)
+    verify_recent_order_match_helper_cases(failures)
     verify_wiring_scope(bot_source, failures)
     verify_order_path_boundaries(bot_source, failures)
     verify_helper_safety(helper_source, failures)
@@ -156,16 +158,23 @@ def verify_order_path_boundaries(bot_source: str, failures: list[str]) -> None:
     for token in [
         "QueryOrderStatus.ALL",
         "client.get_orders",
-        "BROKER_CONFIRMED_RECENT_ORDER_STATUSES",
-        "NON_BLOCKING_RECENT_ORDER_STATUSES",
+        "evaluate_recent_manual_smoke_test_order_match(",
         "blocked_duplicate_order_history_uncertain",
-        "blocked_ambiguous_recent_matching_order_status",
-        "blocked_recent_matching_order_exists",
         "duplicate_recent_order_source",
         "duplicate_recent_order_status_if_any",
     ]:
         if token not in duplicate_source:
             failures.append(f"duplicate-order check missing required broker/status token: {token}")
+    helper_source = read_text(ROOT / "trading_bot" / "safety" / "manual_paper_smoke_test_gate.py")
+    for token in [
+        "recent_order_match_found",
+        "recent_order_match_count",
+        "recent_order_match_lookback_minutes",
+        "blocked_recent_matching_order_exists",
+        "blocked_ambiguous_recent_matching_order_status",
+    ]:
+        if token not in helper_source:
+            failures.append(f"shared matching helper missing required diagnostic/status token: {token}")
     forbidden_duplicate_tokens = [
         "get_open_position",
         "position_before",
@@ -180,6 +189,91 @@ def verify_order_path_boundaries(bot_source: str, failures: list[str]) -> None:
             failures.append(f"duplicate-order check must not use saved reports, positions, or trade logs: {token}")
     if "filled" not in BROKER_CONFIRMED_RECENT_ORDER_STATUSES or "new" not in BROKER_CONFIRMED_RECENT_ORDER_STATUSES:
         failures.append("broker-confirmed duplicate status set must include filled and new")
+
+
+def verify_recent_order_match_helper_cases(failures: list[str]) -> None:
+    from datetime import datetime, timedelta, timezone
+    from types import SimpleNamespace
+
+    now = datetime(2026, 6, 16, 10, 0, tzinfo=timezone.utc)
+    recent_filled = SimpleNamespace(
+        symbol="AAPL",
+        side="buy",
+        qty="1",
+        status="filled",
+        submitted_at=now - timedelta(minutes=10),
+    )
+    result = evaluate_recent_manual_smoke_test_order_match(
+        [recent_filled],
+        ticker="AAPL",
+        side="buy",
+        quantity=Decimal("1"),
+        now=now,
+    )
+    if result.duplicate_recent_order_check != "blocked_recent_matching_order_exists":
+        failures.append("recent filled matching broker order should block")
+    if not result.recent_order_match_found or result.recent_order_match_status != "filled":
+        failures.append("recent filled matching broker order should be reported in diagnostics")
+
+    old_filled = SimpleNamespace(
+        symbol="AAPL",
+        side="buy",
+        qty="1",
+        status="filled",
+        submitted_at=now - timedelta(minutes=result.recent_order_match_lookback_minutes + 5),
+    )
+    old_result = evaluate_recent_manual_smoke_test_order_match(
+        [old_filled],
+        ticker="AAPL",
+        side="buy",
+        quantity=Decimal("1"),
+        now=now,
+    )
+    if old_result.duplicate_recent_order_check != "pass":
+        failures.append("matching broker order outside lookback should not block")
+
+    no_order = evaluate_recent_manual_smoke_test_order_match(
+        [],
+        ticker="AAPL",
+        side="buy",
+        quantity=Decimal("1"),
+        now=now,
+    )
+    if no_order.duplicate_recent_order_check != "pass":
+        failures.append("no broker orders should pass duplicate check")
+
+    position_only_context = {"ticker": "AAPL", "position_qty": "1"}
+    position_only = evaluate_recent_manual_smoke_test_order_match(
+        [],
+        ticker=position_only_context["ticker"],
+        side="buy",
+        quantity=Decimal("1"),
+        now=now,
+    )
+    if position_only.duplicate_recent_order_check != "pass":
+        failures.append("existing position context alone must not count as duplicate")
+
+    saved_csv_context = [{"ticker": "AAPL", "side": "buy", "quantity": "1", "status": "filled"}]
+    saved_csv_result = evaluate_recent_manual_smoke_test_order_match(
+        [],
+        ticker=saved_csv_context[0]["ticker"],
+        side=saved_csv_context[0]["side"],
+        quantity=Decimal(saved_csv_context[0]["quantity"]),
+        now=now,
+    )
+    if saved_csv_result.duplicate_recent_order_check != "pass":
+        failures.append("saved CSV context alone must not count as duplicate")
+
+    missing_time = SimpleNamespace(symbol="AAPL", side="buy", qty="1", status="filled")
+    uncertain = evaluate_recent_manual_smoke_test_order_match(
+        [missing_time],
+        ticker="AAPL",
+        side="buy",
+        quantity=Decimal("1"),
+        now=now,
+    )
+    if uncertain.duplicate_recent_order_check != "blocked_duplicate_order_history_uncertain":
+        failures.append("matching broker order with missing timestamp should block/manual-review as uncertain")
 
 
 def verify_helper_safety(helper_source: str, failures: list[str]) -> None:
@@ -217,6 +311,12 @@ def verify_helper_safety(helper_source: str, failures: list[str]) -> None:
         "duplicate_recent_order_source",
         "duplicate_recent_order_status_if_any",
         "current_position_context_ignored_for_duplicate_check",
+        "recent_order_match_found",
+        "recent_order_match_status",
+        "recent_order_match_age_minutes",
+        "recent_order_match_source",
+        "recent_order_match_count",
+        "recent_order_match_lookback_minutes",
     ]
     for token in required:
         if token not in helper_source:

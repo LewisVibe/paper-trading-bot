@@ -840,8 +840,8 @@ from trading_bot.runners.research_reports import (
 )
 from trading_bot.safety.paper_kill_switch import evaluate_paper_kill_switch_gate
 from trading_bot.safety.manual_paper_smoke_test_gate import (
-    BROKER_CONFIRMED_RECENT_ORDER_STATUSES,
-    NON_BLOCKING_RECENT_ORDER_STATUSES,
+    RECENT_ORDER_LOOKBACK_MINUTES,
+    evaluate_recent_manual_smoke_test_order_match,
     evaluate_manual_paper_smoke_test_gate,
     read_saved_smoke_test_preflight_context,
     write_manual_paper_smoke_test_gate_report,
@@ -1416,6 +1416,15 @@ def run_paper_order_test(
                 duplicate_recent_order_check=duplicate_recent_order.duplicate_recent_order_check,
                 duplicate_recent_order_source=duplicate_recent_order.duplicate_recent_order_source,
                 duplicate_recent_order_status_if_any=duplicate_recent_order.duplicate_recent_order_status_if_any,
+                recent_order_match_found=duplicate_recent_order.recent_order_match_found,
+                recent_order_match_status=duplicate_recent_order.recent_order_match_status,
+                recent_order_match_submitted_at_or_created_at=(
+                    duplicate_recent_order.recent_order_match_submitted_at_or_created_at
+                ),
+                recent_order_match_age_minutes=duplicate_recent_order.recent_order_match_age_minutes,
+                recent_order_match_source=duplicate_recent_order.recent_order_match_source,
+                recent_order_match_count=duplicate_recent_order.recent_order_match_count,
+                recent_order_match_lookback_minutes=duplicate_recent_order.recent_order_match_lookback_minutes,
             )
             print_manual_smoke_test_gate_decision(smoke_test_gate_decision)
             write_manual_paper_smoke_test_gate_report(smoke_test_gate_decision)
@@ -1550,6 +1559,16 @@ def print_manual_smoke_test_gate_decision(decision: Any) -> None:
     print(f"duplicate_recent_order_check={decision.duplicate_recent_order_check}")
     print(f"duplicate_recent_order_source={decision.duplicate_recent_order_source}")
     print(f"duplicate_recent_order_status_if_any={decision.duplicate_recent_order_status_if_any or 'none'}")
+    print(f"recent_order_match_found={decision.recent_order_match_found}")
+    print(f"recent_order_match_status={decision.recent_order_match_status or 'none'}")
+    print(
+        "recent_order_match_submitted_at_or_created_at="
+        f"{decision.recent_order_match_submitted_at_or_created_at or 'none'}"
+    )
+    print(f"recent_order_match_age_minutes={decision.recent_order_match_age_minutes or 'none'}")
+    print(f"recent_order_match_source={decision.recent_order_match_source}")
+    print(f"recent_order_match_count={decision.recent_order_match_count}")
+    print(f"recent_order_match_lookback_minutes={decision.recent_order_match_lookback_minutes}")
     print(
         "current_position_context_ignored_for_duplicate_check="
         f"{decision.current_position_context_ignored_for_duplicate_check}"
@@ -1574,6 +1593,13 @@ class ManualSmokeTestDuplicateOrderCheck:
     duplicate_recent_order_check: str
     duplicate_recent_order_source: str
     duplicate_recent_order_status_if_any: str
+    recent_order_match_found: bool = False
+    recent_order_match_status: str = ""
+    recent_order_match_submitted_at_or_created_at: str = ""
+    recent_order_match_age_minutes: str = ""
+    recent_order_match_source: str = "alpaca_paper_recent_orders"
+    recent_order_match_count: int = 0
+    recent_order_match_lookback_minutes: int = RECENT_ORDER_LOOKBACK_MINUTES
 
 
 def recent_matching_manual_smoke_test_order_check(
@@ -1595,30 +1621,13 @@ def recent_matching_manual_smoke_test_order_check(
             duplicate_recent_order_status_if_any="",
         )
 
-    for order in recent_orders:
-        order_side = normalize_order_side(getattr(order, "side", ""))
-        order_quantity = decimal_from_any(getattr(order, "qty", "0"))
-        if order_side != side or order_quantity != quantity:
-            continue
-        order_status = normalize_order_status(getattr(order, "status", ""))
-        if order_status in BROKER_CONFIRMED_RECENT_ORDER_STATUSES:
-            return ManualSmokeTestDuplicateOrderCheck(
-                duplicate_recent_order_check="blocked_recent_matching_order_exists",
-                duplicate_recent_order_source="alpaca_paper_recent_orders",
-                duplicate_recent_order_status_if_any=order_status,
-            )
-        if order_status in NON_BLOCKING_RECENT_ORDER_STATUSES:
-            continue
-        return ManualSmokeTestDuplicateOrderCheck(
-            duplicate_recent_order_check="blocked_ambiguous_recent_matching_order_status",
-            duplicate_recent_order_source="alpaca_paper_recent_orders",
-            duplicate_recent_order_status_if_any=order_status or "missing_status",
-        )
-    return ManualSmokeTestDuplicateOrderCheck(
-        duplicate_recent_order_check="pass",
-        duplicate_recent_order_source="alpaca_paper_recent_orders",
-        duplicate_recent_order_status_if_any="none",
+    result = evaluate_recent_manual_smoke_test_order_match(
+        recent_orders,
+        ticker=ticker,
+        side=side,
+        quantity=quantity,
     )
+    return ManualSmokeTestDuplicateOrderCheck(**result.__dict__)
 
 
 def estimate_manual_position_after(

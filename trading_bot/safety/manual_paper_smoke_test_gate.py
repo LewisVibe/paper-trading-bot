@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import csv
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,7 @@ ALLOWED_SIDE = "buy"
 ALLOWED_QUANTITY = Decimal("1")
 READY_PREFLIGHT_STATUS = "live_preflight_ready_for_manual_confirmation"
 OPEN_MARKET_STATUS = "open"
+RECENT_ORDER_LOOKBACK_MINUTES = 120
 BROKER_CONFIRMED_RECENT_ORDER_STATUSES = {
     "accepted",
     "accepted_for_bidding",
@@ -66,6 +68,13 @@ REPORT_COLUMNS = [
     "duplicate_recent_order_check",
     "duplicate_recent_order_source",
     "duplicate_recent_order_status_if_any",
+    "recent_order_match_found",
+    "recent_order_match_status",
+    "recent_order_match_submitted_at_or_created_at",
+    "recent_order_match_age_minutes",
+    "recent_order_match_source",
+    "recent_order_match_count",
+    "recent_order_match_lookback_minutes",
     "current_position_context_ignored_for_duplicate_check",
     "blocker",
     "required_next_step",
@@ -144,6 +153,13 @@ class ManualPaperSmokeTestGateDecision:
     duplicate_recent_order_check: str
     duplicate_recent_order_source: str
     duplicate_recent_order_status_if_any: str
+    recent_order_match_found: bool
+    recent_order_match_status: str
+    recent_order_match_submitted_at_or_created_at: str
+    recent_order_match_age_minutes: str
+    recent_order_match_source: str
+    recent_order_match_count: int
+    recent_order_match_lookback_minutes: int
     current_position_context_ignored_for_duplicate_check: bool
     reasons: list[str]
     required_next_step: str
@@ -153,6 +169,20 @@ class ManualPaperSmokeTestGateDecision:
     scheduling_approved: bool = False
     followup_order_approved: bool = False
     paper_execution_approved: bool = False
+
+
+@dataclass(frozen=True)
+class ManualSmokeTestRecentOrderMatch:
+    duplicate_recent_order_check: str
+    duplicate_recent_order_source: str
+    duplicate_recent_order_status_if_any: str
+    recent_order_match_found: bool
+    recent_order_match_status: str
+    recent_order_match_submitted_at_or_created_at: str
+    recent_order_match_age_minutes: str
+    recent_order_match_source: str
+    recent_order_match_count: int
+    recent_order_match_lookback_minutes: int
 
 
 def read_saved_smoke_test_preflight_context(
@@ -204,6 +234,13 @@ def evaluate_manual_paper_smoke_test_gate(
     duplicate_recent_order_check: str | None = None,
     duplicate_recent_order_source: str = "not_checked_yet",
     duplicate_recent_order_status_if_any: str = "",
+    recent_order_match_found: bool = False,
+    recent_order_match_status: str = "",
+    recent_order_match_submitted_at_or_created_at: str = "",
+    recent_order_match_age_minutes: str = "",
+    recent_order_match_source: str = "not_checked_yet",
+    recent_order_match_count: int = 0,
+    recent_order_match_lookback_minutes: int = RECENT_ORDER_LOOKBACK_MINUTES,
 ) -> ManualPaperSmokeTestGateDecision:
     normalized_ticker = ticker.strip().upper()
     normalized_side = side.strip().lower()
@@ -266,6 +303,13 @@ def evaluate_manual_paper_smoke_test_gate(
             duplicate_recent_order_check=duplicate_check,
             duplicate_recent_order_source=duplicate_recent_order_source,
             duplicate_recent_order_status_if_any=duplicate_recent_order_status_if_any,
+            recent_order_match_found=recent_order_match_found,
+            recent_order_match_status=recent_order_match_status,
+            recent_order_match_submitted_at_or_created_at=recent_order_match_submitted_at_or_created_at,
+            recent_order_match_age_minutes=recent_order_match_age_minutes,
+            recent_order_match_source=recent_order_match_source,
+            recent_order_match_count=recent_order_match_count,
+            recent_order_match_lookback_minutes=recent_order_match_lookback_minutes,
             current_position_context_ignored_for_duplicate_check=True,
             reasons=reasons,
             required_next_step="Keep smoke test blocked until the dedicated manual connectivity gate is reviewed.",
@@ -284,10 +328,105 @@ def evaluate_manual_paper_smoke_test_gate(
         duplicate_recent_order_check=duplicate_check,
         duplicate_recent_order_source=duplicate_recent_order_source,
         duplicate_recent_order_status_if_any=duplicate_recent_order_status_if_any,
+        recent_order_match_found=recent_order_match_found,
+        recent_order_match_status=recent_order_match_status,
+        recent_order_match_submitted_at_or_created_at=recent_order_match_submitted_at_or_created_at,
+        recent_order_match_age_minutes=recent_order_match_age_minutes,
+        recent_order_match_source=recent_order_match_source,
+        recent_order_match_count=recent_order_match_count,
+        recent_order_match_lookback_minutes=recent_order_match_lookback_minutes,
         current_position_context_ignored_for_duplicate_check=True,
         reasons=["exact AAPL buy 1 manual connectivity smoke-test gate passed"],
         required_next_step="Proceed only with the existing manual --paper-order-test path; this does not approve strategy execution.",
         smoke_test_order_approved=smoke_test_order_approved,
+    )
+
+
+def evaluate_recent_manual_smoke_test_order_match(
+    orders: list[Any],
+    *,
+    ticker: str,
+    side: str,
+    quantity: Decimal,
+    now: datetime | None = None,
+    lookback_minutes: int = RECENT_ORDER_LOOKBACK_MINUTES,
+) -> ManualSmokeTestRecentOrderMatch:
+    normalized_ticker = str(ticker or "").strip().upper()
+    normalized_side = str(side or "").strip().lower()
+    now_utc = normalize_datetime(now) or datetime.now(timezone.utc)
+    matches: list[tuple[Any, str, datetime | None, str]] = []
+    missing_time_match = False
+    for order in orders:
+        if str(getattr(order, "symbol", "")).strip().upper() != normalized_ticker:
+            continue
+        if str(getattr(order, "side", "")).strip().lower() != normalized_side:
+            continue
+        if decimal_from_order_value(getattr(order, "qty", "")) != quantity:
+            continue
+        timestamp = order_timestamp(order)
+        if timestamp is None:
+            missing_time_match = True
+            continue
+        age_minutes = (now_utc - timestamp).total_seconds() / 60
+        if age_minutes < 0:
+            age_minutes = 0
+        if age_minutes <= lookback_minutes:
+            status = normalize_status(getattr(order, "status", ""))
+            matches.append((order, status, timestamp, f"{age_minutes:.1f}"))
+
+    if missing_time_match:
+        return ManualSmokeTestRecentOrderMatch(
+            duplicate_recent_order_check="blocked_duplicate_order_history_uncertain",
+            duplicate_recent_order_source="alpaca_paper_recent_orders",
+            duplicate_recent_order_status_if_any="missing_timestamp",
+            recent_order_match_found=False,
+            recent_order_match_status="missing_timestamp",
+            recent_order_match_submitted_at_or_created_at="",
+            recent_order_match_age_minutes="",
+            recent_order_match_source="alpaca_paper_recent_orders",
+            recent_order_match_count=len(matches),
+            recent_order_match_lookback_minutes=lookback_minutes,
+        )
+
+    for _order, status, timestamp, age_minutes in matches:
+        if status in BROKER_CONFIRMED_RECENT_ORDER_STATUSES:
+            return ManualSmokeTestRecentOrderMatch(
+                duplicate_recent_order_check="blocked_recent_matching_order_exists",
+                duplicate_recent_order_source="alpaca_paper_recent_orders",
+                duplicate_recent_order_status_if_any=status,
+                recent_order_match_found=True,
+                recent_order_match_status=status,
+                recent_order_match_submitted_at_or_created_at=safe_iso_timestamp(timestamp),
+                recent_order_match_age_minutes=age_minutes,
+                recent_order_match_source="alpaca_paper_recent_orders",
+                recent_order_match_count=len(matches),
+                recent_order_match_lookback_minutes=lookback_minutes,
+            )
+        if status not in NON_BLOCKING_RECENT_ORDER_STATUSES:
+            return ManualSmokeTestRecentOrderMatch(
+                duplicate_recent_order_check="blocked_ambiguous_recent_matching_order_status",
+                duplicate_recent_order_source="alpaca_paper_recent_orders",
+                duplicate_recent_order_status_if_any=status or "missing_status",
+                recent_order_match_found=True,
+                recent_order_match_status=status or "missing_status",
+                recent_order_match_submitted_at_or_created_at=safe_iso_timestamp(timestamp),
+                recent_order_match_age_minutes=age_minutes,
+                recent_order_match_source="alpaca_paper_recent_orders",
+                recent_order_match_count=len(matches),
+                recent_order_match_lookback_minutes=lookback_minutes,
+            )
+
+    return ManualSmokeTestRecentOrderMatch(
+        duplicate_recent_order_check="pass",
+        duplicate_recent_order_source="alpaca_paper_recent_orders",
+        duplicate_recent_order_status_if_any="none",
+        recent_order_match_found=False,
+        recent_order_match_status="none",
+        recent_order_match_submitted_at_or_created_at="",
+        recent_order_match_age_minutes="",
+        recent_order_match_source="alpaca_paper_recent_orders",
+        recent_order_match_count=0,
+        recent_order_match_lookback_minutes=lookback_minutes,
     )
 
 
@@ -310,6 +449,13 @@ def write_manual_paper_smoke_test_gate_report(
         "duplicate_recent_order_check": decision.duplicate_recent_order_check,
         "duplicate_recent_order_source": decision.duplicate_recent_order_source,
         "duplicate_recent_order_status_if_any": decision.duplicate_recent_order_status_if_any,
+        "recent_order_match_found": decision.recent_order_match_found,
+        "recent_order_match_status": decision.recent_order_match_status,
+        "recent_order_match_submitted_at_or_created_at": decision.recent_order_match_submitted_at_or_created_at,
+        "recent_order_match_age_minutes": decision.recent_order_match_age_minutes,
+        "recent_order_match_source": decision.recent_order_match_source,
+        "recent_order_match_count": decision.recent_order_match_count,
+        "recent_order_match_lookback_minutes": decision.recent_order_match_lookback_minutes,
         "current_position_context_ignored_for_duplicate_check": (
             decision.current_position_context_ignored_for_duplicate_check
         ),
@@ -345,6 +491,12 @@ def write_manual_paper_smoke_test_gate_report(
             decision,
             order_event,
         ),
+        summary_row("recent_order_match_found", str(decision.recent_order_match_found), "Broker recent-order match flag.", decision, order_event),
+        summary_row("recent_order_match_status", decision.recent_order_match_status or "none", "Redacted broker status for a matching recent order, if any.", decision, order_event),
+        summary_row("recent_order_match_submitted_at_or_created_at", decision.recent_order_match_submitted_at_or_created_at or "none", "Safe submitted_at or created_at timestamp for a matching recent order, if available.", decision, order_event),
+        summary_row("recent_order_match_age_minutes", decision.recent_order_match_age_minutes or "none", "Approximate age of the matching recent order.", decision, order_event),
+        summary_row("recent_order_match_count", str(decision.recent_order_match_count), "Recent matching broker order count inside lookback.", decision, order_event),
+        summary_row("recent_order_match_lookback_minutes", str(decision.recent_order_match_lookback_minutes), "Shared duplicate/postcheck lookback window.", decision, order_event),
         summary_row("smoke_test_order_approved", str(decision.smoke_test_order_approved), "True only for the exact manually confirmed AAPL buy 1 smoke test.", decision, order_event),
         summary_row("execution_approved", "False", "Strategy execution remains blocked.", decision, order_event),
         summary_row("strategy_execution_approved", "False", "No strategy-to-execution approval is granted.", decision, order_event),
@@ -428,6 +580,47 @@ def format_quantity(quantity: Decimal) -> str:
     if quantity == quantity.to_integral_value():
         return str(int(quantity))
     return f"{quantity.normalize():f}"
+
+
+def decimal_from_order_value(value: Any) -> Decimal | None:
+    try:
+        return Decimal(str(value))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def order_timestamp(order: Any) -> datetime | None:
+    for name in ["submitted_at", "created_at", "updated_at"]:
+        timestamp = normalize_datetime(getattr(order, name, None))
+        if timestamp is not None:
+            return timestamp
+    return None
+
+
+def normalize_datetime(value: Any) -> datetime | None:
+    if isinstance(value, datetime):
+        parsed = value
+    elif value:
+        text = str(value).strip()
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
+        try:
+            parsed = datetime.fromisoformat(text)
+        except ValueError:
+            return None
+    else:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def safe_iso_timestamp(value: datetime | None) -> str:
+    return value.astimezone(timezone.utc).replace(microsecond=0).isoformat() if value else ""
+
+
+def normalize_status(value: Any) -> str:
+    return str(value or "").strip().lower()
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
