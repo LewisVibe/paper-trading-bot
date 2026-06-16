@@ -91,6 +91,29 @@ Cross-references:
 - **Allowed commands:** `python scripts\verify_codex_qqq_defensive_crash_gate_research_pack.py` and repo safety/inventory verifiers only.
 - **Stop condition:** Stop if the task starts adding preview/action/execution wiring, expanding `--execute-qqq100-paper`, reading broker state, calling Alpaca, changing config defaults, approving scheduling, or turning the Codex experimental sleeve into an order path.
 
+### Task: Sleeve return-stream generation checkpoint
+- **Purpose:** Review the research-only daily return-stream layer that feeds reduced multi-sleeve portfolio metrics before any candidate label change.
+- **Risk level:** Medium / research-only, because it may fetch QQQ/SPY research price data while staying separate from broker, position, order, and execution paths.
+- **Allowed files:**
+  - `trading_bot/research/sleeve_return_streams.py`
+  - `trading_bot/research/multi_sleeve_portfolio_backtest.py`
+  - `scripts/verify_sleeve_return_streams.py`
+  - `scripts/verify_multi_sleeve_portfolio_backtest.py`
+  - `README.md`
+  - `docs/CURRENT_STATE.md`
+  - `docs/V2_RESEARCH_CHECKPOINT.md`
+  - `docs/HERMES_TASK_BOARD.md`
+  - `scripts/verify_command_inventory.py`
+- **Forbidden files:**
+  - `config.json`
+  - `.env`
+  - generated `data/` outputs
+  - logs/databases/charts
+  - Alpaca/order submission modules unless a separate explicit execution review allows it
+  - scheduling, Hermes cron, Task Scheduler, service, or loop files
+- **Allowed commands:** `python scripts\verify_sleeve_return_streams.py`, `python scripts\verify_multi_sleeve_portfolio_backtest.py`, and repo safety/inventory/related research verifiers only.
+- **Stop condition:** Stop if the task starts calling Alpaca, reading live positions, creating order instructions, adding repeat execution, expanding `--execute-qqq100-paper`, promoting high-growth/crypto/Codex experimental sleeves, changing config defaults, approving scheduling, or inventing daily returns from summary metrics.
+
 ### Task: Multi-sleeve portfolio backtest checkpoint
 - **Purpose:** Review the saved-output-only multi-sleeve portfolio research checkpoint before any candidate label change, preview discussion, or execution wiring.
 - **Risk level:** Medium / research-only, because it compares QQQ100, defensive, high-growth, crypto, cash, and Codex experimental sleeve concepts near an active manual QQQ100 paper milestone.

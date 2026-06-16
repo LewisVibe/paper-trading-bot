@@ -1790,6 +1790,26 @@ data/codex_qqq_defensive_crash_gate_next_steps.csv
 
 The expected status is `codex_qqq_defensive_research_pack_created`. Candidate labels are research prompts only, with blockers for missing saved metrics, split validation, cost/turnover stress, reference underperformance, execution wiring, repeat execution, and scheduling. The recommended next step is `run_saved_or_research_data_backtest_for_codex_qqq_defensive_candidates`.
 
+Sleeve return-stream mode is a research-only saved daily stream generator for the multi-sleeve portfolio backtest. It can generate `qqq100_core_trend_sleeve` / `qqq_100_trend_gate` rows, transparent defensive QQQ crash-gate rows, a cash/no-position stream, and a Codex experimental stream that points to the generated defensive QQQ candidate. If high-growth or crypto daily return streams are not available, it writes `missing_saved_return_stream` quality rows instead of inventing daily returns from summary metrics. QQQ100 metric alignment is labelled `approximate_or_needs_reconciliation` unless the saved source details can be matched exactly. It may use the project’s research-only yfinance pattern with a local cache, but it does not use Alpaca or broker data and does not approve execution.
+
+```text
+python bot.py --sleeve-return-streams
+python bot.py --show-sleeve-return-streams
+```
+
+Outputs:
+
+```text
+data/sleeve_return_streams.csv
+data/sleeve_return_streams_summary.csv
+data/sleeve_return_streams_sleeves.csv
+data/sleeve_return_streams_quality.csv
+data/sleeve_return_streams_blockers.csv
+data/sleeve_return_streams_next_steps.csv
+```
+
+The expected status is `sleeve_return_streams_partial_created` while high-growth and crypto streams are missing. These streams are research data only; all order, follow-up, repeat, scheduling, live, high-growth, crypto, and Codex-experimental execution approval flags remain false.
+
 Multi-sleeve portfolio backtest mode is a saved-output-only research checkpoint for testing portfolio combinations conceptually before any new preview/action/execution wiring. It uses the exact saved `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` metrics as the QQQ100 reference, then defines QQQ100-plus-cash, QQQ100-plus-defensive-crash-gate, QQQ100-plus-high-growth, QQQ100-plus-crypto, balanced multi-sleeve, and Codex ambitious allocation candidates. When daily return streams are missing for defensive, high-growth, crypto, or Codex experimental sleeves, it labels those rows as `missing_saved_return_stream` and keeps combined portfolio metrics as `missing_saved_metrics` rather than inventing results. It does not fetch market data, call Alpaca, read live positions, create/submit/cancel/replace orders, write SQLite `trade_log`, send alerts, schedule anything, expand QQQ100 execution, add repeat execution, or wire any sleeve to execution.
 
 ```text

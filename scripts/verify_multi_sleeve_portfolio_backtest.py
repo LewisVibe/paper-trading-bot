@@ -13,6 +13,8 @@ if str(ROOT) not in sys.path:
 from trading_bot.research.multi_sleeve_portfolio_backtest import (  # noqa: E402
     BIGGEST_BLOCKER,
     FINAL_BACKTEST_STATUS,
+    FINAL_STATUS_NOT_BETTER_THAN_GENERATED_QQQ100,
+    FINAL_STATUS_PROMISING_NEEDS_RECONCILIATION,
     OUTPUT_FILES,
     QQQ100_REFERENCE,
     QQQ100_SLEEVE,
@@ -42,6 +44,17 @@ REQUIRED_BACKTEST_COLUMNS = [
     "qqq100_reference_sharpe",
     "qqq100_reference_max_drawdown",
     "qqq100_reference_calmar",
+    "saved_qqq100_benchmark_source",
+    "saved_qqq100_benchmark_cagr",
+    "saved_qqq100_benchmark_sharpe",
+    "saved_qqq100_benchmark_max_drawdown",
+    "saved_qqq100_benchmark_calmar",
+    "generated_qqq100_reference_status",
+    "generated_qqq100_reference_cagr",
+    "generated_qqq100_reference_sharpe",
+    "generated_qqq100_reference_max_drawdown",
+    "generated_qqq100_reference_calmar",
+    "saved_benchmark_reconciliation_status",
     "candidate_allocation",
     "candidate_cagr",
     "candidate_sharpe",
@@ -55,6 +68,10 @@ REQUIRED_BACKTEST_COLUMNS = [
     "delta_sharpe_vs_qqq100",
     "delta_max_drawdown_vs_qqq100",
     "delta_calmar_vs_qqq100",
+    "delta_cagr_vs_generated_qqq100_reference",
+    "delta_sharpe_vs_generated_qqq100_reference",
+    "delta_max_drawdown_vs_generated_qqq100_reference",
+    "delta_calmar_vs_generated_qqq100_reference",
     "split_stability_label",
     "balanced_research_score",
     "data_quality",
@@ -104,7 +121,7 @@ def main() -> int:
         return 1
 
     print("Multi-sleeve portfolio backtest verification passed.")
-    print("Verified saved-output-only portfolio rows, QQQ100 baseline selection, missing-return-stream labels, and false execution/scheduling flags.")
+    print("Verified saved-output-only portfolio rows, separated saved/generated QQQ100 baselines, stream-aware missing labels, and false execution/scheduling flags.")
     return 0
 
 
@@ -137,7 +154,14 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "qqq100_core_trend_sleeve",
         "qqq_100_trend_gate",
         "qqq100_plus_cash_defensive_reference",
-        "qqq100_plus_defensive_crash_gate",
+        "qqq100_plus_spy_sma200_defensive_gate",
+        "qqq100_plus_rolling_drawdown_defensive_gate",
+        "qqq100_plus_combined_defensive_gate",
+        "delta_vs_generated_qqq100_reference",
+        "saved_benchmark_reconciliation_status",
+        "generated_qqq100_reference_needs_reconciliation_with_saved_benchmark",
+        "multi_sleeve_candidate_not_better_than_generated_qqq100",
+        "multi_sleeve_candidate_promising_needs_reconciliation",
         "qqq100_plus_high_growth_research",
         "qqq100_plus_crypto_research",
         "balanced_multi_sleeve_research_portfolio",
@@ -150,6 +174,7 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "missing_split_metrics",
         "missing_cost_turnover_stream",
         "saved_qqq100_metrics_only",
+        "saved_return_stream_metrics_available",
         "qqq_100_trend_gate_saved_metrics",
         "codex_ambitious_concentrated_growth_persistence",
         "execution_approved",
@@ -211,6 +236,7 @@ def verify_temp_generation(failures: list[str]) -> None:
             ["candidate_name", "CAGR", "Sharpe", "MaxDD", "Calmar"],
             [["codex_ambitious_concentrated_growth_persistence", "14.1039", "0.7192", "-29.5357", "0.4775"]],
         )
+        write_stream_fixture(root / "data" / "sleeve_return_streams.csv")
         result = generate_multi_sleeve_portfolio_backtest(root)
 
         for path in OUTPUT_FILES.values():
@@ -226,24 +252,36 @@ def verify_temp_generation(failures: list[str]) -> None:
                 failures.append(f"backtest output missing required column: {column}")
 
         summary = {row["summary_name"]: row["summary_value"] for row in result.summary_rows}
-        if summary.get("final_backtest_status") != FINAL_BACKTEST_STATUS:
-            failures.append("final status should require more data for multi-sleeve candidate changes")
-        if summary.get("top_multi_sleeve_portfolio_candidate") != TOP_MULTI_SLEEVE_CANDIDATE:
-            failures.append("top multi-sleeve candidate should be the conservative cash defensive reference")
-        if summary.get("qqq100_reference_cagr") != "16.8429":
+        if summary.get("final_backtest_status") not in {
+            FINAL_BACKTEST_STATUS,
+            FINAL_STATUS_NOT_BETTER_THAN_GENERATED_QQQ100,
+            FINAL_STATUS_PROMISING_NEEDS_RECONCILIATION,
+        }:
+            failures.append("final status should be one of the explicit generated-stream research statuses")
+        if summary.get("top_multi_sleeve_portfolio_candidate") == QQQ100_REFERENCE:
+            failures.append("top candidate should be a non-reference generated-stream portfolio")
+        if summary.get("saved_qqq100_benchmark_cagr") != "16.8429":
             failures.append("QQQ100 reference CAGR should come from exact qqq_100_trend_gate saved metrics")
+        if summary.get("generated_qqq100_reference_cagr") in {"16.8429", "", None}:
+            failures.append("generated QQQ100 reference should be computed separately from saved benchmark metrics")
+        if "generated_qqq100_reference" not in summary.get("saved_benchmark_reconciliation_status", ""):
+            failures.append("summary should include saved/generated benchmark reconciliation status")
         if old_ambitious_metrics_used(summary):
             failures.append("QQQ100 baseline must not use old codex ambitious metrics")
-        if summary.get("biggest_blocker") != BIGGEST_BLOCKER:
-            failures.append("summary should preserve missing saved return streams blocker")
-        if summary.get("recommended_next_step") != RECOMMENDED_NEXT_STEP:
-            failures.append("summary should recommend collecting saved daily return streams")
+        missing_warning = summary.get("missing_sleeve_data_warnings", "")
+        if "defensive_crash_gate" in missing_warning or "codex_experimental" in missing_warning:
+            failures.append("defensive and Codex streams should not be labelled missing when generated streams exist")
+        if "high_growth" not in missing_warning or "crypto" not in missing_warning:
+            failures.append("high-growth and crypto streams should remain labelled missing")
 
         portfolio_names = {row["portfolio_name"] for row in result.backtest_rows}
         for expected in [
             QQQ100_REFERENCE,
             TOP_MULTI_SLEEVE_CANDIDATE,
-            "qqq100_plus_defensive_crash_gate",
+            "qqq100_plus_spy_sma200_defensive_gate",
+            "qqq100_plus_rolling_drawdown_defensive_gate",
+            "qqq100_plus_combined_defensive_gate",
+            "codex_defensive_qqq_research_portfolio",
             "qqq100_plus_high_growth_research",
             "qqq100_plus_crypto_research",
             "balanced_multi_sleeve_research_portfolio",
@@ -257,6 +295,11 @@ def verify_temp_generation(failures: list[str]) -> None:
             failures.append("QQQ100 sleeve should be present")
         elif sleeves[QQQ100_SLEEVE].get("strategy_name") != "qqq_100_trend_gate":
             failures.append("QQQ100 sleeve should use qqq_100_trend_gate")
+        for sleeve in ["qqq_defensive_crash_gate_research_sleeve", "codex_experimental_research_sleeve"]:
+            if sleeve not in sleeves:
+                failures.append(f"{sleeve} should be present")
+            elif sleeves[sleeve].get("return_stream_status") != "saved_return_stream_metrics_available":
+                failures.append(f"{sleeve} should consume the generated return stream")
         for sleeve in ["high_growth_stock_research_sleeve", "crypto_research_sleeve"]:
             if sleeve not in sleeves:
                 failures.append(f"{sleeve} should be present")
@@ -271,6 +314,19 @@ def verify_temp_generation(failures: list[str]) -> None:
             failures.append("allocation output should include top multi-sleeve candidate")
         if not any(row.get("blocker_name") == BIGGEST_BLOCKER for row in result.blocker_rows):
             failures.append("blockers should include missing saved return streams")
+        for portfolio_name in [
+            "qqq100_plus_spy_sma200_defensive_gate",
+            "qqq100_plus_rolling_drawdown_defensive_gate",
+            "qqq100_plus_combined_defensive_gate",
+            "codex_defensive_qqq_research_portfolio",
+        ]:
+            row = next((item for item in result.backtest_rows if item.get("portfolio_name") == portfolio_name), None)
+            if not row:
+                continue
+            if row.get("data_quality") != "saved_return_stream_metrics_available":
+                failures.append(f"{portfolio_name} should be computed from saved return streams")
+            if row.get("delta_cagr_vs_generated_qqq100_reference") == "missing_saved_metrics":
+                failures.append(f"{portfolio_name} should have generated-reference deltas")
 
         for collection in [
             result.backtest_rows,
@@ -296,10 +352,12 @@ def verify_temp_generation(failures: list[str]) -> None:
                         failures.append(f"{flag} should remain false in backtest outputs")
 
         code, lines = show_multi_sleeve_portfolio_backtest(root)
-        if code != 0 or not any(FINAL_BACKTEST_STATUS in line for line in lines):
+        if code != 0 or not any("final_backtest_status" in line for line in lines):
             failures.append("saved display should show final backtest status")
-        if not any("QQQ100 reference metrics" in line for line in lines):
-            failures.append("saved display should show QQQ100 reference metrics")
+        if not any("saved QQQ100 benchmark metrics" in line for line in lines):
+            failures.append("saved display should show saved QQQ100 benchmark metrics")
+        if not any("generated QQQ100 reference metrics" in line for line in lines):
+            failures.append("saved display should show generated QQQ100 reference metrics")
 
 
 def write_fixture(path: Path, headers: list[str], rows: list[list[str]]) -> None:
@@ -310,12 +368,31 @@ def write_fixture(path: Path, headers: list[str], rows: list[list[str]]) -> None
         writer.writerows(rows)
 
 
+def write_stream_fixture(path: Path) -> None:
+    headers = ["date", "candidate_name", "daily_strategy_return", "signal_state"]
+    candidates = {
+        "qqq_100_trend_gate": [0.010, -0.004, 0.006, -0.002, 0.005, -0.003, 0.004, 0.002],
+        "cash_default_defensive_sleeve": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        "qqq100_spy_sma200_regime_filter": [0.006, -0.001, 0.004, 0.0, 0.003, -0.001, 0.003, 0.001],
+        "qqq100_rolling_drawdown_15_filter": [0.005, 0.0, 0.004, 0.0, 0.003, 0.0, 0.002, 0.001],
+        "qqq100_combined_trend_spy_regime_drawdown_gate": [0.004, 0.0, 0.003, 0.0, 0.003, 0.0, 0.002, 0.001],
+        "codex_qqq_calmar_optimised_defensive_gate_sleeve": [0.005, -0.001, 0.003, 0.0, 0.002, 0.0, 0.002, 0.001],
+    }
+    rows: list[list[str]] = []
+    for day_index in range(8):
+        date = f"2024-01-{day_index + 2:02d}"
+        for candidate, returns in candidates.items():
+            state = "risk_on" if returns[day_index] != 0 else "cash"
+            rows.append([date, candidate, str(returns[day_index]), state])
+    write_fixture(path, headers, rows)
+
+
 def old_ambitious_metrics_used(summary: dict[str, str]) -> bool:
     return (
-        summary.get("qqq100_reference_cagr") == "14.1039"
-        and summary.get("qqq100_reference_sharpe") == "0.7192"
-        and summary.get("qqq100_reference_max_drawdown") == "-29.5357"
-        and summary.get("qqq100_reference_calmar") == "0.4775"
+        summary.get("saved_qqq100_benchmark_cagr") == "14.1039"
+        and summary.get("saved_qqq100_benchmark_sharpe") == "0.7192"
+        and summary.get("saved_qqq100_benchmark_max_drawdown") == "-29.5357"
+        and summary.get("saved_qqq100_benchmark_calmar") == "0.4775"
     )
 
 

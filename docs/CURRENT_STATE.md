@@ -223,9 +223,17 @@ The Codex QQQ defensive crash-gate research pack comes from `python bot.py --cod
 - It labels missing candidate metrics, split metrics, and defensive ETF data as `missing_saved_metrics`, `missing_saved_split_metrics`, or `missing_saved_data` rather than inventing values.
 - It keeps the Codex experimental sleeve research-only and preserves false execution, Codex-experimental execution, repeat, follow-up, live, and scheduling approval flags.
 
+The sleeve return-stream generator comes from `python bot.py --sleeve-return-streams`, with saved display through `python bot.py --show-sleeve-return-streams`:
+
+- It generates research-only daily stream rows for `qqq100_core_trend_sleeve` / `qqq_100_trend_gate`, defensive QQQ crash-gate candidates, cash/no-position, and the Codex experimental defensive QQQ sleeve where QQQ/SPY research price data exists.
+- It writes `data/sleeve_return_streams.csv`, `data/sleeve_return_streams_summary.csv`, `data/sleeve_return_streams_sleeves.csv`, `data/sleeve_return_streams_quality.csv`, `data/sleeve_return_streams_blockers.csv`, and `data/sleeve_return_streams_next_steps.csv`.
+- It labels QQQ100 metric alignment as `approximate_or_needs_reconciliation` unless exact saved-source parity is available.
+- It labels high-growth and crypto as `missing_saved_return_stream` when no real daily stream exists and does not invent daily returns from summary metrics.
+- The expected status is `sleeve_return_streams_partial_created` while high-growth and crypto are missing; all execution, follow-up, repeat, scheduling, live, high-growth, crypto, and Codex-experimental approval flags remain false.
+
 The multi-sleeve portfolio backtest checkpoint comes from `python bot.py --multi-sleeve-portfolio-backtest`, with saved display through `python bot.py --show-multi-sleeve-portfolio-backtest`:
 
-- It reads saved CSV outputs only and uses exact `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` metrics as the QQQ100 reference.
+- It reads saved CSV outputs only, uses exact `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` metrics as the QQQ100 reference, and can consume `data/sleeve_return_streams.csv` to compute feasible reduced QQQ/cash/defensive portfolio metrics.
 - It writes `data/multi_sleeve_portfolio_backtest.csv`, `data/multi_sleeve_portfolio_backtest_sleeves.csv`, `data/multi_sleeve_portfolio_backtest_allocations.csv`, `data/multi_sleeve_portfolio_backtest_rankings.csv`, `data/multi_sleeve_portfolio_backtest_splits.csv`, `data/multi_sleeve_portfolio_backtest_trades.csv`, `data/multi_sleeve_portfolio_backtest_blockers.csv`, and `data/multi_sleeve_portfolio_backtest_summary.csv`.
 - It compares `qqq100_only_reference`, `qqq100_plus_cash_defensive_reference`, `qqq100_plus_defensive_crash_gate`, `qqq100_plus_high_growth_research`, `qqq100_plus_crypto_research`, `balanced_multi_sleeve_research_portfolio`, and `codex_ambitious_multi_sleeve_candidate`.
 - It labels missing defensive, high-growth, crypto, and Codex experimental daily return streams as `missing_saved_return_stream` and keeps combined metrics as `missing_saved_metrics` rather than inventing portfolio results.

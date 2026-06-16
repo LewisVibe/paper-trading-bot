@@ -71,6 +71,8 @@ REQUIRED_COMMANDS = [
     "--show-sleeve-research-scoreboard",
     "--codex-qqq-defensive-crash-gate-research-pack",
     "--show-codex-qqq-defensive-crash-gate-research-pack",
+    "--sleeve-return-streams",
+    "--show-sleeve-return-streams",
     "--multi-sleeve-portfolio-backtest",
     "--show-multi-sleeve-portfolio-backtest",
     "--paper-execution-state-summary",

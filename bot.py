@@ -408,6 +408,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--sleeve-return-streams"]:
+        from trading_bot.research.sleeve_return_streams import generate_sleeve_return_streams
+
+        result = generate_sleeve_return_streams()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-sleeve-return-streams"]:
+        from trading_bot.research.sleeve_return_streams import show_sleeve_return_streams
+
+        code, lines = show_sleeve_return_streams()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--multi-sleeve-portfolio-backtest"]:
         from trading_bot.research.multi_sleeve_portfolio_backtest import generate_multi_sleeve_portfolio_backtest
 
@@ -802,6 +816,10 @@ from trading_bot.research.sleeve_research_scoreboard import (
 from trading_bot.research.codex_qqq_defensive_crash_gate_research_pack import (
     generate_codex_qqq_defensive_crash_gate_research_pack,
     show_codex_qqq_defensive_crash_gate_research_pack,
+)
+from trading_bot.research.sleeve_return_streams import (
+    generate_sleeve_return_streams,
+    show_sleeve_return_streams,
 )
 from trading_bot.research.multi_sleeve_portfolio_backtest import (
     generate_multi_sleeve_portfolio_backtest,
@@ -5305,6 +5323,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved Codex QQQ defensive crash-gate research pack without broker reads.",
     )
     parser.add_argument(
+        "--sleeve-return-streams",
+        action="store_true",
+        help="Create research-only saved daily return streams for portfolio sleeves.",
+    )
+    parser.add_argument(
+        "--show-sleeve-return-streams",
+        action="store_true",
+        help="Display the saved sleeve return-stream summary without broker reads.",
+    )
+    parser.add_argument(
         "--multi-sleeve-portfolio-backtest",
         action="store_true",
         help="Create a saved-output-only multi-sleeve portfolio research backtest checkpoint.",
@@ -6540,6 +6568,20 @@ def main() -> int:
         return 0
     if args.show_codex_qqq_defensive_crash_gate_research_pack:
         status_code, lines = show_codex_qqq_defensive_crash_gate_research_pack()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.sleeve_return_streams:
+        try:
+            result = generate_sleeve_return_streams()
+        except Exception as exc:
+            print(f"Sleeve return streams failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_sleeve_return_streams:
+        status_code, lines = show_sleeve_return_streams()
         for line in lines:
             print(line)
         return status_code
