@@ -324,6 +324,26 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if "--qqq100-paper-postcheck" in sys.argv[1:]:
+        from trading_bot.research.qqq100_paper_postcheck import generate_qqq100_paper_postcheck
+
+        allowed = {"--qqq100-paper-postcheck", "--confirm-readonly-alpaca-check"}
+        if not set(sys.argv[1:]).issubset(allowed):
+            print("--qqq100-paper-postcheck only accepts --confirm-readonly-alpaca-check.")
+            raise SystemExit(2)
+        result = generate_qqq100_paper_postcheck(
+            confirm_readonly_alpaca_check="--confirm-readonly-alpaca-check" in sys.argv[1:]
+        )
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-qqq100-paper-postcheck"]:
+        from trading_bot.research.qqq100_paper_postcheck import show_qqq100_paper_postcheck
+
+        code, lines = show_qqq100_paper_postcheck()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-execution-state-summary"]:
         from trading_bot.research.paper_execution_state_summary import generate_paper_execution_state_summary
 
@@ -684,6 +704,10 @@ from trading_bot.research.qqq100_paper_readiness_blocker_report import (
 from trading_bot.research.qqq100_paper_execution_readiness_report import (
     generate_qqq100_paper_execution_readiness_report,
     show_qqq100_paper_execution_readiness_report,
+)
+from trading_bot.research.qqq100_paper_postcheck import (
+    generate_qqq100_paper_postcheck,
+    show_qqq100_paper_postcheck,
 )
 from trading_bot.research.paper_execution_state_summary import (
     generate_paper_execution_state_summary,
@@ -1569,7 +1593,6 @@ def run_execute_qqq100_paper(
     logger: logging.Logger,
     confirm_qqq100_paper: bool,
 ) -> int:
-    conn = None
     signal = read_saved_qqq100_preview_signal()
     credentials_present = bool(config.alpaca_api_key and config.alpaca_secret_key)
 
@@ -1683,20 +1706,6 @@ def run_execute_qqq100_paper(
             return 2
 
         if decision.intended_action not in {"buy_1", "sell_1"}:
-            conn = init_database(config.database_path)
-            execution_config = replace(config, dry_run=False)
-            insert_trade_log(
-                conn=conn,
-                config=execution_config,
-                ticker=QQQ100_TICKER,
-                signal="QQQ100_TARGET",
-                action=decision.intended_action,
-                position_before=current_position or Position(),
-                position_after=current_position or Position(),
-                quantity=0,
-                order_status="skipped_no_order_needed",
-                error="QQQ100 paper position already aligned with saved signal.",
-            )
             write_qqq100_paper_execution_report(
                 decision,
                 order_status="skipped_no_order_needed",
@@ -1727,8 +1736,6 @@ def run_execute_qqq100_paper(
             write_qqq100_paper_execution_report(blocked)
             return 2
 
-        conn = init_database(config.database_path)
-        execution_config = replace(config, dry_run=False)
         order = submit_alpaca_order(
             alpaca_client,
             QQQ100_TICKER,
@@ -1750,20 +1757,6 @@ def run_execute_qqq100_paper(
             QQQ100_FIXED_QUANTITY,
             order_status,
         )
-
-        insert_trade_log(
-            conn=conn,
-            config=execution_config,
-            ticker=QQQ100_TICKER,
-            signal="QQQ100_TARGET",
-            side=decision.order_side,
-            action=f"qqq100_{decision.intended_action}",
-            position_before=current_position or Position(),
-            position_after=position_after,
-            quantity=decimal_to_float(QQQ100_FIXED_QUANTITY),
-            order_id=order_id,
-            order_status=order_status,
-        )
         write_qqq100_paper_execution_report(
             decision,
             order_status=order_status,
@@ -1775,7 +1768,6 @@ def run_execute_qqq100_paper(
             f"status {order_status}"
         )
         logger.info(message)
-        send_discord_alert(config, logger, message)
         return 0
     except Exception as exc:
         message = f"QQQ100 paper execution failed safely: {type(exc).__name__}"
@@ -1795,9 +1787,6 @@ def run_execute_qqq100_paper(
         write_qqq100_paper_execution_report(blocked)
         print(message)
         return 1
-    finally:
-        if conn is not None:
-            conn.close()
 
 
 def manual_paper_order_execution_eligibility_blocked(
@@ -5168,6 +5157,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ100 paper execution readiness report without refreshing data.",
     )
     parser.add_argument(
+        "--qqq100-paper-postcheck",
+        action="store_true",
+        help="Create a read-only QQQ100 paper postcheck; broker reads require --confirm-readonly-alpaca-check.",
+    )
+    parser.add_argument(
+        "--show-qqq100-paper-postcheck",
+        action="store_true",
+        help="Display the saved QQQ100 paper postcheck without broker reads.",
+    )
+    parser.add_argument(
         "--paper-execution-state-summary",
         action="store_true",
         help="Create a saved-output-only paper execution milestone/state summary without broker calls.",
@@ -6321,6 +6320,22 @@ def main() -> int:
         return 0
     if args.show_qqq100_paper_execution_readiness_report:
         status_code, lines = show_qqq100_paper_execution_readiness_report()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.qqq100_paper_postcheck:
+        try:
+            result = generate_qqq100_paper_postcheck(
+                confirm_readonly_alpaca_check=args.confirm_readonly_alpaca_check
+            )
+        except Exception as exc:
+            print(f"QQQ100 paper postcheck failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_qqq100_paper_postcheck:
+        status_code, lines = show_qqq100_paper_postcheck()
         for line in lines:
             print(line)
         return status_code

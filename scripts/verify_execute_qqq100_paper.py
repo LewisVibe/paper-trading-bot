@@ -241,12 +241,20 @@ def verify_outputs_ignored(failures: list[str]) -> None:
 def verify_no_secrets_or_forbidden_wiring(bot_source: str, helper_source: str, failures: list[str]) -> None:
     combined = bot_source + "\n" + helper_source
     qqq_source = function_block(bot_source, "def run_execute_qqq100_paper(", "def manual_paper_order_execution_eligibility_blocked(")
-    for token in ["paper-order-test AAPL", "execute_slow_sma_paper", "--paper-order-test AAPL buy 1"]:
+    for token in [
+        "paper-order-test AAPL",
+        "execute_slow_sma_paper",
+        "--paper-order-test AAPL buy 1",
+        "insert_trade_log(",
+        "send_discord_alert(",
+    ]:
         if token in qqq_source:
             failures.append(f"QQQ100 command must not invoke forbidden runtime command: {token}")
     for token in ["order_id {order_id}", "account_id", "webhook_url"]:
         if token in qqq_source:
             failures.append(f"QQQ100 command must not print or expose secret/order identifier token: {token}")
+    if qqq_source.count("write_qqq100_paper_execution_report(") < 5:
+        failures.append("QQQ100 command should write result/summary/blocker CSVs on blocked, skipped, submitted, and error paths")
     if combined.count("--execute-qqq100-paper") < 1:
         failures.append("command should be visible to static command inventory")
 

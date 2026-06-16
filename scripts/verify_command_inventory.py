@@ -61,6 +61,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq100-paper-readiness-blocker-report",
     "--qqq100-paper-execution-readiness-report",
     "--show-qqq100-paper-execution-readiness-report",
+    "--qqq100-paper-postcheck",
+    "--show-qqq100-paper-postcheck",
     "--paper-execution-state-summary",
     "--show-paper-execution-state-summary",
     "--execute-qqq100-paper",

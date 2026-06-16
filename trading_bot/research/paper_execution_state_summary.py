@@ -19,6 +19,7 @@ INPUT_FILES = {
     "aapl_gate": Path("data/paper_order_smoke_test_gate_report.csv"),
     "qqq100_execution_result": Path("data/qqq100_paper_execution_result.csv"),
     "qqq100_execution_summary": Path("data/qqq100_paper_execution_summary.csv"),
+    "qqq100_postcheck": Path("data/qqq100_paper_postcheck.csv"),
     "qqq100_action_preview": Path("data/qqq100_action_preview.csv"),
     "qqq100_signal": Path("data/qqq100_preview_signal_pack.csv"),
     "qqq100_readiness": Path("data/qqq100_paper_execution_readiness_report.csv"),
@@ -176,9 +177,13 @@ def show_paper_execution_state_summary(root_dir: Path | str = ".") -> tuple[int,
 def build_context(inputs: dict[str, list[dict[str, str]]]) -> dict[str, str]:
     aapl_status = detect_aapl_smoke_status(inputs["aapl_postcheck"])
     aapl_position = detect_aapl_position(inputs["aapl_postcheck"])
-    qqq_exec_status = detect_qqq_execution_status(inputs["qqq100_execution_result"], inputs["qqq100_execution_summary"])
-    qqq_position = detect_qqq_position(inputs["qqq100_action_preview"])
-    qqq_alignment = detect_qqq_alignment(inputs["qqq100_action_preview"])
+    qqq_exec_status = detect_qqq_execution_status(
+        inputs["qqq100_execution_result"],
+        inputs["qqq100_execution_summary"],
+        inputs["qqq100_postcheck"],
+    )
+    qqq_position = detect_qqq_position(inputs["qqq100_action_preview"], inputs["qqq100_postcheck"])
+    qqq_alignment = detect_qqq_alignment(inputs["qqq100_action_preview"], inputs["qqq100_postcheck"])
     desired_position = first_nonempty(inputs["qqq100_signal"], ["desired_position"]) or "unknown"
     qqq_strategy = first_nonempty(inputs["qqq100_signal"], ["strategy_name"]) or first_nonempty(inputs["qqq100_execution_result"], ["strategy_name"]) or "qqq_100_trend_gate"
 
@@ -235,8 +240,18 @@ def detect_aapl_position(rows: list[dict[str, str]]) -> str:
     return "unavailable"
 
 
-def detect_qqq_execution_status(result_rows: list[dict[str, str]], summary_rows: list[dict[str, str]]) -> str:
+def detect_qqq_execution_status(
+    result_rows: list[dict[str, str]],
+    summary_rows: list[dict[str, str]],
+    postcheck_rows: list[dict[str, str]],
+) -> str:
     rows = result_rows + summary_rows
+    postcheck_joined = " ".join(" ".join(str(value) for value in row.values()) for row in postcheck_rows).lower()
+    if (
+        "qqq100_postcheck_order_observed_filled_aligned_long" in postcheck_joined
+        or ("recent_order_match_status" in postcheck_joined and "filled" in postcheck_joined and "aligned_long" in postcheck_joined)
+    ):
+        return "qqq100_manual_paper_execution_filled_confirmed"
     if not rows:
         return "qqq100_manual_execution_saved_result_missing"
     joined = " ".join(" ".join(str(value) for value in row.values()) for row in rows).lower()
@@ -247,8 +262,15 @@ def detect_qqq_execution_status(result_rows: list[dict[str, str]], summary_rows:
     return "qqq100_manual_execution_not_confirmed_from_saved_result"
 
 
-def detect_qqq_position(rows: list[dict[str, str]]) -> str:
+def detect_qqq_position(rows: list[dict[str, str]], postcheck_rows: list[dict[str, str]] | None = None) -> str:
     if not rows:
+        for row in reversed(postcheck_rows or []):
+            status = str(row.get("position_status", "")).strip()
+            qty = str(row.get("position_quantity_abs", "")).strip()
+            if status and qty:
+                return f"{status}; quantity={qty}"
+            if status:
+                return status
         return "unavailable"
     row = rows[0]
     status = str(row.get("current_position_status", "")).strip()
@@ -258,7 +280,14 @@ def detect_qqq_position(rows: list[dict[str, str]]) -> str:
     return status or "unavailable"
 
 
-def detect_qqq_alignment(rows: list[dict[str, str]]) -> str:
+def detect_qqq_alignment(rows: list[dict[str, str]], postcheck_rows: list[dict[str, str]] | None = None) -> str:
+    for row in reversed(postcheck_rows or []):
+        alignment = str(row.get("alignment_state", "")).strip()
+        status = str(row.get("position_status", "")).strip()
+        if alignment == "aligned_long" or (status == "paper_position_long" and alignment == "aligned_long"):
+            return "qqq100_aligned_long_confirmed"
+        if alignment:
+            return alignment
     if not rows:
         return "qqq100_alignment_saved_preview_missing"
     row = rows[0]
@@ -331,7 +360,7 @@ def build_position_rows(created_at: str, context: dict[str, str]) -> list[dict[s
 def build_milestone_rows(created_at: str, context: dict[str, str]) -> list[dict[str, Any]]:
     return [
         milestone_row(created_at, "aapl_smoke_test", context["aapl_smoke_test_status"], "manual_smoke_test", "AAPL", "filled" if context["aapl_smoke_test_status"] == "aapl_smoke_test_filled_confirmed" else "unconfirmed", context["aapl_position_summary"], "data/paper_order_smoke_test_postcheck.csv", "Historical AAPL smoke-test milestone only; this report did not submit the order."),
-        milestone_row(created_at, "qqq100_manual_paper_execution", context["qqq100_manual_execution_status"], "qqq_100_trend_gate", "QQQ", "filled" if context["qqq100_manual_execution_status"] == "qqq100_manual_paper_execution_filled_confirmed" else "unconfirmed", context["qqq_position_summary"], "data/qqq100_paper_execution_result.csv", "Historical QQQ100 manual paper execution milestone only; this report did not submit the order."),
+        milestone_row(created_at, "qqq100_manual_paper_execution", context["qqq100_manual_execution_status"], "qqq_100_trend_gate", "QQQ", "filled" if context["qqq100_manual_execution_status"] == "qqq100_manual_paper_execution_filled_confirmed" else "unconfirmed", context["qqq_position_summary"], "data/qqq100_paper_execution_result.csv or data/qqq100_paper_postcheck.csv", "Historical QQQ100 manual paper execution milestone only; this report did not submit the order."),
         milestone_row(created_at, "qqq100_alignment", context["qqq100_alignment_status"], "qqq_100_trend_gate", "QQQ", "not_applicable", context["qqq_position_summary"], "data/qqq100_action_preview.csv", "Saved action preview indicates current QQQ100 alignment where available."),
         milestone_row(created_at, "followup_boundary", "no_followup_order_approved", "boundary", "", "none", "not_applicable", "static_safety_boundary", "No follow-up order is approved by this saved summary."),
     ]

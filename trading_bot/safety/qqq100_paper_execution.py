@@ -386,8 +386,8 @@ def approval_flags(decision: Qqq100PaperExecutionDecision, *, order_event: str) 
         "orders_created": order_submitted,
         "orders_submitted": order_submitted,
         "orders_cancelled": False,
-        "sqlite_trade_log_written": order_event in {"order_submitted", "order_skipped_no_order_needed"},
-        "discord_alert_sent": order_event == "order_submitted",
+        "sqlite_trade_log_written": False,
+        "discord_alert_sent": False,
         "telegram_alert_sent": False,
     }
 

@@ -63,6 +63,7 @@ def verify_saved_output_only_source(module_source: str, failures: list[str]) -> 
     required = [
         "data/paper_order_smoke_test_postcheck.csv",
         "data/qqq100_paper_execution_result.csv",
+        "data/qqq100_paper_postcheck.csv",
         "data/qqq100_action_preview.csv",
         "report_only",
         "followup_order_approved",
@@ -217,6 +218,53 @@ def verify_fixture_recognition(failures: list[str]) -> None:
         for path in OUTPUT_FILES.values():
             if not (root / path).exists():
                 failures.append(f"expected output missing in fixture run: {path}")
+
+    with tempfile.TemporaryDirectory() as temp:
+        root = Path(temp)
+        data = root / "data"
+        data.mkdir()
+        write_csv(
+            data / "paper_order_smoke_test_postcheck.csv",
+            [
+                {
+                    "final_postcheck_status": "postcheck_order_observed_filled_manual_review",
+                    "ticker": "AAPL",
+                    "recent_order_match_found": "true",
+                    "recent_order_match_status": "filled",
+                    "position_summary": "position_direction=long; quantity_abs=2",
+                }
+            ],
+        )
+        write_csv(
+            data / "qqq100_paper_postcheck.csv",
+            [
+                {
+                    "final_postcheck_status": "qqq100_postcheck_order_observed_filled_aligned_long",
+                    "strategy_name": "qqq_100_trend_gate",
+                    "ticker": "QQQ",
+                    "desired_position": "long",
+                    "recent_order_match_found": "true",
+                    "recent_order_match_status": "filled",
+                    "position_status": "paper_position_long",
+                    "position_quantity_abs": "1",
+                    "alignment_state": "aligned_long",
+                    "execution_approved": "False",
+                    "scheduling_approved": "False",
+                }
+            ],
+        )
+        write_csv(
+            data / "qqq100_preview_signal_pack.csv",
+            [{"strategy_name": "qqq_100_trend_gate", "ticker": "QQQ", "desired_position": "long"}],
+        )
+        result = generate_paper_execution_state_summary(root)
+        summary = {row["summary_name"]: row["summary_value"] for row in result.summary_rows}
+        if summary.get("final_state_summary_status") != "paper_execution_milestone_recorded":
+            failures.append("postcheck fallback should produce paper_execution_milestone_recorded")
+        if summary.get("qqq100_manual_execution_status") != "qqq100_manual_paper_execution_filled_confirmed":
+            failures.append("postcheck fallback should recognise filled QQQ100 execution")
+        if summary.get("qqq100_alignment_status") != "qqq100_aligned_long_confirmed":
+            failures.append("postcheck fallback should recognise aligned_long")
 
 
 def verify_no_new_execution_command(bot_source: str, failures: list[str]) -> None:
