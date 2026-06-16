@@ -59,6 +59,8 @@ REQUIRED_COMMANDS = [
     "--show-multi-strategy-portfolio-preview",
     "--qqq100-paper-readiness-blocker-report",
     "--show-qqq100-paper-readiness-blocker-report",
+    "--qqq100-paper-execution-readiness-report",
+    "--show-qqq100-paper-execution-readiness-report",
     "--high-growth-stock-lab",
     "--show-high-growth-stock-lab",
     "--high-growth-stock-universe-expansion-report",

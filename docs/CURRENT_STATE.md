@@ -169,6 +169,12 @@ The QQQ100 paper-readiness blocker report comes from `python bot.py --qqq100-pap
 - It records blockers including the separate AAPL smoke test, QQQ100 execution design, sizing, portfolio risk enforcement, kill-switch enforcement, execution eligibility, open-order and duplicate-exposure handling, manual confirmation wording, postcheck design, scheduling, and strategy-to-execution integration.
 - It is saved-output only and does not call Alpaca, read positions, refresh market data, create order instructions, approve paper execution, approve execution, approve scheduling, or connect strategies to paper orders.
 
+The QQQ100 paper execution readiness report comes from `python bot.py --qqq100-paper-execution-readiness-report`, with saved display through `python bot.py --show-qqq100-paper-execution-readiness-report`:
+
+- It reads saved readiness evidence only, including the AAPL smoke-test postcheck, QQQ100 preview signal/action preview, promoted preview row, multi-strategy portfolio overlap warnings, portfolio-risk, execution eligibility, kill-switch, protection, and project-state outputs where present.
+- It writes `data/qqq100_paper_execution_readiness_report.csv`, `data/qqq100_paper_execution_readiness_summary.csv`, `data/qqq100_paper_execution_readiness_evidence.csv`, and `data/qqq100_paper_execution_readiness_blockers.csv`.
+- It may say QQQ100 is ready for future manual execution-design review, but it does not approve paper execution, add a QQQ100 execution command, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, or connect strategies to paper orders.
+
 The multi-strategy portfolio preview combiner comes from `python bot.py --multi-strategy-portfolio-preview`, with saved display through `python bot.py --show-multi-strategy-portfolio-preview`:
 
 - It reads saved CSV outputs only, including QQQ100 preview/action outputs, promoted preview rows, defensive context, high-growth branch checkpoints, crypto research/manual-review outputs, project research state, execution eligibility, and portfolio-risk policy outputs where present.

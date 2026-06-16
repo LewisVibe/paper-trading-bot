@@ -1657,6 +1657,29 @@ data/qqq100_paper_readiness_blocker_evidence.csv
 data/qqq100_paper_readiness_blocker_blockers.csv
 ```
 
+QQQ100 paper execution readiness report mode reads saved readiness evidence only and asks whether `qqq_100_trend_gate` is ready for a future, separately reviewed manual paper-execution command design. It can recognise the saved AAPL smoke-test postcheck, QQQ100 preview signal/action preview, promoted preview row, multi-strategy portfolio overlap warnings, portfolio-risk, execution eligibility, kill-switch, and paper-execution protection context. It may label the branch ready for manual execution-design review, but it does not add a QQQ100 execution command and does not approve paper execution.
+
+Command:
+
+```text
+python bot.py --qqq100-paper-execution-readiness-report
+```
+
+Saved display:
+
+```text
+python bot.py --show-qqq100-paper-execution-readiness-report
+```
+
+Outputs:
+
+```text
+data/qqq100_paper_execution_readiness_report.csv
+data/qqq100_paper_execution_readiness_summary.csv
+data/qqq100_paper_execution_readiness_evidence.csv
+data/qqq100_paper_execution_readiness_blockers.csv
+```
+
 High-growth stock lab mode tests a fixed high-risk, high-return individual-stock universe only: `AAPL`, `MSFT`, `NVDA`, `AMZN`, `META`, `GOOGL`, `AVGO`, `AMD`, `TSLA`, and `NFLX`. SPY and QQQ are allowed only as benchmark/regime references, not as traded holdings. The lab compares fixed monthly concentrated momentum variants, including top 1/top 2/top 3 composite 63/126/252-day momentum with own SMA200 and QQQ/SPY SMA200 regime gates, plus `codex_high_conviction_growth_persistence`, `codex_growth_drawdown_reentry`, `codex_high_growth_breakout_acceleration`, and `codex_high_growth_crash_rebound_leader`. The two Codex high-growth variants are fixed-rule ambitious stock-only candidates: one looks for breakout acceleration near 52-week highs, and one looks for crash-rebound leaders after recovery confirmation. This is research-only and deliberately flags concentration risk, survivorship bias, single-name event risk, stock-specific gap risk, cost/split sensitivity, and drawdown risk. It may use yfinance daily data through the research path, but it does not call Alpaca, load config, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect strategies to Alpaca or paper orders.
 
 Command:
