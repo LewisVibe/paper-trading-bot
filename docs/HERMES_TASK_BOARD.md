@@ -72,6 +72,27 @@ Cross-references:
 - **Allowed commands:** `python scripts\verify_qqq100_stream_reconciliation.py` and repo safety/inventory verifiers only.
 - **Stop condition:** Stop if the task starts expanding `--execute-qqq100-paper`, adding repeat execution, calling Alpaca, reading broker state, changing config defaults, approving scheduling, treating a material metric-gap candidate as reconciled, or treating a reconciliation candidate as execution approval.
 
+### Task: QQQ100 benchmark-input reconstruction review
+- **Purpose:** Document the recovered source chain and unresolved gaps behind the saved `qqq_100_trend_gate` benchmark metrics before changing any generated QQQ100 stream.
+- **Risk level:** Medium / report-only reconstruction, because it sits near active QQQ100 paper-sleeve research and should not become execution evidence.
+- **Allowed files:**
+  - `trading_bot/research/qqq100_benchmark_inputs.py`
+  - `scripts/verify_qqq100_benchmark_inputs_report.py`
+  - `README.md`
+  - `docs/CURRENT_STATE.md`
+  - `docs/V2_RESEARCH_CHECKPOINT.md`
+  - `docs/HERMES_TASK_BOARD.md`
+- **Forbidden files:**
+  - `config.json`
+  - `.env`
+  - generated `data/` outputs
+  - logs/databases/charts
+  - Alpaca/order submission modules
+  - QQQ100 paper execution code
+  - scheduling, Hermes cron, Task Scheduler, service, or loop files
+- **Allowed commands:** `python scripts\verify_qqq100_benchmark_inputs_report.py` and repo safety/inventory/verifier-only checks.
+- **Stop condition:** Stop if the task starts refreshing market data, calling Alpaca, reading broker state, updating sleeve return streams, changing QQQ100 paper execution, approving scheduling, or treating partial source recovery as execution approval.
+
 ### Task: High-growth return-stream review
 - **Purpose:** Review saved daily high-growth stock return streams before they are used in any multi-sleeve research conclusion.
 - **Risk level:** Medium / research-only stream generation, because it introduces high-risk stock branch returns near portfolio research.

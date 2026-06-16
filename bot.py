@@ -436,6 +436,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--qqq100-benchmark-inputs-report"]:
+        from trading_bot.research.qqq100_benchmark_inputs import generate_qqq100_benchmark_inputs_report
+
+        result = generate_qqq100_benchmark_inputs_report()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-qqq100-benchmark-inputs"]:
+        from trading_bot.research.qqq100_benchmark_inputs import show_qqq100_benchmark_inputs
+
+        code, lines = show_qqq100_benchmark_inputs()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--high-growth-return-streams"]:
         from trading_bot.research.high_growth_return_streams import generate_high_growth_return_streams
 
@@ -5387,6 +5401,16 @@ def parse_args() -> argparse.Namespace:
         "--show-qqq100-stream-reconciliation",
         action="store_true",
         help="Display the saved QQQ100 stream reconciliation summary without broker reads.",
+    )
+    parser.add_argument(
+        "--qqq100-benchmark-inputs-report",
+        action="store_true",
+        help="Create a saved-output-only report documenting the likely original QQQ100 benchmark inputs.",
+    )
+    parser.add_argument(
+        "--show-qqq100-benchmark-inputs",
+        action="store_true",
+        help="Display the saved QQQ100 benchmark-input reconstruction without broker or market-data reads.",
     )
     parser.add_argument(
         "--high-growth-return-streams",

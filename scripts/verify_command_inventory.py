@@ -75,6 +75,8 @@ REQUIRED_COMMANDS = [
     "--show-sleeve-return-streams",
     "--qqq100-stream-reconciliation",
     "--show-qqq100-stream-reconciliation",
+    "--qqq100-benchmark-inputs-report",
+    "--show-qqq100-benchmark-inputs",
     "--high-growth-return-streams",
     "--show-high-growth-return-streams",
     "--multi-sleeve-portfolio-backtest",

@@ -247,6 +247,14 @@ The QQQ100 stream reconciliation checkpoint comes from `python bot.py --qqq100-s
 - It labels missing original benchmark source stream/data, date range, price adjustment, cash, and cost assumptions rather than forcing generated-stream parity.
 - It does not update `--sleeve-return-streams` automatically; QQQ100 remains the only active paper sleeve and all execution, follow-up, repeat, scheduling, and live-trading approval flags remain false.
 
+The QQQ100 benchmark-input reconstruction checkpoint comes from `python bot.py --qqq100-benchmark-inputs-report`, with saved display through `python bot.py --show-qqq100-benchmark-inputs`:
+
+- It writes `data/qqq100_benchmark_inputs_report.csv`, `data/qqq100_benchmark_inputs_summary.csv`, and `data/qqq100_benchmark_input_gaps.csv`.
+- It documents the likely tracked source chain behind the saved `qqq_100_trend_gate` metrics: `fa1d63d` QQQ leverage validation, `ae0ab7f` QQQ lead decision, and `4aebc22` project research state refresh.
+- It records the likely original assumptions as QQQ daily yfinance data, `period='10y'`, `interval='1d'`, `auto_adjust=True`, SMA200 trend gate, prior-close signal, next-bar close-to-close returns, zero-return cash days, and 10 bps exposure-change cost.
+- It keeps the status at `source_partially_recovered` because the original daily equity/return stream and exact yfinance snapshot/date range are missing.
+- It must not be used to force the generated QQQ100 stream to match the saved benchmark; all execution, paper execution, scheduling, and live-trading approvals remain false.
+
 The multi-sleeve portfolio backtest checkpoint comes from `python bot.py --multi-sleeve-portfolio-backtest`, with saved display through `python bot.py --show-multi-sleeve-portfolio-backtest`:
 
 - It reads saved CSV outputs only, keeps exact saved `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` benchmark metrics separate from generated QQQ100 stream metrics, and consumes `data/sleeve_return_streams.csv` to compute feasible reduced QQQ/cash/defensive portfolio metrics.

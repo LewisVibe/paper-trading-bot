@@ -1847,6 +1847,23 @@ data/qqq100_stream_reconciliation_summary.csv
 
 This reconciliation is research/report-only. Current saved outputs remain `qqq100_reconciliation_still_blocked` while the generated QQQ100 stream trails the saved benchmark materially and the original benchmark source stream/parameters are unknown. QQQ100 remains the only active paper sleeve, repeat execution approval remains false, follow-up order approval remains false, scheduling approval remains false, and general execution approval remains false.
 
+QQQ100 benchmark-input reconstruction is a saved-output/report-only checkpoint for documenting the likely source chain behind the saved `qqq_100_trend_gate` metrics (`CAGR=16.8429`, `Sharpe=1.0027`, `MaxDD=-23.4576`, `Calmar=0.718`) before any generated stream is changed.
+
+```text
+python bot.py --qqq100-benchmark-inputs-report
+python bot.py --show-qqq100-benchmark-inputs
+```
+
+Outputs:
+
+```text
+data/qqq100_benchmark_inputs_report.csv
+data/qqq100_benchmark_inputs_summary.csv
+data/qqq100_benchmark_input_gaps.csv
+```
+
+The report currently labels the source as `source_partially_recovered`: tracked history points to the QQQ leverage validation path using QQQ daily data, a 10-year yfinance window, `auto_adjust=True`, a 200-day trend gate, prior-close signal timing, next-bar close-to-close returns, zero-return cash days, and 10 bps exposure-change cost. The original daily stream and exact yfinance snapshot/date range remain missing, so this report must not be used to force the generated QQQ100 stream to match the saved benchmark. It remains research-only with execution, paper execution, scheduling, and live-trading approval false.
+
 Multi-sleeve portfolio backtest mode is a saved-output-only research checkpoint for testing portfolio combinations conceptually before any new preview/action/execution wiring. It keeps saved QQQ100 benchmark metrics separate from generated QQQ100 stream metrics, then defines QQQ100-only, QQQ100-plus-cash, QQQ100-plus-SPY-SMA200 defensive gate, QQQ100-plus-rolling-drawdown defensive gate, QQQ100-plus-combined defensive gate, Codex defensive QQQ research, high-growth, crypto, balanced multi-sleeve, and Codex ambitious allocation candidates. When `data/sleeve_return_streams.csv` contains defensive and Codex streams, those candidates are consumed; high-growth and crypto remain labelled as missing unless real daily streams exist. It does not fetch market data, call Alpaca, read live positions, create/submit/cancel/replace orders, write SQLite `trade_log`, send alerts, schedule anything, expand QQQ100 execution, add repeat execution, or wire any sleeve to execution.
 
 ```text
