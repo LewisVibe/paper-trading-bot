@@ -54,7 +54,20 @@ REQUIRED_BACKTEST_COLUMNS = [
     "generated_qqq100_reference_sharpe",
     "generated_qqq100_reference_max_drawdown",
     "generated_qqq100_reference_calmar",
+    "qqq100_reference_source_used",
+    "qqq100_reference_status",
+    "recovered_reference_available",
+    "old_generated_reference_retained",
+    "old_generated_reference_status",
+    "recovered_qqq100_reference_cagr",
+    "recovered_qqq100_reference_sharpe",
+    "recovered_qqq100_reference_max_drawdown",
+    "recovered_qqq100_reference_calmar",
     "saved_benchmark_reconciliation_status",
+    "saved_benchmark_delta_CAGR",
+    "saved_benchmark_delta_Sharpe",
+    "saved_benchmark_delta_MaxDD",
+    "saved_benchmark_delta_Calmar",
     "candidate_allocation",
     "candidate_cagr",
     "candidate_sharpe",
@@ -72,6 +85,10 @@ REQUIRED_BACKTEST_COLUMNS = [
     "delta_sharpe_vs_generated_qqq100_reference",
     "delta_max_drawdown_vs_generated_qqq100_reference",
     "delta_calmar_vs_generated_qqq100_reference",
+    "delta_cagr_vs_recovered_qqq100_reference",
+    "delta_sharpe_vs_recovered_qqq100_reference",
+    "delta_max_drawdown_vs_recovered_qqq100_reference",
+    "delta_calmar_vs_recovered_qqq100_reference",
     "split_stability_label",
     "balanced_research_score",
     "data_quality",
@@ -157,11 +174,17 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "qqq100_plus_spy_sma200_defensive_gate",
         "qqq100_plus_rolling_drawdown_defensive_gate",
         "qqq100_plus_combined_defensive_gate",
-        "delta_vs_generated_qqq100_reference",
+        "delta_vs_recovered_qqq100_reference",
+        "diagnostic_delta_vs_old_generated_qqq100_reference",
+        "delta_vs_recovered_qqq100_reference",
         "saved_benchmark_reconciliation_status",
         "generated_qqq100_reference_needs_reconciliation_with_saved_benchmark",
         "multi_sleeve_candidate_not_better_than_generated_qqq100",
         "multi_sleeve_candidate_promising_needs_reconciliation",
+        "multi_sleeve_candidate_promising_recovered_reference_review",
+        "multi_sleeve_candidate_promising_needs_crypto_and_policy_review",
+        "qqq100_recovered_reference_stream",
+        "qqq100_recovered_inputs_sma200_close_to_close_10bps",
         "qqq100_plus_high_growth_research",
         "qqq100_plus_crypto_research",
         "balanced_multi_sleeve_research_portfolio",
@@ -237,6 +260,7 @@ def verify_temp_generation(failures: list[str]) -> None:
             [["codex_ambitious_concentrated_growth_persistence", "14.1039", "0.7192", "-29.5357", "0.4775"]],
         )
         write_stream_fixture(root / "data" / "sleeve_return_streams.csv")
+        write_recovered_reference_fixture(root)
         result = generate_multi_sleeve_portfolio_backtest(root)
 
         for path in OUTPUT_FILES.values():
@@ -256,6 +280,8 @@ def verify_temp_generation(failures: list[str]) -> None:
             FINAL_BACKTEST_STATUS,
             FINAL_STATUS_NOT_BETTER_THAN_GENERATED_QQQ100,
             FINAL_STATUS_PROMISING_NEEDS_RECONCILIATION,
+            "multi_sleeve_candidate_promising_recovered_reference_review",
+            "multi_sleeve_candidate_promising_needs_crypto_and_policy_review",
         }:
             failures.append("final status should be one of the explicit generated-stream research statuses")
         if summary.get("top_multi_sleeve_portfolio_candidate") == QQQ100_REFERENCE:
@@ -264,8 +290,24 @@ def verify_temp_generation(failures: list[str]) -> None:
             failures.append("QQQ100 reference CAGR should come from exact qqq_100_trend_gate saved metrics")
         if summary.get("generated_qqq100_reference_cagr") in {"16.8429", "", None}:
             failures.append("generated QQQ100 reference should be computed separately from saved benchmark metrics")
-        if "generated_qqq100_reference" not in summary.get("saved_benchmark_reconciliation_status", ""):
-            failures.append("summary should include saved/generated benchmark reconciliation status")
+        if summary.get("qqq100_reference_source_used") != "qqq100_recovered_reference_stream":
+            failures.append("valid recovered reference fixture should become the primary QQQ100 reference")
+        if summary.get("recovered_reference_available") != "true":
+            failures.append("valid recovered reference fixture should be marked available")
+        if summary.get("old_generated_reference_retained") != "true":
+            failures.append("old generated reference should be retained as diagnostic")
+        if summary.get("old_generated_reference_status") != "diagnostic_only":
+            failures.append("old generated reference should be diagnostic-only")
+        if summary.get("recovered_qqq100_reference_cagr") == "missing_saved_metrics":
+            failures.append("recovered QQQ100 reference metrics should be reported when valid")
+        if summary.get("delta_cagr_vs_recovered_qqq100_reference") in {"", None, "missing_saved_metrics"}:
+            failures.append("valid recovered reference should expose deltas vs recovered QQQ100 reference")
+        stale_next_step = "reconcile_generated_qqq100_stream_against_saved_benchmark_before_candidate_label_change"
+        if summary.get("recommended_next_step") == stale_next_step:
+            failures.append("valid recovered reference should not use stale generated-stream reconciliation next step")
+        reconciliation_status = summary.get("saved_benchmark_reconciliation_status", "")
+        if "generated_qqq100_reference" not in reconciliation_status and "recovered_qqq100_reference" not in reconciliation_status:
+            failures.append("summary should include generated or recovered benchmark reconciliation status")
         if old_ambitious_metrics_used(summary):
             failures.append("QQQ100 baseline must not use old codex ambitious metrics")
         missing_warning = summary.get("missing_sleeve_data_warnings", "")
@@ -356,8 +398,12 @@ def verify_temp_generation(failures: list[str]) -> None:
             failures.append("saved display should show final backtest status")
         if not any("saved QQQ100 benchmark metrics" in line for line in lines):
             failures.append("saved display should show saved QQQ100 benchmark metrics")
-        if not any("generated QQQ100 reference metrics" in line for line in lines):
-            failures.append("saved display should show generated QQQ100 reference metrics")
+        if not any("old generated QQQ100 diagnostic reference metrics" in line for line in lines):
+            failures.append("saved display should show old generated QQQ100 diagnostic reference metrics")
+        if not any("delta_vs_recovered_qqq100_reference" in line for line in lines):
+            failures.append("saved display should show deltas vs recovered QQQ100 reference")
+        if any("recommended next step: reconcile_generated_qqq100_stream_against_saved_benchmark_before_candidate_label_change" in line for line in lines):
+            failures.append("saved display should not show stale generated-stream reconciliation next step when recovered reference is valid")
 
 
 def write_fixture(path: Path, headers: list[str], rows: list[list[str]]) -> None:
@@ -385,6 +431,87 @@ def write_stream_fixture(path: Path) -> None:
             state = "risk_on" if returns[day_index] != 0 else "cash"
             rows.append([date, candidate, str(returns[day_index]), state])
     write_fixture(path, headers, rows)
+
+
+def write_recovered_reference_fixture(root: Path) -> None:
+    metric_headers = [
+        "reference_name",
+        "source_candidate_name",
+        "reference_status",
+        "gap_threshold_status",
+        "cagr",
+        "sharpe",
+        "max_drawdown",
+        "calmar",
+        "annual_volatility",
+        "cash_percentage",
+        "trade_signal_change_count",
+        "saved_benchmark_delta_CAGR",
+        "saved_benchmark_delta_Sharpe",
+        "saved_benchmark_delta_MaxDD",
+        "saved_benchmark_delta_Calmar",
+        "execution_approved",
+        "scheduling_approved",
+        "orders_created",
+        "orders_submitted",
+        "orders_cancelled",
+    ]
+    write_fixture(
+        root / "data" / "qqq100_recovered_reference_metrics.csv",
+        metric_headers,
+        [[
+            "qqq100_recovered_reference_stream",
+            "qqq100_recovered_inputs_sma200_close_to_close_10bps",
+            "qqq100_reconstruction_close_enough_for_research_review",
+            "all_metric_gaps_within_research_review_thresholds",
+            "16.9832",
+            "1.0073",
+            "-23.4576",
+            "0.724",
+            "18.0",
+            "35",
+            "22",
+            "0.1403",
+            "0.0046",
+            "0.0",
+            "0.006",
+            "false",
+            "false",
+            "false",
+            "false",
+            "false",
+        ]],
+    )
+    stream_headers = [
+        "date",
+        "candidate_name",
+        "source_candidate_name",
+        "reference_status",
+        "daily_strategy_return",
+        "signal_state",
+        "execution_approved",
+        "scheduling_approved",
+        "orders_created",
+        "orders_submitted",
+        "orders_cancelled",
+    ]
+    rows = []
+    returns = [0.011, -0.003, 0.007, -0.001, 0.006, -0.002, 0.005, 0.003]
+    for day_index, value in enumerate(returns):
+        rows.append([
+            f"2024-01-{day_index + 2:02d}",
+            "qqq100_recovered_reference_stream",
+            "qqq100_recovered_inputs_sma200_close_to_close_10bps",
+            "qqq100_reconstruction_close_enough_for_research_review",
+            str(value),
+            "risk_on",
+            "false",
+            "false",
+            "false",
+            "false",
+            "false",
+        ])
+    write_fixture(root / "data" / "qqq100_recovered_reference_stream.csv", stream_headers, rows)
 
 
 def old_ambitious_metrics_used(summary: dict[str, str]) -> bool:

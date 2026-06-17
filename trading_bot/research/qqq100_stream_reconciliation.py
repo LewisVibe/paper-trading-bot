@@ -36,15 +36,19 @@ from trading_bot.research.sleeve_return_streams import (
 
 FINAL_STATUS = "qqq100_stream_reconciliation_needs_manual_review"
 STATUS_CLOSE_ENOUGH = "qqq100_reconciliation_candidate_close_enough_for_research_review"
+STATUS_RECONSTRUCTION_CLOSE_ENOUGH = "qqq100_reconstruction_close_enough_for_research_review"
+STATUS_RECONSTRUCTION_STILL_BLOCKED = "qqq100_reconstruction_attempt_still_blocked"
 STATUS_IMPROVED_NOT_FINAL = "qqq100_reconciliation_improved_not_final"
 STATUS_STILL_BLOCKED = "qqq100_reconciliation_still_blocked"
 STATUS_BLOCKED_MISSING_ORIGINAL_STREAM = "qqq100_reconciliation_blocked_missing_original_benchmark_stream"
 STATUS_BLOCKED_UNKNOWN_DEFINITION = "qqq100_reconciliation_blocked_benchmark_definition_unknown"
 BEST_CANDIDATE_FALLBACK = "qqq100_stream_saved_benchmark_like_best_candidate"
+RECOVERED_INPUTS_CANDIDATE = "qqq100_recovered_inputs_sma200_close_to_close_10bps"
 QQQ100_STRATEGY_IDENTITY = "qqq_100_trend_gate"
 BIGGEST_BLOCKER = "missing_original_benchmark_source_data_and_exact_backtest_parameters"
 RECOMMENDED_NEXT_STEP = "document_original_qqq100_backtest_inputs_before_updating_stream_generation"
 REVIEW_NEXT_STEP = "review_improved_qqq100_reconciliation_candidate_before_updating_stream_generation"
+RECONSTRUCTION_BLOCKED_NEXT_STEP = "accept_saved_benchmark_as_constant_or_recover_original_daily_stream_before_candidate_label_change"
 GAP_THRESHOLDS = {
     "cagr": 0.5,
     "sharpe": 0.05,
@@ -58,6 +62,8 @@ OUTPUT_FILES = {
     "diagnostics": Path("data/qqq100_stream_reconciliation_diagnostics.csv"),
     "blockers": Path("data/qqq100_stream_reconciliation_blockers.csv"),
     "summary": Path("data/qqq100_stream_reconciliation_summary.csv"),
+    "recovered_reference_stream": Path("data/qqq100_recovered_reference_stream.csv"),
+    "recovered_reference_metrics": Path("data/qqq100_recovered_reference_metrics.csv"),
 }
 
 SAFETY_COLUMNS = [
@@ -192,6 +198,43 @@ SUMMARY_COLUMNS = [
     *SAFETY_COLUMNS,
 ]
 
+RECOVERED_REFERENCE_STREAM_COLUMNS = [
+    "created_at",
+    "date",
+    "sleeve_name",
+    "candidate_name",
+    "source_candidate_name",
+    "ticker_or_assets",
+    "daily_asset_return",
+    "daily_strategy_return",
+    "signal_state",
+    "exposure",
+    "cash_weight",
+    "reference_status",
+    *SAFETY_COLUMNS,
+]
+
+RECOVERED_REFERENCE_METRICS_COLUMNS = [
+    "created_at",
+    "reference_name",
+    "source_candidate_name",
+    "reference_status",
+    "gap_threshold_status",
+    "cagr",
+    "sharpe",
+    "max_drawdown",
+    "calmar",
+    "annual_volatility",
+    "cash_percentage",
+    "trade_signal_change_count",
+    "saved_benchmark_delta_CAGR",
+    "saved_benchmark_delta_Sharpe",
+    "saved_benchmark_delta_MaxDD",
+    "saved_benchmark_delta_Calmar",
+    "required_next_step",
+    *SAFETY_COLUMNS,
+]
+
 
 @dataclass
 class QQQ100StreamReconciliationResult:
@@ -213,16 +256,20 @@ def generate_qqq100_stream_reconciliation(root_dir: Path | str = ".") -> QQQ100S
     price_rows, price_source, price_basis_status = load_qqq_price_rows(root)
     candidate_rows = build_candidate_rows(created_at, price_rows, saved_stream_rows, saved_metrics, current_metrics, price_basis_status)
     best_candidate = choose_best_candidate(candidate_rows)
+    recovered_reference_stream_rows = build_recovered_reference_stream_rows(created_at, price_rows, candidate_rows)
+    recovered_reference_metric_rows = build_recovered_reference_metric_rows(created_at, candidate_rows, recovered_reference_stream_rows)
     diagnostic_rows = build_diagnostic_rows(created_at, saved_metrics, current_metrics, candidate_rows, price_source, price_basis_status)
     blocker_rows = build_blocker_rows(created_at, diagnostic_rows)
-    report_rows = build_report_rows(created_at, saved_metrics, current_metrics, best_candidate, diagnostic_rows)
-    summary_rows = build_summary_rows(created_at, report_rows[0], saved_metrics, current_metrics, best_candidate)
+    report_rows = build_report_rows(created_at, saved_metrics, current_metrics, best_candidate, candidate_rows, diagnostic_rows)
+    summary_rows = build_summary_rows(created_at, report_rows[0], saved_metrics, current_metrics, best_candidate, candidate_rows)
     output_paths = {name: root / path for name, path in OUTPUT_FILES.items()}
     write_rows(output_paths["report"], REPORT_COLUMNS, report_rows)
     write_rows(output_paths["candidates"], CANDIDATE_COLUMNS, candidate_rows)
     write_rows(output_paths["diagnostics"], DIAGNOSTIC_COLUMNS, diagnostic_rows)
     write_rows(output_paths["blockers"], BLOCKER_COLUMNS, blocker_rows)
     write_rows(output_paths["summary"], SUMMARY_COLUMNS, summary_rows)
+    write_rows(output_paths["recovered_reference_stream"], RECOVERED_REFERENCE_STREAM_COLUMNS, recovered_reference_stream_rows)
+    write_rows(output_paths["recovered_reference_metrics"], RECOVERED_REFERENCE_METRICS_COLUMNS, recovered_reference_metric_rows)
     return QQQ100StreamReconciliationResult(
         output_paths=output_paths,
         report_rows=report_rows,
@@ -252,6 +299,10 @@ def show_qqq100_stream_reconciliation(root_dir: Path | str = ".") -> tuple[int, 
         f"best aligned candidate: {summary.get('best_aligned_candidate', 'missing')}",
         f"best aligned candidate metrics: {summary.get('best_aligned_candidate_metrics', 'missing')}",
         f"deltas vs saved benchmark: {summary.get('deltas_vs_saved_benchmark', 'missing')}",
+        f"fixed recovered-inputs candidate: {summary.get('fixed_recovered_inputs_candidate', 'missing')}",
+        f"fixed recovered-inputs candidate metrics: {summary.get('fixed_recovered_inputs_candidate_metrics', 'missing')}",
+        f"fixed recovered-inputs deltas vs saved benchmark: {summary.get('fixed_recovered_inputs_deltas_vs_saved_benchmark', 'missing')}",
+        f"fixed recovered-inputs status: {summary.get('fixed_recovered_inputs_status', 'missing')}",
         f"gap threshold status: {summary.get('gap_threshold_status', 'missing')}",
         f"likely mismatch cause: {summary.get('likely_mismatch_cause', 'missing')}",
         f"sleeve_return_streams updated: {summary.get('sleeve_return_streams_updated', 'false')}",
@@ -302,6 +353,7 @@ def build_candidate_rows(
         ("qqq100_stream_adjclose_shift1", "adj_close", 1, 100, 100, "next_day_signal_reference", False),
         ("qqq100_stream_adjclose_shift1_drop_warmup", "adj_close", 1, 100, 100, "next_day_signal_reference_drop_warmup", True),
         ("qqq100_stream_min_periods_100_shift1", "close", 1, 100, 100, "next_day_signal_reference", False),
+        (RECOVERED_INPUTS_CANDIDATE, "close", 1, 200, 200, "recovered_inputs_prior_close_sma200_next_bar_close_to_close_10bps", True),
     ]
     rows = [current_saved_stream_candidate(created_at, saved_stream_rows, saved_metrics, current_metrics)]
     rows.extend(
@@ -368,8 +420,8 @@ def candidate_row_from_spec(
         "delta_Calmar_vs_saved_benchmark": deltas["calmar"],
         "reconciliation_distance_score": distance,
         "gap_threshold_status": gap_status,
-        "reconciliation_status": status,
-        "mismatch_reason": mismatch,
+        "reconciliation_status": reconstruction_status(candidate_name, gap_status, status),
+        "mismatch_reason": reconstruction_mismatch_reason(candidate_name, gap_status, mismatch),
         **safety_flags(),
     }
 
@@ -384,21 +436,104 @@ def build_candidate_stream(
 ) -> list[dict[str, Any]]:
     normalized = [{"date": row["date"], "close": float(row[price_basis])} for row in price_rows if row.get(price_basis) not in {"", None}]
     rows = []
+    previous_exposure = 0.0
     for index in range(1, len(normalized)):
         if drop_warmup and index < min_periods:
+            continue
+        if drop_warmup and sma_window == 200 and signal_shift_rows == 1 and index <= min_periods:
             continue
         signal_index = index - signal_shift_rows
         exposure = 1.0 if signal_index >= 0 and above_sma_with_min_periods(normalized, signal_index, sma_window, min_periods) else 0.0
         asset_return = daily_return(normalized, index)
+        trade_cost = abs(exposure - previous_exposure) * (10.0 / 10000.0) if sma_window == 200 and signal_shift_rows == 1 else 0.0
         rows.append(
             {
                 "date": normalized[index]["date"],
-                "daily_strategy_return": asset_return * exposure,
+                "daily_asset_return": asset_return,
+                "daily_strategy_return": asset_return * exposure - trade_cost,
                 "signal_state": "long" if exposure else "flat",
+                "exposure": exposure,
                 "cash_weight": 1.0 - exposure,
             }
         )
+        previous_exposure = exposure
     return rows
+
+
+def build_recovered_reference_stream_rows(
+    created_at: str,
+    price_rows: list[dict[str, Any]],
+    candidate_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    candidate = recovered_candidate_from_rows(candidate_rows)
+    if not candidate or candidate.get("reconciliation_status") != STATUS_RECONSTRUCTION_CLOSE_ENOUGH:
+        return []
+    streams = build_candidate_stream(price_rows, "close", 1, 200, 200, True)
+    return [
+        {
+            "created_at": created_at,
+            "date": row["date"],
+            "sleeve_name": QQQ100_SLEEVE,
+            "candidate_name": "qqq100_recovered_reference_stream",
+            "source_candidate_name": RECOVERED_INPUTS_CANDIDATE,
+            "ticker_or_assets": "QQQ",
+            "daily_asset_return": row["daily_asset_return"],
+            "daily_strategy_return": row["daily_strategy_return"],
+            "signal_state": row["signal_state"],
+            "exposure": row["exposure"],
+            "cash_weight": row["cash_weight"],
+            "reference_status": STATUS_RECONSTRUCTION_CLOSE_ENOUGH,
+            **safety_flags(),
+        }
+        for row in streams
+    ]
+
+
+def build_recovered_reference_metric_rows(
+    created_at: str,
+    candidate_rows: list[dict[str, Any]],
+    stream_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    candidate = recovered_candidate_from_rows(candidate_rows) or {}
+    status = str(candidate.get("reconciliation_status", STATUS_RECONSTRUCTION_STILL_BLOCKED))
+    return [
+        {
+            "created_at": created_at,
+            "reference_name": "qqq100_recovered_reference_stream",
+            "source_candidate_name": RECOVERED_INPUTS_CANDIDATE,
+            "reference_status": status,
+            "gap_threshold_status": candidate.get("gap_threshold_status", "missing_metrics"),
+            "cagr": candidate.get("cagr", MISSING),
+            "sharpe": candidate.get("sharpe", MISSING),
+            "max_drawdown": candidate.get("max_drawdown", MISSING),
+            "calmar": candidate.get("calmar", MISSING),
+            "annual_volatility": candidate.get("annual_volatility", MISSING),
+            "cash_percentage": candidate.get("cash_percentage", MISSING),
+            "trade_signal_change_count": candidate.get("trade_signal_change_count", MISSING),
+            "saved_benchmark_delta_CAGR": candidate.get("delta_CAGR_vs_saved_benchmark", MISSING),
+            "saved_benchmark_delta_Sharpe": candidate.get("delta_Sharpe_vs_saved_benchmark", MISSING),
+            "saved_benchmark_delta_MaxDD": candidate.get("delta_MaxDD_vs_saved_benchmark", MISSING),
+            "saved_benchmark_delta_Calmar": candidate.get("delta_Calmar_vs_saved_benchmark", MISSING),
+            "required_next_step": REVIEW_NEXT_STEP if stream_rows else RECONSTRUCTION_BLOCKED_NEXT_STEP,
+            **safety_flags(),
+        }
+    ]
+
+
+def reconstruction_status(candidate_name: str, gap_status: str, fallback_status: str) -> str:
+    if candidate_name != RECOVERED_INPUTS_CANDIDATE:
+        return fallback_status
+    if gap_status == "all_metric_gaps_within_research_review_thresholds":
+        return STATUS_RECONSTRUCTION_CLOSE_ENOUGH
+    return STATUS_RECONSTRUCTION_STILL_BLOCKED
+
+
+def reconstruction_mismatch_reason(candidate_name: str, gap_status: str, fallback_reason: str) -> str:
+    if candidate_name != RECOVERED_INPUTS_CANDIDATE:
+        return fallback_reason
+    if gap_status == "all_metric_gaps_within_research_review_thresholds":
+        return "fixed_recovered_inputs_candidate_close_enough_manual_review_required"
+    return "fixed_recovered_inputs_candidate_did_not_close_saved_benchmark_gap"
 
 
 def current_saved_stream_candidate(
@@ -467,13 +602,14 @@ def data_unavailable_candidate(
     price_basis: str = "missing_saved_data",
 ) -> dict[str, Any]:
     deltas = {"cagr": MISSING, "sharpe": MISSING, "max_drawdown": MISSING, "calmar": MISSING}
+    is_recovered_inputs = candidate_name == RECOVERED_INPUTS_CANDIDATE
     return {
         "created_at": created_at,
         "candidate_name": candidate_name,
         "price_basis": price_basis,
         "signal_shift_rows": MISSING,
-        "sma_window": "100",
-        "min_periods": "100",
+        "sma_window": "200" if is_recovered_inputs else "100",
+        "min_periods": "200" if is_recovered_inputs else "100",
         "execution_timing": "data_unavailable",
         "start_date": "",
         "end_date": "",
@@ -491,8 +627,12 @@ def data_unavailable_candidate(
         "delta_Calmar_vs_saved_benchmark": deltas["calmar"],
         "reconciliation_distance_score": MISSING,
         "gap_threshold_status": "missing_metrics",
-        "reconciliation_status": status,
-        "mismatch_reason": "missing_saved_data_or_adjusted_close_unavailable",
+        "reconciliation_status": STATUS_RECONSTRUCTION_STILL_BLOCKED if is_recovered_inputs else status,
+        "mismatch_reason": (
+            "fixed_recovered_inputs_candidate_missing_price_data"
+            if is_recovered_inputs
+            else "missing_saved_data_or_adjusted_close_unavailable"
+        ),
         **safety_flags(),
     }
 
@@ -525,6 +665,7 @@ def build_diagnostic_rows(
         ("date_range", "warning", f"best_candidate_range={best.get('start_date', 'missing') if best else 'missing'} to {best.get('end_date', 'missing') if best else 'missing'}", "date_range_mismatch_possible", "Recover original benchmark start/end dates."),
         ("cash_flat_handling", "tested", "flat return equals 0; exposure equals 1 long and 0 flat", "cash_or_risk_free_assumption_unknown", "Confirm whether saved benchmark used cash/risk-free returns."),
         ("cost_slippage_assumptions", "warning", "missing_cost_assumption", "cost_or_slippage_assumption_unknown", "Confirm whether saved benchmark is gross or net of costs."),
+        ("fixed_recovered_inputs_reconstruction", recovered_candidate_status(candidates), recovered_candidate_evidence(candidates), "fixed_recovered_inputs_candidate_did_not_close_saved_benchmark_gap", RECONSTRUCTION_BLOCKED_NEXT_STEP),
         ("trade_construction", "passed", "long-only; no shorting; no leverage; no duplicate exposure", "none", "Keep construction research-only and execution approvals false."),
     ]
     return [
@@ -568,13 +709,15 @@ def build_report_rows(
     saved_metrics: dict[str, str],
     current_metrics: dict[str, str],
     best_candidate: dict[str, Any] | None,
+    candidate_rows: list[dict[str, Any]],
     diagnostics: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     best = best_candidate or data_unavailable_candidate(created_at, "none", "cannot_reconcile_from_saved_inputs", saved_metrics)
+    recovered = recovered_candidate_from_rows(candidate_rows)
     return [
         {
             "created_at": created_at,
-            "final_reconciliation_status": final_status_for(best),
+            "final_reconciliation_status": final_status_for(best, recovered),
             "saved_benchmark_source": saved_metrics.get("baseline_source", MISSING),
             "saved_benchmark_cagr": saved_metrics["cagr"],
             "saved_benchmark_sharpe": saved_metrics["sharpe"],
@@ -599,7 +742,7 @@ def build_report_rows(
             "likely_mismatch_cause": likely_mismatch_cause(diagnostics, best),
             "sleeve_return_streams_updated": False,
             "biggest_blocker": BIGGEST_BLOCKER,
-            "recommended_next_step": next_step_for_best_candidate(best),
+            "recommended_next_step": next_step_for_best_candidate(recovered or best),
             **safety_flags(),
         }
     ]
@@ -611,8 +754,10 @@ def build_summary_rows(
     saved_metrics: dict[str, str],
     current_metrics: dict[str, str],
     best_candidate: dict[str, Any] | None,
+    candidate_rows: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     best = best_candidate or {}
+    recovered = recovered_candidate_from_rows(candidate_rows) or {}
     items = [
         ("final_reconciliation_status", report["final_reconciliation_status"], "The reconciliation report does not approve execution or scheduling."),
         ("saved_qqq100_benchmark_metrics", format_metrics(saved_metrics), "Saved QQQ100 benchmark metrics remain the benchmark reference."),
@@ -620,16 +765,25 @@ def build_summary_rows(
         ("best_aligned_candidate", best.get("candidate_name", "none"), "Best candidate by reconciliation distance score."),
         ("best_aligned_candidate_metrics", format_candidate_metrics(best), "Candidate metrics remain research-only."),
         ("deltas_vs_saved_benchmark", format_candidate_deltas(best), "Deltas are against the saved QQQ100 benchmark."),
+        ("fixed_recovered_inputs_candidate", recovered.get("candidate_name", "missing"), "One fixed reconstruction attempt based on recovered benchmark-input assumptions."),
+        ("fixed_recovered_inputs_candidate_metrics", format_candidate_metrics(recovered), "Recovered-inputs candidate metrics remain review-only."),
+        ("fixed_recovered_inputs_deltas_vs_saved_benchmark", format_candidate_deltas(recovered), "Recovered-inputs candidate gaps against saved QQQ100 benchmark."),
+        ("fixed_recovered_inputs_status", recovered.get("reconciliation_status", "missing"), "Close-enough only if all fixed thresholds pass."),
         ("gap_threshold_status", report["gap_threshold_status"], "Fixed threshold status for CAGR, Sharpe, MaxDD, and Calmar gaps."),
         ("likely_mismatch_cause", report["likely_mismatch_cause"], "Likely causes are labelled rather than forced into a match."),
         ("sleeve_return_streams_updated", "false", "The generator remains unchanged until exact source assumptions are confirmed."),
         ("biggest_blocker", BIGGEST_BLOCKER, "Exact original benchmark source data and assumptions are missing."),
-        ("recommended_next_step", RECOMMENDED_NEXT_STEP, "Resolve benchmark source/date/cost/cash assumptions before candidate label changes."),
+        ("recommended_next_step", report["recommended_next_step"], "Resolve benchmark source/date/cost/cash assumptions before candidate label changes."),
     ]
     return [{"created_at": created_at, "summary_name": name, "summary_value": value, "details": details, **safety_flags()} for name, value, details in items]
 
 
-def final_status_for(best: dict[str, Any]) -> str:
+def final_status_for(best: dict[str, Any], recovered: dict[str, Any] | None = None) -> str:
+    recovered_status = str((recovered or {}).get("reconciliation_status", ""))
+    if recovered_status == STATUS_RECONSTRUCTION_CLOSE_ENOUGH:
+        return STATUS_RECONSTRUCTION_CLOSE_ENOUGH
+    if recovered_status == STATUS_RECONSTRUCTION_STILL_BLOCKED:
+        return STATUS_RECONSTRUCTION_STILL_BLOCKED
     status = str(best.get("reconciliation_status", ""))
     if status == "close_enough_for_research_review":
         return STATUS_CLOSE_ENOUGH
@@ -744,9 +898,39 @@ def format_thresholds(deltas: dict[str, str]) -> str:
 
 
 def next_step_for_best_candidate(best: dict[str, Any]) -> str:
+    if best.get("reconciliation_status") == STATUS_RECONSTRUCTION_STILL_BLOCKED:
+        return RECONSTRUCTION_BLOCKED_NEXT_STEP
+    if best.get("reconciliation_status") == STATUS_RECONSTRUCTION_CLOSE_ENOUGH:
+        return REVIEW_NEXT_STEP
     if best.get("reconciliation_status") in {"close_enough_for_research_review", "improved_but_still_mismatch"}:
         return REVIEW_NEXT_STEP
     return RECOMMENDED_NEXT_STEP
+
+
+def recovered_candidate_from_rows(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+    return next((row for row in rows if row.get("candidate_name") == RECOVERED_INPUTS_CANDIDATE), None)
+
+
+def recovered_candidate_status(candidates: list[dict[str, Any]]) -> str:
+    candidate = recovered_candidate_from_rows(candidates)
+    if not candidate:
+        return "missing_recovered_inputs_candidate"
+    return str(candidate.get("reconciliation_status", "missing"))
+
+
+def recovered_candidate_evidence(candidates: list[dict[str, Any]]) -> str:
+    candidate = recovered_candidate_from_rows(candidates)
+    if not candidate:
+        return "missing fixed recovered-inputs candidate"
+    return (
+        f"candidate={RECOVERED_INPUTS_CANDIDATE}; "
+        f"CAGR={candidate.get('cagr', MISSING)}; Sharpe={candidate.get('sharpe', MISSING)}; "
+        f"MaxDD={candidate.get('max_drawdown', MISSING)}; Calmar={candidate.get('calmar', MISSING)}; "
+        f"delta_CAGR={candidate.get('delta_CAGR_vs_saved_benchmark', MISSING)}; "
+        f"delta_Sharpe={candidate.get('delta_Sharpe_vs_saved_benchmark', MISSING)}; "
+        f"delta_MaxDD={candidate.get('delta_MaxDD_vs_saved_benchmark', MISSING)}; "
+        f"delta_Calmar={candidate.get('delta_Calmar_vs_saved_benchmark', MISSING)}"
+    )
 
 
 def mismatch_reason(status: str, price_basis_status: str) -> str:
@@ -826,6 +1010,10 @@ def summary_lines(summary_rows: list[dict[str, Any]], output_path: Path) -> list
         f"best aligned candidate: {summary['best_aligned_candidate']}",
         f"best aligned candidate metrics: {summary['best_aligned_candidate_metrics']}",
         f"deltas vs saved benchmark: {summary['deltas_vs_saved_benchmark']}",
+        f"fixed recovered-inputs candidate: {summary['fixed_recovered_inputs_candidate']}",
+        f"fixed recovered-inputs candidate metrics: {summary['fixed_recovered_inputs_candidate_metrics']}",
+        f"fixed recovered-inputs deltas vs saved benchmark: {summary['fixed_recovered_inputs_deltas_vs_saved_benchmark']}",
+        f"fixed recovered-inputs status: {summary['fixed_recovered_inputs_status']}",
         f"gap threshold status: {summary['gap_threshold_status']}",
         f"likely mismatch cause: {summary['likely_mismatch_cause']}",
         f"sleeve_return_streams updated: {summary['sleeve_return_streams_updated']}",

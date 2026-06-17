@@ -19,9 +19,14 @@ from typing import Any
 FINAL_BACKTEST_STATUS = "multi_sleeve_candidate_needs_more_data"
 FINAL_STATUS_NOT_BETTER_THAN_GENERATED_QQQ100 = "multi_sleeve_candidate_not_better_than_generated_qqq100"
 FINAL_STATUS_PROMISING_NEEDS_RECONCILIATION = "multi_sleeve_candidate_promising_needs_reconciliation"
+FINAL_STATUS_PROMISING_RECOVERED_REFERENCE = "multi_sleeve_candidate_promising_recovered_reference_review"
+FINAL_STATUS_PROMISING_NEEDS_CRYPTO_POLICY_REVIEW = "multi_sleeve_candidate_promising_needs_crypto_and_policy_review"
 QQQ100_REFERENCE = "qqq100_only_reference"
 QQQ100_SLEEVE = "qqq100_core_trend_sleeve"
 QQQ100_STRATEGY = "qqq_100_trend_gate"
+RECOVERED_QQQ100_REFERENCE = "qqq100_recovered_reference_stream"
+RECOVERED_QQQ100_SOURCE_CANDIDATE = "qqq100_recovered_inputs_sma200_close_to_close_10bps"
+RECOVERED_REFERENCE_READY_STATUS = "qqq100_reconstruction_close_enough_for_research_review"
 TOP_MULTI_SLEEVE_CANDIDATE = "qqq100_plus_cash_defensive_reference"
 BIGGEST_BLOCKER = "missing_saved_return_streams_for_non_qqq_sleeves"
 RECOMMENDED_NEXT_STEP = "collect_saved_daily_return_streams_before_candidate_label_change"
@@ -47,6 +52,8 @@ INPUT_FILES = {
     "multi_sleeve_monitor": Path("data/multi_sleeve_strategy_monitor.csv"),
     "sleeve_return_streams": Path("data/sleeve_return_streams.csv"),
     "high_growth_return_streams": Path("data/high_growth_return_streams.csv"),
+    "qqq100_recovered_reference_stream": Path("data/qqq100_recovered_reference_stream.csv"),
+    "qqq100_recovered_reference_metrics": Path("data/qqq100_recovered_reference_metrics.csv"),
 }
 
 OUTPUT_FILES = {
@@ -132,11 +139,24 @@ BACKTEST_COLUMNS = [
     "generated_qqq100_reference_sharpe",
     "generated_qqq100_reference_max_drawdown",
     "generated_qqq100_reference_calmar",
+    "qqq100_reference_source_used",
+    "qqq100_reference_status",
+    "recovered_reference_available",
+    "old_generated_reference_retained",
+    "old_generated_reference_status",
+    "recovered_qqq100_reference_cagr",
+    "recovered_qqq100_reference_sharpe",
+    "recovered_qqq100_reference_max_drawdown",
+    "recovered_qqq100_reference_calmar",
     "saved_benchmark_reconciliation_status",
     "saved_benchmark_delta_cagr_reconciliation",
     "saved_benchmark_delta_sharpe_reconciliation",
     "saved_benchmark_delta_max_drawdown_reconciliation",
     "saved_benchmark_delta_calmar_reconciliation",
+    "saved_benchmark_delta_CAGR",
+    "saved_benchmark_delta_Sharpe",
+    "saved_benchmark_delta_MaxDD",
+    "saved_benchmark_delta_Calmar",
     "candidate_allocation",
     "candidate_cagr",
     "candidate_sharpe",
@@ -155,6 +175,10 @@ BACKTEST_COLUMNS = [
     "delta_sharpe_vs_generated_qqq100_reference",
     "delta_max_drawdown_vs_generated_qqq100_reference",
     "delta_calmar_vs_generated_qqq100_reference",
+    "delta_cagr_vs_recovered_qqq100_reference",
+    "delta_sharpe_vs_recovered_qqq100_reference",
+    "delta_max_drawdown_vs_recovered_qqq100_reference",
+    "delta_calmar_vs_recovered_qqq100_reference",
     "split_stability_label",
     "balanced_research_score",
     "data_quality",
@@ -271,9 +295,13 @@ def generate_multi_sleeve_portfolio_backtest(root_dir: Path | str = ".") -> Mult
     created_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     inputs = {name: read_csv_rows(root / path) for name, path in INPUT_FILES.items()}
     qqq_metrics = qqq100_metric_bundle(inputs)
-    return_streams = inputs["sleeve_return_streams"] + normalize_high_growth_stream_rows(inputs["high_growth_return_streams"])
+    return_streams = (
+        inputs["sleeve_return_streams"]
+        + normalize_high_growth_stream_rows(inputs["high_growth_return_streams"])
+        + normalize_recovered_reference_stream_rows(inputs["qqq100_recovered_reference_stream"])
+    )
     sleeve_rows = build_sleeve_rows(created_at, inputs, qqq_metrics, return_streams)
-    portfolios = build_portfolio_rows(created_at, qqq_metrics, sleeve_rows, return_streams)
+    portfolios = build_portfolio_rows(created_at, qqq_metrics, sleeve_rows, return_streams, inputs)
     allocations = build_allocation_rows(created_at, sleeve_rows)
     rankings = build_ranking_rows(created_at, portfolios)
     splits = build_split_rows(created_at, portfolios, qqq_metrics)
@@ -317,12 +345,16 @@ def show_multi_sleeve_portfolio_backtest(root_dir: Path | str = ".") -> tuple[in
         "Multi-sleeve portfolio backtest. Saved-output-only research checkpoint; no execution wiring approved.",
         f"final_backtest_status: {summary.get('final_backtest_status', 'missing')}",
         f"saved QQQ100 benchmark metrics: CAGR={summary.get('saved_qqq100_benchmark_cagr', MISSING)}, Sharpe={summary.get('saved_qqq100_benchmark_sharpe', MISSING)}, MaxDD={summary.get('saved_qqq100_benchmark_max_drawdown', MISSING)}, Calmar={summary.get('saved_qqq100_benchmark_calmar', MISSING)}",
-        f"generated QQQ100 reference metrics: CAGR={summary.get('generated_qqq100_reference_cagr', MISSING)}, Sharpe={summary.get('generated_qqq100_reference_sharpe', MISSING)}, MaxDD={summary.get('generated_qqq100_reference_max_drawdown', MISSING)}, Calmar={summary.get('generated_qqq100_reference_calmar', MISSING)}",
+        f"QQQ100 reference source used: {summary.get('qqq100_reference_source_used', 'missing')}",
+        f"old generated QQQ100 diagnostic reference metrics: CAGR={summary.get('generated_qqq100_reference_cagr', MISSING)}, Sharpe={summary.get('generated_qqq100_reference_sharpe', MISSING)}, MaxDD={summary.get('generated_qqq100_reference_max_drawdown', MISSING)}, Calmar={summary.get('generated_qqq100_reference_calmar', MISSING)}",
+        f"old generated QQQ100 diagnostic reference status: {summary.get('old_generated_reference_status', 'missing')}",
+        f"recovered QQQ100 preferred reference metrics: CAGR={summary.get('recovered_qqq100_reference_cagr', MISSING)}, Sharpe={summary.get('recovered_qqq100_reference_sharpe', MISSING)}, MaxDD={summary.get('recovered_qqq100_reference_max_drawdown', MISSING)}, Calmar={summary.get('recovered_qqq100_reference_calmar', MISSING)}",
         f"saved benchmark reconciliation status: {summary.get('saved_benchmark_reconciliation_status', 'missing')}",
         f"top multi-sleeve portfolio candidate: {summary.get('top_multi_sleeve_portfolio_candidate', 'missing')}",
         f"candidate allocation: {summary.get('candidate_allocation', 'missing')}",
         f"candidate metrics: CAGR={summary.get('candidate_cagr', MISSING)}, Sharpe={summary.get('candidate_sharpe', MISSING)}, MaxDD={summary.get('candidate_max_drawdown', MISSING)}, Calmar={summary.get('candidate_calmar', MISSING)}",
-        f"delta_vs_generated_qqq100_reference: delta_CAGR={summary.get('delta_cagr_vs_generated_qqq100_reference', MISSING)}, delta_Sharpe={summary.get('delta_sharpe_vs_generated_qqq100_reference', MISSING)}, delta_MaxDD={summary.get('delta_max_drawdown_vs_generated_qqq100_reference', MISSING)}, delta_Calmar={summary.get('delta_calmar_vs_generated_qqq100_reference', MISSING)}",
+        f"delta_vs_recovered_qqq100_reference: delta_CAGR={summary.get('delta_cagr_vs_recovered_qqq100_reference', MISSING)}, delta_Sharpe={summary.get('delta_sharpe_vs_recovered_qqq100_reference', MISSING)}, delta_MaxDD={summary.get('delta_max_drawdown_vs_recovered_qqq100_reference', MISSING)}, delta_Calmar={summary.get('delta_calmar_vs_recovered_qqq100_reference', MISSING)}",
+        f"diagnostic_delta_vs_old_generated_qqq100_reference: delta_CAGR={summary.get('delta_cagr_vs_generated_qqq100_reference', MISSING)}, delta_Sharpe={summary.get('delta_sharpe_vs_generated_qqq100_reference', MISSING)}, delta_MaxDD={summary.get('delta_max_drawdown_vs_generated_qqq100_reference', MISSING)}, delta_Calmar={summary.get('delta_calmar_vs_generated_qqq100_reference', MISSING)}",
         f"split stability summary: {summary.get('split_stability_summary', 'missing')}",
         f"missing sleeve data warnings: {summary.get('missing_sleeve_data_warnings', 'missing')}",
         f"biggest blocker: {summary.get('biggest_blocker', BIGGEST_BLOCKER)}",
@@ -474,13 +506,23 @@ def build_portfolio_rows(
     qqq_metrics: dict[str, str],
     sleeve_rows: list[dict[str, Any]],
     return_streams: list[dict[str, str]],
+    inputs: dict[str, list[dict[str, str]]],
 ) -> list[dict[str, Any]]:
-    generated_qqq_metrics = portfolio_metrics_from_streams(QQQ100_REFERENCE, return_streams) or missing_portfolio_metrics()
+    generated_qqq_metrics = portfolio_metrics_from_streams(QQQ100_REFERENCE, return_streams, QQQ100_STRATEGY) or missing_portfolio_metrics()
     generated_status = "generated_qqq100_reference_available" if not metrics_missing(generated_qqq_metrics) else "missing_generated_qqq100_reference"
-    reconciliation_status = saved_benchmark_reconciliation_status(qqq_metrics, generated_qqq_metrics)
+    recovered_reference = recovered_reference_info(inputs, return_streams)
+    reference_candidate = RECOVERED_QQQ100_REFERENCE if recovered_reference["available"] else QQQ100_STRATEGY
+    reference_metrics = recovered_reference["metrics"] if recovered_reference["available"] else generated_qqq_metrics
+    reference_source = RECOVERED_QQQ100_REFERENCE if recovered_reference["available"] else "old_generated_qqq100_reference"
+    reference_status = recovered_reference["status"] if recovered_reference["available"] else generated_status
+    reconciliation_status = (
+        "recovered_qqq100_reference_aligned_with_saved_benchmark"
+        if recovered_reference["available"]
+        else saved_benchmark_reconciliation_status(qqq_metrics, generated_qqq_metrics)
+    )
     missing_warnings = missing_stream_warnings_from_streams(return_streams)
     portfolio_specs = [
-        (QQQ100_REFERENCE, "reference", "100% qqq100_core_trend_sleeve", 82, "reference_only", qqq_metrics),
+        (QQQ100_REFERENCE, "reference", "100% qqq100_core_trend_sleeve", 82, "reference_only", reference_metrics),
         (TOP_MULTI_SLEEVE_CANDIDATE, "cash defensive reference", "95% qqq100_core_trend_sleeve; 5% defensive_cash_or_bond_sleeve", 63, "multi_sleeve_candidate_needs_more_data", missing_portfolio_metrics()),
         ("qqq100_plus_spy_sma200_defensive_gate", "SPY SMA200 defensive gate research", "70% qqq100_core_trend_sleeve; 25% qqq100_spy_sma200_regime_filter; 5% defensive_cash_or_bond_sleeve", 58, "multi_sleeve_candidate_needs_more_data", missing_portfolio_metrics()),
         ("qqq100_plus_rolling_drawdown_defensive_gate", "rolling drawdown defensive gate research", "70% qqq100_core_trend_sleeve; 25% qqq100_rolling_drawdown_15_filter; 5% defensive_cash_or_bond_sleeve", 58, "multi_sleeve_candidate_needs_more_data", missing_portfolio_metrics()),
@@ -493,17 +535,30 @@ def build_portfolio_rows(
     ]
     rows = []
     for name, role, allocation, score, status, metrics in portfolio_specs:
-        stream_metrics = portfolio_metrics_from_streams(name, return_streams)
+        stream_metrics = portfolio_metrics_from_streams(name, return_streams, reference_candidate)
         if stream_metrics:
             metrics = stream_metrics
             status = "multi_sleeve_portfolio_backtest_created"
         final_status = status
         if stream_metrics and name != QQQ100_REFERENCE:
-            final_status = candidate_backtest_status(metrics, generated_qqq_metrics)
+            final_status = candidate_backtest_status(metrics, reference_metrics, recovered_reference["available"])
         delta_cagr_generated = metric_delta(metrics["cagr"], generated_qqq_metrics["cagr"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE and not metrics_missing(generated_qqq_metrics) else MISSING)
         delta_sharpe_generated = metric_delta(metrics["sharpe"], generated_qqq_metrics["sharpe"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE and not metrics_missing(generated_qqq_metrics) else MISSING)
         delta_maxdd_generated = metric_delta(metrics["max_drawdown"], generated_qqq_metrics["max_drawdown"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE and not metrics_missing(generated_qqq_metrics) else MISSING)
         delta_calmar_generated = metric_delta(metrics["calmar"], generated_qqq_metrics["calmar"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE and not metrics_missing(generated_qqq_metrics) else MISSING)
+        delta_cagr_reference = metric_delta(metrics["cagr"], reference_metrics["cagr"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE and not metrics_missing(reference_metrics) else MISSING)
+        delta_sharpe_reference = metric_delta(metrics["sharpe"], reference_metrics["sharpe"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE and not metrics_missing(reference_metrics) else MISSING)
+        delta_maxdd_reference = metric_delta(metrics["max_drawdown"], reference_metrics["max_drawdown"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE and not metrics_missing(reference_metrics) else MISSING)
+        delta_calmar_reference = metric_delta(metrics["calmar"], reference_metrics["calmar"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE and not metrics_missing(reference_metrics) else MISSING)
+        delta_cagr_recovered = delta_cagr_reference if recovered_reference["available"] else MISSING
+        delta_sharpe_recovered = delta_sharpe_reference if recovered_reference["available"] else MISSING
+        delta_maxdd_recovered = delta_maxdd_reference if recovered_reference["available"] else MISSING
+        delta_calmar_recovered = delta_calmar_reference if recovered_reference["available"] else MISSING
+        recommended_next_step = (
+            "review_recovered_reference_multi_sleeve_candidate_and_add_crypto_streams_before_label_change"
+            if recovered_reference["available"]
+            else RECOMMENDED_NEXT_STEP
+        )
         rows.append(
             {
                 "created_at": created_at,
@@ -525,11 +580,24 @@ def build_portfolio_rows(
                 "generated_qqq100_reference_sharpe": generated_qqq_metrics["sharpe"],
                 "generated_qqq100_reference_max_drawdown": generated_qqq_metrics["max_drawdown"],
                 "generated_qqq100_reference_calmar": generated_qqq_metrics["calmar"],
+                "qqq100_reference_source_used": reference_source,
+                "qqq100_reference_status": reference_status,
+                "recovered_reference_available": recovered_reference["available"],
+                "old_generated_reference_retained": True,
+                "old_generated_reference_status": "diagnostic_only",
+                "recovered_qqq100_reference_cagr": recovered_reference["metrics"]["cagr"],
+                "recovered_qqq100_reference_sharpe": recovered_reference["metrics"]["sharpe"],
+                "recovered_qqq100_reference_max_drawdown": recovered_reference["metrics"]["max_drawdown"],
+                "recovered_qqq100_reference_calmar": recovered_reference["metrics"]["calmar"],
                 "saved_benchmark_reconciliation_status": reconciliation_status,
                 "saved_benchmark_delta_cagr_reconciliation": metric_delta(generated_qqq_metrics["cagr"], qqq_metrics["cagr"]),
                 "saved_benchmark_delta_sharpe_reconciliation": metric_delta(generated_qqq_metrics["sharpe"], qqq_metrics["sharpe"]),
                 "saved_benchmark_delta_max_drawdown_reconciliation": metric_delta(generated_qqq_metrics["max_drawdown"], qqq_metrics["max_drawdown"]),
                 "saved_benchmark_delta_calmar_reconciliation": metric_delta(generated_qqq_metrics["calmar"], qqq_metrics["calmar"]),
+                "saved_benchmark_delta_CAGR": metric_delta(reference_metrics["cagr"], qqq_metrics["cagr"]),
+                "saved_benchmark_delta_Sharpe": metric_delta(reference_metrics["sharpe"], qqq_metrics["sharpe"]),
+                "saved_benchmark_delta_MaxDD": metric_delta(reference_metrics["max_drawdown"], qqq_metrics["max_drawdown"]),
+                "saved_benchmark_delta_Calmar": metric_delta(reference_metrics["calmar"], qqq_metrics["calmar"]),
                 "candidate_allocation": allocation,
                 "candidate_cagr": metrics["cagr"],
                 "candidate_sharpe": metrics["sharpe"],
@@ -540,20 +608,24 @@ def build_portfolio_rows(
                 "candidate_sleeve_exposure_percentages": allocation,
                 "candidate_turnover_or_trade_count": metrics["turnover_or_trade_count"],
                 "rough_cost_sensitivity": "saved_stream_turnover_proxy_available" if stream_metrics else ("reference_not_recomputed" if name == QQQ100_REFERENCE else "missing_cost_turnover_stream"),
-                "delta_cagr_vs_qqq100": metric_delta(metrics["cagr"], qqq_metrics["cagr"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE else MISSING),
-                "delta_sharpe_vs_qqq100": metric_delta(metrics["sharpe"], qqq_metrics["sharpe"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE else MISSING),
-                "delta_max_drawdown_vs_qqq100": metric_delta(metrics["max_drawdown"], qqq_metrics["max_drawdown"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE else MISSING),
-                "delta_calmar_vs_qqq100": metric_delta(metrics["calmar"], qqq_metrics["calmar"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE else MISSING),
+                "delta_cagr_vs_qqq100": delta_cagr_reference,
+                "delta_sharpe_vs_qqq100": delta_sharpe_reference,
+                "delta_max_drawdown_vs_qqq100": delta_maxdd_reference,
+                "delta_calmar_vs_qqq100": delta_calmar_reference,
                 "delta_cagr_vs_generated_qqq100_reference": delta_cagr_generated,
                 "delta_sharpe_vs_generated_qqq100_reference": delta_sharpe_generated,
                 "delta_max_drawdown_vs_generated_qqq100_reference": delta_maxdd_generated,
                 "delta_calmar_vs_generated_qqq100_reference": delta_calmar_generated,
+                "delta_cagr_vs_recovered_qqq100_reference": delta_cagr_recovered,
+                "delta_sharpe_vs_recovered_qqq100_reference": delta_sharpe_recovered,
+                "delta_max_drawdown_vs_recovered_qqq100_reference": delta_maxdd_recovered,
+                "delta_calmar_vs_recovered_qqq100_reference": delta_calmar_recovered,
                 "split_stability_label": "missing_split_metrics",
                 "balanced_research_score": str(score),
                 "data_quality": "saved_return_stream_metrics_available" if stream_metrics else ("saved_qqq100_metrics_only" if name == QQQ100_REFERENCE else "missing_return_stream_for_combined_metrics"),
                 "missing_sleeve_data_warnings": missing_warnings if missing_warnings != "none" else "none_for_feasible_stream_portfolio",
                 "biggest_blocker": "missing_high_growth_crypto_streams_for_full_multi_sleeve" if stream_metrics else BIGGEST_BLOCKER,
-                "recommended_next_step": RECOMMENDED_NEXT_STEP,
+                "recommended_next_step": recommended_next_step,
                 **safety_flags(),
             }
         )
@@ -684,7 +756,7 @@ def build_summary_rows(
     candidate = candidate or next(row for row in portfolios if row["portfolio_name"] == TOP_MULTI_SLEEVE_CANDIDATE)
     missing_warnings = missing_stream_warnings_from_streams(return_streams)
     summary_items = [
-        ("final_backtest_status", final_status, "Generated-stream candidates are compared against the generated QQQ100 reference, not the saved benchmark."),
+        ("final_backtest_status", final_status, "Candidates are compared against the preferred QQQ100 research reference, not the saved benchmark."),
         ("baseline_source", qqq_metrics["baseline_source"], "Exact QQQ100 saved metrics source."),
         ("qqq100_reference_cagr", qqq_metrics["cagr"], "QQQ100 clean lead CAGR."),
         ("qqq100_reference_sharpe", qqq_metrics["sharpe"], "QQQ100 clean lead Sharpe."),
@@ -700,6 +772,15 @@ def build_summary_rows(
         ("generated_qqq100_reference_sharpe", generated_qqq["generated_qqq100_reference_sharpe"], "Generated QQQ100 stream Sharpe."),
         ("generated_qqq100_reference_max_drawdown", generated_qqq["generated_qqq100_reference_max_drawdown"], "Generated QQQ100 stream max drawdown."),
         ("generated_qqq100_reference_calmar", generated_qqq["generated_qqq100_reference_calmar"], "Generated QQQ100 stream Calmar."),
+        ("qqq100_reference_source_used", generated_qqq["qqq100_reference_source_used"], "Primary QQQ100 reference used for portfolio deltas."),
+        ("qqq100_reference_status", generated_qqq["qqq100_reference_status"], "Primary QQQ100 reference status."),
+        ("recovered_reference_available", str(generated_qqq["recovered_reference_available"]).lower(), "Recovered reference is used only after threshold-pass validation."),
+        ("old_generated_reference_retained", str(generated_qqq["old_generated_reference_retained"]).lower(), "Old generated QQQ100 stream remains available as diagnostic context."),
+        ("old_generated_reference_status", generated_qqq["old_generated_reference_status"], "Old generated QQQ100 stream is diagnostic-only when the recovered reference is valid."),
+        ("recovered_qqq100_reference_cagr", generated_qqq["recovered_qqq100_reference_cagr"], "Recovered QQQ100 reference CAGR when available."),
+        ("recovered_qqq100_reference_sharpe", generated_qqq["recovered_qqq100_reference_sharpe"], "Recovered QQQ100 reference Sharpe when available."),
+        ("recovered_qqq100_reference_max_drawdown", generated_qqq["recovered_qqq100_reference_max_drawdown"], "Recovered QQQ100 reference max drawdown when available."),
+        ("recovered_qqq100_reference_calmar", generated_qqq["recovered_qqq100_reference_calmar"], "Recovered QQQ100 reference Calmar when available."),
         ("saved_benchmark_reconciliation_status", generated_qqq["saved_benchmark_reconciliation_status"], "Saved benchmark and generated stream metrics are intentionally separated."),
         ("top_multi_sleeve_portfolio_candidate", candidate["portfolio_name"], "Top generated-stream candidate by Calmar/Sharpe/CAGR among feasible non-reference portfolios."),
         ("candidate_allocation", candidate["candidate_allocation"], "Allocation is a research design only; it is not an order plan."),
@@ -711,14 +792,18 @@ def build_summary_rows(
         ("delta_sharpe_vs_qqq100", candidate["delta_sharpe_vs_qqq100"], "Saved-benchmark reconciliation delta only."),
         ("delta_max_drawdown_vs_qqq100", candidate["delta_max_drawdown_vs_qqq100"], "Saved-benchmark reconciliation delta only."),
         ("delta_calmar_vs_qqq100", candidate["delta_calmar_vs_qqq100"], "Saved-benchmark reconciliation delta only."),
-        ("delta_cagr_vs_generated_qqq100_reference", candidate["delta_cagr_vs_generated_qqq100_reference"], "Primary generated-stream comparison."),
-        ("delta_sharpe_vs_generated_qqq100_reference", candidate["delta_sharpe_vs_generated_qqq100_reference"], "Primary generated-stream comparison."),
-        ("delta_max_drawdown_vs_generated_qqq100_reference", candidate["delta_max_drawdown_vs_generated_qqq100_reference"], "Primary generated-stream comparison."),
-        ("delta_calmar_vs_generated_qqq100_reference", candidate["delta_calmar_vs_generated_qqq100_reference"], "Primary generated-stream comparison."),
+        ("delta_cagr_vs_generated_qqq100_reference", candidate["delta_cagr_vs_generated_qqq100_reference"], "Diagnostic comparison against the old generated stream."),
+        ("delta_sharpe_vs_generated_qqq100_reference", candidate["delta_sharpe_vs_generated_qqq100_reference"], "Diagnostic comparison against the old generated stream."),
+        ("delta_max_drawdown_vs_generated_qqq100_reference", candidate["delta_max_drawdown_vs_generated_qqq100_reference"], "Diagnostic comparison against the old generated stream."),
+        ("delta_calmar_vs_generated_qqq100_reference", candidate["delta_calmar_vs_generated_qqq100_reference"], "Diagnostic comparison against the old generated stream."),
+        ("delta_cagr_vs_recovered_qqq100_reference", candidate["delta_cagr_vs_recovered_qqq100_reference"], "Primary comparison when recovered reference is valid."),
+        ("delta_sharpe_vs_recovered_qqq100_reference", candidate["delta_sharpe_vs_recovered_qqq100_reference"], "Primary comparison when recovered reference is valid."),
+        ("delta_max_drawdown_vs_recovered_qqq100_reference", candidate["delta_max_drawdown_vs_recovered_qqq100_reference"], "Primary comparison when recovered reference is valid."),
+        ("delta_calmar_vs_recovered_qqq100_reference", candidate["delta_calmar_vs_recovered_qqq100_reference"], "Primary comparison when recovered reference is valid."),
         ("split_stability_summary", "missing_split_metrics", "Fixed chronological split metrics are unavailable."),
         ("missing_sleeve_data_warnings", missing_warnings, "Missing streams are labelled rather than invented."),
         ("biggest_blocker", "missing_high_growth_crypto_streams_for_full_multi_sleeve", "High-growth and crypto streams remain unavailable for full portfolio testing."),
-        ("recommended_next_step", "reconcile_generated_qqq100_stream_against_saved_benchmark_before_candidate_label_change", "Generated QQQ100 reference differs from saved benchmark; keep status research-only."),
+        ("recommended_next_step", candidate["recommended_next_step"], "Next review step; keep status research-only."),
     ]
     return [
         {
@@ -782,32 +867,36 @@ def blocker_row(created_at: str, name: str, status: str, severity: str, details:
     }
 
 
-def portfolio_metrics_from_streams(portfolio_name: str, rows: list[dict[str, str]]) -> dict[str, str] | None:
+def portfolio_metrics_from_streams(
+    portfolio_name: str,
+    rows: list[dict[str, str]],
+    qqq_reference_candidate: str = QQQ100_STRATEGY,
+) -> dict[str, str] | None:
     specs: dict[str, dict[str, float]] = {
-        QQQ100_REFERENCE: {"qqq_100_trend_gate": 1.0},
-        TOP_MULTI_SLEEVE_CANDIDATE: {"qqq_100_trend_gate": 0.95, "cash_default_defensive_sleeve": 0.05},
+        QQQ100_REFERENCE: {qqq_reference_candidate: 1.0},
+        TOP_MULTI_SLEEVE_CANDIDATE: {qqq_reference_candidate: 0.95, "cash_default_defensive_sleeve": 0.05},
         "qqq100_plus_spy_sma200_defensive_gate": {
-            "qqq_100_trend_gate": 0.70,
+            qqq_reference_candidate: 0.70,
             "qqq100_spy_sma200_regime_filter": 0.25,
             "cash_default_defensive_sleeve": 0.05,
         },
         "qqq100_plus_rolling_drawdown_defensive_gate": {
-            "qqq_100_trend_gate": 0.70,
+            qqq_reference_candidate: 0.70,
             "qqq100_rolling_drawdown_15_filter": 0.25,
             "cash_default_defensive_sleeve": 0.05,
         },
         "qqq100_plus_combined_defensive_gate": {
-            "qqq_100_trend_gate": 0.70,
+            qqq_reference_candidate: 0.70,
             "qqq100_combined_trend_spy_regime_drawdown_gate": 0.25,
             "cash_default_defensive_sleeve": 0.05,
         },
         "codex_defensive_qqq_research_portfolio": {
-            "qqq_100_trend_gate": 0.65,
+            qqq_reference_candidate: 0.65,
             "codex_qqq_calmar_optimised_defensive_gate_sleeve": 0.30,
             "cash_default_defensive_sleeve": 0.05,
         },
         "qqq100_plus_high_growth_research": {
-            "qqq_100_trend_gate": 0.80,
+            qqq_reference_candidate: 0.80,
             "codex_broad_growth_balanced_breakout_control": 0.15,
             "cash_default_defensive_sleeve": 0.05,
         },
@@ -849,13 +938,17 @@ def metric_rank_key(row: dict[str, Any]) -> tuple[float, float, float]:
     )
 
 
-def candidate_backtest_status(metrics: dict[str, str], generated_qqq_metrics: dict[str, str]) -> str:
-    delta_calmar = parse_float(metric_delta(metrics["calmar"], generated_qqq_metrics["calmar"]))
-    delta_maxdd = parse_float(metric_delta(metrics["max_drawdown"], generated_qqq_metrics["max_drawdown"]))
-    delta_sharpe = parse_float(metric_delta(metrics["sharpe"], generated_qqq_metrics["sharpe"]))
-    delta_cagr = parse_float(metric_delta(metrics["cagr"], generated_qqq_metrics["cagr"]))
+def candidate_backtest_status(metrics: dict[str, str], qqq_reference_metrics: dict[str, str], recovered_reference_available: bool = False) -> str:
+    delta_calmar = parse_float(metric_delta(metrics["calmar"], qqq_reference_metrics["calmar"]))
+    delta_maxdd = parse_float(metric_delta(metrics["max_drawdown"], qqq_reference_metrics["max_drawdown"]))
+    delta_sharpe = parse_float(metric_delta(metrics["sharpe"], qqq_reference_metrics["sharpe"]))
+    delta_cagr = parse_float(metric_delta(metrics["cagr"], qqq_reference_metrics["cagr"]))
     if delta_calmar > 0 and delta_maxdd >= 0 and (delta_sharpe >= 0 or delta_cagr >= 0):
+        if recovered_reference_available:
+            return FINAL_STATUS_PROMISING_RECOVERED_REFERENCE
         return FINAL_STATUS_PROMISING_NEEDS_RECONCILIATION
+    if recovered_reference_available and (delta_calmar > 0 or delta_sharpe > 0 or delta_cagr > 0):
+        return FINAL_STATUS_PROMISING_NEEDS_CRYPTO_POLICY_REVIEW
     return FINAL_STATUS_NOT_BETTER_THAN_GENERATED_QQQ100
 
 
@@ -902,6 +995,72 @@ def normalize_high_growth_stream_rows(rows: list[dict[str, str]]) -> list[dict[s
         new_row["daily_strategy_return"] = str(daily_return)
         normalized.append(new_row)
     return normalized
+
+
+def normalize_recovered_reference_stream_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    normalized = []
+    for row in rows:
+        if row.get("candidate_name") != RECOVERED_QQQ100_REFERENCE:
+            continue
+        if row.get("reference_status") != RECOVERED_REFERENCE_READY_STATUS:
+            continue
+        if not false_safety_flags(row):
+            continue
+        date = row.get("date")
+        daily_return = row.get("daily_strategy_return")
+        if not date or daily_return in {"", None}:
+            continue
+        normalized.append(dict(row))
+    return normalized
+
+
+def recovered_reference_info(inputs: dict[str, list[dict[str, str]]], return_streams: list[dict[str, str]]) -> dict[str, Any]:
+    metrics_row = next((row for row in inputs.get("qqq100_recovered_reference_metrics", []) if row.get("reference_name") == RECOVERED_QQQ100_REFERENCE), {})
+    metrics = recovered_metrics_from_row(metrics_row)
+    by_candidate = stream_returns_by_candidate(return_streams)
+    status = metrics_row.get("reference_status", "missing_recovered_reference")
+    available = (
+        status == RECOVERED_REFERENCE_READY_STATUS
+        and metrics_row.get("gap_threshold_status") == "all_metric_gaps_within_research_review_thresholds"
+        and false_safety_flags(metrics_row)
+        and RECOVERED_QQQ100_REFERENCE in by_candidate
+        and not metrics_missing(metrics)
+    )
+    return {
+        "available": available,
+        "status": status if status else "missing_recovered_reference",
+        "metrics": metrics,
+    }
+
+
+def recovered_metrics_from_row(row: dict[str, str]) -> dict[str, str]:
+    metrics = missing_metrics()
+    if not row:
+        metrics["baseline_source"] = "missing_recovered_qqq100_reference"
+        return metrics
+    metrics.update(
+        {
+            "cagr": row.get("cagr", MISSING) or MISSING,
+            "sharpe": row.get("sharpe", MISSING) or MISSING,
+            "max_drawdown": row.get("max_drawdown", MISSING) or MISSING,
+            "calmar": row.get("calmar", MISSING) or MISSING,
+            "annualised_volatility": row.get("annual_volatility", MISSING) or MISSING,
+            "cash_percentage": row.get("cash_percentage", MISSING) or MISSING,
+            "turnover_or_trade_count": row.get("trade_signal_change_count", MISSING) or MISSING,
+            "baseline_source": "qqq100_recovered_reference_stream",
+        }
+    )
+    return metrics
+
+
+def false_safety_flags(row: dict[str, str]) -> bool:
+    return (
+        str(row.get("execution_approved", "false")).lower() == "false"
+        and str(row.get("scheduling_approved", "false")).lower() == "false"
+        and str(row.get("orders_created", "false")).lower() == "false"
+        and str(row.get("orders_submitted", "false")).lower() == "false"
+        and str(row.get("orders_cancelled", "false")).lower() == "false"
+    )
 
 
 def stream_returns_by_candidate(rows: list[dict[str, str]]) -> dict[str, dict[str, float]]:
@@ -1146,12 +1305,16 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_path: Path) -
         "Multi-sleeve portfolio backtest created. Saved-output-only research; no execution wiring approved.",
         f"final_backtest_status: {summary['final_backtest_status']}",
         f"saved QQQ100 benchmark metrics: CAGR={summary['saved_qqq100_benchmark_cagr']}, Sharpe={summary['saved_qqq100_benchmark_sharpe']}, MaxDD={summary['saved_qqq100_benchmark_max_drawdown']}, Calmar={summary['saved_qqq100_benchmark_calmar']}",
-        f"generated QQQ100 reference metrics: CAGR={summary['generated_qqq100_reference_cagr']}, Sharpe={summary['generated_qqq100_reference_sharpe']}, MaxDD={summary['generated_qqq100_reference_max_drawdown']}, Calmar={summary['generated_qqq100_reference_calmar']}",
+        f"QQQ100 reference source used: {summary['qqq100_reference_source_used']}",
+        f"old generated QQQ100 diagnostic reference metrics: CAGR={summary['generated_qqq100_reference_cagr']}, Sharpe={summary['generated_qqq100_reference_sharpe']}, MaxDD={summary['generated_qqq100_reference_max_drawdown']}, Calmar={summary['generated_qqq100_reference_calmar']}",
+        f"old generated QQQ100 diagnostic reference status: {summary['old_generated_reference_status']}",
+        f"recovered QQQ100 preferred reference metrics: CAGR={summary['recovered_qqq100_reference_cagr']}, Sharpe={summary['recovered_qqq100_reference_sharpe']}, MaxDD={summary['recovered_qqq100_reference_max_drawdown']}, Calmar={summary['recovered_qqq100_reference_calmar']}",
         f"saved benchmark reconciliation status: {summary['saved_benchmark_reconciliation_status']}",
         f"top multi-sleeve portfolio candidate: {summary['top_multi_sleeve_portfolio_candidate']}",
         f"candidate allocation: {summary['candidate_allocation']}",
         f"candidate metrics: CAGR={summary['candidate_cagr']}, Sharpe={summary['candidate_sharpe']}, MaxDD={summary['candidate_max_drawdown']}, Calmar={summary['candidate_calmar']}",
-        f"delta_vs_generated_qqq100_reference: delta_CAGR={summary['delta_cagr_vs_generated_qqq100_reference']}, delta_Sharpe={summary['delta_sharpe_vs_generated_qqq100_reference']}, delta_MaxDD={summary['delta_max_drawdown_vs_generated_qqq100_reference']}, delta_Calmar={summary['delta_calmar_vs_generated_qqq100_reference']}",
+        f"delta_vs_recovered_qqq100_reference: delta_CAGR={summary['delta_cagr_vs_recovered_qqq100_reference']}, delta_Sharpe={summary['delta_sharpe_vs_recovered_qqq100_reference']}, delta_MaxDD={summary['delta_max_drawdown_vs_recovered_qqq100_reference']}, delta_Calmar={summary['delta_calmar_vs_recovered_qqq100_reference']}",
+        f"diagnostic_delta_vs_old_generated_qqq100_reference: delta_CAGR={summary['delta_cagr_vs_generated_qqq100_reference']}, delta_Sharpe={summary['delta_sharpe_vs_generated_qqq100_reference']}, delta_MaxDD={summary['delta_max_drawdown_vs_generated_qqq100_reference']}, delta_Calmar={summary['delta_calmar_vs_generated_qqq100_reference']}",
         f"split stability summary: {summary['split_stability_summary']}",
         f"missing sleeve data warnings: {summary['missing_sleeve_data_warnings']}",
         f"biggest blocker: {summary['biggest_blocker']}",

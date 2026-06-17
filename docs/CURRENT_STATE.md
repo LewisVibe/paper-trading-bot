@@ -241,9 +241,12 @@ The high-growth return-stream generator comes from `python bot.py --high-growth-
 The QQQ100 stream reconciliation checkpoint comes from `python bot.py --qqq100-stream-reconciliation`, with saved display through `python bot.py --show-qqq100-stream-reconciliation`:
 
 - It compares saved `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` benchmark metrics with the generated QQQ100 daily stream from `data/sleeve_return_streams.csv`.
-- It writes `data/qqq100_stream_reconciliation.csv`, `data/qqq100_stream_reconciliation_candidates.csv`, `data/qqq100_stream_reconciliation_diagnostics.csv`, `data/qqq100_stream_reconciliation_blockers.csv`, and `data/qqq100_stream_reconciliation_summary.csv`.
+- It writes `data/qqq100_stream_reconciliation.csv`, `data/qqq100_stream_reconciliation_candidates.csv`, `data/qqq100_stream_reconciliation_diagnostics.csv`, `data/qqq100_stream_reconciliation_blockers.csv`, `data/qqq100_stream_reconciliation_summary.csv`, `data/qqq100_recovered_reference_stream.csv`, and `data/qqq100_recovered_reference_metrics.csv`.
 - It tests the current saved generated stream, close versus adjusted-close availability, signal shift, SMA100 warmup/date alignment, cash/flat handling, and cost/slippage assumption gaps where saved research price data exists.
+- It includes one fixed recovered-inputs reconstruction candidate, `qqq100_recovered_inputs_sma200_close_to_close_10bps`, using QQQ daily yfinance-style assumptions, SMA200, prior-close signal timing, next-bar close-to-close returns, 1.00x exposure, zero cash return, and 10 bps exposure-change cost.
 - It applies fixed gap thresholds for CAGR, Sharpe, MaxDD, and Calmar before any candidate can be called close enough for research review; current saved outputs remain `qqq100_reconciliation_still_blocked` while a material CAGR gap remains.
+- The fixed reconstruction candidate uses `qqq100_reconstruction_close_enough_for_research_review` only if all thresholds pass; otherwise it is labelled `qqq100_reconstruction_attempt_still_blocked`.
+- A threshold-passing recovered reference may be consumed by multi-sleeve reports as the preferred QQQ100 research reference, while the old generated `qqq_100_trend_gate` stream remains retained as diagnostic context.
 - It labels missing original benchmark source stream/data, date range, price adjustment, cash, and cost assumptions rather than forcing generated-stream parity.
 - It does not update `--sleeve-return-streams` automatically; QQQ100 remains the only active paper sleeve and all execution, follow-up, repeat, scheduling, and live-trading approval flags remain false.
 
@@ -257,7 +260,7 @@ The QQQ100 benchmark-input reconstruction checkpoint comes from `python bot.py -
 
 The multi-sleeve portfolio backtest checkpoint comes from `python bot.py --multi-sleeve-portfolio-backtest`, with saved display through `python bot.py --show-multi-sleeve-portfolio-backtest`:
 
-- It reads saved CSV outputs only, keeps exact saved `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` benchmark metrics separate from generated QQQ100 stream metrics, and consumes `data/sleeve_return_streams.csv` to compute feasible reduced QQQ/cash/defensive portfolio metrics.
+- It reads saved CSV outputs only, keeps exact saved `qqq_100_trend_gate` / `qqq100_core_trend_sleeve` benchmark metrics separate from the old generated QQQ100 diagnostic stream, and consumes `data/qqq100_recovered_reference_stream.csv` as the preferred QQQ100 research reference only when its saved threshold-pass audit row is valid.
 - It writes `data/multi_sleeve_portfolio_backtest.csv`, `data/multi_sleeve_portfolio_backtest_sleeves.csv`, `data/multi_sleeve_portfolio_backtest_allocations.csv`, `data/multi_sleeve_portfolio_backtest_rankings.csv`, `data/multi_sleeve_portfolio_backtest_splits.csv`, `data/multi_sleeve_portfolio_backtest_trades.csv`, `data/multi_sleeve_portfolio_backtest_blockers.csv`, and `data/multi_sleeve_portfolio_backtest_summary.csv`.
 - It compares `qqq100_only_reference`, `qqq100_plus_cash_defensive_reference`, `qqq100_plus_spy_sma200_defensive_gate`, `qqq100_plus_rolling_drawdown_defensive_gate`, `qqq100_plus_combined_defensive_gate`, `codex_defensive_qqq_research_portfolio`, high-growth, crypto, balanced multi-sleeve, and Codex ambitious candidates.
 - It consumes defensive and Codex generated streams when present, while high-growth and crypto remain labelled as missing unless real daily streams exist.
@@ -265,7 +268,7 @@ The multi-sleeve portfolio backtest checkpoint comes from `python bot.py --multi
 
 The multi-sleeve robustness checkpoint comes from `python bot.py --multi-sleeve-robustness`, with saved display through `python bot.py --show-multi-sleeve-robustness`:
 
-- It reads saved return streams and multi-sleeve backtest CSVs only, then tests `qqq100_plus_high_growth_research` against the generated QQQ100 reference across fixed `split_60_40`, `split_70_30`, and `split_80_20` out-of-sample windows.
+- It reads saved return streams and multi-sleeve backtest CSVs only, then tests `qqq100_plus_high_growth_research` against the preferred QQQ100 research reference across fixed `split_60_40`, `split_70_30`, and `split_80_20` out-of-sample windows.
 - It writes `data/multi_sleeve_robustness_report.csv` and `data/multi_sleeve_robustness_summary.csv`.
 - It reports Calmar and Sharpe split wins, worst split by Calmar/MaxDD, key blockers, and the next review step.
 - It remains blocked by QQQ100 generated-stream reconciliation until saved/generated benchmark parity is resolved, and it does not approve preview promotion, execution, scheduling, Alpaca/order paths, or any sleeve-to-execution wiring.

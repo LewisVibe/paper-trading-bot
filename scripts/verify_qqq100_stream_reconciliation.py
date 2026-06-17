@@ -24,6 +24,8 @@ EXPECTED_OUTPUTS = [
     "data/qqq100_stream_reconciliation_diagnostics.csv",
     "data/qqq100_stream_reconciliation_blockers.csv",
     "data/qqq100_stream_reconciliation_summary.csv",
+    "data/qqq100_recovered_reference_stream.csv",
+    "data/qqq100_recovered_reference_metrics.csv",
 ]
 
 FALSE_FLAGS = [
@@ -101,10 +103,14 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "qqq100_stream_adjclose_shift1",
         "qqq100_stream_adjclose_shift1_drop_warmup",
         "qqq100_stream_min_periods_100_shift1",
+        "qqq100_recovered_inputs_sma200_close_to_close_10bps",
         "qqq100_stream_saved_benchmark_like_best_candidate",
         "all_metric_gaps_within_research_review_thresholds",
         "material_metric_gap_remains",
         "qqq100_reconciliation_candidate_close_enough_for_research_review",
+        "qqq100_reconstruction_close_enough_for_research_review",
+        "qqq100_reconstruction_attempt_still_blocked",
+        "accept_saved_benchmark_as_constant_or_recover_original_daily_stream_before_candidate_label_change",
         "qqq100_reconciliation_improved_not_final",
         "qqq100_reconciliation_still_blocked",
         "qqq100_reconciliation_blocked_missing_original_benchmark_stream",
@@ -114,6 +120,9 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "execution_approved",
         "repeat_execution_approved",
         "scheduling_approved",
+        "qqq100_recovered_reference_stream.csv",
+        "qqq100_recovered_reference_metrics.csv",
+        "qqq100_recovered_reference_stream",
         QQQ100_STRATEGY,
     ]
     for token in required:
@@ -140,6 +149,9 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
     for token in forbidden:
         if token in module_source:
             failures.append(f"QQQ100 stream reconciliation module must not contain execution/config/scheduling token: {token}")
+    for token in ["promotion_ready", "execution_ready", "reconciled_for_execution"]:
+        if token in module_source:
+            failures.append(f"QQQ100 stream reconciliation module must not contain promotion/execution-ready wording: {token}")
 
 
 def verify_no_execution_expansion(bot_source: str, failures: list[str]) -> None:
@@ -183,6 +195,8 @@ def verify_temp_generation(failures: list[str]) -> None:
             failures.append("reconciliation should not update sleeve_return_streams automatically")
         if report.get("final_reconciliation_status") in {"promotion_ready", "execution_ready", "reconciled_for_execution"}:
             failures.append("reconciliation status must never be promotion-ready or execution-ready")
+        if "promotion_ready" in report.get("final_reconciliation_status", "") or "execution_ready" in report.get("final_reconciliation_status", ""):
+            failures.append("final status must not contain promotion-ready or execution-ready wording")
         if report.get("gap_threshold_status") not in {
             "all_metric_gaps_within_research_review_thresholds",
             "material_metric_gap_remains",
@@ -212,13 +226,52 @@ def verify_temp_generation(failures: list[str]) -> None:
             "qqq100_stream_adjclose_shift1",
             "qqq100_stream_adjclose_shift1_drop_warmup",
             "qqq100_stream_min_periods_100_shift1",
+            "qqq100_recovered_inputs_sma200_close_to_close_10bps",
             "qqq100_stream_saved_benchmark_like_best_candidate",
         ]:
             if expected not in candidate_names:
                 failures.append(f"missing reconciliation candidate: {expected}")
 
+        recovered = next(
+            (row for row in result.candidate_rows if row["candidate_name"] == "qqq100_recovered_inputs_sma200_close_to_close_10bps"),
+            None,
+        )
+        if not recovered:
+            failures.append("fixed recovered-inputs reconstruction candidate should be present")
+        else:
+            if recovered.get("sma_window") != 200:
+                failures.append("fixed recovered-inputs candidate should use SMA200")
+            if recovered.get("signal_shift_rows") != 1:
+                failures.append("fixed recovered-inputs candidate should use prior-close/next-bar signal shift")
+            if "10bps" not in recovered.get("execution_timing", ""):
+                failures.append("fixed recovered-inputs candidate should label 10 bps cost assumption")
+            if recovered.get("gap_threshold_status") == "all_metric_gaps_within_research_review_thresholds":
+                if recovered.get("reconciliation_status") != "qqq100_reconstruction_close_enough_for_research_review":
+                    failures.append("passing recovered-inputs thresholds should use close-enough reconstruction status")
+            else:
+                if recovered.get("reconciliation_status") != "qqq100_reconstruction_attempt_still_blocked":
+                    failures.append("failing recovered-inputs thresholds should remain reconstruction blocked")
+            for token in ["promotion_ready", "execution_ready", "reconciled_for_execution"]:
+                if token in " ".join(str(value) for value in recovered.values()):
+                    failures.append(f"recovered-inputs candidate must not contain promotion/execution-ready wording: {token}")
+
+        metric_rows = read_csv_rows(root / "data" / "qqq100_recovered_reference_metrics.csv")
+        if not metric_rows:
+            failures.append("recovered reference metrics audit file should always be written")
+        elif metric_rows[0].get("reference_status") not in {
+            "qqq100_reconstruction_close_enough_for_research_review",
+            "qqq100_reconstruction_attempt_still_blocked",
+        }:
+            failures.append("recovered reference metrics should have explicit research-review or blocked status")
+
         diagnostic_text = " ".join(str(value) for row in result.diagnostic_rows for value in row.values())
-        for expected in ["missing_cost_assumption", "cash_or_risk_free_assumption_unknown", "signal_timing_mismatch_possible", "thresholds: CAGR<="]:
+        for expected in [
+            "missing_cost_assumption",
+            "cash_or_risk_free_assumption_unknown",
+            "signal_timing_mismatch_possible",
+            "thresholds: CAGR<=",
+            "fixed_recovered_inputs_candidate_did_not_close_saved_benchmark_gap",
+        ]:
             if expected not in diagnostic_text:
                 failures.append(f"diagnostics should label missing assumption/cause: {expected}")
 
@@ -268,7 +321,7 @@ def write_current_stream_fixture(path: Path) -> None:
 def write_price_fixture(path: Path) -> None:
     rows = []
     close = 100.0
-    for index in range(180):
+    for index in range(260):
         close *= 1.002 if index % 35 else 0.985
         rows.append([f"2024-{(index // 22) % 12 + 1:02d}-{index % 22 + 1:02d}", "QQQ", round(close, 4), round(close * 0.998, 4)])
     write_fixture(path, ["date", "ticker", "close", "adj_close"], rows)
@@ -294,6 +347,13 @@ def source_slice(source: str, start: str, end: str) -> str:
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def read_csv_rows(path: Path) -> list[dict[str, str]]:
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as file:
+        return list(csv.DictReader(file))
 
 
 if __name__ == "__main__":

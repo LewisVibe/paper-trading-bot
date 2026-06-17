@@ -40,6 +40,15 @@ REQUIRED_REPORT_COLUMNS = [
     "delta_Sharpe_vs_generated_qqq100",
     "delta_MaxDD_vs_generated_qqq100",
     "delta_Calmar_vs_generated_qqq100",
+    "qqq100_reference_source_used",
+    "recovered_reference_available",
+    "old_generated_reference_retained",
+    "comparison_reference_name",
+    "comparison_reference_status",
+    "delta_CAGR_vs_qqq100_reference",
+    "delta_Sharpe_vs_qqq100_reference",
+    "delta_MaxDD_vs_qqq100_reference",
+    "delta_Calmar_vs_qqq100_reference",
     "robustness_status",
     "blocker_status",
     "required_next_step",
@@ -124,6 +133,10 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "split_70_30",
         "split_80_20",
         "saved_metrics_context_only_not_daily_stream",
+        "comparison_reference_name",
+        "comparison_reference_status",
+        "Calmar wins vs preferred QQQ100 reference",
+        "Sharpe wins vs preferred QQQ100 reference",
         "execution_approved",
         "scheduling_approved",
     ]
@@ -198,7 +211,7 @@ def verify_temp_generation(failures: list[str]) -> None:
                 failures.append(f"missing split output: {expected}")
 
         candidates = {row.get("candidate_name") for row in result.report_rows}
-        for expected in [PORTFOLIO_CANDIDATE, "generated_qqq100_reference", "codex_broad_growth_balanced_breakout_control"]:
+        for expected in [PORTFOLIO_CANDIDATE, "preferred_qqq100_reference", "codex_broad_growth_balanced_breakout_control"]:
             if expected not in candidates:
                 failures.append(f"missing candidate row: {expected}")
 
@@ -211,6 +224,14 @@ def verify_temp_generation(failures: list[str]) -> None:
             failures.append("complete fixture should produce three candidate split rows")
         if "not_promotion_ready" not in summary.get("key_blockers", ""):
             failures.append("summary should explicitly avoid promotion-ready labels")
+        if summary.get("qqq100_reference_source_used") != "old_generated_qqq100_reference":
+            failures.append("fallback fixture should use old generated QQQ100 reference")
+        if summary.get("old_generated_reference_retained") != "true":
+            failures.append("old generated reference should remain retained")
+        if summary.get("comparison_reference_name") in {"", None, "missing"}:
+            failures.append("summary should include comparison reference name")
+        if summary.get("comparison_reference_status") in {"", None, "missing"}:
+            failures.append("summary should include comparison reference status")
 
         for collection in [result.report_rows, result.summary_rows]:
             for row in collection:
@@ -227,6 +248,10 @@ def verify_temp_generation(failures: list[str]) -> None:
             failures.append("saved display should show final robustness status")
         if not any("execution_approved=false" in line for line in lines):
             failures.append("saved display should preserve false execution flag")
+        if not any("Calmar wins vs preferred QQQ100 reference" in line for line in lines):
+            failures.append("saved display should use preferred-reference wording for Calmar wins")
+        if any("Calmar wins vs generated QQQ100" in line or "Sharpe wins vs generated QQQ100" in line for line in lines):
+            failures.append("saved display should not use stale generated-Q label for win counts")
 
 
 def verify_missing_streams_blocked(failures: list[str]) -> None:

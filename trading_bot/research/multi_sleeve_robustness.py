@@ -24,6 +24,7 @@ FINAL_STATUS_BLOCKED_QQQ100_RECONCILIATION = "multi_sleeve_robustness_blocked_qq
 
 PORTFOLIO_CANDIDATE = "qqq100_plus_high_growth_research"
 GENERATED_QQQ100 = "generated_qqq100_reference"
+PREFERRED_QQQ100_REFERENCE = "preferred_qqq100_reference"
 HIGH_GROWTH_SLEEVE = "codex_broad_growth_balanced_breakout_control"
 SAVED_QQQ100_CONTEXT = "saved_qqq100_benchmark_context"
 REQUIRED_NEXT_STEP_RECONCILE = "reconcile_generated_qqq100_stream_with_saved_benchmark_before_preview_discussion"
@@ -33,6 +34,7 @@ REQUIRED_NEXT_STEP_REVIEW = "manual_review_split_robustness_before_any_candidate
 INPUT_FILES = {
     "sleeve_return_streams": Path("data/sleeve_return_streams.csv"),
     "high_growth_return_streams": Path("data/high_growth_return_streams.csv"),
+    "qqq100_recovered_reference_stream": Path("data/qqq100_recovered_reference_stream.csv"),
     "multi_sleeve_backtest": Path("data/multi_sleeve_portfolio_backtest.csv"),
     "multi_sleeve_summary": Path("data/multi_sleeve_portfolio_backtest_summary.csv"),
 }
@@ -96,6 +98,15 @@ REPORT_COLUMNS = [
     "delta_Sharpe_vs_generated_qqq100",
     "delta_MaxDD_vs_generated_qqq100",
     "delta_Calmar_vs_generated_qqq100",
+    "qqq100_reference_source_used",
+    "recovered_reference_available",
+    "old_generated_reference_retained",
+    "comparison_reference_name",
+    "comparison_reference_status",
+    "delta_CAGR_vs_qqq100_reference",
+    "delta_Sharpe_vs_qqq100_reference",
+    "delta_MaxDD_vs_qqq100_reference",
+    "delta_Calmar_vs_qqq100_reference",
     "robustness_status",
     "blocker_status",
     "required_next_step",
@@ -133,6 +144,9 @@ def generate_multi_sleeve_robustness(root_dir: Path | str = ".") -> MultiSleeveR
         read_csv_rows(root / INPUT_FILES["high_growth_return_streams"])
     )
     streams = saved_streams + high_growth_streams
+    streams += backtest.normalize_recovered_reference_stream_rows(
+        read_csv_rows(root / INPUT_FILES["qqq100_recovered_reference_stream"])
+    )
     by_candidate = backtest.stream_returns_by_candidate(streams)
     backtest_summary = summary_dict(read_csv_rows(root / INPUT_FILES["multi_sleeve_summary"]))
     saved_benchmark = saved_qqq100_context(backtest_summary)
@@ -163,8 +177,10 @@ def show_multi_sleeve_robustness(root_dir: Path | str = ".") -> tuple[int, list[
         "Multi-sleeve robustness. Saved-output-only research; no execution wiring approved.",
         f"final robustness status: {rows.get('final_robustness_status', 'missing')}",
         f"split count: {rows.get('split_count', 'missing')}",
-        f"Calmar wins vs generated QQQ100: {rows.get('calmar_win_count_vs_generated_qqq100', 'missing')}",
-        f"Sharpe wins vs generated QQQ100: {rows.get('sharpe_win_count_vs_generated_qqq100', 'missing')}",
+        f"QQQ100 reference source used: {rows.get('qqq100_reference_source_used', 'missing')}",
+        f"comparison reference status: {rows.get('comparison_reference_status', 'missing')}",
+        f"Calmar wins vs preferred QQQ100 reference: {rows.get('calmar_win_count_vs_generated_qqq100', 'missing')}",
+        f"Sharpe wins vs preferred QQQ100 reference: {rows.get('sharpe_win_count_vs_generated_qqq100', 'missing')}",
         f"worst split by Calmar: {rows.get('worst_split_by_calmar', 'missing')}",
         f"worst split by MaxDD: {rows.get('worst_split_by_maxdd', 'missing')}",
         f"key blockers: {rows.get('key_blockers', 'missing')}",
@@ -179,8 +195,23 @@ def build_report_rows(
     saved_benchmark: dict[str, str],
     backtest_summary: dict[str, str],
 ) -> list[dict[str, Any]]:
-    required = ["qqq_100_trend_gate", HIGH_GROWTH_SLEEVE, "cash_default_defensive_sleeve"]
-    missing = [candidate for candidate in required if candidate not in by_candidate]
+    reference_candidate = backtest_summary.get("qqq100_reference_source_used") or "old_generated_qqq100_reference"
+    preferred_reference = (
+        backtest.RECOVERED_QQQ100_REFERENCE
+        if reference_candidate == backtest.RECOVERED_QQQ100_REFERENCE
+        and backtest.RECOVERED_QQQ100_REFERENCE in by_candidate
+        else "qqq_100_trend_gate"
+    )
+    recovered_available = preferred_reference == backtest.RECOVERED_QQQ100_REFERENCE
+    comparison_reference_status = (
+        "recovered_reference_preferred"
+        if recovered_available
+        else "old_generated_reference_fallback"
+    )
+    required = [preferred_reference, HIGH_GROWTH_SLEEVE, "cash_default_defensive_sleeve"]
+    diagnostic_required = ["qqq_100_trend_gate"] if recovered_available else []
+    required_with_diagnostics = required + diagnostic_required
+    missing = [candidate for candidate in required_with_diagnostics if candidate not in by_candidate]
     if missing:
         return [
             blocked_row(
@@ -193,7 +224,7 @@ def build_report_rows(
         ]
 
     rows: list[dict[str, Any]] = []
-    common_dates = sorted(set.intersection(*(set(by_candidate[candidate]) for candidate in required)))
+    common_dates = sorted(set.intersection(*(set(by_candidate[candidate]) for candidate in required_with_diagnostics)))
     if len(common_dates) < 3:
         return [
             blocked_row(
@@ -204,7 +235,8 @@ def build_report_rows(
                 REQUIRED_NEXT_STEP_STREAMS,
             )
         ]
-    qqq_returns = {date: by_candidate["qqq_100_trend_gate"][date] for date in common_dates}
+    qqq_returns = {date: by_candidate[preferred_reference][date] for date in common_dates}
+    old_generated_returns = {date: by_candidate["qqq_100_trend_gate"][date] for date in common_dates} if "qqq_100_trend_gate" in by_candidate else {}
     high_growth_returns = {date: by_candidate[HIGH_GROWTH_SLEEVE][date] for date in common_dates}
     combined_returns = {
         date: (
@@ -236,22 +268,50 @@ def build_report_rows(
                 row_robustness_status(combined_metrics, qqq_metrics),
                 blocker_status,
                 next_step,
+                backtest.RECOVERED_QQQ100_REFERENCE if recovered_available else "old_generated_qqq100_reference",
+                recovered_available,
+                preferred_reference,
+                comparison_reference_status,
             )
         )
         rows.append(
             report_row(
                 created_at,
                 split_name,
-                GENERATED_QQQ100,
+                PREFERRED_QQQ100_REFERENCE,
                 "out_of_sample_reference",
                 oos_dates,
                 qqq_metrics,
                 qqq_metrics,
-                "generated_qqq100_reference",
+                "preferred_qqq100_reference",
                 blocker_status,
                 next_step,
+                backtest.RECOVERED_QQQ100_REFERENCE if recovered_available else "old_generated_qqq100_reference",
+                recovered_available,
+                preferred_reference,
+                comparison_reference_status,
             )
         )
+        if recovered_available and old_generated_returns:
+            old_generated_metrics = metrics_for_dates(oos_dates, old_generated_returns)
+            rows.append(
+                report_row(
+                    created_at,
+                    split_name,
+                    GENERATED_QQQ100,
+                    "out_of_sample_diagnostic_reference",
+                    oos_dates,
+                    old_generated_metrics,
+                    qqq_metrics,
+                    "old_generated_qqq100_diagnostic_reference",
+                    blocker_status,
+                    next_step,
+                    backtest.RECOVERED_QQQ100_REFERENCE,
+                    True,
+                    preferred_reference,
+                    comparison_reference_status,
+                )
+            )
         rows.append(
             report_row(
                 created_at,
@@ -264,6 +324,10 @@ def build_report_rows(
                 high_growth_drag_status(high_growth_metrics, qqq_metrics),
                 blocker_status,
                 next_step,
+                backtest.RECOVERED_QQQ100_REFERENCE if recovered_available else "old_generated_qqq100_reference",
+                recovered_available,
+                preferred_reference,
+                comparison_reference_status,
             )
         )
         if saved_benchmark:
@@ -279,8 +343,8 @@ def build_summary_rows(
 ) -> list[dict[str, Any]]:
     portfolio_rows = [row for row in rows if row.get("candidate_name") == PORTFOLIO_CANDIDATE]
     split_count = len(portfolio_rows)
-    calmar_wins = sum(1 for row in portfolio_rows if parse_float(row.get("delta_Calmar_vs_generated_qqq100")) > 0)
-    sharpe_wins = sum(1 for row in portfolio_rows if parse_float(row.get("delta_Sharpe_vs_generated_qqq100")) > 0)
+    calmar_wins = sum(1 for row in portfolio_rows if parse_float(row.get("delta_Calmar_vs_qqq100_reference")) > 0)
+    sharpe_wins = sum(1 for row in portfolio_rows if parse_float(row.get("delta_Sharpe_vs_qqq100_reference")) > 0)
     worst_calmar = min(portfolio_rows, key=lambda row: parse_float(row.get("Calmar")), default={})
     worst_maxdd = min(portfolio_rows, key=lambda row: parse_float(row.get("MaxDD")), default={})
     final_status = final_robustness_status(rows, split_count, calmar_wins, sharpe_wins, by_candidate, backtest_summary)
@@ -289,8 +353,13 @@ def build_summary_rows(
     items = [
         ("final_robustness_status", final_status, "Report-only robustness label; never promotion-ready or execution-ready."),
         ("split_count", str(split_count), "Number of chronological out-of-sample split rows for the multi-sleeve candidate."),
-        ("calmar_win_count_vs_generated_qqq100", str(calmar_wins), "Splits where the high-growth multi-sleeve candidate beats generated QQQ100 on Calmar."),
-        ("sharpe_win_count_vs_generated_qqq100", str(sharpe_wins), "Splits where the high-growth multi-sleeve candidate beats generated QQQ100 on Sharpe."),
+        ("calmar_win_count_vs_generated_qqq100", str(calmar_wins), "Splits where the high-growth multi-sleeve candidate beats the preferred QQQ100 reference on Calmar."),
+        ("sharpe_win_count_vs_generated_qqq100", str(sharpe_wins), "Splits where the high-growth multi-sleeve candidate beats the preferred QQQ100 reference on Sharpe."),
+        ("qqq100_reference_source_used", portfolio_rows[0].get("qqq100_reference_source_used", "missing") if portfolio_rows else "missing", "Primary QQQ100 reference used for split deltas."),
+        ("recovered_reference_available", str(portfolio_rows[0].get("recovered_reference_available", False)).lower() if portfolio_rows else "false", "Recovered QQQ100 reference is used only when saved validation exists."),
+        ("old_generated_reference_retained", "true", "Old generated QQQ100 stream remains retained as diagnostic context."),
+        ("comparison_reference_name", portfolio_rows[0].get("comparison_reference_name", "missing") if portfolio_rows else "missing", "Candidate-name key for the preferred comparison reference."),
+        ("comparison_reference_status", portfolio_rows[0].get("comparison_reference_status", "missing") if portfolio_rows else "missing", "Whether split deltas use recovered reference or old generated fallback."),
         ("worst_split_by_calmar", format_worst(worst_calmar, "Calmar"), "Lowest candidate Calmar split."),
         ("worst_split_by_maxdd", format_worst(worst_maxdd, "MaxDD"), "Worst candidate drawdown split."),
         ("beats_generated_qqq100_on_most_splits", str(calmar_wins >= 2 and sharpe_wins >= 2), "Requires majority wins on both Calmar and Sharpe."),
@@ -312,7 +381,15 @@ def report_row(
     robustness_status: str,
     blocker_status: str,
     required_next_step: str,
+    qqq100_reference_source_used: str,
+    recovered_reference_available: bool,
+    comparison_reference_name: str,
+    comparison_reference_status: str,
 ) -> dict[str, Any]:
+    delta_cagr = backtest.metric_delta(metrics["cagr"], qqq_metrics["cagr"])
+    delta_sharpe = backtest.metric_delta(metrics["sharpe"], qqq_metrics["sharpe"])
+    delta_maxdd = backtest.metric_delta(metrics["max_drawdown"], qqq_metrics["max_drawdown"])
+    delta_calmar = backtest.metric_delta(metrics["calmar"], qqq_metrics["calmar"])
     return {
         "created_at": created_at,
         "split_name": split_name,
@@ -325,10 +402,19 @@ def report_row(
         "Sharpe": metrics["sharpe"],
         "MaxDD": metrics["max_drawdown"],
         "Calmar": metrics["calmar"],
-        "delta_CAGR_vs_generated_qqq100": backtest.metric_delta(metrics["cagr"], qqq_metrics["cagr"]),
-        "delta_Sharpe_vs_generated_qqq100": backtest.metric_delta(metrics["sharpe"], qqq_metrics["sharpe"]),
-        "delta_MaxDD_vs_generated_qqq100": backtest.metric_delta(metrics["max_drawdown"], qqq_metrics["max_drawdown"]),
-        "delta_Calmar_vs_generated_qqq100": backtest.metric_delta(metrics["calmar"], qqq_metrics["calmar"]),
+        "delta_CAGR_vs_generated_qqq100": delta_cagr,
+        "delta_Sharpe_vs_generated_qqq100": delta_sharpe,
+        "delta_MaxDD_vs_generated_qqq100": delta_maxdd,
+        "delta_Calmar_vs_generated_qqq100": delta_calmar,
+        "qqq100_reference_source_used": qqq100_reference_source_used,
+        "recovered_reference_available": recovered_reference_available,
+        "old_generated_reference_retained": True,
+        "comparison_reference_name": comparison_reference_name,
+        "comparison_reference_status": comparison_reference_status,
+        "delta_CAGR_vs_qqq100_reference": delta_cagr,
+        "delta_Sharpe_vs_qqq100_reference": delta_sharpe,
+        "delta_MaxDD_vs_qqq100_reference": delta_maxdd,
+        "delta_Calmar_vs_qqq100_reference": delta_calmar,
         "robustness_status": robustness_status,
         "blocker_status": blocker_status,
         "required_next_step": required_next_step,
@@ -354,6 +440,15 @@ def blocked_row(created_at: str, split_name: str, status: str, blocker_status: s
         "delta_Sharpe_vs_generated_qqq100": missing,
         "delta_MaxDD_vs_generated_qqq100": missing,
         "delta_Calmar_vs_generated_qqq100": missing,
+        "qqq100_reference_source_used": "missing_reference",
+        "recovered_reference_available": False,
+        "old_generated_reference_retained": True,
+        "comparison_reference_name": "missing_reference",
+        "comparison_reference_status": "missing_reference",
+        "delta_CAGR_vs_qqq100_reference": missing,
+        "delta_Sharpe_vs_qqq100_reference": missing,
+        "delta_MaxDD_vs_qqq100_reference": missing,
+        "delta_Calmar_vs_qqq100_reference": missing,
         "robustness_status": status,
         "blocker_status": blocker_status,
         "required_next_step": required_next_step,
@@ -385,6 +480,15 @@ def saved_context_row(
         "delta_Sharpe_vs_generated_qqq100": missing,
         "delta_MaxDD_vs_generated_qqq100": missing,
         "delta_Calmar_vs_generated_qqq100": missing,
+        "qqq100_reference_source_used": "saved_metrics_context_only",
+        "recovered_reference_available": False,
+        "old_generated_reference_retained": True,
+        "comparison_reference_name": "saved_metrics_context_only",
+        "comparison_reference_status": "saved_metrics_context_only",
+        "delta_CAGR_vs_qqq100_reference": missing,
+        "delta_Sharpe_vs_qqq100_reference": missing,
+        "delta_MaxDD_vs_qqq100_reference": missing,
+        "delta_Calmar_vs_qqq100_reference": missing,
         "robustness_status": "saved_qqq100_benchmark_context_only",
         "blocker_status": blocker_status,
         "required_next_step": required_next_step,
@@ -432,7 +536,9 @@ def final_robustness_status(
     by_candidate: dict[str, dict[str, float]],
     backtest_summary: dict[str, str],
 ) -> str:
-    if not {"qqq_100_trend_gate", HIGH_GROWTH_SLEEVE, "cash_default_defensive_sleeve"}.issubset(by_candidate):
+    has_old = {"qqq_100_trend_gate", HIGH_GROWTH_SLEEVE, "cash_default_defensive_sleeve"}.issubset(by_candidate)
+    has_recovered = {backtest.RECOVERED_QQQ100_REFERENCE, HIGH_GROWTH_SLEEVE, "cash_default_defensive_sleeve"}.issubset(by_candidate)
+    if not (has_old or has_recovered):
         return FINAL_STATUS_BLOCKED_MISSING_STREAMS
     if "needs_reconciliation" in backtest_summary.get("saved_benchmark_reconciliation_status", ""):
         return FINAL_STATUS_BLOCKED_QQQ100_RECONCILIATION
@@ -467,10 +573,10 @@ def key_blockers(status: str, backtest_summary: dict[str, str]) -> str:
 def improvement_driver(rows: list[dict[str, Any]]) -> str:
     if not rows:
         return "missing_split_rows"
-    cagr = sum(1 for row in rows if parse_float(row.get("delta_CAGR_vs_generated_qqq100")) > 0)
-    sharpe = sum(1 for row in rows if parse_float(row.get("delta_Sharpe_vs_generated_qqq100")) > 0)
-    maxdd = sum(1 for row in rows if parse_float(row.get("delta_MaxDD_vs_generated_qqq100")) > 0)
-    calmar = sum(1 for row in rows if parse_float(row.get("delta_Calmar_vs_generated_qqq100")) > 0)
+    cagr = sum(1 for row in rows if parse_float(row.get("delta_CAGR_vs_qqq100_reference")) > 0)
+    sharpe = sum(1 for row in rows if parse_float(row.get("delta_Sharpe_vs_qqq100_reference")) > 0)
+    maxdd = sum(1 for row in rows if parse_float(row.get("delta_MaxDD_vs_qqq100_reference")) > 0)
+    calmar = sum(1 for row in rows if parse_float(row.get("delta_Calmar_vs_qqq100_reference")) > 0)
     scores = {"return": cagr, "sharpe": sharpe, "drawdown": maxdd, "calmar": calmar}
     best = max(scores, key=scores.get)
     return f"{best}_led; " + "; ".join(f"{name}_wins={value}" for name, value in scores.items())
@@ -500,8 +606,10 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_path: Path) -
         "Multi-sleeve robustness report created. Saved-output-only research; no execution wiring approved.",
         f"final robustness status: {summary['final_robustness_status']}",
         f"split count: {summary['split_count']}",
-        f"Calmar wins vs generated QQQ100: {summary['calmar_win_count_vs_generated_qqq100']}",
-        f"Sharpe wins vs generated QQQ100: {summary['sharpe_win_count_vs_generated_qqq100']}",
+        f"QQQ100 reference source used: {summary['qqq100_reference_source_used']}",
+        f"comparison reference status: {summary['comparison_reference_status']}",
+        f"Calmar wins vs preferred QQQ100 reference: {summary['calmar_win_count_vs_generated_qqq100']}",
+        f"Sharpe wins vs preferred QQQ100 reference: {summary['sharpe_win_count_vs_generated_qqq100']}",
         f"worst split by Calmar: {summary['worst_split_by_calmar']}",
         f"worst split by MaxDD: {summary['worst_split_by_maxdd']}",
         f"key blockers: {summary['key_blockers']}",
