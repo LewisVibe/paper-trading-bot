@@ -79,6 +79,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq100-benchmark-inputs",
     "--high-growth-return-streams",
     "--show-high-growth-return-streams",
+    "--crypto-return-streams",
+    "--show-crypto-return-streams",
     "--multi-sleeve-portfolio-backtest",
     "--show-multi-sleeve-portfolio-backtest",
     "--multi-sleeve-robustness",

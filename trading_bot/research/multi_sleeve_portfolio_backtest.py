@@ -27,9 +27,15 @@ QQQ100_STRATEGY = "qqq_100_trend_gate"
 RECOVERED_QQQ100_REFERENCE = "qqq100_recovered_reference_stream"
 RECOVERED_QQQ100_SOURCE_CANDIDATE = "qqq100_recovered_inputs_sma200_close_to_close_10bps"
 RECOVERED_REFERENCE_READY_STATUS = "qqq100_reconstruction_close_enough_for_research_review"
+CRYPTO_COMBINED_REFERENCE = "crypto_btc_eth_research_sleeve"
 TOP_MULTI_SLEEVE_CANDIDATE = "qqq100_plus_cash_defensive_reference"
 BIGGEST_BLOCKER = "missing_saved_return_streams_for_non_qqq_sleeves"
+MANUAL_REVIEW_BLOCKER = "manual_review_required_before_candidate_label_change"
+CRYPTO_REVIEW_BLOCKER = "crypto_volatility_and_split_review_required"
+RESEARCH_ONLY_BLOCKER = "not_promotion_ready_research_only"
+EXECUTION_BLOCKER = "execution_not_approved"
 RECOMMENDED_NEXT_STEP = "collect_saved_daily_return_streams_before_candidate_label_change"
+REVIEW_NEXT_STEP = "manual_review_split_cost_crypto_volatility_and_policy_before_candidate_label_change"
 MISSING = "missing_saved_metrics"
 MISSING_RETURN_STREAM = "missing_saved_return_stream"
 
@@ -52,6 +58,7 @@ INPUT_FILES = {
     "multi_sleeve_monitor": Path("data/multi_sleeve_strategy_monitor.csv"),
     "sleeve_return_streams": Path("data/sleeve_return_streams.csv"),
     "high_growth_return_streams": Path("data/high_growth_return_streams.csv"),
+    "crypto_return_streams": Path("data/crypto_return_streams.csv"),
     "qqq100_recovered_reference_stream": Path("data/qqq100_recovered_reference_stream.csv"),
     "qqq100_recovered_reference_metrics": Path("data/qqq100_recovered_reference_metrics.csv"),
 }
@@ -298,6 +305,7 @@ def generate_multi_sleeve_portfolio_backtest(root_dir: Path | str = ".") -> Mult
     return_streams = (
         inputs["sleeve_return_streams"]
         + normalize_high_growth_stream_rows(inputs["high_growth_return_streams"])
+        + normalize_crypto_stream_rows(inputs["crypto_return_streams"])
         + normalize_recovered_reference_stream_rows(inputs["qqq100_recovered_reference_stream"])
     )
     sleeve_rows = build_sleeve_rows(created_at, inputs, qqq_metrics, return_streams)
@@ -374,9 +382,13 @@ def build_sleeve_rows(
     high_growth_metrics = saved_metric_bundle(
         inputs["high_growth_final_validation"] + inputs["high_growth_branch"] + inputs["high_growth_lab"]
     )
-    crypto_metrics = saved_metric_bundle(inputs["crypto_lab"] + inputs["crypto_state"] + inputs["crypto_lead"])
     codex_metrics = codex_metric_bundle(inputs)
     stream_candidates = set(stream_returns_by_candidate(return_streams))
+    crypto_metrics = (
+        stream_metric_bundle(return_streams, CRYPTO_COMBINED_REFERENCE)
+        if CRYPTO_COMBINED_REFERENCE in stream_candidates
+        else saved_metric_bundle(inputs["crypto_lab"] + inputs["crypto_state"] + inputs["crypto_lead"])
+    )
     defensive_stream_status = (
         "saved_return_stream_metrics_available"
         if "qqq100_combined_trend_spy_regime_drawdown_gate" in stream_candidates
@@ -390,6 +402,11 @@ def build_sleeve_rows(
     high_growth_stream_status = (
         "saved_return_stream_metrics_available"
         if "codex_broad_growth_balanced_breakout_control" in stream_candidates
+        else "missing_saved_return_stream"
+    )
+    crypto_stream_status = (
+        "saved_return_stream_metrics_available"
+        if CRYPTO_COMBINED_REFERENCE in stream_candidates
         else "missing_saved_return_stream"
     )
     return [
@@ -444,18 +461,18 @@ def build_sleeve_rows(
         sleeve_row(
             created_at,
             "crypto_research_sleeve",
-            "crypto_off_hours_research_route",
+            CRYPTO_COMBINED_REFERENCE,
             "crypto research universe",
             "off-hours research sleeve",
-            "missing_saved_return_stream",
-            "summary_metrics_only_or_unavailable",
+            crypto_stream_status,
+            "crypto_return_streams_saved_metrics" if crypto_stream_status == "saved_return_stream_metrics_available" else "summary_metrics_only_or_unavailable",
             crypto_metrics,
             "crypto_cost_review_required",
             "crypto_split_review_required",
             "very_high_volatility",
             "low_direct_qqq_overlap_but_high_portfolio_volatility",
-            "research_only_missing_return_stream",
-            "Do not include in portfolio metrics until reliable saved daily returns exist.",
+            "crypto_research_only_saved_stream_available" if crypto_stream_status == "saved_return_stream_metrics_available" else "research_only_missing_return_stream",
+            "Use saved BTC/ETH crypto daily returns for research metrics only; do not approve preview or execution.",
         ),
         sleeve_row(
             created_at,
@@ -530,6 +547,7 @@ def build_portfolio_rows(
         ("codex_defensive_qqq_research_portfolio", "Codex defensive QQQ reduced portfolio", "65% qqq100_core_trend_sleeve; 30% codex_experimental_research_sleeve; 5% defensive_cash_or_bond_sleeve", 57, "multi_sleeve_candidate_needs_more_data", missing_portfolio_metrics()),
         ("qqq100_plus_high_growth_research", "high-growth research blend", "80% qqq100_core_trend_sleeve; 15% high_growth_stock_research_sleeve; 5% defensive_cash_or_bond_sleeve", 42, "multi_sleeve_candidate_needs_more_data", missing_portfolio_metrics()),
         ("qqq100_plus_crypto_research", "crypto research blend", "85% qqq100_core_trend_sleeve; 10% crypto_research_sleeve; 5% defensive_cash_or_bond_sleeve", 40, "multi_sleeve_candidate_needs_more_data", missing_portfolio_metrics()),
+        ("qqq100_plus_high_growth_plus_crypto_research", "high-growth plus crypto research blend", "75% qqq100_core_trend_sleeve; 15% high_growth_stock_research_sleeve; 5% crypto_research_sleeve; 5% defensive_cash_or_bond_sleeve", 44, "multi_sleeve_crypto_candidate_blocked_missing_streams", missing_portfolio_metrics()),
         ("balanced_multi_sleeve_research_portfolio", "balanced reduced research portfolio", "50% qqq100_core_trend_sleeve; 20% qqq_defensive_crash_gate_research_sleeve; 15% high_growth_stock_research_sleeve; 10% crypto_research_sleeve; 5% defensive_cash_or_bond_sleeve", 45, "multi_sleeve_candidate_needs_more_data", missing_portfolio_metrics()),
         ("codex_ambitious_multi_sleeve_candidate", "Codex ambitious transparent allocation", "60% qqq100_core_trend_sleeve; 25% codex_experimental_research_sleeve; 10% defensive_cash_or_bond_sleeve; 5% research optionality reserve", 52, "multi_sleeve_candidate_needs_more_data", missing_portfolio_metrics()),
     ]
@@ -541,7 +559,7 @@ def build_portfolio_rows(
             status = "multi_sleeve_portfolio_backtest_created"
         final_status = status
         if stream_metrics and name != QQQ100_REFERENCE:
-            final_status = candidate_backtest_status(metrics, reference_metrics, recovered_reference["available"])
+            final_status = candidate_backtest_status_for_name(name, metrics, reference_metrics, recovered_reference["available"])
         delta_cagr_generated = metric_delta(metrics["cagr"], generated_qqq_metrics["cagr"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE and not metrics_missing(generated_qqq_metrics) else MISSING)
         delta_sharpe_generated = metric_delta(metrics["sharpe"], generated_qqq_metrics["sharpe"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE and not metrics_missing(generated_qqq_metrics) else MISSING)
         delta_maxdd_generated = metric_delta(metrics["max_drawdown"], generated_qqq_metrics["max_drawdown"]) if stream_metrics else ("0" if name == QQQ100_REFERENCE and not metrics_missing(generated_qqq_metrics) else MISSING)
@@ -555,9 +573,16 @@ def build_portfolio_rows(
         delta_maxdd_recovered = delta_maxdd_reference if recovered_reference["available"] else MISSING
         delta_calmar_recovered = delta_calmar_reference if recovered_reference["available"] else MISSING
         recommended_next_step = (
-            "review_recovered_reference_multi_sleeve_candidate_and_add_crypto_streams_before_label_change"
-            if recovered_reference["available"]
-            else RECOMMENDED_NEXT_STEP
+            recommended_next_step_for_candidate(name, stream_metrics is not None, missing_warnings, recovered_reference["available"])
+        )
+        biggest_blocker = biggest_blocker_for_candidate(
+            name,
+            stream_metrics is not None,
+            missing_warnings,
+            final_status,
+        )
+        missing_warning_label = (
+            missing_warnings if missing_warnings != "none" else "none_for_feasible_stream_portfolio"
         )
         rows.append(
             {
@@ -623,8 +648,8 @@ def build_portfolio_rows(
                 "split_stability_label": "missing_split_metrics",
                 "balanced_research_score": str(score),
                 "data_quality": "saved_return_stream_metrics_available" if stream_metrics else ("saved_qqq100_metrics_only" if name == QQQ100_REFERENCE else "missing_return_stream_for_combined_metrics"),
-                "missing_sleeve_data_warnings": missing_warnings if missing_warnings != "none" else "none_for_feasible_stream_portfolio",
-                "biggest_blocker": "missing_high_growth_crypto_streams_for_full_multi_sleeve" if stream_metrics else BIGGEST_BLOCKER,
+                "missing_sleeve_data_warnings": missing_warning_label,
+                "biggest_blocker": biggest_blocker,
                 "recommended_next_step": recommended_next_step,
                 **safety_flags(),
             }
@@ -642,6 +667,7 @@ def build_allocation_rows(created_at: str, sleeve_rows: list[dict[str, Any]]) ->
         "codex_defensive_qqq_research_portfolio": [(QQQ100_SLEEVE, "65"), ("codex_experimental_research_sleeve", "30"), ("defensive_cash_or_bond_sleeve", "5")],
         "qqq100_plus_high_growth_research": [(QQQ100_SLEEVE, "80"), ("high_growth_stock_research_sleeve", "15"), ("defensive_cash_or_bond_sleeve", "5")],
         "qqq100_plus_crypto_research": [(QQQ100_SLEEVE, "85"), ("crypto_research_sleeve", "10"), ("defensive_cash_or_bond_sleeve", "5")],
+        "qqq100_plus_high_growth_plus_crypto_research": [(QQQ100_SLEEVE, "75"), ("high_growth_stock_research_sleeve", "15"), ("crypto_research_sleeve", "5"), ("defensive_cash_or_bond_sleeve", "5")],
         "balanced_multi_sleeve_research_portfolio": [(QQQ100_SLEEVE, "50"), ("qqq_defensive_crash_gate_research_sleeve", "20"), ("high_growth_stock_research_sleeve", "15"), ("crypto_research_sleeve", "10"), ("defensive_cash_or_bond_sleeve", "5")],
         "codex_ambitious_multi_sleeve_candidate": [(QQQ100_SLEEVE, "60"), ("codex_experimental_research_sleeve", "25"), ("defensive_cash_or_bond_sleeve", "10"), ("research_optionality_reserve", "5")],
     }
@@ -755,6 +781,7 @@ def build_summary_rows(
     final_status = candidate["final_backtest_status"] if candidate else FINAL_BACKTEST_STATUS
     candidate = candidate or next(row for row in portfolios if row["portfolio_name"] == TOP_MULTI_SLEEVE_CANDIDATE)
     missing_warnings = missing_stream_warnings_from_streams(return_streams)
+    biggest_blocker = candidate.get("biggest_blocker", BIGGEST_BLOCKER)
     summary_items = [
         ("final_backtest_status", final_status, "Candidates are compared against the preferred QQQ100 research reference, not the saved benchmark."),
         ("baseline_source", qqq_metrics["baseline_source"], "Exact QQQ100 saved metrics source."),
@@ -802,7 +829,7 @@ def build_summary_rows(
         ("delta_calmar_vs_recovered_qqq100_reference", candidate["delta_calmar_vs_recovered_qqq100_reference"], "Primary comparison when recovered reference is valid."),
         ("split_stability_summary", "missing_split_metrics", "Fixed chronological split metrics are unavailable."),
         ("missing_sleeve_data_warnings", missing_warnings, "Missing streams are labelled rather than invented."),
-        ("biggest_blocker", "missing_high_growth_crypto_streams_for_full_multi_sleeve", "High-growth and crypto streams remain unavailable for full portfolio testing."),
+        ("biggest_blocker", biggest_blocker, "Top candidate blocker; missing-stream wording is used only when a required stream is unavailable."),
         ("recommended_next_step", candidate["recommended_next_step"], "Next review step; keep status research-only."),
     ]
     return [
@@ -900,6 +927,24 @@ def portfolio_metrics_from_streams(
             "codex_broad_growth_balanced_breakout_control": 0.15,
             "cash_default_defensive_sleeve": 0.05,
         },
+        "qqq100_plus_crypto_research": {
+            qqq_reference_candidate: 0.85,
+            CRYPTO_COMBINED_REFERENCE: 0.10,
+            "cash_default_defensive_sleeve": 0.05,
+        },
+        "qqq100_plus_high_growth_plus_crypto_research": {
+            qqq_reference_candidate: 0.75,
+            "codex_broad_growth_balanced_breakout_control": 0.15,
+            CRYPTO_COMBINED_REFERENCE: 0.05,
+            "cash_default_defensive_sleeve": 0.05,
+        },
+        "balanced_multi_sleeve_research_portfolio": {
+            qqq_reference_candidate: 0.50,
+            "qqq100_combined_trend_spy_regime_drawdown_gate": 0.20,
+            "codex_broad_growth_balanced_breakout_control": 0.15,
+            CRYPTO_COMBINED_REFERENCE: 0.10,
+            "cash_default_defensive_sleeve": 0.05,
+        },
     }
     weights = specs.get(portfolio_name)
     if not weights:
@@ -952,6 +997,57 @@ def candidate_backtest_status(metrics: dict[str, str], qqq_reference_metrics: di
     return FINAL_STATUS_NOT_BETTER_THAN_GENERATED_QQQ100
 
 
+def candidate_backtest_status_for_name(
+    portfolio_name: str,
+    metrics: dict[str, str],
+    qqq_reference_metrics: dict[str, str],
+    recovered_reference_available: bool = False,
+) -> str:
+    status = candidate_backtest_status(metrics, qqq_reference_metrics, recovered_reference_available)
+    if "crypto" not in portfolio_name:
+        return status
+    delta_calmar = parse_float(metric_delta(metrics["calmar"], qqq_reference_metrics["calmar"]))
+    delta_sharpe = parse_float(metric_delta(metrics["sharpe"], qqq_reference_metrics["sharpe"]))
+    delta_cagr = parse_float(metric_delta(metrics["cagr"], qqq_reference_metrics["cagr"]))
+    if delta_calmar > 0 and delta_sharpe >= 0 and delta_cagr >= 0:
+        return "multi_sleeve_crypto_candidate_promising_research_only"
+    if delta_calmar > 0 or delta_sharpe > 0 or delta_cagr > 0:
+        return "multi_sleeve_crypto_candidate_mixed_research_only"
+    return "multi_sleeve_crypto_candidate_not_better_than_existing"
+
+
+def biggest_blocker_for_candidate(
+    portfolio_name: str,
+    has_stream_metrics: bool,
+    missing_warnings: str,
+    final_status: str,
+) -> str:
+    if not has_stream_metrics:
+        return BIGGEST_BLOCKER
+    if missing_warnings != "none":
+        return "missing_saved_return_streams_for_remaining_sleeves"
+    if "crypto" in portfolio_name or final_status.startswith("multi_sleeve_crypto_candidate"):
+        return CRYPTO_REVIEW_BLOCKER
+    return MANUAL_REVIEW_BLOCKER
+
+
+def recommended_next_step_for_candidate(
+    portfolio_name: str,
+    has_stream_metrics: bool,
+    missing_warnings: str,
+    recovered_reference_available: bool,
+) -> str:
+    if not has_stream_metrics:
+        if recovered_reference_available:
+            return "review_recovered_reference_multi_sleeve_candidate_and_add_missing_streams_before_label_change"
+        return RECOMMENDED_NEXT_STEP
+    if missing_warnings != "none":
+        return "collect_remaining_saved_daily_return_streams_before_candidate_label_change"
+    if "crypto" in portfolio_name:
+        return REVIEW_NEXT_STEP
+    return "manual_review_required_before_candidate_label_change"
+
+
 def saved_benchmark_reconciliation_status(saved_metrics: dict[str, str], generated_metrics: dict[str, str]) -> str:
     if metrics_missing(saved_metrics):
         return "missing_saved_qqq100_benchmark_metrics"
@@ -973,7 +1069,7 @@ def missing_stream_warnings_from_streams(rows: list[dict[str, str]]) -> str:
     missing = []
     if "high_growth_stock_research_sleeve" not in present and "codex_broad_growth_balanced_breakout_control" not in present:
         missing.append("high_growth")
-    if "crypto_research_sleeve" not in present and "crypto_off_hours_research_route" not in present:
+    if CRYPTO_COMBINED_REFERENCE not in present and "crypto_research_sleeve" not in present and "crypto_off_hours_research_route" not in present:
         missing.append("crypto")
     if "qqq100_combined_trend_spy_regime_drawdown_gate" not in present:
         missing.append("defensive_crash_gate")
@@ -995,6 +1091,33 @@ def normalize_high_growth_stream_rows(rows: list[dict[str, str]]) -> list[dict[s
         new_row["daily_strategy_return"] = str(daily_return)
         normalized.append(new_row)
     return normalized
+
+
+def normalize_crypto_stream_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    normalized = []
+    for row in rows:
+        candidate = row.get("candidate_name") or row.get("sleeve_name")
+        date = row.get("date")
+        daily_return = row.get("daily_strategy_return") or row.get("daily_return")
+        if not candidate or not date or daily_return in {"", None}:
+            continue
+        if not false_safety_flags(row):
+            continue
+        new_row = dict(row)
+        new_row["candidate_name"] = str(candidate)
+        new_row["daily_strategy_return"] = str(daily_return)
+        normalized.append(new_row)
+    return normalized
+
+
+def stream_metric_bundle(rows: list[dict[str, str]], candidate_name: str) -> dict[str, str]:
+    by_candidate = stream_returns_by_candidate(rows)
+    returns_by_date = by_candidate.get(candidate_name)
+    if not returns_by_date:
+        return missing_metrics()
+    metrics = metrics_for_returns([returns_by_date[date] for date in sorted(returns_by_date)])
+    metrics["baseline_source"] = "crypto_return_streams_saved_metrics"
+    return metrics
 
 
 def normalize_recovered_reference_stream_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:

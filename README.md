@@ -1828,6 +1828,24 @@ data/high_growth_return_stream_blockers.csv
 
 The expected status is `high_growth_return_streams_created` when enough research price data exists. If market data is unavailable, the report labels the data gap instead of inventing returns. High-growth remains research-only and `execution_approved=false`.
 
+Crypto return-stream mode is a research-only saved daily stream generator for the BTC/ETH crypto sleeve used by multi-sleeve research. It reuses the existing `crypto_buy_above_200_with_vol_gate` BTC rule, `crypto_buy_above_200_exit_below_200` ETH rule, and fixed crypto research cost assumptions (`crypto_taker_fee_bps=10`, `crypto_spread_bps=5`, `crypto_slippage_bps=10`). LTC remains paused/not active. These streams are for research portfolio testing only and do not approve crypto execution, preview promotion, paper execution, scheduling, shorting, margin, leverage, or any Alpaca/order path.
+
+```text
+python bot.py --crypto-return-streams
+python bot.py --show-crypto-return-streams
+```
+
+Outputs:
+
+```text
+data/crypto_return_streams.csv
+data/crypto_return_stream_metrics.csv
+data/crypto_return_stream_summary.csv
+data/crypto_return_stream_blockers.csv
+```
+
+The expected status is `crypto_return_streams_created_research_only` when BTC, ETH, and the combined BTC/ETH research sleeve have usable daily rows. If market data is unavailable, the report labels the data gap instead of inventing returns. Crypto remains research-only and `execution_approved=false`.
+
 QQQ100 stream reconciliation mode is a research-only checkpoint for comparing the generated `qqq_100_trend_gate` daily stream against the saved QQQ100 benchmark metrics. It tests the current saved generated stream, close/adjusted-close availability, same-day versus next-day signal timing, SMA100 warmup/date-alignment behaviour, cash/flat handling, and missing cost/slippage assumptions. It also includes one fixed recovered-inputs reconstruction candidate, `qqq100_recovered_inputs_sma200_close_to_close_10bps`, based on the documented QQQ 10-year daily, `auto_adjust=True`, SMA200, prior-close signal, next-bar close-to-close return, zero-cash, 10 bps cost assumptions. It applies fixed metric-gap thresholds before any candidate can be called close enough for research review. If a material CAGR, Sharpe, MaxDD, or Calmar gap remains, the report stays blocked/manual-review and does not update `--sleeve-return-streams`.
 
 ```text
@@ -1866,7 +1884,7 @@ data/qqq100_benchmark_input_gaps.csv
 
 The report currently labels the source as `source_partially_recovered`: tracked history points to the QQQ leverage validation path using QQQ daily data, a 10-year yfinance window, `auto_adjust=True`, a 200-day trend gate, prior-close signal timing, next-bar close-to-close returns, zero-return cash days, and 10 bps exposure-change cost. The original daily stream and exact yfinance snapshot/date range remain missing, so this report must not be used to force the generated QQQ100 stream to match the saved benchmark. It remains research-only with execution, paper execution, scheduling, and live-trading approval false.
 
-Multi-sleeve portfolio backtest mode is a saved-output-only research checkpoint for testing portfolio combinations conceptually before any new preview/action/execution wiring. It keeps saved QQQ100 benchmark metrics separate from the old generated QQQ100 diagnostic stream and, when valid, uses `data/qqq100_recovered_reference_stream.csv` as the preferred generated QQQ100 research reference. It then defines QQQ100-only, QQQ100-plus-cash, QQQ100-plus-SPY-SMA200 defensive gate, QQQ100-plus-rolling-drawdown defensive gate, QQQ100-plus-combined defensive gate, Codex defensive QQQ research, high-growth, crypto, balanced multi-sleeve, and Codex ambitious allocation candidates. When `data/sleeve_return_streams.csv` contains defensive and Codex streams, those candidates are consumed; high-growth and crypto remain labelled as missing unless real daily streams exist. It does not fetch market data, call Alpaca, read live positions, create/submit/cancel/replace orders, write SQLite `trade_log`, send alerts, schedule anything, expand QQQ100 execution, add repeat execution, or wire any sleeve to execution.
+Multi-sleeve portfolio backtest mode is a saved-output-only research checkpoint for testing portfolio combinations conceptually before any new preview/action/execution wiring. It keeps saved QQQ100 benchmark metrics separate from the old generated QQQ100 diagnostic stream and, when valid, uses `data/qqq100_recovered_reference_stream.csv` as the preferred generated QQQ100 research reference. It then defines QQQ100-only, QQQ100-plus-cash, QQQ100-plus-SPY-SMA200 defensive gate, QQQ100-plus-rolling-drawdown defensive gate, QQQ100-plus-combined defensive gate, Codex defensive QQQ research, high-growth, crypto, QQQ100-plus-high-growth-plus-crypto, balanced multi-sleeve, and Codex ambitious allocation candidates. When `data/sleeve_return_streams.csv` contains defensive and Codex streams, `data/high_growth_return_streams.csv` contains the high-growth stream, and `data/crypto_return_streams.csv` contains the combined BTC/ETH research stream, those candidates are consumed; otherwise missing daily return streams remain labelled explicitly. It does not fetch market data, call Alpaca, read live positions, create/submit/cancel/replace orders, write SQLite `trade_log`, send alerts, schedule anything, expand QQQ100 execution, add repeat execution, or wire any sleeve to execution.
 
 ```text
 python bot.py --multi-sleeve-portfolio-backtest

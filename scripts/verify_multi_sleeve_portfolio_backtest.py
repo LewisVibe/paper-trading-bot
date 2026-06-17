@@ -129,7 +129,7 @@ def main() -> int:
     verify_outputs_ignored(failures)
     verify_source_boundaries(module_source, failures)
     verify_no_execution_expansion(bot_source, failures)
-    verify_temp_generation(failures)
+    verify_temp_generation(module_source, failures)
 
     if failures:
         print("Multi-sleeve portfolio backtest verification failed.")
@@ -246,7 +246,7 @@ def verify_no_execution_expansion(bot_source: str, failures: list[str]) -> None:
         failures.append("existing --execute-qqq100-paper behavior should not be expanded by the backtest command")
 
 
-def verify_temp_generation(failures: list[str]) -> None:
+def verify_temp_generation(module_source: str, failures: list[str]) -> None:
     with tempfile.TemporaryDirectory() as temp:
         root = Path(temp)
         write_fixture(
@@ -260,6 +260,8 @@ def verify_temp_generation(failures: list[str]) -> None:
             [["codex_ambitious_concentrated_growth_persistence", "14.1039", "0.7192", "-29.5357", "0.4775"]],
         )
         write_stream_fixture(root / "data" / "sleeve_return_streams.csv")
+        write_high_growth_stream_fixture(root / "data" / "high_growth_return_streams.csv")
+        write_crypto_stream_fixture(root / "data" / "crypto_return_streams.csv")
         write_recovered_reference_fixture(root)
         result = generate_multi_sleeve_portfolio_backtest(root)
 
@@ -282,6 +284,9 @@ def verify_temp_generation(failures: list[str]) -> None:
             FINAL_STATUS_PROMISING_NEEDS_RECONCILIATION,
             "multi_sleeve_candidate_promising_recovered_reference_review",
             "multi_sleeve_candidate_promising_needs_crypto_and_policy_review",
+            "multi_sleeve_crypto_candidate_promising_research_only",
+            "multi_sleeve_crypto_candidate_mixed_research_only",
+            "multi_sleeve_crypto_candidate_not_better_than_existing",
         }:
             failures.append("final status should be one of the explicit generated-stream research statuses")
         if summary.get("top_multi_sleeve_portfolio_candidate") == QQQ100_REFERENCE:
@@ -313,8 +318,15 @@ def verify_temp_generation(failures: list[str]) -> None:
         missing_warning = summary.get("missing_sleeve_data_warnings", "")
         if "defensive_crash_gate" in missing_warning or "codex_experimental" in missing_warning:
             failures.append("defensive and Codex streams should not be labelled missing when generated streams exist")
-        if "high_growth" not in missing_warning or "crypto" not in missing_warning:
-            failures.append("high-growth and crypto streams should remain labelled missing")
+        if missing_warning != "none":
+            failures.append("high-growth and crypto streams should clear missing warnings when saved streams exist")
+        if summary.get("biggest_blocker", "").startswith("missing_high_growth_crypto_streams"):
+            failures.append("biggest blocker must not say high-growth/crypto streams are missing when warnings are none")
+        if summary.get("final_backtest_status") == "multi_sleeve_crypto_candidate_promising_research_only" and "missing" in summary.get("biggest_blocker", ""):
+            failures.append("promising crypto candidate must not report crypto streams missing")
+        for forbidden in ["promotion-ready", "execution-ready", "promotion_ready=true", "execution_ready=true"]:
+            if forbidden in module_source:
+                failures.append(f"module should not contain forbidden ready wording: {forbidden}")
 
         portfolio_names = {row["portfolio_name"] for row in result.backtest_rows}
         for expected in [
@@ -326,6 +338,7 @@ def verify_temp_generation(failures: list[str]) -> None:
             "codex_defensive_qqq_research_portfolio",
             "qqq100_plus_high_growth_research",
             "qqq100_plus_crypto_research",
+            "qqq100_plus_high_growth_plus_crypto_research",
             "balanced_multi_sleeve_research_portfolio",
             "codex_ambitious_multi_sleeve_candidate",
         ]:
@@ -345,8 +358,14 @@ def verify_temp_generation(failures: list[str]) -> None:
         for sleeve in ["high_growth_stock_research_sleeve", "crypto_research_sleeve"]:
             if sleeve not in sleeves:
                 failures.append(f"{sleeve} should be present")
-            elif sleeves[sleeve].get("return_stream_status") != "missing_saved_return_stream":
-                failures.append(f"{sleeve} should be labelled missing_saved_return_stream")
+            elif sleeves[sleeve].get("return_stream_status") != "saved_return_stream_metrics_available":
+                failures.append(f"{sleeve} should consume saved return streams")
+
+        crypto_candidate = next((row for row in result.backtest_rows if row.get("portfolio_name") == "qqq100_plus_high_growth_plus_crypto_research"), {})
+        if crypto_candidate.get("data_quality") != "saved_return_stream_metrics_available":
+            failures.append("high-growth plus crypto candidate should use saved return streams")
+        if crypto_candidate.get("biggest_blocker", "").startswith("missing_high_growth_crypto_streams"):
+            failures.append("crypto candidate row should not use stale missing-stream blocker")
 
         if not any(row.get("split_name") == "split_60_40" for row in result.split_rows):
             failures.append("split output should include split_60_40")
@@ -430,6 +449,45 @@ def write_stream_fixture(path: Path) -> None:
         for candidate, returns in candidates.items():
             state = "risk_on" if returns[day_index] != 0 else "cash"
             rows.append([date, candidate, str(returns[day_index]), state])
+    write_fixture(path, headers, rows)
+
+
+def write_high_growth_stream_fixture(path: Path) -> None:
+    headers = ["date", "candidate_name", "daily_strategy_return", "signal_state"]
+    returns = [0.012, -0.003, 0.007, -0.001, 0.006, -0.002, 0.005, 0.003]
+    rows = [[f"2024-01-{day_index + 2:02d}", "codex_broad_growth_balanced_breakout_control", str(value), "risk_on"] for day_index, value in enumerate(returns)]
+    write_fixture(path, headers, rows)
+
+
+def write_crypto_stream_fixture(path: Path) -> None:
+    headers = [
+        "date",
+        "sleeve_name",
+        "candidate_name",
+        "daily_strategy_return",
+        "signal_state",
+        "execution_approved",
+        "scheduling_approved",
+        "orders_created",
+        "orders_submitted",
+        "orders_cancelled",
+    ]
+    returns = [0.003, -0.001, 0.002, 0.0, 0.002, -0.001, 0.002, 0.001]
+    rows = [
+        [
+            f"2024-01-{day_index + 2:02d}",
+            "crypto_research_sleeve",
+            "crypto_btc_eth_research_sleeve",
+            str(value),
+            "crypto_weighted_long" if value != 0 else "crypto_flat",
+            "false",
+            "false",
+            "false",
+            "false",
+            "false",
+        ]
+        for day_index, value in enumerate(returns)
+    ]
     write_fixture(path, headers, rows)
 
 

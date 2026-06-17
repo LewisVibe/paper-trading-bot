@@ -224,6 +224,8 @@ def verify_temp_generation(failures: list[str]) -> None:
             failures.append("complete fixture should produce three candidate split rows")
         if "not_promotion_ready" not in summary.get("key_blockers", ""):
             failures.append("summary should explicitly avoid promotion-ready labels")
+        if summary.get("key_blockers", "").startswith("none;"):
+            failures.append("key blockers should not start with none before real blockers")
         if summary.get("qqq100_reference_source_used") != "old_generated_qqq100_reference":
             failures.append("fallback fixture should use old generated QQQ100 reference")
         if summary.get("old_generated_reference_retained") != "true":
@@ -252,6 +254,8 @@ def verify_temp_generation(failures: list[str]) -> None:
             failures.append("saved display should use preferred-reference wording for Calmar wins")
         if any("Calmar wins vs generated QQQ100" in line or "Sharpe wins vs generated QQQ100" in line for line in lines):
             failures.append("saved display should not use stale generated-Q label for win counts")
+        if any("key blockers: none;" in line for line in lines):
+            failures.append("saved display should not show none before real blockers")
 
 
 def verify_missing_streams_blocked(failures: list[str]) -> None:

@@ -199,6 +199,29 @@ Cross-references:
 - **Allowed commands:** `python scripts\verify_multi_sleeve_portfolio_backtest.py` and repo safety/inventory/related research verifiers only.
 - **Stop condition:** Stop if the task starts fetching broker data, calling Alpaca, reading live positions, creating order instructions, adding repeat execution, expanding `--execute-qqq100-paper`, promoting high-growth/crypto/Codex experimental sleeves, changing config defaults, approving scheduling, or inventing portfolio metrics when return streams are missing.
 
+### Task: Crypto return-stream checkpoint
+- **Purpose:** Review the research-only BTC/ETH daily return-stream layer that can feed crypto and QQQ100-plus-high-growth-plus-crypto multi-sleeve research candidates.
+- **Risk level:** Medium / research-only, because the generator may fetch yfinance crypto data while staying separate from broker, position, order, execution, and scheduling paths.
+- **Allowed files:**
+  - `trading_bot/research/crypto_return_streams.py`
+  - `trading_bot/research/multi_sleeve_portfolio_backtest.py`
+  - `scripts/verify_crypto_return_streams.py`
+  - `scripts/verify_multi_sleeve_portfolio_backtest.py`
+  - `README.md`
+  - `docs/CURRENT_STATE.md`
+  - `docs/V2_RESEARCH_CHECKPOINT.md`
+  - `docs/HERMES_TASK_BOARD.md`
+  - `scripts/verify_command_inventory.py`
+- **Forbidden files:**
+  - `config.json`
+  - `.env`
+  - generated `data/` outputs
+  - logs/databases/charts
+  - Alpaca/order submission modules unless a separate explicit execution review allows it
+  - scheduling, Hermes cron, Task Scheduler, service, or loop files
+- **Allowed commands:** `python scripts\verify_crypto_return_streams.py`, `python bot.py --crypto-return-streams`, `python bot.py --show-crypto-return-streams`, and repo safety/inventory/related research verifiers only.
+- **Stop condition:** Stop if the task starts calling Alpaca, reading live positions, creating order instructions, adding crypto execution, enabling shorting/margin/leverage, changing config defaults, approving scheduling, treating LTC as active after the saved pause decision, or promoting crypto from research-only.
+
 ### Task: Multi-sleeve robustness checkpoint
 - **Purpose:** Review saved split robustness for `qqq100_plus_high_growth_research` before any candidate label change, preview discussion, or execution wiring.
 - **Risk level:** Medium / research-only validation near the active QQQ100 paper sleeve.

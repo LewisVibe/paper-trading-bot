@@ -351,7 +351,7 @@ def build_summary_rows(
     next_step = required_next_step_for_final_status(final_status)
     blockers = key_blockers(final_status, backtest_summary)
     items = [
-        ("final_robustness_status", final_status, "Report-only robustness label; never promotion-ready or execution-ready."),
+        ("final_robustness_status", final_status, "Report-only robustness label; never promotion or execution approval."),
         ("split_count", str(split_count), "Number of chronological out-of-sample split rows for the multi-sleeve candidate."),
         ("calmar_win_count_vs_generated_qqq100", str(calmar_wins), "Splits where the high-growth multi-sleeve candidate beats the preferred QQQ100 reference on Calmar."),
         ("sharpe_win_count_vs_generated_qqq100", str(sharpe_wins), "Splits where the high-growth multi-sleeve candidate beats the preferred QQQ100 reference on Sharpe."),
@@ -563,8 +563,9 @@ def key_blockers(status: str, backtest_summary: dict[str, str]) -> str:
         blockers.append("missing_saved_return_streams")
     if status == FINAL_STATUS_BLOCKED_QQQ100_RECONCILIATION:
         blockers.append(backtest_summary.get("saved_benchmark_reconciliation_status", status))
-    if backtest_summary.get("missing_sleeve_data_warnings"):
-        blockers.append(backtest_summary["missing_sleeve_data_warnings"])
+    missing_warnings = backtest_summary.get("missing_sleeve_data_warnings", "")
+    if missing_warnings and missing_warnings not in {"none", "none_for_feasible_stream_portfolio"}:
+        blockers.append(missing_warnings)
     blockers.append("not_promotion_ready")
     blockers.append("execution_not_approved")
     return "; ".join(blockers)
