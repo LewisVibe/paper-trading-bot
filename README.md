@@ -1955,6 +1955,21 @@ data/multi_sleeve_allocation_policy_components.csv
 data/multi_sleeve_allocation_policy_blockers.csv
 ```
 
+Multi-sleeve weight sensitivity mode is the saved-output-only fixed nearby-weight review for the current 75/15/5/5 crypto-inclusive candidate. It reads saved QQQ100 recovered-reference, high-growth, and crypto daily streams only, then tests the fixed variants `current_75_15_5_5`, `lower_crypto_77_15_3_5`, `no_crypto_80_15_0_5`, `lower_growth_80_10_5_5`, `balanced_lower_risk_85_10_0_5`, `higher_crypto_73_15_7_5`, and `higher_growth_70_20_5_5`. It does not optimise, refresh market data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve crypto execution, or label the candidate promotion-ready.
+
+```bash
+python bot.py --multi-sleeve-weight-sensitivity
+python bot.py --show-multi-sleeve-weight-sensitivity
+```
+
+Outputs:
+
+```text
+data/multi_sleeve_weight_sensitivity.csv
+data/multi_sleeve_weight_sensitivity_summary.csv
+data/multi_sleeve_weight_sensitivity_blockers.csv
+```
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:

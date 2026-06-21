@@ -284,6 +284,13 @@ The multi-sleeve allocation policy review checkpoint comes from `python bot.py -
 - It writes `data/multi_sleeve_allocation_policy_review.csv`, `data/multi_sleeve_allocation_policy_summary.csv`, `data/multi_sleeve_allocation_policy_components.csv`, and `data/multi_sleeve_allocation_policy_blockers.csv`.
 - It reviews the fixed 75% QQQ100, 15% high-growth, 5% crypto, 5% defensive cash/bond allocation, component roles, concentration, small-sleeve sensitivity, and blockers before any future candidate label change.
 - It remains research-only and does not approve crypto execution, paper execution, scheduling, order instructions, Alpaca calls, position reads, alert sends, or strategy-to-execution wiring.
+
+The multi-sleeve weight sensitivity checkpoint comes from `python bot.py --multi-sleeve-weight-sensitivity`, with saved display through `python bot.py --show-multi-sleeve-weight-sensitivity`:
+
+- It reads saved QQQ100 recovered-reference, high-growth, and crypto daily streams only.
+- It writes `data/multi_sleeve_weight_sensitivity.csv`, `data/multi_sleeve_weight_sensitivity_summary.csv`, and `data/multi_sleeve_weight_sensitivity_blockers.csv`.
+- It tests the fixed nearby allocations `current_75_15_5_5`, `lower_crypto_77_15_3_5`, `no_crypto_80_15_0_5`, `lower_growth_80_10_5_5`, `balanced_lower_risk_85_10_0_5`, `higher_crypto_73_15_7_5`, and `higher_growth_70_20_5_5`.
+- It remains research-only and does not optimise weights, approve crypto execution, paper execution, scheduling, order instructions, Alpaca calls, position reads, alert sends, or strategy-to-execution wiring.
 - It reports Calmar and Sharpe split wins, worst split by Calmar/MaxDD, key blockers, and the next review step.
 - It remains blocked by QQQ100 generated-stream reconciliation until saved/generated benchmark parity is resolved, and it does not approve preview promotion, execution, scheduling, Alpaca/order paths, or any sleeve-to-execution wiring.
 
