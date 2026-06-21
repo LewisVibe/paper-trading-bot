@@ -601,6 +601,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--multi-sleeve-high-growth-drawdown-decomposition"]:
+        from trading_bot.research.multi_sleeve_high_growth_drawdown import (
+            generate_multi_sleeve_high_growth_drawdown_decomposition,
+        )
+
+        result = generate_multi_sleeve_high_growth_drawdown_decomposition()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-multi-sleeve-high-growth-drawdown-decomposition"]:
+        from trading_bot.research.multi_sleeve_high_growth_drawdown import (
+            show_multi_sleeve_high_growth_drawdown_decomposition,
+        )
+
+        code, lines = show_multi_sleeve_high_growth_drawdown_decomposition()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-execution-state-summary"]:
         from trading_bot.research.paper_execution_state_summary import generate_paper_execution_state_summary
 
@@ -1021,6 +1039,10 @@ from trading_bot.research.multi_sleeve_research_lead_decision import (
 from trading_bot.research.multi_sleeve_lead_state import (
     generate_multi_sleeve_lead_state,
     show_multi_sleeve_lead_state,
+)
+from trading_bot.research.multi_sleeve_high_growth_drawdown import (
+    generate_multi_sleeve_high_growth_drawdown_decomposition,
+    show_multi_sleeve_high_growth_drawdown_decomposition,
 )
 from trading_bot.research.paper_execution_state_summary import (
     generate_paper_execution_state_summary,
@@ -5650,6 +5672,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved canonical multi-sleeve lead state without broker or market-data reads.",
     )
     parser.add_argument(
+        "--multi-sleeve-high-growth-drawdown-decomposition",
+        action="store_true",
+        help="Create a saved-output-only high-growth drawdown decomposition for the multi-sleeve lead.",
+    )
+    parser.add_argument(
+        "--show-multi-sleeve-high-growth-drawdown-decomposition",
+        action="store_true",
+        help="Display the saved multi-sleeve high-growth drawdown decomposition without broker or market-data reads.",
+    )
+    parser.add_argument(
         "--paper-execution-state-summary",
         action="store_true",
         help="Create a saved-output-only paper execution milestone/state summary without broker calls.",
@@ -7015,6 +7047,20 @@ def main() -> int:
         return 0
     if args.show_multi_sleeve_lead_state:
         status_code, lines = show_multi_sleeve_lead_state()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.multi_sleeve_high_growth_drawdown_decomposition:
+        try:
+            result = generate_multi_sleeve_high_growth_drawdown_decomposition()
+        except Exception as exc:
+            print(f"Multi-sleeve high-growth drawdown decomposition failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_multi_sleeve_high_growth_drawdown_decomposition:
+        status_code, lines = show_multi_sleeve_high_growth_drawdown_decomposition()
         for line in lines:
             print(line)
         return status_code

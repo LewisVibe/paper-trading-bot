@@ -315,6 +315,13 @@ The multi-sleeve lead-state refresh comes from `python bot.py --multi-sleeve-lea
 - It records `higher_growth_70_20_5_5` as the current research lead candidate when the saved decision supports it, keeps `current_75_15_5_5` as the previous baseline, and preserves copied metrics/deltas plus manual-review blockers.
 - It remains research-only and does not rerun backtests, optimise weights, approve crypto execution, paper execution, scheduling, order instructions, Alpaca calls, position reads, alert sends, or strategy-to-execution wiring.
 
+The multi-sleeve high-growth drawdown decomposition comes from `python bot.py --multi-sleeve-high-growth-drawdown-decomposition`, with saved display through `python bot.py --show-multi-sleeve-high-growth-drawdown-decomposition`:
+
+- It reads saved lead-state, research-lead decision, higher-growth review, split review, weight-sensitivity, portfolio-backtest, and saved QQQ100/high-growth/crypto return-stream outputs only.
+- It writes `data/multi_sleeve_high_growth_drawdown_decomposition.csv`, `data/multi_sleeve_high_growth_drawdown_summary.csv`, `data/multi_sleeve_high_growth_drawdown_periods.csv`, and `data/multi_sleeve_high_growth_drawdown_blockers.csv`.
+- It reconstructs current versus higher-growth drawdown windows, decomposes same-window weighted sleeve contributions, records incremental high-growth risk, and reviews recovery/bounce-back context.
+- It remains research-only and does not add strategies, rerun backtests, optimise weights, approve crypto execution, paper execution, scheduling, order instructions, Alpaca calls, position reads, alert sends, or strategy-to-execution wiring.
+
 The paper execution state summary comes from `python bot.py --paper-execution-state-summary`, with saved display through `python bot.py --show-paper-execution-state-summary`:
 
 - It reads saved CSV outputs only, including AAPL smoke-test postcheck, QQQ100 paper execution result/summary or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution eligibility, portfolio preview, and portfolio-risk context where available.
