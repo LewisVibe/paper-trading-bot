@@ -277,6 +277,13 @@ The multi-sleeve crypto review checkpoint comes from `python bot.py --multi-slee
 - It writes `data/multi_sleeve_crypto_review.csv`, `data/multi_sleeve_crypto_review_summary.csv`, `data/multi_sleeve_crypto_review_cost_stress.csv`, `data/multi_sleeve_crypto_review_split_robustness.csv`, and `data/multi_sleeve_crypto_review_volatility.csv`.
 - It reviews `qqq100_plus_high_growth_plus_crypto_research` across fixed 60/40, 70/30, and 80/20 split windows, fixed crypto turnover cost stresses, and crypto volatility/drawdown contribution.
 - It remains research-only and does not approve crypto execution, paper execution, scheduling, order instructions, Alpaca calls, position reads, alert sends, or strategy-to-execution wiring.
+
+The multi-sleeve allocation policy review checkpoint comes from `python bot.py --multi-sleeve-allocation-policy-review`, with saved display through `python bot.py --show-multi-sleeve-allocation-policy-review`:
+
+- It reads saved multi-sleeve backtest, crypto review, high-growth, crypto, and recovered QQQ100 metrics only.
+- It writes `data/multi_sleeve_allocation_policy_review.csv`, `data/multi_sleeve_allocation_policy_summary.csv`, `data/multi_sleeve_allocation_policy_components.csv`, and `data/multi_sleeve_allocation_policy_blockers.csv`.
+- It reviews the fixed 75% QQQ100, 15% high-growth, 5% crypto, 5% defensive cash/bond allocation, component roles, concentration, small-sleeve sensitivity, and blockers before any future candidate label change.
+- It remains research-only and does not approve crypto execution, paper execution, scheduling, order instructions, Alpaca calls, position reads, alert sends, or strategy-to-execution wiring.
 - It reports Calmar and Sharpe split wins, worst split by Calmar/MaxDD, key blockers, and the next review step.
 - It remains blocked by QQQ100 generated-stream reconciliation until saved/generated benchmark parity is resolved, and it does not approve preview promotion, execution, scheduling, Alpaca/order paths, or any sleeve-to-execution wiring.
 

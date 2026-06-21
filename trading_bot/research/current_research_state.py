@@ -102,8 +102,8 @@ def show_current_research_state(data_dir: Path | str = "data") -> tuple[int, lis
         f"- metrics: {format_metrics(candidate_metrics)}",
         f"- delta vs recovered QQQ100: {format_delta_vs_recovered(multi_sleeve_row)}",
         f"- final review status: {crypto_summary.get('final_crypto_review_status') or MISSING}",
-        f"- worst split: {crypto_summary.get('worst_split_by_calmar') or worst_split(split_rows)}",
-        f"- worst drawdown split: {crypto_summary.get('worst_split_by_maxdd') or worst_drawdown_split(split_rows)}",
+        f"- worst split by Calmar: {clean_split_summary(crypto_summary.get('worst_split_by_calmar')) or worst_split(split_rows)}",
+        f"- worst split by MaxDD: {clean_split_summary(crypto_summary.get('worst_split_by_maxdd')) or worst_drawdown_split(split_rows)}",
         f"- worst cost stress: {crypto_summary.get('worst_cost_stress_row') or worst_cost(cost_rows)}",
         f"- warning/blocker: {crypto_summary.get('crypto_volatility_drawdown_warnings') or volatility_warning(volatility_row)}",
         f"- required next step: {crypto_summary.get('required_next_step') or MISSING}",
@@ -240,14 +240,34 @@ def worst_split(rows: list[dict[str, Any]]) -> str:
     row = min(rows, key=lambda item: to_float(item.get("Calmar")), default={})
     if not row:
         return MISSING
-    return f"{row.get('split_name')} Calmar={row.get('Calmar')}"
+    return f"{row.get('split_name')}, Calmar={row.get('Calmar')}, MaxDD={row.get('MaxDD')}"
 
 
 def worst_drawdown_split(rows: list[dict[str, Any]]) -> str:
     row = min(rows, key=lambda item: to_float(item.get("MaxDD")), default={})
     if not row:
         return MISSING
-    return f"{row.get('split_name')} MaxDD={row.get('MaxDD')}"
+    return f"{row.get('split_name')}, MaxDD={row.get('MaxDD')}, Calmar={row.get('Calmar')}"
+
+
+def clean_split_summary(value: str | None) -> str:
+    if not value:
+        return ""
+    tokens = str(value).replace(";", ",").split(",")
+    split_name = tokens[0].strip().split(" ", 1)[0]
+    metrics: dict[str, str] = {}
+    for token in tokens:
+        for part in token.strip().split():
+            if "=" not in part:
+                continue
+            name, metric_value = part.split("=", 1)
+            if name in {"Calmar", "MaxDD", "CAGR", "Sharpe"} and name not in metrics:
+                metrics[name] = metric_value.rstrip(",;")
+    ordered = [split_name]
+    for name in ["Calmar", "MaxDD", "CAGR", "Sharpe"]:
+        if name in metrics:
+            ordered.append(f"{name}={metrics[name]}")
+    return ", ".join(ordered)
 
 
 def worst_cost(rows: list[dict[str, Any]]) -> str:

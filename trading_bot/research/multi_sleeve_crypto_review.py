@@ -614,7 +614,11 @@ def format_candidate_metrics(row: dict[str, str]) -> str:
 def format_split(row: dict[str, Any], metric: str) -> str:
     if not row:
         return "missing"
-    return f"{row.get('split_name')} {metric}={row.get(metric)}; MaxDD={row.get('MaxDD')}; Calmar={row.get('Calmar')}"
+    parts = [f"{row.get('split_name')}"]
+    for name in [metric, "MaxDD", "Calmar"]:
+        if name not in {part.split("=", 1)[0] for part in parts if "=" in part}:
+            parts.append(f"{name}={row.get(name)}")
+    return ", ".join(parts)
 
 
 def format_cost(row: dict[str, Any]) -> str:

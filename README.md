@@ -1939,6 +1939,22 @@ data/multi_sleeve_crypto_review_split_robustness.csv
 data/multi_sleeve_crypto_review_volatility.csv
 ```
 
+Multi-sleeve allocation policy review mode is the saved-output-only allocation checkpoint for the current 75% QQQ100, 15% high-growth, 5% crypto, and 5% defensive cash/bond candidate. It reads saved multi-sleeve backtest, crypto review, high-growth, crypto, and recovered QQQ100 metrics only, then reviews component roles, concentration, small-sleeve sensitivity, blockers, and the next fixed weight-sensitivity step. It does not refresh market data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve crypto execution, or label the candidate promotion-ready.
+
+```bash
+python bot.py --multi-sleeve-allocation-policy-review
+python bot.py --show-multi-sleeve-allocation-policy-review
+```
+
+Outputs:
+
+```text
+data/multi_sleeve_allocation_policy_review.csv
+data/multi_sleeve_allocation_policy_summary.csv
+data/multi_sleeve_allocation_policy_components.csv
+data/multi_sleeve_allocation_policy_blockers.csv
+```
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:
