@@ -38,6 +38,8 @@ FILES = {
     "multi_sleeve_crypto_splits": "multi_sleeve_crypto_review_split_robustness.csv",
     "multi_sleeve_crypto_costs": "multi_sleeve_crypto_review_cost_stress.csv",
     "multi_sleeve_crypto_volatility": "multi_sleeve_crypto_review_volatility.csv",
+    "multi_sleeve_lead_state": "multi_sleeve_lead_state.csv",
+    "multi_sleeve_high_growth_drawdown_summary": "multi_sleeve_high_growth_drawdown_summary.csv",
     "project_state_summary": "project_research_state_summary.csv",
 }
 
@@ -73,6 +75,8 @@ def show_current_research_state(data_dir: Path | str = "data") -> tuple[int, lis
     split_rows = [row for row in rows["multi_sleeve_crypto_splits"] if row.get("candidate_name") == MULTI_SLEEVE_CANDIDATE]
     cost_rows = rows["multi_sleeve_crypto_costs"]
     volatility_row = rows["multi_sleeve_crypto_volatility"][0] if rows["multi_sleeve_crypto_volatility"] else {}
+    lead_state_row = rows["multi_sleeve_lead_state"][0] if rows["multi_sleeve_lead_state"] else {}
+    drawdown_summary = summary_map(rows["multi_sleeve_high_growth_drawdown_summary"])
 
     lines = [
         "CURRENT RESEARCH STATE",
@@ -108,7 +112,25 @@ def show_current_research_state(data_dir: Path | str = "data") -> tuple[int, lis
         f"- warning/blocker: {crypto_summary.get('crypto_volatility_drawdown_warnings') or volatility_warning(volatility_row)}",
         f"- required next step: {crypto_summary.get('required_next_step') or MISSING}",
         "",
-        "E. Safety state",
+        "E. Canonical multi-sleeve lead state",
+        f"- current research lead candidate: {lead_state_row.get('current_research_lead_candidate') or MISSING}",
+        f"- previous research baseline: {lead_state_row.get('previous_research_baseline') or MISSING}",
+        f"- lead state status: {lead_state_row.get('lead_state_status') or MISSING}",
+        f"- candidate metrics: {format_lead_candidate_metrics(lead_state_row)}",
+        f"- baseline metrics: {format_lead_baseline_metrics(lead_state_row)}",
+        f"- deltas: {format_lead_deltas(lead_state_row)}",
+        f"- manual review required: {lower_value(lead_state_row.get('manual_review_required'))}",
+        f"- required next step: {lead_state_row.get('required_next_step') or MISSING}",
+        "- execution_approved=false; crypto_execution_approved=false; scheduling_approved=false",
+        "",
+        "F. High-growth drawdown watch",
+        f"- final drawdown decomposition status: {drawdown_summary.get('final_drawdown_decomposition_status') or MISSING}",
+        f"- main incremental drawdown contributor: {drawdown_summary.get('main_incremental_drawdown_contributor') or MISSING}",
+        f"- net incremental drawdown effect: {net_incremental_effect(drawdown_summary)}",
+        f"- recovery/bounce-back summary: {drawdown_summary.get('recovery_bounce_back_summary') or MISSING}",
+        f"- required next step: {drawdown_summary.get('required_next_step') or MISSING}",
+        "",
+        "G. Safety state",
         "- research_only=true",
         "- preview_only=true where applicable",
         "- execution_approved=false",
@@ -229,6 +251,53 @@ def format_delta_vs_recovered(row: dict[str, Any]) -> str:
         f"MaxDD={value_from(row, ['delta_max_drawdown_vs_recovered_qqq100_reference'], MISSING)}, "
         f"Calmar={value_from(row, ['delta_calmar_vs_recovered_qqq100_reference'], MISSING)}"
     )
+
+
+def format_lead_candidate_metrics(row: dict[str, Any]) -> str:
+    if not row:
+        return MISSING
+    return (
+        f"CAGR={row.get('candidate_CAGR', MISSING)}, "
+        f"Sharpe={row.get('candidate_Sharpe', MISSING)}, "
+        f"MaxDD={row.get('candidate_MaxDD', MISSING)}, "
+        f"Calmar={row.get('candidate_Calmar', MISSING)}"
+    )
+
+
+def format_lead_baseline_metrics(row: dict[str, Any]) -> str:
+    if not row:
+        return MISSING
+    return (
+        f"CAGR={row.get('baseline_CAGR', MISSING)}, "
+        f"Sharpe={row.get('baseline_Sharpe', MISSING)}, "
+        f"MaxDD={row.get('baseline_MaxDD', MISSING)}, "
+        f"Calmar={row.get('baseline_Calmar', MISSING)}"
+    )
+
+
+def format_lead_deltas(row: dict[str, Any]) -> str:
+    if not row:
+        return MISSING
+    return (
+        f"CAGR={row.get('delta_CAGR', MISSING)}, "
+        f"Sharpe={row.get('delta_Sharpe', MISSING)}, "
+        f"MaxDD={row.get('delta_MaxDD', MISSING)}, "
+        f"Calmar={row.get('delta_Calmar', MISSING)}"
+    )
+
+
+def net_incremental_effect(summary: dict[str, str]) -> str:
+    value = summary.get("incremental_high_growth_risk_summary", "")
+    for token in value.replace(";", " ").split():
+        if token.startswith("net="):
+            return token.split("=", 1)[1].rstrip(",;")
+    return MISSING
+
+
+def lower_value(value: Any) -> str:
+    if value in {"", None}:
+        return MISSING
+    return str(value).lower()
 
 
 def reference_source(rows: dict[str, list[dict[str, Any]]]) -> str:

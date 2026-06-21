@@ -39,6 +39,8 @@ EXPECTED_INPUTS = [
     "multi_sleeve_crypto_review_split_robustness.csv",
     "multi_sleeve_crypto_review_cost_stress.csv",
     "multi_sleeve_crypto_review_volatility.csv",
+    "multi_sleeve_lead_state.csv",
+    "multi_sleeve_high_growth_drawdown_summary.csv",
 ]
 
 REQUIRED_MODULE_TOKENS = [
@@ -50,7 +52,9 @@ REQUIRED_MODULE_TOKENS = [
     "B. High-growth sleeve",
     "C. Crypto sleeve",
     "D. Multi-sleeve candidate",
-    "E. Safety state",
+    "E. Canonical multi-sleeve lead state",
+    "F. High-growth drawdown watch",
+    "G. Safety state",
     "missing_saved_output",
     "execution_approved=false",
     "crypto_execution_approved=false",
@@ -141,7 +145,14 @@ def verify_missing_outputs(failures: list[str]) -> None:
         output = "\n".join(lines)
         if status != 0:
             failures.append("missing saved outputs should be handled gracefully with exit 0")
-        for token in ["CURRENT RESEARCH STATE", "missing_saved_output", "A. QQQ100 reference", "E. Safety state"]:
+        for token in [
+            "CURRENT RESEARCH STATE",
+            "missing_saved_output",
+            "A. QQQ100 reference",
+            "E. Canonical multi-sleeve lead state",
+            "F. High-growth drawdown watch",
+            "G. Safety state",
+        ]:
             if token not in output:
                 failures.append(f"missing-output display missing token: {token}")
 
@@ -169,7 +180,18 @@ def verify_saved_fixture(failures: list[str]) -> None:
             "multi_sleeve_crypto_review_promising_research_only",
             "plus_100bps_crypto_turnover",
             "crypto_high_volatility_and_drawdown_warning",
-            "E. Safety state",
+            "E. Canonical multi-sleeve lead state",
+            "current research lead candidate: higher_growth_70_20_5_5",
+            "previous research baseline: current_75_15_5_5",
+            "lead state status: higher_growth_selected_manual_review_required",
+            "candidate metrics: CAGR=23.6634, Sharpe=1.2232, MaxDD=-22.5209, Calmar=1.0507",
+            "baseline metrics: CAGR=21.7328, Sharpe=1.1852, MaxDD=-22.2489, Calmar=0.9768",
+            "deltas: CAGR=1.9306, Sharpe=0.038, MaxDD=-0.272, Calmar=0.0739",
+            "F. High-growth drawdown watch",
+            "final drawdown decomposition status: high_growth_drawdown_watch_manual_review_required",
+            "main incremental drawdown contributor: extra_high_growth_weight",
+            "net incremental drawdown effect: -0.3386",
+            "G. Safety state",
             "execution_approved=false",
             "crypto_execution_approved=false",
             "scheduling_approved=false",
@@ -264,6 +286,43 @@ def write_fixture(data: Path) -> None:
             summary_row("worst_cost_stress_row", "plus_100bps_crypto_turnover CAGR=21.4695; delta_CAGR=-0.2633; status=cost_stress_tolerated_research_only"),
             summary_row("crypto_volatility_drawdown_warnings", "crypto_high_volatility_and_drawdown_warning; candidate_drawdown_improves_vs_recovered_qqq100"),
             summary_row("required_next_step", "manual_review_crypto_split_cost_volatility_before_candidate_label_change"),
+        ],
+    )
+    write_csv(
+        data / "multi_sleeve_lead_state.csv",
+        [
+            {
+                "current_research_lead_candidate": "higher_growth_70_20_5_5",
+                "previous_research_baseline": "current_75_15_5_5",
+                "lead_state_status": "higher_growth_selected_manual_review_required",
+                "candidate_CAGR": "23.6634",
+                "candidate_Sharpe": "1.2232",
+                "candidate_MaxDD": "-22.5209",
+                "candidate_Calmar": "1.0507",
+                "baseline_CAGR": "21.7328",
+                "baseline_Sharpe": "1.1852",
+                "baseline_MaxDD": "-22.2489",
+                "baseline_Calmar": "0.9768",
+                "delta_CAGR": "1.9306",
+                "delta_Sharpe": "0.038",
+                "delta_MaxDD": "-0.272",
+                "delta_Calmar": "0.0739",
+                "manual_review_required": "true",
+                "required_next_step": "manual_review_before_multi_sleeve_research_lead_label_change",
+            }
+        ],
+    )
+    write_csv(
+        data / "multi_sleeve_high_growth_drawdown_summary.csv",
+        [
+            summary_row("final_drawdown_decomposition_status", "high_growth_drawdown_watch_manual_review_required"),
+            summary_row("main_incremental_drawdown_contributor", "extra_high_growth_weight"),
+            summary_row(
+                "incremental_high_growth_risk_summary",
+                "high_growth=-1.4069; qqq100=1.0684; net=-0.3386; contributor=extra_high_growth_weight; status=incremental_drawdown_watch_manual_review_required",
+            ),
+            summary_row("recovery_bounce_back_summary", "recovery=2020-07-02; rows=72; 63d=22.6671; 126d=50.8012; status=recovered_in_saved_window"),
+            summary_row("required_next_step", "manual_review_high_growth_drawdown_watch_before_execution_or_preview_discussion"),
         ],
     )
 

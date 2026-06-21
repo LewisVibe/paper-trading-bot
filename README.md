@@ -2531,7 +2531,7 @@ For quick terminal checks, use the compact saved-output-only current research st
 python bot.py --show-current-research-state
 ```
 
-This reads saved CSV outputs for the current multi-sleeve research state, including QQQ100 recovered reference, high-growth return-stream metrics, crypto return-stream metrics, multi-sleeve portfolio backtest, and multi-sleeve crypto review summaries. It shows the QQQ100 reference, high-growth sleeve, crypto sleeve, current multi-sleeve candidate, and safety state in one compact terminal view. It tolerates missing saved outputs as `missing_saved_output`, does not refresh market data, does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
+This reads saved CSV outputs for the current multi-sleeve research state, including QQQ100 recovered reference, high-growth return-stream metrics, crypto return-stream metrics, multi-sleeve portfolio backtest, multi-sleeve crypto review summaries, the canonical multi-sleeve lead state where available, and the high-growth drawdown decomposition where available. It shows the QQQ100 reference, high-growth sleeve, crypto sleeve, current multi-sleeve candidate, canonical research lead candidate, drawdown watch context, and safety state in one compact terminal view. It tolerates missing saved outputs as `missing_saved_output`, does not refresh market data, does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
 
 To check whether the saved project research state is fresh and internally usable, run:
 
