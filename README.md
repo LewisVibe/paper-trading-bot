@@ -2003,6 +2003,21 @@ data/multi_sleeve_research_lead_summary.csv
 data/multi_sleeve_research_lead_blockers.csv
 ```
 
+Multi-sleeve lead-state refresh mode is the saved-output-only canonical state layer for future multi-sleeve research displays. It reads the saved research-lead decision and adjacent saved review context only, then writes the selected research lead candidate, previous baseline, copied metrics/deltas, blockers, and false safety flags into one compact state file. It does not add a strategy, rerun backtests, optimise, refresh market data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve crypto execution, or connect research to execution.
+
+```bash
+python bot.py --multi-sleeve-lead-state-refresh
+python bot.py --show-multi-sleeve-lead-state
+```
+
+Outputs:
+
+```text
+data/multi_sleeve_lead_state.csv
+data/multi_sleeve_lead_state_summary.csv
+data/multi_sleeve_lead_state_blockers.csv
+```
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:

@@ -284,6 +284,14 @@ Cross-references:
 - **Allowed commands:** `python scripts\verify_multi_sleeve_research_lead_decision.py`, `python bot.py --multi-sleeve-research-lead-decision`, `python bot.py --show-multi-sleeve-research-lead-decision`, and repo safety/inventory/related research verifiers only.
 - **Stop condition:** Stop if the task refreshes market data, calls Alpaca, reads live positions, creates order instructions, adds crypto execution, enables shorting/margin/leverage, labels anything execution-ready, changes config defaults, approves scheduling, runs a broad optimiser/grid, or treats the decision checkpoint as execution approval.
 
+### Task: Multi-sleeve lead-state refresh checkpoint
+- **Purpose:** Write one canonical saved-output state for the selected multi-sleeve research lead candidate after the research-lead decision checkpoint.
+- **Risk level:** Medium / research-only state consolidation near the active QQQ100 paper sleeve and high-risk research sleeves.
+- **Allowed files:** `trading_bot/research/multi_sleeve_lead_state.py`, `scripts/verify_multi_sleeve_lead_state.py`, docs, README, and command inventory only.
+- **Forbidden files:** config/secrets/logs/databases/generated outputs, Alpaca/order/position modules, scheduling, Hermes cron, Task Scheduler, service, or loop files.
+- **Allowed commands:** `python scripts\verify_multi_sleeve_lead_state.py`, `python bot.py --multi-sleeve-lead-state-refresh`, `python bot.py --show-multi-sleeve-lead-state`, and repo safety/inventory/related research verifiers only.
+- **Stop condition:** Stop if the task refreshes market data, calls Alpaca, reads live positions, creates order instructions, adds crypto execution, enables shorting/margin/leverage, labels anything execution-ready, changes config defaults, approves scheduling, reruns backtests, optimises weights, or treats the lead-state checkpoint as execution approval.
+
 ### Task: Documentation safety alignment review
 - **Purpose:** Compare the workflow and safety docs explicitly named by the user for inconsistent safety wording. Common candidates are `HERMES_WORKFLOW.md`, `HERMES_TASK_BOARD.md`, `CODEX_WORKFLOW.md`, `CURRENT_STATE.md`, VPS checklist docs, and refactor inventory docs.
 - **Risk level:** Low / docs-only.

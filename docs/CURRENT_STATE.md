@@ -308,6 +308,13 @@ The multi-sleeve research lead decision checkpoint comes from `python bot.py --m
 - It asks whether `higher_growth_70_20_5_5` should become the current research lead candidate versus `current_75_15_5_5`, using fixed cautious checks for return, risk, splits, cost stress, drawdown sensitivity, and false execution/scheduling flags.
 - It remains research-only and does not optimise weights, approve crypto execution, paper execution, scheduling, order instructions, Alpaca calls, position reads, alert sends, or strategy-to-execution wiring.
 
+The multi-sleeve lead-state refresh comes from `python bot.py --multi-sleeve-lead-state-refresh`, with saved display through `python bot.py --show-multi-sleeve-lead-state`:
+
+- It reads saved research-lead decision, research-lead blockers, higher-growth review, weight-sensitivity, allocation-policy, crypto-review, and portfolio-backtest outputs only.
+- It writes `data/multi_sleeve_lead_state.csv`, `data/multi_sleeve_lead_state_summary.csv`, and `data/multi_sleeve_lead_state_blockers.csv`.
+- It records `higher_growth_70_20_5_5` as the current research lead candidate when the saved decision supports it, keeps `current_75_15_5_5` as the previous baseline, and preserves copied metrics/deltas plus manual-review blockers.
+- It remains research-only and does not rerun backtests, optimise weights, approve crypto execution, paper execution, scheduling, order instructions, Alpaca calls, position reads, alert sends, or strategy-to-execution wiring.
+
 The paper execution state summary comes from `python bot.py --paper-execution-state-summary`, with saved display through `python bot.py --show-paper-execution-state-summary`:
 
 - It reads saved CSV outputs only, including AAPL smoke-test postcheck, QQQ100 paper execution result/summary or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution eligibility, portfolio preview, and portfolio-risk context where available.

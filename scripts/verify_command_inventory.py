@@ -95,6 +95,8 @@ REQUIRED_COMMANDS = [
     "--show-multi-sleeve-higher-growth-review",
     "--multi-sleeve-research-lead-decision",
     "--show-multi-sleeve-research-lead-decision",
+    "--multi-sleeve-lead-state-refresh",
+    "--show-multi-sleeve-lead-state",
     "--paper-execution-state-summary",
     "--show-paper-execution-state-summary",
     "--execute-qqq100-paper",
