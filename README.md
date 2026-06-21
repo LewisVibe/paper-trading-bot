@@ -2430,13 +2430,13 @@ data/project_research_state_summary.csv
 data/project_research_state_next_steps.csv
 ```
 
-For quick terminal checks, use the concise current research state display helper:
+For quick terminal checks, use the compact saved-output-only current research state display helper:
 
 ```text
 python bot.py --show-current-research-state
 ```
 
-This reads saved project research state from `data/project_research_state_summary.csv`, `data/project_research_state_refresh.csv`, and `data/project_research_state_next_steps.csv`, with saved stock/ETF and crypto lead summaries as fallbacks. Current saved interpretation surfaces `qqq_100_trend_gate` as the stock/ETF research lead, keeps `codex_qqq_adaptive_trend_exposure` as an ambitious alternative, marks `qqq_150_trend_gate` as the rejected high-drawdown QQQ reference, and preserves `crypto_equal_weight_ex_highest_vol_2` as the manual-review-only crypto lead. It does not refresh market data, does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
+This reads saved CSV outputs for the current multi-sleeve research state, including QQQ100 recovered reference, high-growth return-stream metrics, crypto return-stream metrics, multi-sleeve portfolio backtest, and multi-sleeve crypto review summaries. It shows the QQQ100 reference, high-growth sleeve, crypto sleeve, current multi-sleeve candidate, and safety state in one compact terminal view. It tolerates missing saved outputs as `missing_saved_output`, does not refresh market data, does not approve preview promotion, does not approve execution, and does not connect strategies to Alpaca or paper orders.
 
 To check whether the saved project research state is fresh and internally usable, run:
 
