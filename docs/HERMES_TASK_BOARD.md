@@ -268,6 +268,14 @@ Cross-references:
 - **Allowed commands:** `python scripts\verify_multi_sleeve_weight_sensitivity.py`, `python bot.py --multi-sleeve-weight-sensitivity`, `python bot.py --show-multi-sleeve-weight-sensitivity`, and repo safety/inventory/related research verifiers only.
 - **Stop condition:** Stop if the task refreshes market data, calls Alpaca, reads live positions, creates order instructions, adds crypto execution, enables shorting/margin/leverage, promotes the candidate, changes config defaults, approves scheduling, runs a broad optimiser/grid, or treats the weight review as execution approval.
 
+### Task: Multi-sleeve higher-growth review checkpoint
+- **Purpose:** Compare `higher_growth_70_20_5_5` with `current_75_15_5_5` across headline metrics, fixed splits, cost stress, drawdown windows, and contribution diagnostics before any candidate label change.
+- **Risk level:** Medium / research-only validation near the active QQQ100 paper sleeve and high-risk research sleeves.
+- **Allowed files:** `trading_bot/research/multi_sleeve_higher_growth_review.py`, `scripts/verify_multi_sleeve_higher_growth_review.py`, docs, README, and command inventory only.
+- **Forbidden files:** config/secrets/logs/databases/generated outputs, Alpaca/order/position modules, scheduling, Hermes cron, Task Scheduler, service, or loop files.
+- **Allowed commands:** `python scripts\verify_multi_sleeve_higher_growth_review.py`, `python bot.py --multi-sleeve-higher-growth-review`, `python bot.py --show-multi-sleeve-higher-growth-review`, and repo safety/inventory/related research verifiers only.
+- **Stop condition:** Stop if the task refreshes market data, calls Alpaca, reads live positions, creates order instructions, adds crypto execution, enables shorting/margin/leverage, promotes the candidate, changes config defaults, approves scheduling, runs a broad optimiser/grid, or treats the challenger review as execution approval.
+
 ### Task: Documentation safety alignment review
 - **Purpose:** Compare the workflow and safety docs explicitly named by the user for inconsistent safety wording. Common candidates are `HERMES_WORKFLOW.md`, `HERMES_TASK_BOARD.md`, `CODEX_WORKFLOW.md`, `CURRENT_STATE.md`, VPS checklist docs, and refactor inventory docs.
 - **Risk level:** Low / docs-only.

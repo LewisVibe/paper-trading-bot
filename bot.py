@@ -555,6 +555,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--multi-sleeve-higher-growth-review"]:
+        from trading_bot.research.multi_sleeve_higher_growth_review import generate_multi_sleeve_higher_growth_review
+
+        result = generate_multi_sleeve_higher_growth_review()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-multi-sleeve-higher-growth-review"]:
+        from trading_bot.research.multi_sleeve_higher_growth_review import show_multi_sleeve_higher_growth_review
+
+        code, lines = show_multi_sleeve_higher_growth_review()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-execution-state-summary"]:
         from trading_bot.research.paper_execution_state_summary import generate_paper_execution_state_summary
 
@@ -963,6 +977,10 @@ from trading_bot.research.multi_sleeve_allocation_policy import (
 from trading_bot.research.multi_sleeve_weight_sensitivity import (
     generate_multi_sleeve_weight_sensitivity,
     show_multi_sleeve_weight_sensitivity,
+)
+from trading_bot.research.multi_sleeve_higher_growth_review import (
+    generate_multi_sleeve_higher_growth_review,
+    show_multi_sleeve_higher_growth_review,
 )
 from trading_bot.research.paper_execution_state_summary import (
     generate_paper_execution_state_summary,
@@ -5562,6 +5580,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved multi-sleeve weight sensitivity review without broker or market-data reads.",
     )
     parser.add_argument(
+        "--multi-sleeve-higher-growth-review",
+        action="store_true",
+        help="Create a saved-output-only higher-growth challenger review for the multi-sleeve candidate.",
+    )
+    parser.add_argument(
+        "--show-multi-sleeve-higher-growth-review",
+        action="store_true",
+        help="Display the saved multi-sleeve higher-growth challenger review without broker or market-data reads.",
+    )
+    parser.add_argument(
         "--paper-execution-state-summary",
         action="store_true",
         help="Create a saved-output-only paper execution milestone/state summary without broker calls.",
@@ -6885,6 +6913,20 @@ def main() -> int:
         return 0
     if args.show_multi_sleeve_weight_sensitivity:
         status_code, lines = show_multi_sleeve_weight_sensitivity()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.multi_sleeve_higher_growth_review:
+        try:
+            result = generate_multi_sleeve_higher_growth_review()
+        except Exception as exc:
+            print(f"Multi-sleeve higher-growth review failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_multi_sleeve_higher_growth_review:
+        status_code, lines = show_multi_sleeve_higher_growth_review()
         for line in lines:
             print(line)
         return status_code

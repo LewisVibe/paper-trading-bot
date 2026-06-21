@@ -1970,6 +1970,24 @@ data/multi_sleeve_weight_sensitivity_summary.csv
 data/multi_sleeve_weight_sensitivity_blockers.csv
 ```
 
+Multi-sleeve higher-growth review mode is the saved-output-only challenger review for `higher_growth_70_20_5_5` versus `current_75_15_5_5`. It reads saved QQQ100 recovered-reference, high-growth, and crypto daily streams only, then compares headline metrics, fixed 60/40, 70/30, and 80/20 splits, fixed high-growth turnover cost stresses, drawdown windows, and approximate sleeve contribution deltas. It does not optimise, refresh market data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve crypto execution, or label the candidate promotion-ready.
+
+```bash
+python bot.py --multi-sleeve-higher-growth-review
+python bot.py --show-multi-sleeve-higher-growth-review
+```
+
+Outputs:
+
+```text
+data/multi_sleeve_higher_growth_review.csv
+data/multi_sleeve_higher_growth_summary.csv
+data/multi_sleeve_higher_growth_split_review.csv
+data/multi_sleeve_higher_growth_cost_review.csv
+data/multi_sleeve_higher_growth_drawdown_review.csv
+data/multi_sleeve_higher_growth_blockers.csv
+```
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:
