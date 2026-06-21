@@ -85,6 +85,8 @@ REQUIRED_COMMANDS = [
     "--show-multi-sleeve-portfolio-backtest",
     "--multi-sleeve-robustness",
     "--show-multi-sleeve-robustness",
+    "--multi-sleeve-crypto-review",
+    "--show-multi-sleeve-crypto-review",
     "--paper-execution-state-summary",
     "--show-paper-execution-state-summary",
     "--execute-qqq100-paper",

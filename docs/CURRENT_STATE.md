@@ -270,6 +270,13 @@ The multi-sleeve robustness checkpoint comes from `python bot.py --multi-sleeve-
 
 - It reads saved return streams and multi-sleeve backtest CSVs only, then tests `qqq100_plus_high_growth_research` against the preferred QQQ100 research reference across fixed `split_60_40`, `split_70_30`, and `split_80_20` out-of-sample windows.
 - It writes `data/multi_sleeve_robustness_report.csv` and `data/multi_sleeve_robustness_summary.csv`.
+
+The multi-sleeve crypto review checkpoint comes from `python bot.py --multi-sleeve-crypto-review`, with saved display through `python bot.py --show-multi-sleeve-crypto-review`:
+
+- It reads saved QQQ100 recovered-reference, high-growth, BTC/ETH crypto, cash, and multi-sleeve backtest CSVs only.
+- It writes `data/multi_sleeve_crypto_review.csv`, `data/multi_sleeve_crypto_review_summary.csv`, `data/multi_sleeve_crypto_review_cost_stress.csv`, `data/multi_sleeve_crypto_review_split_robustness.csv`, and `data/multi_sleeve_crypto_review_volatility.csv`.
+- It reviews `qqq100_plus_high_growth_plus_crypto_research` across fixed 60/40, 70/30, and 80/20 split windows, fixed crypto turnover cost stresses, and crypto volatility/drawdown contribution.
+- It remains research-only and does not approve crypto execution, paper execution, scheduling, order instructions, Alpaca calls, position reads, alert sends, or strategy-to-execution wiring.
 - It reports Calmar and Sharpe split wins, worst split by Calmar/MaxDD, key blockers, and the next review step.
 - It remains blocked by QQQ100 generated-stream reconciliation until saved/generated benchmark parity is resolved, and it does not approve preview promotion, execution, scheduling, Alpaca/order paths, or any sleeve-to-execution wiring.
 

@@ -1922,6 +1922,23 @@ data/multi_sleeve_robustness_summary.csv
 
 The expected blocker is `multi_sleeve_robustness_blocked_qqq100_reconciliation` until a preferred QQQ100 reference is valid in the saved inputs. The report is research-only and keeps execution and scheduling approval false.
 
+Multi-sleeve crypto review mode is the saved-output-only split, cost, and volatility checkpoint for `qqq100_plus_high_growth_plus_crypto_research`. It reads saved QQQ100 recovered-reference, high-growth, BTC/ETH crypto, cash, and multi-sleeve backtest CSVs only, then compares the crypto-inclusive candidate, `qqq100_plus_high_growth_research`, the recovered QQQ100 reference, and the crypto sleeve across fixed `split_60_40`, `split_70_30`, and `split_80_20` windows. It also applies fixed additional crypto turnover cost stresses of 0, 10, 25, 50, and 100 bps using saved crypto exposure-change state, and records crypto volatility/drawdown contribution. This is research-only: it does not refresh yfinance data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve crypto execution, or label the candidate promotion-ready.
+
+```bash
+python bot.py --multi-sleeve-crypto-review
+python bot.py --show-multi-sleeve-crypto-review
+```
+
+Outputs:
+
+```text
+data/multi_sleeve_crypto_review.csv
+data/multi_sleeve_crypto_review_summary.csv
+data/multi_sleeve_crypto_review_cost_stress.csv
+data/multi_sleeve_crypto_review_split_robustness.csv
+data/multi_sleeve_crypto_review_volatility.csv
+```
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:
