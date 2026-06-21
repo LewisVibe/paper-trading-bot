@@ -569,6 +569,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--multi-sleeve-research-lead-decision"]:
+        from trading_bot.research.multi_sleeve_research_lead_decision import (
+            generate_multi_sleeve_research_lead_decision,
+        )
+
+        result = generate_multi_sleeve_research_lead_decision()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-multi-sleeve-research-lead-decision"]:
+        from trading_bot.research.multi_sleeve_research_lead_decision import (
+            show_multi_sleeve_research_lead_decision,
+        )
+
+        code, lines = show_multi_sleeve_research_lead_decision()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-execution-state-summary"]:
         from trading_bot.research.paper_execution_state_summary import generate_paper_execution_state_summary
 
@@ -981,6 +999,10 @@ from trading_bot.research.multi_sleeve_weight_sensitivity import (
 from trading_bot.research.multi_sleeve_higher_growth_review import (
     generate_multi_sleeve_higher_growth_review,
     show_multi_sleeve_higher_growth_review,
+)
+from trading_bot.research.multi_sleeve_research_lead_decision import (
+    generate_multi_sleeve_research_lead_decision,
+    show_multi_sleeve_research_lead_decision,
 )
 from trading_bot.research.paper_execution_state_summary import (
     generate_paper_execution_state_summary,
@@ -5590,6 +5612,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved multi-sleeve higher-growth challenger review without broker or market-data reads.",
     )
     parser.add_argument(
+        "--multi-sleeve-research-lead-decision",
+        action="store_true",
+        help="Create a saved-output-only research lead decision checkpoint for the multi-sleeve allocation.",
+    )
+    parser.add_argument(
+        "--show-multi-sleeve-research-lead-decision",
+        action="store_true",
+        help="Display the saved multi-sleeve research lead decision without broker or market-data reads.",
+    )
+    parser.add_argument(
         "--paper-execution-state-summary",
         action="store_true",
         help="Create a saved-output-only paper execution milestone/state summary without broker calls.",
@@ -6927,6 +6959,20 @@ def main() -> int:
         return 0
     if args.show_multi_sleeve_higher_growth_review:
         status_code, lines = show_multi_sleeve_higher_growth_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.multi_sleeve_research_lead_decision:
+        try:
+            result = generate_multi_sleeve_research_lead_decision()
+        except Exception as exc:
+            print(f"Multi-sleeve research lead decision failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_multi_sleeve_research_lead_decision:
+        status_code, lines = show_multi_sleeve_research_lead_decision()
         for line in lines:
             print(line)
         return status_code

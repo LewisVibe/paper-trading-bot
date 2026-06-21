@@ -276,6 +276,14 @@ Cross-references:
 - **Allowed commands:** `python scripts\verify_multi_sleeve_higher_growth_review.py`, `python bot.py --multi-sleeve-higher-growth-review`, `python bot.py --show-multi-sleeve-higher-growth-review`, and repo safety/inventory/related research verifiers only.
 - **Stop condition:** Stop if the task refreshes market data, calls Alpaca, reads live positions, creates order instructions, adds crypto execution, enables shorting/margin/leverage, promotes the candidate, changes config defaults, approves scheduling, runs a broad optimiser/grid, or treats the challenger review as execution approval.
 
+### Task: Multi-sleeve research lead decision checkpoint
+- **Purpose:** Decide whether `higher_growth_70_20_5_5` should become the current multi-sleeve research lead candidate versus `current_75_15_5_5` using saved higher-growth review evidence only.
+- **Risk level:** Medium / research-only label decision near the active QQQ100 paper sleeve and high-risk research sleeves.
+- **Allowed files:** `trading_bot/research/multi_sleeve_research_lead_decision.py`, `scripts/verify_multi_sleeve_research_lead_decision.py`, docs, README, and command inventory only.
+- **Forbidden files:** config/secrets/logs/databases/generated outputs, Alpaca/order/position modules, scheduling, Hermes cron, Task Scheduler, service, or loop files.
+- **Allowed commands:** `python scripts\verify_multi_sleeve_research_lead_decision.py`, `python bot.py --multi-sleeve-research-lead-decision`, `python bot.py --show-multi-sleeve-research-lead-decision`, and repo safety/inventory/related research verifiers only.
+- **Stop condition:** Stop if the task refreshes market data, calls Alpaca, reads live positions, creates order instructions, adds crypto execution, enables shorting/margin/leverage, labels anything execution-ready, changes config defaults, approves scheduling, runs a broad optimiser/grid, or treats the decision checkpoint as execution approval.
+
 ### Task: Documentation safety alignment review
 - **Purpose:** Compare the workflow and safety docs explicitly named by the user for inconsistent safety wording. Common candidates are `HERMES_WORKFLOW.md`, `HERMES_TASK_BOARD.md`, `CODEX_WORKFLOW.md`, `CURRENT_STATE.md`, VPS checklist docs, and refactor inventory docs.
 - **Risk level:** Low / docs-only.

@@ -93,6 +93,8 @@ REQUIRED_COMMANDS = [
     "--show-multi-sleeve-weight-sensitivity",
     "--multi-sleeve-higher-growth-review",
     "--show-multi-sleeve-higher-growth-review",
+    "--multi-sleeve-research-lead-decision",
+    "--show-multi-sleeve-research-lead-decision",
     "--paper-execution-state-summary",
     "--show-paper-execution-state-summary",
     "--execute-qqq100-paper",

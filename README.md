@@ -1988,6 +1988,21 @@ data/multi_sleeve_higher_growth_drawdown_review.csv
 data/multi_sleeve_higher_growth_blockers.csv
 ```
 
+Multi-sleeve research lead decision mode is the saved-output-only decision checkpoint for whether `higher_growth_70_20_5_5` should replace `current_75_15_5_5` as the current research lead candidate. It reads saved higher-growth review, split, cost, drawdown, weight-sensitivity, allocation-policy, crypto-review, and portfolio context only, then applies fixed cautious rules around CAGR, Sharpe, Calmar, MaxDD, split wins, cost stress, and false execution/scheduling flags. It does not optimise, refresh market data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve crypto execution, or label the candidate promotion-ready.
+
+```bash
+python bot.py --multi-sleeve-research-lead-decision
+python bot.py --show-multi-sleeve-research-lead-decision
+```
+
+Outputs:
+
+```text
+data/multi_sleeve_research_lead_decision.csv
+data/multi_sleeve_research_lead_summary.csv
+data/multi_sleeve_research_lead_blockers.csv
+```
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:
