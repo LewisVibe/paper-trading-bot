@@ -322,6 +322,14 @@ The multi-sleeve high-growth drawdown decomposition comes from `python bot.py --
 - It reconstructs current versus higher-growth drawdown windows, decomposes same-window weighted sleeve contributions, records incremental high-growth risk, and reviews recovery/bounce-back context.
 - It remains research-only and does not add strategies, rerun backtests, optimise weights, approve crypto execution, paper execution, scheduling, order instructions, Alpaca calls, position reads, alert sends, or strategy-to-execution wiring.
 
+The high-growth sleeve quality review comes from `python bot.py --high-growth-sleeve-quality-review`, with saved display through `python bot.py --show-high-growth-sleeve-quality-review`:
+
+- It reads saved high-growth return streams, lead-state context, high-growth drawdown decomposition, and adjacent multi-sleeve review outputs only.
+- It writes `data/high_growth_sleeve_quality_review.csv`, `data/high_growth_sleeve_quality_summary.csv`, `data/high_growth_sleeve_quality_splits.csv`, `data/high_growth_sleeve_quality_drawdowns.csv`, and `data/high_growth_sleeve_quality_blockers.csv`.
+- It reviews the standalone `codex_broad_growth_balanced_breakout_control` sleeve metrics, fixed split stability, worst drawdown/recovery, contribution to `higher_growth_70_20_5_5`, and whether saved ticker-level concentration data is available.
+- Expected current interpretation remains conservative: the sleeve can be promising but drawdown-sensitive, and missing ticker concentration data is a blocker before any further label change.
+- It remains research-only and does not refresh market data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect research to execution.
+
 The paper execution state summary comes from `python bot.py --paper-execution-state-summary`, with saved display through `python bot.py --show-paper-execution-state-summary`:
 
 - It reads saved CSV outputs only, including AAPL smoke-test postcheck, QQQ100 paper execution result/summary or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution eligibility, portfolio preview, and portfolio-risk context where available.

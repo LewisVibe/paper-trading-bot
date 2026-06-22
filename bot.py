@@ -619,6 +619,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--high-growth-sleeve-quality-review"]:
+        from trading_bot.research.high_growth_sleeve_quality import generate_high_growth_sleeve_quality_review
+
+        result = generate_high_growth_sleeve_quality_review()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-high-growth-sleeve-quality-review"]:
+        from trading_bot.research.high_growth_sleeve_quality import show_high_growth_sleeve_quality_review
+
+        code, lines = show_high_growth_sleeve_quality_review()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-execution-state-summary"]:
         from trading_bot.research.paper_execution_state_summary import generate_paper_execution_state_summary
 
@@ -1043,6 +1057,10 @@ from trading_bot.research.multi_sleeve_lead_state import (
 from trading_bot.research.multi_sleeve_high_growth_drawdown import (
     generate_multi_sleeve_high_growth_drawdown_decomposition,
     show_multi_sleeve_high_growth_drawdown_decomposition,
+)
+from trading_bot.research.high_growth_sleeve_quality import (
+    generate_high_growth_sleeve_quality_review,
+    show_high_growth_sleeve_quality_review,
 )
 from trading_bot.research.paper_execution_state_summary import (
     generate_paper_execution_state_summary,
@@ -5682,6 +5700,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved multi-sleeve high-growth drawdown decomposition without broker or market-data reads.",
     )
     parser.add_argument(
+        "--high-growth-sleeve-quality-review",
+        action="store_true",
+        help="Create a saved-output-only quality review for the high-growth research sleeve.",
+    )
+    parser.add_argument(
+        "--show-high-growth-sleeve-quality-review",
+        action="store_true",
+        help="Display the saved high-growth sleeve quality review without broker or market-data reads.",
+    )
+    parser.add_argument(
         "--paper-execution-state-summary",
         action="store_true",
         help="Create a saved-output-only paper execution milestone/state summary without broker calls.",
@@ -7061,6 +7089,20 @@ def main() -> int:
         return 0
     if args.show_multi_sleeve_high_growth_drawdown_decomposition:
         status_code, lines = show_multi_sleeve_high_growth_drawdown_decomposition()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.high_growth_sleeve_quality_review:
+        try:
+            result = generate_high_growth_sleeve_quality_review()
+        except Exception as exc:
+            print(f"High-growth sleeve quality review failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_high_growth_sleeve_quality_review:
+        status_code, lines = show_high_growth_sleeve_quality_review()
         for line in lines:
             print(line)
         return status_code
