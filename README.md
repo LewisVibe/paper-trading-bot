@@ -2067,6 +2067,28 @@ data/high_growth_sleeve_quality_drawdowns.csv
 data/high_growth_sleeve_quality_blockers.csv
 ```
 
+High-growth component attribution mode is the saved-output-only readiness layer for the concentration blocker found by the high-growth sleeve quality review. It inspects existing saved high-growth outputs for real component ticker identifiers, holding dates, weights, component daily returns, weighted contributions, and drawdown-window contribution data. If those fields exist, it writes component attribution rows; if they do not, it writes blocker rows explaining that a future component-stream builder is needed. It does not invent ticker attribution, refresh market data, call yfinance, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, or connect research to execution.
+
+```bash
+python bot.py --high-growth-component-attribution
+python bot.py --show-high-growth-component-attribution
+```
+
+Outputs:
+
+```text
+data/high_growth_component_attribution.csv
+data/high_growth_component_attribution_summary.csv
+data/high_growth_component_attribution_blockers.csv
+```
+
+If real component data exists, it may also write:
+
+```text
+data/high_growth_component_contributions.csv
+data/high_growth_component_drawdown_contributions.csv
+```
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:

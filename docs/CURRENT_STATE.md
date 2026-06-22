@@ -338,6 +338,14 @@ The high-growth sleeve quality review comes from `python bot.py --high-growth-sl
 - Expected current interpretation remains conservative: the sleeve can be promising but drawdown-sensitive, and missing ticker concentration data is a blocker before any further label change.
 - It remains research-only and does not refresh market data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect research to execution.
 
+The high-growth component attribution review comes from `python bot.py --high-growth-component-attribution`, with saved display through `python bot.py --show-high-growth-component-attribution`:
+
+- It inspects existing saved high-growth outputs for real component ticker identifiers, holding dates, weights, component returns, weighted contributions, and drawdown-window contribution data.
+- It writes `data/high_growth_component_attribution.csv`, `data/high_growth_component_attribution_summary.csv`, and `data/high_growth_component_attribution_blockers.csv`.
+- If real component data exists, it may also write `data/high_growth_component_contributions.csv` and `data/high_growth_component_drawdown_contributions.csv`.
+- Expected current interpretation is likely blocked because the existing saved high-growth outputs contain sleeve-level return streams but not ticker-level component holdings/weights/contributions.
+- It remains research-only and does not invent ticker attribution, refresh market data, call yfinance, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect research to execution.
+
 The paper execution state summary comes from `python bot.py --paper-execution-state-summary`, with saved display through `python bot.py --show-paper-execution-state-summary`:
 
 - It reads saved CSV outputs only, including AAPL smoke-test postcheck, QQQ100 paper execution result/summary or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution eligibility, portfolio preview, and portfolio-risk context where available.

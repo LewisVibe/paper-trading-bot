@@ -103,6 +103,8 @@ REQUIRED_COMMANDS = [
     "--show-multi-sleeve-high-growth-drawdown-decomposition",
     "--high-growth-sleeve-quality-review",
     "--show-high-growth-sleeve-quality-review",
+    "--high-growth-component-attribution",
+    "--show-high-growth-component-attribution",
     "--paper-execution-state-summary",
     "--show-paper-execution-state-summary",
     "--execute-qqq100-paper",
