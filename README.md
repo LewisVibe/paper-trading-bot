@@ -2105,6 +2105,23 @@ data/high_growth_component_streams_blockers.csv
 data/high_growth_component_drawdown_contributions.csv
 ```
 
+High-growth sleeve concentration review mode is the saved-output-only manual-review checkpoint that uses `data/high_growth_component_streams.csv` to review whether `codex_broad_growth_balanced_breakout_control` is too dependent on a few tickers inside the `higher_growth_70_20_5_5` research lead. It reports headline active-component counts, top/bottom ticker contributions, top 1/3/5/10 dependency shares, Herfindahl concentration, and worst-drawdown component contribution context. It does not refresh yfinance data, add strategies, optimise weights, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve crypto execution, or connect research to execution.
+
+```bash
+python bot.py --high-growth-sleeve-concentration-review
+python bot.py --show-high-growth-sleeve-concentration-review
+```
+
+Outputs:
+
+```text
+data/high_growth_sleeve_concentration_review.csv
+data/high_growth_sleeve_concentration_summary.csv
+data/high_growth_sleeve_concentration_top_contributors.csv
+data/high_growth_sleeve_concentration_drawdown.csv
+data/high_growth_sleeve_concentration_blockers.csv
+```
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:

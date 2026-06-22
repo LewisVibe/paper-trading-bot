@@ -353,6 +353,14 @@ The high-growth component streams builder comes from `python bot.py --high-growt
 - Component rows are labelled `equal_weight_component_sleeve` and `approximate_from_reconstructed_research_stream` because they are reconstructed from the existing research simulation rather than a new strategy.
 - It remains research-only and does not optimise the sleeve, add variants, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect research to execution.
 
+The high-growth sleeve concentration review comes from `python bot.py --high-growth-sleeve-concentration-review`, with saved display through `python bot.py --show-high-growth-sleeve-concentration-review`:
+
+- It reads saved component streams, component attribution, sleeve quality, drawdown, and lead-state outputs only.
+- It writes `data/high_growth_sleeve_concentration_review.csv`, `data/high_growth_sleeve_concentration_summary.csv`, `data/high_growth_sleeve_concentration_top_contributors.csv`, `data/high_growth_sleeve_concentration_drawdown.csv`, and `data/high_growth_sleeve_concentration_blockers.csv`.
+- It reviews active-component counts, max component weight, top/bottom ticker contribution shares, Herfindahl dependency, and worst-drawdown component concentration before any further high-growth label change.
+- Expected current interpretation remains cautious: the sleeve may stay a 20% research component, but low average active component count and 1.0 max component weight require manual concentration review first.
+- It remains research-only and does not refresh yfinance data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect research to execution.
+
 The paper execution state summary comes from `python bot.py --paper-execution-state-summary`, with saved display through `python bot.py --show-paper-execution-state-summary`:
 
 - It reads saved CSV outputs only, including AAPL smoke-test postcheck, QQQ100 paper execution result/summary or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution eligibility, portfolio preview, and portfolio-risk context where available.
