@@ -278,6 +278,14 @@ The multi-sleeve crypto review checkpoint comes from `python bot.py --multi-slee
 - It reviews `qqq100_plus_high_growth_plus_crypto_research` across fixed 60/40, 70/30, and 80/20 split windows, fixed crypto turnover cost stresses, and crypto volatility/drawdown contribution.
 - It remains research-only and does not approve crypto execution, paper execution, scheduling, order instructions, Alpaca calls, position reads, alert sends, or strategy-to-execution wiring.
 
+The multi-sleeve crypto containment review comes from `python bot.py --multi-sleeve-crypto-containment-review`, with saved display through `python bot.py --show-multi-sleeve-crypto-containment-review`:
+
+- It reads saved crypto return streams, crypto review rows, weight sensitivity, lead state, high-growth drawdown decomposition, and portfolio backtest context only.
+- It writes `data/multi_sleeve_crypto_containment_review.csv`, `data/multi_sleeve_crypto_containment_summary.csv`, `data/multi_sleeve_crypto_containment_drawdowns.csv`, and `data/multi_sleeve_crypto_containment_blockers.csv`.
+- It checks whether the 5% crypto sleeve inside `higher_growth_70_20_5_5` is contained enough, whether crypto materially contributed to the selected lead's worst drawdown, whether no-crypto or higher-crypto nearby weights are preferable, and whether standalone BTC/ETH/combined crypto drawdowns require a containment blocker.
+- Expected current interpretation remains cautious: 5% crypto may be contained at portfolio level but is still high-volatility and drawdown-sensitive, and increasing crypto is not supported by saved weight sensitivity.
+- It remains research-only and does not optimise weights, refresh market data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve crypto execution, or connect research to execution.
+
 The multi-sleeve allocation policy review checkpoint comes from `python bot.py --multi-sleeve-allocation-policy-review`, with saved display through `python bot.py --show-multi-sleeve-allocation-policy-review`:
 
 - It reads saved multi-sleeve backtest, crypto review, high-growth, crypto, and recovered QQQ100 metrics only.

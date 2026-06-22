@@ -252,6 +252,14 @@ Cross-references:
 - **Allowed commands:** `python scripts\verify_multi_sleeve_crypto_review.py`, `python bot.py --multi-sleeve-crypto-review`, `python bot.py --show-multi-sleeve-crypto-review`, and repo safety/inventory/related research verifiers only.
 - **Stop condition:** Stop if the task refreshes market data, calls Alpaca, reads live positions, creates order instructions, adds crypto execution, enables shorting/margin/leverage, promotes the candidate, changes config defaults, approves scheduling, or treats crypto as anything other than a research sleeve.
 
+### Task: Multi-sleeve crypto containment review checkpoint
+- **Purpose:** Review whether the fixed 5% crypto sleeve is contained enough inside `higher_growth_70_20_5_5` before any further candidate label change.
+- **Risk level:** Medium / research-only containment review near the active QQQ100 paper sleeve and a crypto research sleeve.
+- **Allowed files:** `trading_bot/research/multi_sleeve_crypto_containment.py`, `scripts/verify_multi_sleeve_crypto_containment.py`, docs, README, and command inventory only.
+- **Forbidden files:** config/secrets/logs/databases/generated outputs, Alpaca/order/position modules, scheduling, Hermes cron, Task Scheduler, service, or loop files.
+- **Allowed commands:** `python scripts\verify_multi_sleeve_crypto_containment.py`, `python bot.py --multi-sleeve-crypto-containment-review`, `python bot.py --show-multi-sleeve-crypto-containment-review`, and repo safety/inventory/related research verifiers only.
+- **Stop condition:** Stop if the task refreshes market data, calls Alpaca, reads live positions, creates order instructions, adds crypto execution, enables shorting/margin/leverage, labels anything execution-ready, changes config defaults, approves scheduling, reruns backtests from market data, optimises weights, or treats crypto containment as execution approval.
+
 ### Task: Multi-sleeve allocation policy review checkpoint
 - **Purpose:** Review the fixed 75% QQQ100, 15% high-growth, 5% crypto, 5% defensive cash/bond allocation policy before any candidate label change, preview discussion, or execution wiring.
 - **Risk level:** Medium / research-only validation near the active QQQ100 paper sleeve and high-risk research sleeves.

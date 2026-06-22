@@ -1939,6 +1939,22 @@ data/multi_sleeve_crypto_review_split_robustness.csv
 data/multi_sleeve_crypto_review_volatility.csv
 ```
 
+Multi-sleeve crypto containment review mode is the saved-output-only follow-up for the 5% crypto sleeve inside the current `higher_growth_70_20_5_5` multi-sleeve research lead. It reads saved crypto return streams, saved crypto review rows, weight sensitivity, lead state, high-growth drawdown decomposition, and portfolio backtest context only. It asks whether 5% crypto exposure is contained enough, whether crypto materially worsened the lead's worst drawdown, whether no-crypto or higher-crypto nearby weights look better, and whether standalone BTC/ETH/combined crypto drawdowns require a blocker before any further candidate label change. It does not add strategies, optimise weights, refresh market data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve crypto execution, or connect research to execution.
+
+```bash
+python bot.py --multi-sleeve-crypto-containment-review
+python bot.py --show-multi-sleeve-crypto-containment-review
+```
+
+Outputs:
+
+```text
+data/multi_sleeve_crypto_containment_review.csv
+data/multi_sleeve_crypto_containment_summary.csv
+data/multi_sleeve_crypto_containment_drawdowns.csv
+data/multi_sleeve_crypto_containment_blockers.csv
+```
+
 Multi-sleeve allocation policy review mode is the saved-output-only allocation checkpoint for the current 75% QQQ100, 15% high-growth, 5% crypto, and 5% defensive cash/bond candidate. It reads saved multi-sleeve backtest, crypto review, high-growth, crypto, and recovered QQQ100 metrics only, then reviews component roles, concentration, small-sleeve sensitivity, blockers, and the next fixed weight-sensitivity step. It does not refresh market data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve crypto execution, or label the candidate promotion-ready.
 
 ```bash

@@ -87,6 +87,8 @@ REQUIRED_COMMANDS = [
     "--show-multi-sleeve-robustness",
     "--multi-sleeve-crypto-review",
     "--show-multi-sleeve-crypto-review",
+    "--multi-sleeve-crypto-containment-review",
+    "--show-multi-sleeve-crypto-containment-review",
     "--multi-sleeve-allocation-policy-review",
     "--show-multi-sleeve-allocation-policy-review",
     "--multi-sleeve-weight-sensitivity",

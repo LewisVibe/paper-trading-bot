@@ -520,6 +520,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--multi-sleeve-crypto-containment-review"]:
+        from trading_bot.research.multi_sleeve_crypto_containment import (
+            generate_multi_sleeve_crypto_containment_review,
+        )
+
+        result = generate_multi_sleeve_crypto_containment_review()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-multi-sleeve-crypto-containment-review"]:
+        from trading_bot.research.multi_sleeve_crypto_containment import (
+            show_multi_sleeve_crypto_containment_review,
+        )
+
+        code, lines = show_multi_sleeve_crypto_containment_review()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--show-current-research-state"]:
         from trading_bot.research.current_research_state import show_current_research_state
 
@@ -1033,6 +1051,10 @@ from trading_bot.research.multi_sleeve_robustness import (
 from trading_bot.research.multi_sleeve_crypto_review import (
     generate_multi_sleeve_crypto_review,
     show_multi_sleeve_crypto_review,
+)
+from trading_bot.research.multi_sleeve_crypto_containment import (
+    generate_multi_sleeve_crypto_containment_review,
+    show_multi_sleeve_crypto_containment_review,
 )
 from trading_bot.research.multi_sleeve_allocation_policy import (
     generate_multi_sleeve_allocation_policy_review,
@@ -5640,6 +5662,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved multi-sleeve crypto review without broker or market-data reads.",
     )
     parser.add_argument(
+        "--multi-sleeve-crypto-containment-review",
+        action="store_true",
+        help="Create a saved-output-only crypto containment review for the current multi-sleeve lead.",
+    )
+    parser.add_argument(
+        "--show-multi-sleeve-crypto-containment-review",
+        action="store_true",
+        help="Display the saved multi-sleeve crypto containment review without broker or market-data reads.",
+    )
+    parser.add_argument(
         "--multi-sleeve-allocation-policy-review",
         action="store_true",
         help="Create a saved-output-only allocation policy review for the crypto multi-sleeve candidate.",
@@ -7005,6 +7037,20 @@ def main() -> int:
         return 0
     if args.show_multi_sleeve_crypto_review:
         status_code, lines = show_multi_sleeve_crypto_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.multi_sleeve_crypto_containment_review:
+        try:
+            result = generate_multi_sleeve_crypto_containment_review()
+        except Exception as exc:
+            print(f"Multi-sleeve crypto containment review failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_multi_sleeve_crypto_containment_review:
+        status_code, lines = show_multi_sleeve_crypto_containment_review()
         for line in lines:
             print(line)
         return status_code
