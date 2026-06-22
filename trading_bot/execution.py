@@ -131,3 +131,14 @@ def decide_trade(
         )
 
     return TradeDecision(False, "", "", Decimal("0"), position_before, "Unknown signal.")
+
+
+def manual_sell_would_oversell(
+    side: str,
+    quantity: Decimal,
+    position_before: Position,
+    allow_shorting: bool,
+) -> bool:
+    if side != "sell" or allow_shorting:
+        return False
+    return quantity > max(position_before.quantity, Decimal("0"))

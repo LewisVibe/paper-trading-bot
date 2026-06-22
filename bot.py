@@ -927,7 +927,7 @@ from trading_bot.alpaca_client import (
 from trading_bot.config import AppConfig, ConfigError, default_research_universe_tickers, load_config
 from trading_bot.database import init_database, insert_trade_log
 from trading_bot.discord_alerts import send_discord_alert
-from trading_bot.execution import decide_trade
+from trading_bot.execution import decide_trade, manual_sell_would_oversell
 from trading_bot.logging_setup import setup_logging
 from trading_bot.market_data import (
     configure_yfinance_cache,
@@ -1571,136 +1571,13 @@ def process_ticker(
         )
         return
 
-    action_key = (ticker, decision.action)
-    if action_key in completed_actions:
-        stats.skipped_trades += 1
-        reason = "Duplicate trade action already completed for this ticker during this run."
-        logger.info("%s %s skipped: %s", ticker, result.signal, reason)
-        insert_trade_log(
-            conn=conn,
-            config=config,
-            ticker=ticker,
-            signal=result.signal,
-            position_before=position_before,
-            position_after=position_before,
-            quantity=0,
-            last_close=result.last_close,
-            short_ma=result.short_ma,
-            long_ma=result.long_ma,
-            order_status="skipped",
-            error=reason,
-        )
-        return
-
-    if not config.dry_run:
-        if alpaca_client is None:
-            raise RuntimeError("Alpaca client is not available.")
-
-        is_valid_asset, asset_error = validate_alpaca_asset_for_order(
-            alpaca_client,
-            ticker,
-            requires_shortable=decision.action == "open_short",
-        )
-        if not is_valid_asset:
-            stats.skipped_trades += 1
-            logger.warning("%s %s skipped: %s", ticker, result.signal, asset_error)
-            insert_trade_log(
-                conn=conn,
-                config=config,
-                ticker=ticker,
-                signal=result.signal,
-                position_before=position_before,
-                position_after=position_before,
-                quantity=0,
-                last_close=result.last_close,
-                short_ma=result.short_ma,
-                long_ma=result.long_ma,
-                order_status="skipped",
-                error=asset_error,
-            )
-            return
-
-        open_orders = get_open_orders_for_ticker(alpaca_client, ticker)
-        if decision.action in ("close_long", "close_short"):
-            reserved_side = "sell" if decision.action == "close_long" else "buy"
-            reserved_quantity = pending_quantity_for_side(open_orders, reserved_side)
-            remaining_closeable_quantity = position_before.abs_quantity - reserved_quantity
-            if remaining_closeable_quantity <= 0:
-                stats.skipped_trades += 1
-                reason = (
-                    f"Existing open {reserved_side} order(s) already reserve the closeable "
-                    f"{ticker} position."
-                )
-                logger.warning("%s %s skipped: %s", ticker, result.signal, reason)
-                insert_trade_log(
-                    conn=conn,
-                    config=config,
-                    ticker=ticker,
-                    signal=result.signal,
-                    position_before=position_before,
-                    position_after=position_before,
-                    quantity=0,
-                    last_close=result.last_close,
-                    short_ma=result.short_ma,
-                    long_ma=result.long_ma,
-                    order_status="skipped",
-                    error=reason,
-                )
-                send_discord_alert(config, logger, f"Warning: {ticker} skipped. {reason}")
-                return
-
-        if open_orders:
-            stats.skipped_trades += 1
-            reason = f"An open Alpaca order already exists for {ticker}; skipping new order."
-            logger.warning("%s %s skipped: %s", ticker, result.signal, reason)
-            insert_trade_log(
-                conn=conn,
-                config=config,
-                ticker=ticker,
-                signal=result.signal,
-                position_before=position_before,
-                position_after=position_before,
-                quantity=0,
-                last_close=result.last_close,
-                short_ma=result.short_ma,
-                long_ma=result.long_ma,
-                order_status="skipped",
-                error=reason,
-            )
-            send_discord_alert(config, logger, f"Warning: {ticker} skipped. {reason}")
-            return
-
-    if config.dry_run:
-        order_id = ""
-        order_status = "dry_run"
-        logger.info(
-            "Dry run trade: %s %s %s share(s), action=%s",
-            decision.side,
-            format_decimal(decision.trade_quantity),
-            ticker,
-            decision.action,
-        )
-    else:
-        order = submit_alpaca_order(
-            alpaca_client,
-            ticker,
-            decision.side,
-            decision.trade_quantity,
-        )
-        order_id = str(getattr(order, "id", ""))
-        order_status = normalize_order_status(getattr(order, "status", "submitted"))
-        logger.info(
-            "Submitted Alpaca paper order: %s %s %s share(s), status=%s, order_id=%s",
-            decision.side,
-            format_decimal(decision.trade_quantity),
-            ticker,
-            order_status,
-            order_id,
-        )
-
-    completed_actions.add(action_key)
-    positions[ticker] = decision.position_after
-    stats.submitted_trades += 1
+    order_status = "monitor_only"
+    logger.info(
+        "Monitoring only: would %s %s %s share(s) (normal run does not place orders)",
+        decision.action,
+        format_decimal(decision.trade_quantity),
+        ticker,
+    )
 
     insert_trade_log(
         conn=conn,
@@ -1710,12 +1587,11 @@ def process_ticker(
         side=decision.side,
         action=decision.action,
         position_before=position_before,
-        position_after=decision.position_after,
+        position_after=position_before,
         quantity=decimal_to_float(decision.trade_quantity),
         last_close=result.last_close,
         short_ma=result.short_ma,
         long_ma=result.long_ma,
-        order_id=order_id,
         order_status=order_status,
     )
 
@@ -1723,7 +1599,8 @@ def process_ticker(
         config,
         logger,
         (
-            f"Trade: {ticker} {decision.side.upper()} {format_decimal(decision.trade_quantity)} "
+            f"Monitoring only: {ticker} would {decision.side.upper()} "
+            f"{format_decimal(decision.trade_quantity)} share(s) "
             f"({decision.action}, signal {result.signal}, status {order_status})"
         ),
     )
@@ -1893,6 +1770,30 @@ def run_paper_order_test(
 
         positions = get_alpaca_positions(alpaca_client)
         position_before = positions.get(ticker, Position())
+        if manual_sell_would_oversell(side, quantity, position_before, config.allow_shorting):
+            message = (
+                f"Manual paper-order test skipped: selling {format_decimal(quantity)} "
+                f"{ticker} would exceed current long position of "
+                f"{format_decimal(position_before.abs_quantity)} share(s)."
+            )
+            logger.warning(message)
+            conn = init_database(config.database_path)
+            order_config = replace(config, dry_run=False)
+            insert_trade_log(
+                conn=conn,
+                config=order_config,
+                ticker=ticker,
+                signal="MANUAL",
+                side=side,
+                action="manual_paper_order",
+                position_before=position_before,
+                position_after=position_before,
+                quantity=0,
+                order_status="skipped",
+                error=message,
+            )
+            send_discord_alert(config, logger, f"Warning: {message}")
+            return 1
 
         open_orders = get_open_orders_for_ticker(alpaca_client, ticker)
         if smoke_test_gate_decision is not None:
