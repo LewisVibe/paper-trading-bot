@@ -74,6 +74,7 @@ class AppConfig:
     research_universe: ResearchUniverseConfig
     etf_research_universe: ResearchUniverseConfig
     slow_sma_strategy: SlowSmaStrategyConfig
+    paper_kill_switch_enabled: bool = False
 
 
 def resolve_path(config_path: Path, value: str) -> Path:
@@ -91,6 +92,30 @@ def parse_config_bool(raw: dict[str, Any], key: str, default: bool, parent: str 
             f"{field_name} must be a JSON boolean true or false, not {value!r}."
         )
     return value
+
+
+def parse_env_bool(env_key: str, default: bool) -> bool:
+    value = os.getenv(env_key)
+    if value is None:
+        return default
+
+    normalized = value.strip().lower()
+    if normalized in {"true", "1", "yes", "y", "on"}:
+        return True
+    if normalized in {"false", "0", "no", "n", "off"}:
+        return False
+    raise ConfigError(f"{env_key} must be a boolean-like value, not {value!r}.")
+
+
+def parse_config_bool_with_env(
+    raw: dict[str, Any],
+    key: str,
+    default: bool,
+    env_key: str,
+) -> bool:
+    if key in raw:
+        return parse_config_bool(raw, key, default)
+    return parse_env_bool(env_key, default)
 
 
 def parse_config_int(raw: dict[str, Any], key: str) -> int:
@@ -321,6 +346,12 @@ def load_config(
         order_quantity=order_quantity,
         dry_run=dry_run,
         allow_shorting=parse_config_bool(raw, "allow_shorting", False),
+        paper_kill_switch_enabled=parse_config_bool_with_env(
+            raw,
+            "paper_kill_switch_enabled",
+            False,
+            "PAPER_KILL_SWITCH_ENABLED",
+        ),
         database_path=resolve_path(config_path, str(raw.get("database_path", "data/trades.db"))),
         log_file=resolve_path(config_path, str(raw.get("log_file", "logs/bot.log"))),
         discord_enabled=parse_config_bool(discord, "enabled", False, parent="discord"),
