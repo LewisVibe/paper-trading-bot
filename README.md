@@ -2089,6 +2089,22 @@ data/high_growth_component_contributions.csv
 data/high_growth_component_drawdown_contributions.csv
 ```
 
+High-growth component streams mode is that dedicated research-only component-stream builder. It reuses the existing high-growth return-stream price loader and `codex_broad_growth_balanced_breakout_control` drawdown-control simulation to reconstruct daily component ticker rows, weights, returns, and weighted contributions where the existing simulation exposes holdings. If market data or reconstructable holdings are unavailable, it writes blocked outputs instead of fake ticker rows. It may use the same safe research market-data pattern as the high-growth return-stream command, but it does not call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, optimise the sleeve, add variants, or connect research to execution.
+
+```bash
+python bot.py --high-growth-component-streams
+python bot.py --show-high-growth-component-streams
+```
+
+Outputs:
+
+```text
+data/high_growth_component_streams.csv
+data/high_growth_component_streams_summary.csv
+data/high_growth_component_streams_blockers.csv
+data/high_growth_component_drawdown_contributions.csv
+```
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:

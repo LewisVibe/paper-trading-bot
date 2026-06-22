@@ -112,6 +112,8 @@ def verify_source_boundaries(module_source: str, bot_source: str, failures: list
         "future --high-growth-component-streams command may be needed",
         HIGH_GROWTH_SLEEVE,
         "ticker_concentration_data_missing",
+        "component_concentration_manual_review_required",
+        "concentration review status",
         "component_ticker",
         "average_weight",
         "total_weighted_contribution",
@@ -222,7 +224,7 @@ def verify_blocked_generation(failures: list[str]) -> None:
         if code != 0:
             failures.append("saved display should return success when summary exists")
         display = "\n".join(lines)
-        for token in ["final component attribution status", "component ticker data exists", "future builder recommendation", "execution_approved=false"]:
+        for token in ["final component attribution status", "component ticker data exists", "concentration review status", "future builder recommendation", "execution_approved=false"]:
             if token not in display:
                 failures.append(f"display missing expected token: {token}")
 
@@ -235,6 +237,10 @@ def verify_component_generation(failures: list[str]) -> None:
         summary = {row["summary_name"]: row["summary_value"] for row in result.summary_rows}
         if summary.get("final_component_attribution_status") != STATUS_CREATED:
             failures.append(f"component fixture should create attribution, got {summary.get('final_component_attribution_status')}")
+        if summary.get("concentration_blocker") == "ticker_concentration_data_missing":
+            failures.append("component fixture should not report ticker_concentration_data_missing once component data exists")
+        if summary.get("concentration_blocker") != "component_concentration_manual_review_required":
+            failures.append(f"component fixture should require concentration review, got {summary.get('concentration_blocker')}")
         if not result.contribution_rows:
             failures.append("component fixture should create contribution rows")
         if not result.drawdown_contribution_rows:

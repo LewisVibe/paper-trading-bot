@@ -15,6 +15,7 @@ HIGH_GROWTH_SLEEVE = "codex_broad_growth_balanced_breakout_control"
 SELECTED_LEAD = "higher_growth_70_20_5_5"
 QUALITY_STATUS = "high_growth_sleeve_quality_promising_but_drawdown_sensitive"
 CONCENTRATION_BLOCKER = "ticker_concentration_data_missing"
+CONCENTRATION_REVIEW_REQUIRED = "component_concentration_manual_review_required"
 
 STATUS_CREATED = "component_attribution_created_research_only"
 STATUS_PARTIAL = "component_attribution_partial_manual_review_required"
@@ -172,8 +173,9 @@ def generate_high_growth_component_attribution(root_dir: Path | str = ".") -> Hi
     contribution_rows = build_component_contributions(created_at, component_sources)
     drawdown_rows = build_drawdown_contributions(created_at, sources, component_sources)
     final_status = final_status_for(availability, contribution_rows, drawdown_rows)
-    attribution_rows = build_attribution_rows(created_at, availability, final_status)
-    summary_rows = build_summary_rows(created_at, final_status, availability, contribution_rows, drawdown_rows)
+    concentration_status = concentration_review_status(availability, contribution_rows)
+    attribution_rows = build_attribution_rows(created_at, availability, final_status, concentration_status)
+    summary_rows = build_summary_rows(created_at, final_status, availability, contribution_rows, drawdown_rows, concentration_status)
     blocker_rows = build_blocker_rows(created_at, final_status, availability, contribution_rows, drawdown_rows)
     output_paths = {name: root / path for name, path in OUTPUT_FILES.items()}
     write_rows(output_paths["attribution"], ATTRIBUTION_COLUMNS, attribution_rows)
@@ -211,7 +213,7 @@ def show_high_growth_component_attribution(root_dir: Path | str = ".") -> tuple[
         f"component ticker data exists: {summary.get('component_ticker_data_exists', MISSING)}",
         f"component weight data exists: {summary.get('component_weight_data_exists', MISSING)}",
         f"component contribution data exists: {summary.get('component_contribution_data_exists', MISSING)}",
-        f"concentration blocker: {summary.get('concentration_blocker', MISSING)}",
+        f"concentration review status: {summary.get('concentration_blocker', MISSING)}",
         f"future builder recommendation: {summary.get('future_builder_recommendation', MISSING)}",
         f"required next step: {summary.get('required_next_step', MISSING)}",
         "execution_approved=false; crypto_execution_approved=false; scheduling_approved=false",
@@ -294,7 +296,12 @@ def sources_with_component_data(sources: dict[str, ComponentSource]) -> list[Com
     return usable
 
 
-def build_attribution_rows(created_at: str, availability_rows: dict[str, dict[str, Any]], final_status: str) -> list[dict[str, Any]]:
+def build_attribution_rows(
+    created_at: str,
+    availability_rows: dict[str, dict[str, Any]],
+    final_status: str,
+    concentration_status: str,
+) -> list[dict[str, Any]]:
     return [
         {
             "created_at": created_at,
@@ -307,7 +314,7 @@ def build_attribution_rows(created_at: str, availability_rows: dict[str, dict[st
             "component_attribution_status": final_status,
             "selected_sleeve": HIGH_GROWTH_SLEEVE,
             "high_growth_quality_status": QUALITY_STATUS,
-            "concentration_blocker": CONCENTRATION_BLOCKER,
+            "concentration_blocker": concentration_status,
             "required_next_step": info["required_next_step"],
             **safety_flags(),
         }
@@ -405,12 +412,25 @@ def final_status_for(
     return STATUS_BLOCKED
 
 
+def concentration_review_status(
+    availability_rows: dict[str, dict[str, Any]],
+    contribution_rows: list[dict[str, Any]],
+) -> str:
+    has_ticker = bool(availability_rows["component_ticker_identifiers"]["available"])
+    has_weight = bool(availability_rows["component_weights"]["available"])
+    has_weighted = bool(availability_rows["component_weighted_contributions"]["available"])
+    if contribution_rows or (has_ticker and has_weight and has_weighted):
+        return CONCENTRATION_REVIEW_REQUIRED
+    return CONCENTRATION_BLOCKER
+
+
 def build_summary_rows(
     created_at: str,
     final_status: str,
     availability_rows: dict[str, dict[str, Any]],
     contribution_rows: list[dict[str, Any]],
     drawdown_rows: list[dict[str, Any]],
+    concentration_status: str,
 ) -> list[dict[str, Any]]:
     top_component = top_component_summary(contribution_rows)
     future_builder = future_builder_recommendation(final_status)
@@ -422,7 +442,7 @@ def build_summary_rows(
         ("component_weight_data_exists", bool_text(availability_rows["component_weights"]["available"]), "Component weight availability."),
         ("component_contribution_data_exists", bool_text(availability_rows["component_weighted_contributions"]["available"]), "Weighted contribution availability."),
         ("component_drawdown_contribution_data_exists", bool_text(bool(drawdown_rows)), "Drawdown-window component contribution availability."),
-        ("concentration_blocker", CONCENTRATION_BLOCKER, "Current concentration blocker from high-growth sleeve quality review."),
+        ("concentration_blocker", concentration_status, "Current concentration review status from saved high-growth component data."),
         ("top_component_summary", top_component, "Top component row when real attribution exists."),
         ("future_builder_recommendation", future_builder, "Future component stream builder recommendation."),
         ("required_next_step", NEXT_MANUAL_REVIEW if contribution_rows else NEXT_COMPONENT_STREAMS, "Next research step only."),
@@ -544,7 +564,7 @@ def summary_lines(rows: list[dict[str, Any]], output_path: Path) -> list[str]:
         f"component ticker data exists: {summary.get('component_ticker_data_exists', MISSING)}",
         f"component weight data exists: {summary.get('component_weight_data_exists', MISSING)}",
         f"component contribution data exists: {summary.get('component_contribution_data_exists', MISSING)}",
-        f"concentration blocker: {summary.get('concentration_blocker', MISSING)}",
+        f"concentration review status: {summary.get('concentration_blocker', MISSING)}",
         f"future builder recommendation: {summary.get('future_builder_recommendation', MISSING)}",
         f"required next step: {summary.get('required_next_step', MISSING)}",
         f"Saved review: {output_path}",
