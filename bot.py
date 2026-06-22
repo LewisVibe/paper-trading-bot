@@ -693,6 +693,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--high-growth-research-checkpoint"]:
+        from trading_bot.research.high_growth_research_checkpoint import generate_high_growth_research_checkpoint
+
+        result = generate_high_growth_research_checkpoint()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-high-growth-research-checkpoint"]:
+        from trading_bot.research.high_growth_research_checkpoint import show_high_growth_research_checkpoint
+
+        code, lines = show_high_growth_research_checkpoint()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-execution-state-summary"]:
         from trading_bot.research.paper_execution_state_summary import generate_paper_execution_state_summary
 
@@ -1137,6 +1151,10 @@ from trading_bot.research.high_growth_component_streams import (
 from trading_bot.research.high_growth_sleeve_concentration import (
     generate_high_growth_sleeve_concentration_review,
     show_high_growth_sleeve_concentration_review,
+)
+from trading_bot.research.high_growth_research_checkpoint import (
+    generate_high_growth_research_checkpoint,
+    show_high_growth_research_checkpoint,
 )
 from trading_bot.research.paper_execution_state_summary import (
     generate_paper_execution_state_summary,
@@ -5826,6 +5844,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved high-growth sleeve concentration review without broker or market-data reads.",
     )
     parser.add_argument(
+        "--high-growth-research-checkpoint",
+        action="store_true",
+        help="Create a saved-output-only checkpoint for the completed high-growth research chain.",
+    )
+    parser.add_argument(
+        "--show-high-growth-research-checkpoint",
+        action="store_true",
+        help="Display the saved high-growth research checkpoint without broker or market-data reads.",
+    )
+    parser.add_argument(
         "--paper-execution-state-summary",
         action="store_true",
         help="Create a saved-output-only paper execution milestone/state summary without broker calls.",
@@ -7275,6 +7303,20 @@ def main() -> int:
         return 0
     if args.show_high_growth_sleeve_concentration_review:
         status_code, lines = show_high_growth_sleeve_concentration_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.high_growth_research_checkpoint:
+        try:
+            result = generate_high_growth_research_checkpoint()
+        except Exception as exc:
+            print(f"High-growth research checkpoint failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_high_growth_research_checkpoint:
+        status_code, lines = show_high_growth_research_checkpoint()
         for line in lines:
             print(line)
         return status_code

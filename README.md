@@ -2122,6 +2122,20 @@ data/high_growth_sleeve_concentration_drawdown.csv
 data/high_growth_sleeve_concentration_blockers.csv
 ```
 
+High-growth research checkpoint mode is the saved-output-only consolidator for the completed high-growth chain. It reads saved multi-sleeve lead state, weight sensitivity, high-growth drawdown decomposition, high-growth sleeve quality, component attribution, component stream summary, sleeve concentration review, and optional crypto containment context, then writes a compact checkpoint row plus blockers. It does not rerun market data, call yfinance, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve crypto execution, or connect research to execution.
+
+```bash
+python bot.py --high-growth-research-checkpoint
+python bot.py --show-high-growth-research-checkpoint
+```
+
+Outputs:
+
+```text
+data/high_growth_research_checkpoint.csv
+data/high_growth_research_checkpoint_blockers.csv
+```
+
 Paper execution state summary mode records the saved milestone state after the AAPL smoke test and QQQ100 manual paper execution. It reads saved CSV outputs only, including the AAPL smoke-test postcheck, QQQ100 paper execution result or QQQ100 paper postcheck, QQQ100 action preview, QQQ100 signal, readiness, connectivity, execution-eligibility, portfolio-preview, and portfolio-risk context where present. It does not call Alpaca, read paper positions live, refresh yfinance, create/submit/cancel/replace orders, write SQLite `trade_log`, send Discord or Telegram alerts, change config defaults, schedule anything, or approve follow-up/repeat execution.
 
 Command:

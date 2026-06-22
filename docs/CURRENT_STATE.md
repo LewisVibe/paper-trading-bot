@@ -14,6 +14,14 @@ This checkpoint is documentation only. It summarizes the project state for futur
 - Deployment readiness and VPS checklist docs are audits/planning aids only. They do not deploy, schedule, or approve execution.
 - Portfolio risk policy reporting is not runtime enforcement and does not approve execution.
 
+## Latest VPS Monitoring Checkpoint
+
+- VPS pulled and verified commit `08ca16d Add high-growth sleeve concentration review`.
+- VPS repo status was clean on `main...origin/main`.
+- The VPS high-growth/component/concentration chain was rebuilt and working.
+- VPS daily monitoring summary reported `final_status=healthy_monitoring_state`, `action_required=no_action_required`, all monitored saved outputs fresh, `execution_approved=False`, and `scheduling_approved=False`.
+- This checkpoint confirms monitoring/report health only. It does not approve execution, crypto execution, scheduling, paper orders, live trading, or strategy-to-execution wiring.
+
 ## Stock/ETF Research State
 
 - Best benchmark: `buy_and_hold_baseline`.
@@ -360,6 +368,13 @@ The high-growth sleeve concentration review comes from `python bot.py --high-gro
 - It reviews active-component counts, max component weight, top/bottom ticker contribution shares, Herfindahl dependency, and worst-drawdown component concentration before any further high-growth label change.
 - Expected current interpretation remains cautious: the sleeve may stay a 20% research component, but low average active component count and 1.0 max component weight require manual concentration review first.
 - It remains research-only and does not refresh yfinance data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, or connect research to execution.
+
+The high-growth research checkpoint comes from `python bot.py --high-growth-research-checkpoint`, with saved display through `python bot.py --show-high-growth-research-checkpoint`:
+
+- It reads saved multi-sleeve lead state, weight sensitivity, higher-growth review, research lead decision, high-growth drawdown decomposition, sleeve quality, component attribution, component streams, sleeve concentration, and optional crypto containment outputs only.
+- It writes `data/high_growth_research_checkpoint.csv` and `data/high_growth_research_checkpoint_blockers.csv`.
+- Current interpretation is `high_growth_research_checkpoint_manual_review_required`: `higher_growth_70_20_5_5` remains the selected research lead candidate versus `current_75_15_5_5`, but concentration, drawdown, and crypto context still require manual review before any further label change.
+- It remains research-only and does not refresh yfinance data, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, approve execution, approve crypto execution, or connect research to execution.
 
 The paper execution state summary comes from `python bot.py --paper-execution-state-summary`, with saved display through `python bot.py --show-paper-execution-state-summary`:
 

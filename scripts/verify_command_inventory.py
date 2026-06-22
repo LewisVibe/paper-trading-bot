@@ -109,6 +109,8 @@ REQUIRED_COMMANDS = [
     "--show-high-growth-component-streams",
     "--high-growth-sleeve-concentration-review",
     "--show-high-growth-sleeve-concentration-review",
+    "--high-growth-research-checkpoint",
+    "--show-high-growth-research-checkpoint",
     "--paper-execution-state-summary",
     "--show-paper-execution-state-summary",
     "--execute-qqq100-paper",
