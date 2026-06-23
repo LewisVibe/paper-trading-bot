@@ -178,6 +178,7 @@ If desired state is `long` and saved QQQ position is long exactly one share, the
 - Saved display: `python bot.py --show-paper-live-monitoring-status`.
 - Outputs: `data/paper_live_monitoring_status.csv`, `data/paper_live_monitoring_components.csv`, and `data/paper_live_monitoring_blockers.csv`.
 - This checkpoint may show `qqq_100_trend_gate` / `QQQ` aligned long one share with `no_action_required=True` and `recommended_next_step=hold_no_action_and_monitor_only`.
+- `python bot.py --vps-monitoring-status` and `python bot.py --vps-daily-monitoring-summary` include the saved paper-live monitoring status when available, so the current status-only Hermes output can show aligned long one share without adding a new cron command.
 - It does not create, edit, trigger, or schedule Hermes cron jobs and must preserve `never_schedule_order_capable_commands=True`.
 - Hermes cron may run status/report commands only.
 - Hermes cron must not run QQQ100 execution.

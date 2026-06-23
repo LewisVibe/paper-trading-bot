@@ -18,6 +18,15 @@ REQUIRED_OUTPUT_PHRASES = [
     "Lock-wrapped safe commands:",
     "Promoted review summary:",
     "Defensive refresh summary:",
+    "Paper-live monitoring status:",
+    "active_strategy: qqq_100_trend_gate",
+    "active_ticker: QQQ",
+    "alignment_state: aligned_long",
+    "followup_policy_status: no_action_required_already_aligned",
+    "recommended_next_step: hold_no_action_and_monitor_only",
+    "followup_order_approved: False",
+    "repeat_execution_approved: False",
+    "never_schedule_order_capable_commands: True",
     "Saved-output freshness:",
     "final_status:",
     "action_required:",
@@ -40,6 +49,8 @@ REQUIRED_ACTION_STATES = [
     "one_or_more_saved_report_inputs_stale_or_missing",
     "manually_run_safe_refresh_reports",
     "refresh_or_investigate_saved_monitoring_inputs",
+    "paper_live_monitoring_saved_status_missing_or_inconsistent",
+    "refresh_report_only_paper_live_monitoring_status",
 ]
 
 FORBIDDEN_CALLS = [

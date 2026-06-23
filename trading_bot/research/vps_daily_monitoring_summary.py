@@ -20,7 +20,9 @@ from trading_bot.research.vps_monitoring_status import (
     PROMOTED_DECISION_PREVIEW_PATH,
     PROMOTED_REVIEW_SUMMARY_PATH,
     all_false,
+    build_paper_live_monitoring_context,
     format_counts,
+    paper_live_monitoring_status_lines,
     read_csv_rows,
 )
 
@@ -36,15 +38,18 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
     decisions_execution_false = all_false(decision_rows, "execution_approved")
     defensive_rows = read_csv_rows(root_path / DEFENSIVE_REFRESH_SUMMARY_PATH)
     defensive_counts = Counter(row.get("status", "") or "blank" for row in defensive_rows)
+    paper_live_context = build_paper_live_monitoring_context(root_path)
     final_status = determine_final_status(
         freshness_statuses,
         decision_rows_present=bool(decision_rows),
         decisions_execution_false=decisions_execution_false,
+        paper_live_monitoring_consistent=paper_live_context.consistent,
     )
     action = classify_action_required(
         freshness_statuses,
         decision_rows_present=bool(decision_rows),
         decisions_execution_false=decisions_execution_false,
+        paper_live_monitoring_consistent=paper_live_context.consistent,
     )
 
     lines = [
@@ -76,6 +81,13 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
             f"- defensive_refresh_summary_present: {(root_path / DEFENSIVE_REFRESH_SUMMARY_PATH).exists()}",
             f"- defensive_refresh_step_counts: {format_counts(defensive_counts)}",
             "",
+            "Paper-live monitoring status:",
+        ]
+    )
+    lines.extend(paper_live_monitoring_status_lines(root_path))
+    lines.extend(
+        [
+            "",
             "Saved-output freshness:",
         ]
     )
@@ -105,8 +117,9 @@ def determine_final_status(
     freshness_statuses: list,
     decision_rows_present: bool,
     decisions_execution_false: bool,
+    paper_live_monitoring_consistent: bool,
 ) -> str:
-    if has_stale_or_missing(freshness_statuses) or not decision_rows_present:
+    if has_stale_or_missing(freshness_statuses) or not decision_rows_present or not paper_live_monitoring_consistent:
         return "monitoring_stale_or_missing_inputs"
     if has_warning(freshness_statuses) or not decisions_execution_false:
         return "monitoring_warning"
@@ -117,12 +130,23 @@ def classify_action_required(
     freshness_statuses: list,
     decision_rows_present: bool,
     decisions_execution_false: bool,
+    paper_live_monitoring_consistent: bool,
 ) -> dict[str, str]:
-    if has_stale_or_missing(freshness_statuses) or not decision_rows_present:
+    if has_stale_or_missing(freshness_statuses) or not decision_rows_present or not paper_live_monitoring_consistent:
+        reason = (
+            "paper_live_monitoring_saved_status_missing_or_inconsistent"
+            if not paper_live_monitoring_consistent
+            else "one_or_more_saved_report_inputs_stale_or_missing"
+        )
+        action = (
+            "refresh_report_only_paper_live_monitoring_status"
+            if not paper_live_monitoring_consistent
+            else "refresh_or_investigate_saved_monitoring_inputs"
+        )
         return {
             "action_required": "manual_review_required",
-            "action_reason": "one_or_more_saved_report_inputs_stale_or_missing",
-            "suggested_manual_action": "refresh_or_investigate_saved_monitoring_inputs",
+            "action_reason": reason,
+            "suggested_manual_action": action,
         }
     if has_warning(freshness_statuses) or not decisions_execution_false:
         reason = (

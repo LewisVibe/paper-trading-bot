@@ -37,6 +37,34 @@ DEFENSIVE_SAVED_INPUTS = [
 
 PROMOTED_REVIEW_SUMMARY_PATH = "data/promoted_review_refresh_summary.csv"
 PROMOTED_DECISION_PREVIEW_PATH = "data/promoted_decision_preview.csv"
+PAPER_LIVE_MONITORING_STATUS_PATH = "data/paper_live_monitoring_status.csv"
+
+PAPER_LIVE_REQUIRED_SUMMARY_VALUES = {
+    "active_strategy": "qqq_100_trend_gate",
+    "active_ticker": "QQQ",
+    "saved_position_state": "paper_position_long",
+    "saved_position_quantity": "1",
+    "alignment_state": "aligned_long",
+    "followup_policy_status": "no_action_required_already_aligned",
+    "no_action_required": "True",
+    "recommended_next_step": "hold_no_action_and_monitor_only",
+    "never_schedule_order_capable_commands": "True",
+    "execution_approved": "False",
+    "paper_execution_approved": "False",
+    "scheduling_approved": "False",
+    "live_trading_approved": "False",
+    "followup_order_approved": "False",
+    "repeat_execution_approved": "False",
+}
+
+PAPER_LIVE_APPROVAL_COLUMNS = [
+    "execution_approved",
+    "paper_execution_approved",
+    "scheduling_approved",
+    "live_trading_approved",
+    "followup_order_approved",
+    "repeat_execution_approved",
+]
 
 GENERATED_OUTPUT_PATHS = [
     "data/monitor_lockfile_readiness_report.csv",
@@ -50,6 +78,9 @@ GENERATED_OUTPUT_PATHS = [
     "data/defensive_candidate_comparison.csv",
     "data/etf_defensive_drawdown_comparison.csv",
     "data/charts/etf_defensive_drawdown_comparison.png",
+    "data/paper_live_monitoring_status.csv",
+    "data/paper_live_monitoring_components.csv",
+    "data/paper_live_monitoring_blockers.csv",
 ]
 
 
@@ -58,6 +89,15 @@ class StatusLine:
     label: str
     status: str
     detail: str
+
+
+@dataclass(frozen=True)
+class PaperLiveMonitoringContext:
+    present: bool
+    consistent: bool
+    approvals_false: bool
+    missing_or_mismatched: tuple[str, ...]
+    values: dict[str, str]
 
 
 def build_vps_monitoring_status_lines(root: Path | str = ".") -> list[str]:
@@ -85,6 +125,9 @@ def build_vps_monitoring_status_lines(root: Path | str = ".") -> list[str]:
     lines.append("")
     lines.append("Promoted review state:")
     lines.extend(promoted_review_status_lines(root_path))
+    lines.append("")
+    lines.append("Paper-live monitoring status:")
+    lines.extend(paper_live_monitoring_status_lines(root_path))
     lines.append("")
     lines.append("Saved-output freshness:")
     lines.extend(format_freshness_lines(build_freshness_statuses(root_path)))
@@ -175,6 +218,70 @@ def promoted_review_status_lines(root: Path) -> list[str]:
     return lines
 
 
+def build_paper_live_monitoring_context(root: Path) -> PaperLiveMonitoringContext:
+    rows = read_csv_rows(root / PAPER_LIVE_MONITORING_STATUS_PATH)
+    values = {row.get("summary_name", ""): str(row.get("summary_value", "")).strip() for row in rows}
+    if not rows:
+        return PaperLiveMonitoringContext(
+            present=False,
+            consistent=False,
+            approvals_false=True,
+            missing_or_mismatched=("missing_file:data/paper_live_monitoring_status.csv",),
+            values={},
+        )
+
+    missing_or_mismatched = []
+    for name, expected in PAPER_LIVE_REQUIRED_SUMMARY_VALUES.items():
+        actual = values.get(name, "")
+        if not equivalent_summary_value(actual, expected):
+            missing_or_mismatched.append(f"{name}:expected={expected};actual={actual or 'missing'}")
+
+    approvals_false = all_false(rows, "execution_approved")
+    for column in PAPER_LIVE_APPROVAL_COLUMNS:
+        if not equivalent_summary_value(values.get(column, ""), "False"):
+            approvals_false = False
+
+    return PaperLiveMonitoringContext(
+        present=True,
+        consistent=not missing_or_mismatched and approvals_false,
+        approvals_false=approvals_false,
+        missing_or_mismatched=tuple(missing_or_mismatched),
+        values=values,
+    )
+
+
+def paper_live_monitoring_status_lines(root: Path) -> list[str]:
+    context = build_paper_live_monitoring_context(root)
+    values = context.values
+    lines = [
+        f"- paper_live_monitoring_status_present: {context.present}",
+        f"- paper_live_monitoring_status_consistent: {context.consistent}",
+        f"- paper_live_monitoring_approval_flags_false: {context.approvals_false}",
+    ]
+    if context.present:
+        lines.extend(
+            [
+                f"- active_strategy: {values.get('active_strategy', 'missing')}",
+                f"- active_ticker: {values.get('active_ticker', 'missing')}",
+                f"- saved_position_state: {values.get('saved_position_state', 'missing')}",
+                f"- saved_position_quantity: {values.get('saved_position_quantity', 'missing')}",
+                f"- alignment_state: {values.get('alignment_state', 'missing')}",
+                f"- followup_policy_status: {values.get('followup_policy_status', 'missing')}",
+                f"- no_action_required: {values.get('no_action_required', 'missing')}",
+                f"- recommended_next_step: {values.get('recommended_next_step', 'missing')}",
+                f"- followup_order_approved: {values.get('followup_order_approved', 'False')}",
+                f"- repeat_execution_approved: {values.get('repeat_execution_approved', 'False')}",
+                f"- never_schedule_order_capable_commands: {values.get('never_schedule_order_capable_commands', 'missing')}",
+            ]
+        )
+    else:
+        lines.append("- paper_live_monitoring_missing_saved_output: data/paper_live_monitoring_status.csv")
+    if context.missing_or_mismatched:
+        lines.append("- paper_live_monitoring_manual_review_items: " + "; ".join(context.missing_or_mismatched))
+    lines.append("- paper_live_monitoring_warning: monitor only; repeat/follow-up orders are not approved.")
+    return lines
+
+
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
     try:
         with path.open(newline="", encoding="utf-8") as file:
@@ -191,6 +298,14 @@ def format_counts(counts: Counter[str]) -> str:
     if not counts:
         return "none"
     return ", ".join(f"{key}={value}" for key, value in sorted(counts.items()))
+
+
+def equivalent_summary_value(actual: str, expected: str) -> bool:
+    actual_clean = str(actual).strip()
+    expected_clean = str(expected).strip()
+    if expected_clean.lower() in {"true", "false"}:
+        return actual_clean.lower() == expected_clean.lower()
+    return actual_clean == expected_clean
 
 
 def is_git_ignored(root: Path, path: str) -> bool:
