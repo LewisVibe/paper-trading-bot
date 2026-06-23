@@ -956,3 +956,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `paper_live_f6_f7_audit_manual_review_required`; F6 unknown-position handling is partially confirmed and F7 accounting consistency still needs targeted tests/verifiers.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, QQQ100 paper execution, paper-order tests, normal bot execution, market-data backtests, yfinance refresh, Alpaca reads, scheduler changes.
 - **Stop condition:** Stop if the task would treat unknown positions as flat, use portfolio backtests as promotion evidence, approve execution, or build the generic promotion ladder.
+
+### Task: Paper-live F6/F7 targeted checks
+- **Purpose:** Use `python scripts\verify_paper_live_f6_f7_targeted_checks.py` to verify pure helper boundaries before generic promotion-ladder work.
+- **Risk level:** Low/test-only when limited to no-network helper checks.
+- **Allowed commands:** `python scripts\verify_paper_live_f6_f7_targeted_checks.py`.
+- **Expected status:** F6 unknown positions stay loud and manual-review only; F7 portfolio backtests remain not promotion evidence until accounting consistency is proven.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, scheduler changes.
+- **Stop condition:** Stop if the task would wrap commands, approve execution/scheduling, or promote multi-sleeve, high-growth, defensive, crypto, SMA, or slow-SMA paths.

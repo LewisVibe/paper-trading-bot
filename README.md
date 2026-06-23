@@ -1911,6 +1911,8 @@ data/paper_live_f6_f7_audit_evidence.csv
 
 Expected audit status remains conservative: `paper_live_f6_f7_audit_manual_review_required`. F6 has partially confirmed loud unknown-position boundaries, while F7 requires targeted starting-cash/accounting tests or verifiers before portfolio backtests can become promotion evidence.
 
+Paper-live F6/F7 targeted checks are covered by `python scripts\verify_paper_live_f6_f7_targeted_checks.py`. This no-network verifier exercises pure preview helpers so unknown positions stay loud and cannot become flat/aligned/eligible silently, and it checks that multi-sleeve portfolio backtests remain research-only, not promotion evidence, until accounting consistency is proven. It does not call Alpaca, read positions, refresh yfinance, create orders, approve scheduling, or build the generic promotion ladder.
+
 QQQ100 manual paper execution is a separate high-risk, confirmation-gated command for the clean QQQ lead only. It reads `data/qqq100_preview_signal_pack.csv`, requires `--confirm-qqq100-paper`, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, checks the QQQ paper position, blocks on open QQQ orders or recent matching QQQ one-share broker orders, and can only align `qqq_100_trend_gate` / `QQQ` to exactly zero or one share. It does not use the normal config ticker universe and does not apply to high-growth, crypto, QQQ150, or adaptive QQQ alternatives. General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false; only the narrow `strategy_execution_approved` / `qqq100_one_share_alignment_approved` flags can be true for the exact manually confirmed QQQ100 path.
 
 Command:

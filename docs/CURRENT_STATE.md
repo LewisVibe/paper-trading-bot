@@ -271,6 +271,7 @@ The paper-live F6/F7 audit comes from `python bot.py --paper-live-f6-f7-audit`, 
 - F7 audits starting-cash/accounting consistency for portfolio backtests before any backtest output can become promotion evidence.
 - Current expected status is `paper_live_f6_f7_audit_manual_review_required`: F6 boundaries are partially confirmed, and F7 needs targeted accounting tests or verifiers before any generic promotion ladder or multi-sleeve paper-live work.
 - It does not run market-data backtests, call Alpaca/yfinance, read positions, approve execution, approve scheduling, or build the generic promotion ladder.
+- F6/F7 targeted checks now use `python scripts\verify_paper_live_f6_f7_targeted_checks.py` to exercise pure preview helpers for unknown positions and to keep portfolio backtests not promotion evidence until accounting consistency is proven.
 
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
@@ -879,6 +880,7 @@ python scripts\verify_vps_daily_monitoring_summary.py
 python scripts\verify_paper_live_monitoring_in_vps_summary.py
 python scripts\verify_paper_live_checklist_status.py
 python scripts\verify_paper_live_f6_f7_audit.py
+python scripts\verify_paper_live_f6_f7_targeted_checks.py
 python scripts\verify_hermes_promoted_review_refresh_cron_design.py
 python scripts\verify_hermes_cron_monitoring_runbook.py
 python scripts\verify_report_only_import_safety.py

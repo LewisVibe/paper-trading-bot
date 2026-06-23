@@ -203,6 +203,10 @@ Outputs: `data/paper_live_f6_f7_audit.csv`, `data/paper_live_f6_f7_audit_summary
 
 Current expected audit status is `paper_live_f6_f7_audit_manual_review_required`: F6 confirms some loud position unknown / position unavailable boundaries but still needs future promotion-ladder review, and F7 requires starting-cash/accounting tests or verifiers before portfolio backtests are used as promotion evidence.
 
+Implemented F6/F7 targeted checks verifier: `python scripts\verify_paper_live_f6_f7_targeted_checks.py`.
+
+This no-network verifier exercises pure preview/action helpers so unknown positions stay loud and never silently become flat, aligned, or eligible. It also keeps portfolio backtests not promotion evidence until starting-cash/accounting consistency is proven. It does not approve execution, scheduling, multi-sleeve promotion, or generic promotion-ladder work.
+
 ## 12. Build A Future Promotion System Later
 
 Later, after QQQ100 is stable, build a generic promotion ladder:
