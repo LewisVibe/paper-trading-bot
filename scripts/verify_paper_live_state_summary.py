@@ -28,6 +28,7 @@ REQUIRED_MODULE_TOKENS = [
     "saved_current_position_state",
     "last_saved_qqq100_order_result",
     "current_alignment_state",
+    "qqq100_alignment_unverified_missing_saved_quantity",
     "promotion_gate_status",
     "readiness_status",
     "missing_saved_evidence_blockers",

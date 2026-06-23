@@ -17,6 +17,7 @@ from trading_bot.research.paper_live_evidence_audit import evaluate_paper_live_s
 
 STRATEGY_NAME = "qqq_100_trend_gate"
 TICKER = "QQQ"
+UNVERIFIED_ALIGNMENT_STATE = "qqq100_alignment_unverified_missing_saved_quantity"
 
 INPUT_FILES = {
     "paper_live_promotion_gate_summary": Path("data/paper_live_promotion_gate_summary.csv"),
@@ -195,7 +196,7 @@ def build_context(inputs: dict[str, list[dict[str, Any]]]) -> dict[str, str]:
     if readiness_status == "paper_live_readiness_reconciled_aligned_manual_review_required":
         largest_blocker = "followup_order_not_approved_after_reconciled_saved_state"
     if missing_blockers != "none":
-        largest_blocker = "missing_saved_evidence"
+        largest_blocker = missing_blockers
     return {
         "active_strategy": STRATEGY_NAME,
         "active_ticker": TICKER,

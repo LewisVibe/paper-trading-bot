@@ -224,6 +224,7 @@ The paper-live evidence audit comes from `python bot.py --paper-live-evidence-au
 - It reads saved QQQ100 preview/action/postcheck/order/state evidence and reports exact missing saved files or fields through `exact_missing_saved_evidence`.
 - It can identify a reconciled saved state such as desired `long`, saved `paper_position_long`, saved quantity `1`, saved filled QQQ100 order result, and `aligned_long`.
 - Reconciled saved evidence does not approve a follow-up or repeat paper order.
+- Exact QQQ100 alignment requires saved quantity evidence. If the saved postcheck file or quantity field is missing, the state summary reports `qqq100_alignment_unverified_missing_saved_quantity` rather than treating a saved `paper_position_long` label as verified alignment.
 - It does not call Alpaca, read live positions, refresh market data, create order instructions, approve execution, approve paper execution, approve follow-up orders, approve scheduling, or approve live trading.
 - Every row preserves `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, and `followup_order_approved=false`.
 

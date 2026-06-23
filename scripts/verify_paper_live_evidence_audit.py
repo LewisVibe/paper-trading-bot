@@ -27,6 +27,8 @@ REQUIRED_MODULE_TOKENS = [
     "exact_missing_saved_evidence",
     "complete_for_state_reconciliation",
     "aligned_long_after_saved_fill",
+    "qqq100_alignment_unverified_missing_saved_quantity",
+    "position_quantity_abs_or_current_position_quantity_abs",
     "followup_or_repeat_paper_order_allowed",
     "qqq_100_trend_gate",
     "QQQ",

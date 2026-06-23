@@ -156,7 +156,8 @@ def evaluate_paper_live_saved_evidence(
     saved_position_state = detect_saved_position_state(saved_inputs)
     saved_position_quantity = detect_saved_position_quantity(saved_inputs)
     order_result = detect_order_result(saved_inputs)
-    alignment_state = detect_alignment_state(saved_inputs)
+    raw_alignment_state = detect_alignment_state(saved_inputs)
+    alignment_state = normalize_alignment_state(raw_alignment_state, saved_position_quantity)
     promotion_status = summary_value(saved_inputs["paper_live_promotion_gate_summary"], "final_promotion_gate_status")
     readiness_status = summary_value(saved_inputs["paper_live_readiness_summary"], "final_readiness_status")
     exact_missing = list_missing_items(
@@ -293,15 +294,9 @@ def detect_saved_position_state(inputs: dict[str, list[dict[str, Any]]]) -> str:
 def detect_saved_position_quantity(inputs: dict[str, list[dict[str, Any]]]) -> str:
     quantity = (
         first_nonempty(inputs["qqq100_paper_postcheck"], ["position_quantity_abs", "current_position_quantity_abs"])
-        or state_summary_position_part(inputs, 1)
     )
     if quantity:
         return normalize_quantity(quantity)
-    for row in inputs["paper_execution_state_positions"]:
-        if str(row.get("ticker", "")).upper() == TICKER:
-            value = str(row.get("quantity_abs") or row.get("current_position_quantity_abs") or "").strip()
-            if value:
-                return normalize_quantity(value)
     return "unavailable"
 
 
@@ -324,6 +319,12 @@ def detect_alignment_state(inputs: dict[str, list[dict[str, Any]]]) -> str:
         or summary_value(inputs["paper_live_state_summary"], "current_alignment_state")
         or "unavailable"
     )
+
+
+def normalize_alignment_state(alignment_state: str, saved_position_quantity: str) -> str:
+    if saved_position_quantity == "unavailable":
+        return "qqq100_alignment_unverified_missing_saved_quantity"
+    return alignment_state
 
 
 def state_summary_position_part(inputs: dict[str, list[dict[str, Any]]], index: int) -> str:
