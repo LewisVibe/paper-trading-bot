@@ -192,9 +192,10 @@ The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-pap
 
 - It is high-risk and manually confirmed.
 - It reads only the saved `data/qqq100_preview_signal_pack.csv` signal for `qqq_100_trend_gate` / `QQQ`.
-- It is fixed to one QQQ share, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, and does not use the normal config ticker universe.
+- It is fixed to exact zero/one QQQ paper-share alignment, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, and does not use the normal config ticker universe.
 - It checks QQQ paper position, open QQQ orders, market-open status, and recent matching QQQ one-share broker orders before any submission.
-- It may buy one QQQ share when the saved signal is `long` and QQQ is flat, may sell one QQQ share when the saved signal is `flat` and QQQ is long without overselling, and otherwise writes a no-order-needed or blocked result.
+- It may buy one QQQ share when the saved signal is `long` and QQQ is flat, hold when the saved signal is `long` and QQQ is exactly one share, sell one QQQ share when the saved signal is `flat` and QQQ is exactly one share, or hold flat when desired flat and QQQ is zero.
+- If the QQQ paper position is more than one QQQ share, it must block/manual review rather than silently treating the position as aligned, reducing to one, or selling all.
 - It writes `data/qqq100_paper_execution_result.csv`, `data/qqq100_paper_execution_summary.csv`, and `data/qqq100_paper_execution_blockers.csv` when run.
 - General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false. It must not be scheduled and must not be generalized to normal `python bot.py`, `--paper-order-test`, slow-SMA paper execution, high-growth, crypto, QQQ150, or adaptive QQQ paths.
 

@@ -1683,7 +1683,7 @@ data/qqq100_paper_execution_readiness_evidence.csv
 data/qqq100_paper_execution_readiness_blockers.csv
 ```
 
-QQQ100 manual paper execution is a separate high-risk, confirmation-gated command for the clean QQQ lead only. It reads `data/qqq100_preview_signal_pack.csv`, requires `--confirm-qqq100-paper`, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, checks the QQQ paper position, blocks on open QQQ orders or recent matching QQQ one-share broker orders, and can only align `qqq_100_trend_gate` / `QQQ` by one share. It does not use the normal config ticker universe and does not apply to high-growth, crypto, QQQ150, or adaptive QQQ alternatives. General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false; only the narrow `strategy_execution_approved` / `qqq100_one_share_alignment_approved` flags can be true for the exact manually confirmed QQQ100 path.
+QQQ100 manual paper execution is a separate high-risk, confirmation-gated command for the clean QQQ lead only. It reads `data/qqq100_preview_signal_pack.csv`, requires `--confirm-qqq100-paper`, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, checks the QQQ paper position, blocks on open QQQ orders or recent matching QQQ one-share broker orders, and can only align `qqq_100_trend_gate` / `QQQ` to exactly zero or one share. It does not use the normal config ticker universe and does not apply to high-growth, crypto, QQQ150, or adaptive QQQ alternatives. General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false; only the narrow `strategy_execution_approved` / `qqq100_one_share_alignment_approved` flags can be true for the exact manually confirmed QQQ100 path.
 
 Command:
 
@@ -1691,7 +1691,7 @@ Command:
 python bot.py --execute-qqq100-paper --confirm-qqq100-paper
 ```
 
-If the saved signal is `long` and the QQQ paper position is flat, the command may submit one paper `BUY 1 QQQ` order. If the saved signal is `flat` and the QQQ paper position is long, it may submit one paper `SELL 1 QQQ` order without overselling. Already-aligned long/flat states write a skipped/no-order-needed result. Blocked, skipped, or submitted runs write:
+If the saved signal is `long` and the QQQ paper position is flat, the command may submit one paper `BUY 1 QQQ` order. If the saved signal is `long` and the position is exactly one QQQ share, it writes an already-aligned no-order-needed result. If the saved signal is `flat` and the position is exactly one QQQ share, it may submit one paper `SELL 1 QQQ` order without overselling. If the QQQ paper position is more than one QQQ share, the command must block/manual review rather than silently treating it as aligned, reducing to one, or selling all. Blocked, skipped, or submitted runs write:
 
 ```text
 data/qqq100_paper_execution_result.csv

@@ -241,6 +241,10 @@ def evaluate_qqq100_paper_execution_preflight(
     intended_action, order_side = qqq100_alignment_action(desired_position, current_position)
     if intended_action == "blocked_short_position":
         reasons.append("current QQQ paper position is short; short handling is not supported")
+    elif intended_action == "blocked_excess_long_position":
+        reasons.append("current QQQ paper position exceeds one share; manual review is required before reducing exposure")
+    elif intended_action == "blocked_non_one_share_long_position":
+        reasons.append("current QQQ paper position is long but not exactly one share; manual review is required")
     elif intended_action == "blocked_close_quantity":
         reasons.append("flat alignment would oversell or close more than one QQQ share")
 
@@ -296,13 +300,19 @@ def qqq100_alignment_action(desired_position: str, current_position: Position | 
     if desired_position == POSITION_LONG:
         if current_position.state == POSITION_FLAT:
             return "buy_1", "buy"
-        return "hold_already_long", ""
+        if current_position.abs_quantity == FIXED_QUANTITY:
+            return "hold_already_long", ""
+        if current_position.abs_quantity > FIXED_QUANTITY:
+            return "blocked_excess_long_position", ""
+        return "blocked_non_one_share_long_position", ""
     if desired_position == POSITION_FLAT:
         if current_position.state == POSITION_FLAT:
             return "hold_flat", ""
-        if current_position.abs_quantity >= FIXED_QUANTITY:
+        if current_position.abs_quantity == FIXED_QUANTITY:
             return "sell_1", "sell"
-        return "blocked_close_quantity", ""
+        if current_position.abs_quantity > FIXED_QUANTITY:
+            return "blocked_excess_long_position", ""
+        return "blocked_non_one_share_long_position", ""
     return "blocked_unknown_desired_position", ""
 
 

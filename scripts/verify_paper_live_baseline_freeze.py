@@ -100,6 +100,7 @@ def verify_pytest_foundation() -> None:
     expected_tests = {
         "test_config.py",
         "test_execution.py",
+        "test_qqq100_alignment.py",
     }
     present = {path.name for path in tests_dir.glob("test_*.py")}
     missing = expected_tests - present

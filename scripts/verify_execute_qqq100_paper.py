@@ -77,12 +77,27 @@ def verify_helper_cases(failures: list[str]) -> None:
         credentials_present=True,
         market_status="open",
         signal=signal,
-        current_position=Position(Decimal("2")),
+        current_position=Position(Decimal("1")),
         position_readable=True,
         open_order_count=0,
     )
     if not allowed_hold.allowed or allowed_hold.intended_action != "hold_already_long":
-        failures.append("long signal with any existing long QQQ paper position should hold")
+        failures.append("long signal with exactly one existing QQQ paper share should hold")
+
+    blocked_excess_long = evaluate_qqq100_paper_execution_preflight(
+        confirm_qqq100_paper=True,
+        alpaca_paper=True,
+        allow_shorting=False,
+        credentials_present=True,
+        market_status="open",
+        signal=signal,
+        current_position=Position(Decimal("2")),
+        position_readable=True,
+        open_order_count=0,
+        recent_order_match=recent_order_pass(),
+    )
+    if blocked_excess_long.allowed or blocked_excess_long.intended_action != "blocked_excess_long_position":
+        failures.append("long signal with more than one QQQ paper share must block for manual review")
 
     flat_signal = Qqq100SavedSignal(True, STRATEGY_NAME, TICKER, "flat", "2026-06-15", "ok", "")
     allowed_sell = evaluate_qqq100_paper_execution_preflight(
@@ -99,6 +114,21 @@ def verify_helper_cases(failures: list[str]) -> None:
     )
     if not allowed_sell.allowed or allowed_sell.intended_action != "sell_1" or allowed_sell.order_side != "sell":
         failures.append("flat signal with long QQQ position should allow exactly one sell")
+
+    blocked_excess_flat = evaluate_qqq100_paper_execution_preflight(
+        confirm_qqq100_paper=True,
+        alpaca_paper=True,
+        allow_shorting=False,
+        credentials_present=True,
+        market_status="open",
+        signal=flat_signal,
+        current_position=Position(Decimal("2")),
+        position_readable=True,
+        open_order_count=0,
+        recent_order_match=recent_order_pass(),
+    )
+    if blocked_excess_flat.allowed or blocked_excess_flat.intended_action != "blocked_excess_long_position":
+        failures.append("flat signal with more than one QQQ paper share must block for manual review")
 
     cases = [
         ("missing_confirmation", {"confirm_qqq100_paper": False}),

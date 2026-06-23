@@ -9,7 +9,7 @@ Cross-references:
 - `docs/V2_REFACTOR_INVENTORY.md`
 - `docs/VPS_SETUP_CHECKLIST.md`
 
-Latest execution-safety checkpoint: normal `python bot.py` is now monitoring-only and must not submit Alpaca orders or mutate position state. Order-capable paper paths remain separate and explicitly confirmed; manual paper sells have an oversell guard when shorting is disabled; `paper_kill_switch_enabled` is real config/env state with safe default `false`.
+Latest execution-safety checkpoint: normal `python bot.py` is now monitoring-only and must not submit Alpaca orders or mutate position state. Order-capable paper paths remain separate and explicitly confirmed; manual paper sells have an oversell guard when shorting is disabled; QQQ100 paper alignment is exact zero/one-share only and blocks/manual review for more than one QQQ share; `paper_kill_switch_enabled` is real config/env state with safe default `false`.
 
 ## 1. Safe now
 

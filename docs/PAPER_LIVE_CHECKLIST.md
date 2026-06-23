@@ -29,7 +29,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - F1: normal bot bypassing kill-switch is handled by making normal bot monitoring-only. Keep this locked.
 - F3: manual sell oversell guard is implemented. Keep tests around it.
 - F5: `paper_kill_switch_enabled` is implemented as real config/env state.
-- F2 remains open: QQQ100 one-share alignment must enforce exactly zero or one QQQ share.
+- F2: QQQ100 one-share alignment now enforces exactly zero or one QQQ share. More than one QQQ share blocks/manual review rather than silently counting as aligned or selling only one share.
 - F6 still needs audit: previews must never silently assume flat when positions are unknown.
 - F7 still needs audit: portfolio backtest starting-cash/accounting consistency needs a verifier before backtest results are used as promotion evidence.
 - `bot.py` remains large. That is not a paper-live blocker if narrow execution stays safe, but it remains refactor debt.
@@ -56,15 +56,15 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - Promotion must not create orders.
 - Promotion may output `paper_live_candidate=True`, but general `execution_approved` must remain false until the actual manual execution command.
 
-## 6. Fix QQQ100 Alignment Before Further QQQ Paper Orders
+## 6. Maintain QQQ100 Exact Alignment Before Further QQQ Paper Orders
 
 - Desired long plus zero QQQ shares: buy one may be allowed after all gates pass.
 - Desired long plus exactly one QQQ share: already aligned.
-- Desired long plus more than one QQQ share: block/manual review, or reduce to one only after a separate explicit design.
+- Desired long plus more than one QQQ share: block/manual review. Do not reduce to one unless a separate explicit design is approved later.
 - Desired flat plus zero QQQ shares: already flat.
 - Desired flat plus exactly one QQQ share: sell one may be allowed after all gates pass.
-- Desired flat plus more than one QQQ share: block/manual review, or sell all only after a separate explicit design.
-- Add verifier and pytest coverage for all cases.
+- Desired flat plus more than one QQQ share: block/manual review. Do not sell all unless a separate explicit design is approved later.
+- Verifier and pytest coverage must cover all six cases.
 
 ## 7. Build The Paper-Live Readiness Report
 
@@ -149,6 +149,6 @@ Start with QQQ100 only. Do not generalize too early.
 
 Use this as the next implementation prompt:
 
-> Fix F2: enforce exact QQQ100 one-share alignment with verifier tests, no order runs.
+> Continue with F6/F7 audits after the exact QQQ100 one-share alignment verifier and tests pass. No order runs.
 
 That is the highest-priority gap before treating the QQQ100 paper-live path as credible.
