@@ -12,6 +12,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from trading_bot.research.paper_live_evidence_audit import evaluate_paper_live_saved_evidence
+
 
 STRATEGY_NAME = "qqq_100_trend_gate"
 TICKER = "QQQ"
@@ -170,20 +172,28 @@ def show_paper_live_state_summary(root_dir: Path | str = ".") -> tuple[int, list
 
 
 def build_context(inputs: dict[str, list[dict[str, Any]]]) -> dict[str, str]:
+    saved_snapshot = evaluate_paper_live_saved_evidence(inputs=inputs)
     missing = [name for name, rows in inputs.items() if not rows]
-    desired_state = detect_desired_state(inputs)
-    saved_position = detect_saved_position(inputs)
-    order_result = detect_order_result(inputs)
-    alignment_state = detect_alignment_state(inputs)
+    desired_state = saved_snapshot.desired_state
+    saved_position = (
+        f"{saved_snapshot.saved_current_position_state}; quantity={saved_snapshot.saved_current_position_quantity}"
+        if saved_snapshot.saved_current_position_state != "unavailable"
+        and saved_snapshot.saved_current_position_quantity != "unavailable"
+        else saved_snapshot.saved_current_position_state
+    )
+    order_result = saved_snapshot.last_saved_qqq100_order_result
+    alignment_state = saved_snapshot.current_alignment_state
     promotion_status = summary_value(inputs["paper_live_promotion_gate_summary"], "final_promotion_gate_status")
     readiness_status = summary_value(inputs["paper_live_readiness_summary"], "final_readiness_status")
-    missing_blockers = detect_missing_saved_evidence_blockers(inputs)
+    missing_blockers = detect_missing_saved_evidence_blockers(inputs, saved_snapshot.exact_missing_items)
     manual_discussion_allowed = readiness_status == "paper_live_ready_for_manual_qqq100_paper_action_discussion"
     largest_blocker = (
         "readiness_not_ready_for_manual_discussion"
         if not manual_discussion_allowed
         else "explicit_human_approval_still_required"
     )
+    if readiness_status == "paper_live_readiness_reconciled_aligned_manual_review_required":
+        largest_blocker = "followup_order_not_approved_after_reconciled_saved_state"
     if missing_blockers != "none":
         largest_blocker = "missing_saved_evidence"
     return {
@@ -248,27 +258,13 @@ def detect_alignment_state(inputs: dict[str, list[dict[str, Any]]]) -> str:
     )
 
 
-def detect_missing_saved_evidence_blockers(inputs: dict[str, list[dict[str, Any]]]) -> str:
-    explicit = []
-    for row in inputs["paper_live_readiness_blockers"]:
-        name = str(row.get("blocker_name", ""))
-        if "missing" in name:
-            explicit.append(name)
-    if explicit:
-        return "; ".join(explicit)
-    missing = [
-        name
-        for name in [
-            "qqq100_preview_signal",
-            "qqq100_action_preview",
-            "qqq100_paper_postcheck",
-            "qqq100_paper_execution_result",
-            "paper_live_promotion_gate_summary",
-            "paper_live_readiness_summary",
-        ]
-        if not inputs[name]
-    ]
-    return "; ".join(missing) if missing else "none"
+def detect_missing_saved_evidence_blockers(
+    inputs: dict[str, list[dict[str, Any]]],
+    exact_missing_items: tuple[str, ...],
+) -> str:
+    if exact_missing_items:
+        return "; ".join(exact_missing_items)
+    return "none"
 
 
 def build_summary_rows(context: dict[str, str]) -> list[dict[str, Any]]:

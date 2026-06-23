@@ -13,6 +13,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from trading_bot.research.paper_live_evidence_audit import evaluate_paper_live_saved_evidence
+
 
 STRATEGY_NAME = "qqq_100_trend_gate"
 TICKER = "QQQ"
@@ -29,7 +31,13 @@ OUTPUT_FILES = {
 SAVED_EVIDENCE_FILES = {
     "qqq100_preview_candidate_readiness": Path("data/qqq100_preview_candidate_readiness_summary.csv"),
     "qqq100_preview_signal": Path("data/qqq100_preview_signal_pack.csv"),
-    "qqq100_action_preview": Path("data/qqq100_action_preview_summary.csv"),
+    "qqq100_action_preview_summary": Path("data/qqq100_action_preview_summary.csv"),
+    "qqq100_action_preview": Path("data/qqq100_action_preview.csv"),
+    "qqq100_paper_execution_result": Path("data/qqq100_paper_execution_result.csv"),
+    "qqq100_paper_postcheck": Path("data/qqq100_paper_postcheck.csv"),
+    "qqq100_paper_postcheck_summary": Path("data/qqq100_paper_postcheck_summary.csv"),
+    "paper_execution_state_positions": Path("data/paper_execution_state_positions.csv"),
+    "paper_execution_state_milestones": Path("data/paper_execution_state_milestones.csv"),
     "qqq100_paper_readiness_blockers": Path("data/qqq100_paper_readiness_blocker_summary.csv"),
     "qqq100_paper_execution_readiness": Path("data/qqq100_paper_execution_readiness_summary.csv"),
     "portfolio_risk_policy": Path("data/portfolio_risk_policy_report.csv"),
@@ -197,41 +205,35 @@ def build_context(
     saved_inputs: dict[str, list[dict[str, Any]]],
     static_inputs: dict[str, bool],
 ) -> dict[str, Any]:
+    saved_snapshot = evaluate_paper_live_saved_evidence(inputs=saved_inputs)
     missing_saved = [name for name, rows in saved_inputs.items() if not rows]
     missing_static = [name for name, present in static_inputs.items() if not present]
     hard_blockers = []
     if missing_static:
         hard_blockers.append("static_verifier_missing")
-    required_saved = [
-        "qqq100_preview_candidate_readiness",
-        "qqq100_preview_signal",
-        "qqq100_action_preview",
-        "qqq100_paper_readiness_blockers",
-        "qqq100_paper_execution_readiness",
-        "portfolio_risk_policy",
-        "execution_eligibility",
-        "paper_execution_protection",
-    ]
+    required_saved = ["qqq100_preview_signal", "qqq100_action_preview", "qqq100_paper_postcheck"]
     missing_required_saved = [name for name in required_saved if name in missing_saved]
+    missing_required_saved.extend(saved_snapshot.exact_missing_items)
     if missing_required_saved:
-        hard_blockers.append("missing_required_saved_evidence")
+        hard_blockers.append("missing_exact_saved_evidence")
 
     if hard_blockers:
         final_status = "paper_live_promotion_blocked_manual_review_required"
         paper_live_candidate = False
-        largest_blocker = hard_blockers[0]
-        next_step = "regenerate_or_review_missing_saved_static_evidence_before_candidate_label"
+        largest_blocker = "; ".join(missing_required_saved) if missing_required_saved else hard_blockers[0]
+        next_step = "regenerate_or_review_exact_missing_saved_evidence_before_candidate_label"
     else:
         final_status = "paper_live_candidate_ready_for_manual_discussion"
         paper_live_candidate = True
-        largest_blocker = "explicit_human_approval_still_required"
-        next_step = "manual_discussion_only_before_any_separate_paper_execution_prompt"
+        largest_blocker = "followup_order_not_approved_after_reconciled_saved_state"
+        next_step = "manual_review_reconciled_saved_state_before_any_separate_followup_order_design"
 
     return {
         "final_status": final_status,
         "paper_live_candidate": paper_live_candidate,
         "largest_blocker": largest_blocker,
         "recommended_next_step": next_step,
+        "saved_snapshot": saved_snapshot,
         "missing_saved": missing_saved,
         "missing_required_saved": missing_required_saved,
         "missing_static": missing_static,
@@ -252,6 +254,8 @@ def build_gate_rows(context: dict[str, Any]) -> list[dict[str, Any]]:
         gate_row("saved_qqq100_research_preview_action_readiness", "pass" if not context["missing_required_saved"] else "blocked", "saved_evidence_required", paper_live_candidate, "Saved QQQ100 research/preview/action/readiness evidence is required where expected.", "saved CSV evidence inventory", "none" if not context["missing_required_saved"] else "missing_required_saved_evidence", "Regenerate missing safe saved report outputs before candidate label."),
         gate_row("portfolio_risk_review", status_for_missing("portfolio_risk_policy", context["missing_saved"]), "portfolio_risk_review_required", paper_live_candidate, "Portfolio/risk review evidence is required or listed as a blocker.", "data/portfolio_risk_policy_report.csv", blocker_for_missing("portfolio_risk_policy", context["missing_saved"]), "Review portfolio risk before any paper execution discussion."),
         gate_row("execution_readiness_review", status_for_missing("qqq100_paper_execution_readiness", context["missing_saved"]), "execution_readiness_evidence_required", paper_live_candidate, "Execution-readiness evidence is required or listed as a blocker.", "data/qqq100_paper_execution_readiness_summary.csv", blocker_for_missing("qqq100_paper_execution_readiness", context["missing_saved"]), "Review execution readiness before any paper command."),
+        gate_row("reconciled_saved_qqq100_state", "pass" if context["saved_snapshot"].complete_for_state_reconciliation else "blocked", "saved_state_reconciliation_required", paper_live_candidate, "Saved QQQ100 evidence is reconciled across desired state, saved paper position, saved order result, and alignment state.", "saved QQQ100 evidence audit", "none" if context["saved_snapshot"].complete_for_state_reconciliation else "; ".join(context["saved_snapshot"].exact_missing_items), "Review exact missing saved evidence before candidate discussion."),
+        gate_row("followup_order_boundary", "blocked", "followup_order_not_approved", paper_live_candidate, "Reconciled saved state does not approve a follow-up or repeat QQQ100 paper order.", "manual approval boundary", "followup_order_not_approved", "Design and approve any follow-up order separately."),
         gate_row("human_approval_boundary", "blocked", "explicit_human_approval_still_required", paper_live_candidate, "Explicit human approval is still required before any future manually confirmed paper execution command.", "manual approval boundary", "human_approval_required", "Use a separate prompt before any paper execution command."),
         gate_row("execution_flags", "pass", "execution_flags_false", paper_live_candidate, "General execution, paper execution, and scheduling approvals remain false.", "report schema", "none_for_false_approval_flags", "Keep false approval flags in every row."),
     ]
@@ -286,7 +290,8 @@ def build_blocker_rows(context: dict[str, Any]) -> list[dict[str, Any]]:
     for name in context["missing_static"]:
         rows.append(blocker_row(f"missing_static_verifier_{name}", "blocked", "critical", f"Missing static verifier: {name}.", "Add or restore the verifier before candidate discussion."))
     for name in context["missing_required_saved"]:
-        rows.append(blocker_row(f"missing_required_saved_evidence_{name}", "blocked", "high", f"Missing saved evidence: {name}.", "Run or review the corresponding safe report command before candidate discussion."))
+        safe_name = name.replace(":", "_").replace("/", "_").replace("\\", "_")
+        rows.append(blocker_row(f"missing_required_saved_evidence_{safe_name}", "blocked", "high", f"Missing saved evidence: {name}.", "Run or review the corresponding safe report command before candidate discussion."))
     optional_missing = sorted(set(context["missing_saved"]) - set(context["missing_required_saved"]))
     for name in optional_missing:
         rows.append(blocker_row(f"missing_optional_saved_evidence_{name}", "warning", "medium", f"Optional saved context missing: {name}.", "Regenerate only if needed for manual review completeness."))
@@ -302,6 +307,9 @@ def build_summary_rows(context: dict[str, Any]) -> list[dict[str, Any]]:
         summary_row("candidate_scope", "qqq100_only", "No SMA, slow-SMA, high-growth, crypto, QQQ150, or adaptive QQQ promotion."),
         summary_row("largest_blocker", context["largest_blocker"], "Largest remaining blocker before candidate label or paper execution discussion."),
         summary_row("recommended_next_step", context["recommended_next_step"], "Next step remains manual review, not order execution."),
+        summary_row("exact_missing_saved_evidence", "; ".join(context["missing_required_saved"]) if context["missing_required_saved"] else "none", "Exact missing saved files or fields for reconciliation."),
+        summary_row("saved_state_reconciled", str(context["saved_snapshot"].complete_for_state_reconciliation), "Reconciled saved QQQ100 desired/position/order/alignment evidence."),
+        summary_row("followup_order_approved", "False", "Follow-up or repeat order approval remains false."),
         summary_row("execution_approved", "False", "General execution approval remains false."),
         summary_row("paper_execution_approved", "False", "Paper execution approval remains false."),
         summary_row("scheduling_approved", "False", "Scheduling approval remains false."),

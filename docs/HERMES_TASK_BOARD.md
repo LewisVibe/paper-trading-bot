@@ -911,3 +911,10 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
   - Alpaca order paths
 - **Allowed commands:** None.
 - **Stop condition:** Refuse any short execution, crypto execution, margin, leverage, or crypto shorting work. Current crypto remains research-only; short-selling research is paused.
+
+### Task: Paper-live evidence reconciliation checkpoint
+- **Purpose:** Use `python bot.py --paper-live-evidence-audit` to review saved QQQ100 evidence consistency before any separate manual follow-up design.
+- **Risk level:** Low/report-only when limited to saved CSV evidence.
+- **Allowed commands:** `python bot.py --paper-live-evidence-audit`, `python bot.py --show-paper-live-evidence-audit`.
+- **Forbidden commands:** QQQ100 paper execution, paper-order tests, slow-SMA execution, normal bot execution, scheduler changes.
+- **Stop condition:** Stop if the task would call Alpaca, read live positions, create order instructions, approve follow-up orders, or change scheduling.

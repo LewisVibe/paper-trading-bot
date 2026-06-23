@@ -146,6 +146,16 @@ This should be the daily check before touching any paper order command.
 
 The state summary is not a readiness upgrade and must preserve `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, and `followup_order_approved=false`.
 
+Implemented reconciliation checkpoint: `python bot.py --paper-live-evidence-audit`.
+
+Saved display: `python bot.py --show-paper-live-evidence-audit`.
+
+Outputs: `data/paper_live_evidence_audit.csv`, `data/paper_live_evidence_audit_summary.csv`, `data/paper_live_evidence_audit_blockers.csv`, and `data/paper_live_evidence_audit_evidence.csv`.
+
+The audit reads saved QQQ100 preview/action/postcheck/order/state evidence, lists exact missing saved files or fields through `exact_missing_saved_evidence`, and can confirm that saved evidence is reconciled while still keeping follow-up/repeat order approval false.
+
+The evidence audit does not call Alpaca, read live positions, refresh market data, create order instructions, or approve execution, paper execution, scheduling, live trading, or follow-up orders.
+
 ## 11. Schedule Monitoring Only
 
 - Hermes cron may run status/report commands only.

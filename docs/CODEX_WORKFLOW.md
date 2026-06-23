@@ -278,3 +278,5 @@ Before commits or pushes, run `python scripts\verify_repo_safety.py` to check th
 When the user asks for Windows/CMD-style verification, keep command blocks easy to paste and avoid noisy output in the final report. For routine verifier blocks, summarize only the pass/fail status unless something unusual appears.
 
 Known sandbox limitation: local Codex runs may fail network-backed checks that need yfinance or Discord. Treat that as an environment limitation when the no-network verifiers pass and the failure is clearly a blocked network call.
+
+Paper-live evidence reconciliation uses `python bot.py --paper-live-evidence-audit` and `python bot.py --show-paper-live-evidence-audit`. These commands are saved-output-only QQQ100 reports: they may identify exact missing saved files or fields and reconcile saved desired/position/order/alignment state, but they must keep `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, and `followup_order_approved=false`.
