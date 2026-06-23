@@ -925,3 +925,10 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Allowed commands:** `python bot.py --qqq100-postcheck-readiness-report`, `python bot.py --show-qqq100-postcheck-readiness-report`.
 - **Forbidden commands:** `python bot.py --qqq100-paper-postcheck --confirm-readonly-alpaca-check` unless the user explicitly approves it in a later prompt; QQQ100 paper execution; paper-order tests; normal bot execution; scheduler changes.
 - **Stop condition:** Stop if the task would call Alpaca, read live positions, run postcheck, create order instructions, approve follow-up orders, or change scheduling.
+
+### Task: QQQ100 follow-up/no-action policy
+- **Purpose:** Use `python bot.py --qqq100-followup-policy-report` to document whether saved QQQ100 state requires no action or only a future manual discussion.
+- **Risk level:** Low/report-only when it reads saved evidence only.
+- **Allowed commands:** `python bot.py --qqq100-followup-policy-report`, `python bot.py --show-qqq100-followup-policy-report`.
+- **Forbidden commands:** QQQ100 paper execution, QQQ100 postcheck unless separately approved, paper-order tests, normal bot execution, scheduler changes.
+- **Stop condition:** Stop if the task would call Alpaca, read live positions, create executable order instructions, approve repeat/follow-up orders, or change scheduling.

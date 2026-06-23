@@ -164,6 +164,14 @@ Outputs: `data/qqq100_postcheck_readiness_report.csv`, `data/qqq100_postcheck_re
 
 This checkpoint documents that missing VPS quantity evidence must be generated later, if explicitly approved, only by `python bot.py --qqq100-paper-postcheck --confirm-readonly-alpaca-check`. It must not run postcheck itself, and it must keep all execution, paper execution, scheduling, live trading, and follow-up order approvals false.
 
+Implemented follow-up/no-action policy checkpoint: `python bot.py --qqq100-followup-policy-report`.
+
+Saved display: `python bot.py --show-qqq100-followup-policy-report`.
+
+Outputs: `data/qqq100_followup_policy_report.csv`, `data/qqq100_followup_policy_summary.csv`, `data/qqq100_followup_policy_blockers.csv`, and `data/qqq100_followup_policy_evidence.csv`.
+
+If desired state is `long` and saved QQQ position is long exactly one share, the policy status is `no_action_required_already_aligned`. This must not approve another buy, repeat execution, follow-up orders, scheduling, live trading, or executable order instructions.
+
 ## 11. Schedule Monitoring Only
 
 - Hermes cron may run status/report commands only.

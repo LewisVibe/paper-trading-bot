@@ -237,6 +237,16 @@ The QQQ100 postcheck readiness report comes from `python bot.py --qqq100-postche
 - It does not call Alpaca, read live positions, run postcheck, run QQQ100 paper execution, create order instructions, approve execution, approve paper execution, approve follow-up orders, approve scheduling, or approve live trading.
 - Every row preserves `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, and `followup_order_approved=false`.
 
+The QQQ100 follow-up policy report comes from `python bot.py --qqq100-followup-policy-report`, with saved display through `python bot.py --show-qqq100-followup-policy-report`:
+
+- It writes `data/qqq100_followup_policy_report.csv`, `data/qqq100_followup_policy_summary.csv`, `data/qqq100_followup_policy_blockers.csv`, and `data/qqq100_followup_policy_evidence.csv`.
+- It is a saved-output/report-only no-action policy checkpoint for the current QQQ100 paper state.
+- If desired state is `long` and saved QQQ position is long exactly one share, it reports `no_action_required_already_aligned` and explicitly does not allow another buy.
+- If desired state is `flat` while saved QQQ is long exactly one share, it labels only `future_manual_flatten_discussion_possible`; if desired state is `long` while saved QQQ is flat, it labels only `future_manual_buy_discussion_possible`.
+- Missing, fractional, excess, or contradictory saved quantity evidence blocks/manual-review.
+- It does not call Alpaca, read live positions, run postcheck, run QQQ100 paper execution, create executable order instructions, approve execution, approve paper execution, approve repeat execution, approve follow-up orders, approve scheduling, or approve live trading.
+- Every row preserves `repeat_execution_approved=false`, `followup_order_approved=false`, `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, and `live_trading_approved=false`.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.

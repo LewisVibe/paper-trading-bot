@@ -71,6 +71,8 @@ REQUIRED_COMMANDS = [
     "--show-paper-live-evidence-audit",
     "--qqq100-postcheck-readiness-report",
     "--show-qqq100-postcheck-readiness-report",
+    "--qqq100-followup-policy-report",
+    "--show-qqq100-followup-policy-report",
     "--qqq100-paper-postcheck",
     "--show-qqq100-paper-postcheck",
     "--qqq100-repeat-alignment-workflow-design",

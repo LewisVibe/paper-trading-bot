@@ -398,6 +398,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--qqq100-followup-policy-report"]:
+        from trading_bot.research.qqq100_followup_policy_report import (
+            generate_qqq100_followup_policy_report,
+        )
+
+        result = generate_qqq100_followup_policy_report()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-qqq100-followup-policy-report"]:
+        from trading_bot.research.qqq100_followup_policy_report import (
+            show_qqq100_followup_policy_report,
+        )
+
+        code, lines = show_qqq100_followup_policy_report()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if "--qqq100-paper-postcheck" in sys.argv[1:]:
         from trading_bot.research.qqq100_paper_postcheck import generate_qqq100_paper_postcheck
 
@@ -1161,6 +1179,10 @@ from trading_bot.research.paper_live_evidence_audit import (
 from trading_bot.research.qqq100_postcheck_readiness_report import (
     generate_qqq100_postcheck_readiness_report,
     show_qqq100_postcheck_readiness_report,
+)
+from trading_bot.research.qqq100_followup_policy_report import (
+    generate_qqq100_followup_policy_report,
+    show_qqq100_followup_policy_report,
 )
 from trading_bot.research.qqq100_paper_postcheck import (
     generate_qqq100_paper_postcheck,
@@ -5649,6 +5671,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ100 postcheck readiness runbook without broker reads.",
     )
     parser.add_argument(
+        "--qqq100-followup-policy-report",
+        action="store_true",
+        help="Create a saved-output QQQ100 follow-up/no-action policy report without broker reads.",
+    )
+    parser.add_argument(
+        "--show-qqq100-followup-policy-report",
+        action="store_true",
+        help="Display the saved QQQ100 follow-up/no-action policy report without broker reads.",
+    )
+    parser.add_argument(
         "--qqq100-paper-postcheck",
         action="store_true",
         help="Create a read-only QQQ100 paper postcheck; broker reads require --confirm-readonly-alpaca-check.",
@@ -7122,6 +7154,20 @@ def main() -> int:
         return 0
     if args.show_qqq100_postcheck_readiness_report:
         status_code, lines = show_qqq100_postcheck_readiness_report()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.qqq100_followup_policy_report:
+        try:
+            result = generate_qqq100_followup_policy_report()
+        except Exception as exc:
+            print(f"QQQ100 follow-up policy report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_qqq100_followup_policy_report:
+        status_code, lines = show_qqq100_followup_policy_report()
         for line in lines:
             print(line)
         return status_code

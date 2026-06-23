@@ -1810,6 +1810,31 @@ data/qqq100_postcheck_readiness_runbook.csv
 
 This runbook does not call Alpaca, read live positions, run postcheck, run QQQ100 paper execution, or approve execution. Every row preserves `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, and `followup_order_approved=false`.
 
+QQQ100 follow-up policy mode is the saved-output/report-only no-action policy checkpoint for the current QQQ100 paper state. It reads saved paper-live evidence only. If desired state is `long` and saved QQQ position is long exactly one share, it reports `no_action_required_already_aligned`, does not allow another buy, and keeps repeat/follow-up execution false. If desired state is `flat` while saved QQQ is long exactly one share, it labels only `future_manual_flatten_discussion_possible`; if desired state is `long` while saved QQQ is flat, it labels only `future_manual_buy_discussion_possible`. Missing, fractional, excess, or contradictory saved quantity evidence blocks/manual-review.
+
+Command:
+
+```text
+python bot.py --qqq100-followup-policy-report
+```
+
+Saved display:
+
+```text
+python bot.py --show-qqq100-followup-policy-report
+```
+
+Outputs:
+
+```text
+data/qqq100_followup_policy_report.csv
+data/qqq100_followup_policy_summary.csv
+data/qqq100_followup_policy_blockers.csv
+data/qqq100_followup_policy_evidence.csv
+```
+
+The report never creates executable order instructions and preserves `repeat_execution_approved=false`, `followup_order_approved=false`, `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, and `live_trading_approved=false`.
+
 QQQ100 manual paper execution is a separate high-risk, confirmation-gated command for the clean QQQ lead only. It reads `data/qqq100_preview_signal_pack.csv`, requires `--confirm-qqq100-paper`, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, checks the QQQ paper position, blocks on open QQQ orders or recent matching QQQ one-share broker orders, and can only align `qqq_100_trend_gate` / `QQQ` to exactly zero or one share. It does not use the normal config ticker universe and does not apply to high-growth, crypto, QQQ150, or adaptive QQQ alternatives. General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false; only the narrow `strategy_execution_approved` / `qqq100_one_share_alignment_approved` flags can be true for the exact manually confirmed QQQ100 path.
 
 Command:
