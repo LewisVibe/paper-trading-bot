@@ -273,6 +273,15 @@ The paper-live F6/F7 audit comes from `python bot.py --paper-live-f6-f7-audit`, 
 - It does not run market-data backtests, call Alpaca/yfinance, read positions, approve execution, approve scheduling, or build the generic promotion ladder.
 - F6/F7 targeted checks now use `python scripts\verify_paper_live_f6_f7_targeted_checks.py` to exercise pure preview helpers for unknown positions and to keep portfolio backtests not promotion evidence until accounting consistency is proven.
 
+The paper-live promotion ladder design checkpoint comes from `python bot.py --paper-live-promotion-ladder-design`, with saved display through `python bot.py --show-paper-live-promotion-ladder-design`:
+
+- It writes `data/paper_live_promotion_ladder_design.csv`, `data/paper_live_promotion_ladder_design_summary.csv`, `data/paper_live_promotion_ladder_design_blockers.csv`, and `data/paper_live_promotion_ladder_design_evidence.csv`.
+- It documents future stage labels only: `research_candidate`, `preview_candidate`, `paper_live_candidate`, and `manually_executable_candidate`.
+- QQQ100 is the only current ladder seed and remains monitor-only/aligned long one share; no repeat or follow-up QQQ order is approved.
+- Multi-sleeve is future-only, high-growth and crypto remain research-only, defensive sleeves remain future review only, and no SMA or slow-SMA paper-live promotion is allowed.
+- Portfolio backtests are not promotion evidence until accounting consistency is proven; unknown positions block/manual-review rather than assume flat; no scheduled execution is allowed.
+- This checkpoint is report-only and does not implement generic promotion logic, execution, order instructions, broker reads, scheduling, or strategy-to-execution wiring.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.
@@ -881,6 +890,7 @@ python scripts\verify_paper_live_monitoring_in_vps_summary.py
 python scripts\verify_paper_live_checklist_status.py
 python scripts\verify_paper_live_f6_f7_audit.py
 python scripts\verify_paper_live_f6_f7_targeted_checks.py
+python scripts\verify_paper_live_promotion_ladder_design.py
 python scripts\verify_hermes_promoted_review_refresh_cron_design.py
 python scripts\verify_hermes_cron_monitoring_runbook.py
 python scripts\verify_report_only_import_safety.py

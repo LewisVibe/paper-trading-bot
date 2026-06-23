@@ -1913,6 +1913,29 @@ Expected audit status remains conservative: `paper_live_f6_f7_audit_manual_revie
 
 Paper-live F6/F7 targeted checks are covered by `python scripts\verify_paper_live_f6_f7_targeted_checks.py`. This no-network verifier exercises pure preview helpers so unknown positions stay loud and cannot become flat/aligned/eligible silently, and it checks that multi-sleeve portfolio backtests remain research-only, not promotion evidence, until accounting consistency is proven. It does not call Alpaca, read positions, refresh yfinance, create orders, approve scheduling, or build the generic promotion ladder.
 
+Paper-live promotion ladder design mode is the saved-output/report-only checkpoint for a future generic ladder. It documents the stage labels `research_candidate`, `preview_candidate`, `paper_live_candidate`, and `manually_executable_candidate`, but does not implement real promotion, execution, scheduling, or order instructions. QQQ100 is the only current ladder seed, QQQ100 remains monitor-only and aligned long one share, no repeat/follow-up QQQ order is approved, multi-sleeve is future-only, high-growth and crypto remain research-only, defensive sleeves remain future review only, and no SMA or slow-SMA paper-live promotion is allowed. Portfolio backtests are not promotion evidence until accounting consistency is proven. Unknown position state must block/manual-review rather than assume flat. No scheduled execution is allowed.
+
+Command:
+
+```text
+python bot.py --paper-live-promotion-ladder-design
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-live-promotion-ladder-design
+```
+
+Outputs:
+
+```text
+data/paper_live_promotion_ladder_design.csv
+data/paper_live_promotion_ladder_design_summary.csv
+data/paper_live_promotion_ladder_design_blockers.csv
+data/paper_live_promotion_ladder_design_evidence.csv
+```
+
 QQQ100 manual paper execution is a separate high-risk, confirmation-gated command for the clean QQQ lead only. It reads `data/qqq100_preview_signal_pack.csv`, requires `--confirm-qqq100-paper`, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, checks the QQQ paper position, blocks on open QQQ orders or recent matching QQQ one-share broker orders, and can only align `qqq_100_trend_gate` / `QQQ` to exactly zero or one share. It does not use the normal config ticker universe and does not apply to high-growth, crypto, QQQ150, or adaptive QQQ alternatives. General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false; only the narrow `strategy_execution_approved` / `qqq100_one_share_alignment_approved` flags can be true for the exact manually confirmed QQQ100 path.
 
 Command:

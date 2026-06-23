@@ -964,3 +964,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** F6 unknown positions stay loud and manual-review only; F7 portfolio backtests remain not promotion evidence until accounting consistency is proven.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, scheduler changes.
 - **Stop condition:** Stop if the task would wrap commands, approve execution/scheduling, or promote multi-sleeve, high-growth, defensive, crypto, SMA, or slow-SMA paths.
+
+### Task: Paper-live promotion ladder design
+- **Purpose:** Use `python bot.py --paper-live-promotion-ladder-design` to create report-only design scaffolding for a future generic ladder.
+- **Risk level:** Low/report-only when limited to saved output files and no broker reads.
+- **Allowed commands:** `python bot.py --paper-live-promotion-ladder-design`, `python bot.py --show-paper-live-promotion-ladder-design`.
+- **Expected status:** `paper_live_promotion_ladder_design_report_only`; QQQ100 is the only current seed and remains monitor-only/aligned long one share with no repeat/follow-up order approved.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, scheduler changes, real promotion implementation.
+- **Stop condition:** Stop if the task would implement generic promotion logic, treat portfolio backtests as promotion evidence, assume unknown positions are flat, approve execution/scheduling, or promote multi-sleeve, high-growth, defensive, crypto, SMA, or slow-SMA paths.

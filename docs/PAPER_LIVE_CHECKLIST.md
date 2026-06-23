@@ -207,6 +207,14 @@ Implemented F6/F7 targeted checks verifier: `python scripts\verify_paper_live_f6
 
 This no-network verifier exercises pure preview/action helpers so unknown positions stay loud and never silently become flat, aligned, or eligible. It also keeps portfolio backtests not promotion evidence until starting-cash/accounting consistency is proven. It does not approve execution, scheduling, multi-sleeve promotion, or generic promotion-ladder work.
 
+Implemented generic promotion ladder design checkpoint: `python bot.py --paper-live-promotion-ladder-design`.
+
+Saved display: `python bot.py --show-paper-live-promotion-ladder-design`.
+
+Outputs: `data/paper_live_promotion_ladder_design.csv`, `data/paper_live_promotion_ladder_design_summary.csv`, `data/paper_live_promotion_ladder_design_blockers.csv`, and `data/paper_live_promotion_ladder_design_evidence.csv`.
+
+Current expected design status is `paper_live_promotion_ladder_design_report_only`: QQQ100 is the only current ladder seed, QQQ100 remains monitor-only and aligned long one share, no repeat/follow-up QQQ order is approved, multi-sleeve is future-only, high-growth and crypto remain research-only, defensive sleeves remain future review only, no SMA or slow-SMA paper-live promotion is allowed, portfolio backtests are not promotion evidence until accounting consistency is proven, unknown positions block/manual-review, and no scheduled execution is allowed.
+
 ## 12. Build A Future Promotion System Later
 
 Later, after QQQ100 is stable, build a generic promotion ladder:
