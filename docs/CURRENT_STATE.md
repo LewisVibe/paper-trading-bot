@@ -228,6 +228,15 @@ The paper-live evidence audit comes from `python bot.py --paper-live-evidence-au
 - It does not call Alpaca, read live positions, refresh market data, create order instructions, approve execution, approve paper execution, approve follow-up orders, approve scheduling, or approve live trading.
 - Every row preserves `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, and `followup_order_approved=false`.
 
+The QQQ100 postcheck readiness report comes from `python bot.py --qqq100-postcheck-readiness-report`, with saved display through `python bot.py --show-qqq100-postcheck-readiness-report`:
+
+- It writes `data/qqq100_postcheck_readiness_report.csv`, `data/qqq100_postcheck_readiness_summary.csv`, `data/qqq100_postcheck_readiness_blockers.csv`, and `data/qqq100_postcheck_readiness_runbook.csv`.
+- It is a saved-output/runbook-only checkpoint for the VPS state where `data\qqq100_paper_postcheck.csv` or `position_quantity_abs_or_current_position_quantity_abs` is missing.
+- It documents that the only relevant future evidence command is `python bot.py --qqq100-paper-postcheck --confirm-readonly-alpaca-check`.
+- It does not run that command. The read-only postcheck must not be run without explicit user approval.
+- It does not call Alpaca, read live positions, run postcheck, run QQQ100 paper execution, create order instructions, approve execution, approve paper execution, approve follow-up orders, approve scheduling, or approve live trading.
+- Every row preserves `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, and `followup_order_approved=false`.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.

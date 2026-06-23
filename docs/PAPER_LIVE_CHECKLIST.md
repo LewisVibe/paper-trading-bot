@@ -156,6 +156,14 @@ The audit reads saved QQQ100 preview/action/postcheck/order/state evidence, list
 
 The evidence audit does not call Alpaca, read live positions, refresh market data, create order instructions, or approve execution, paper execution, scheduling, live trading, or follow-up orders.
 
+Implemented postcheck runbook checkpoint: `python bot.py --qqq100-postcheck-readiness-report`.
+
+Saved display: `python bot.py --show-qqq100-postcheck-readiness-report`.
+
+Outputs: `data/qqq100_postcheck_readiness_report.csv`, `data/qqq100_postcheck_readiness_summary.csv`, `data/qqq100_postcheck_readiness_blockers.csv`, and `data/qqq100_postcheck_readiness_runbook.csv`.
+
+This checkpoint documents that missing VPS quantity evidence must be generated later, if explicitly approved, only by `python bot.py --qqq100-paper-postcheck --confirm-readonly-alpaca-check`. It must not run postcheck itself, and it must keep all execution, paper execution, scheduling, live trading, and follow-up order approvals false.
+
 ## 11. Schedule Monitoring Only
 
 - Hermes cron may run status/report commands only.

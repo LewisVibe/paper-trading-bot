@@ -918,3 +918,10 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Allowed commands:** `python bot.py --paper-live-evidence-audit`, `python bot.py --show-paper-live-evidence-audit`.
 - **Forbidden commands:** QQQ100 paper execution, paper-order tests, slow-SMA execution, normal bot execution, scheduler changes.
 - **Stop condition:** Stop if the task would call Alpaca, read live positions, create order instructions, approve follow-up orders, or change scheduling.
+
+### Task: QQQ100 postcheck readiness runbook
+- **Purpose:** Use `python bot.py --qqq100-postcheck-readiness-report` to document the missing VPS saved postcheck quantity evidence and the future manual read-only postcheck step.
+- **Risk level:** Low/report-only when it only writes the runbook report.
+- **Allowed commands:** `python bot.py --qqq100-postcheck-readiness-report`, `python bot.py --show-qqq100-postcheck-readiness-report`.
+- **Forbidden commands:** `python bot.py --qqq100-paper-postcheck --confirm-readonly-alpaca-check` unless the user explicitly approves it in a later prompt; QQQ100 paper execution; paper-order tests; normal bot execution; scheduler changes.
+- **Stop condition:** Stop if the task would call Alpaca, read live positions, run postcheck, create order instructions, approve follow-up orders, or change scheduling.
