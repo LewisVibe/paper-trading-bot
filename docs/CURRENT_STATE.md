@@ -247,6 +247,15 @@ The QQQ100 follow-up policy report comes from `python bot.py --qqq100-followup-p
 - It does not call Alpaca, read live positions, run postcheck, run QQQ100 paper execution, create executable order instructions, approve execution, approve paper execution, approve repeat execution, approve follow-up orders, approve scheduling, or approve live trading.
 - Every row preserves `repeat_execution_approved=false`, `followup_order_approved=false`, `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, and `live_trading_approved=false`.
 
+The paper-live monitoring status comes from `python bot.py --paper-live-monitoring-status`, with saved display through `python bot.py --show-paper-live-monitoring-status`:
+
+- It writes `data/paper_live_monitoring_status.csv`, `data/paper_live_monitoring_components.csv`, and `data/paper_live_monitoring_blockers.csv`.
+- It is a saved-output/report-only Step 11 checkpoint for VPS/Hermes-safe monitoring displays.
+- It reports `active_strategy=qqq_100_trend_gate`, `active_ticker=QQQ`, saved QQQ position state/quantity, alignment state, follow-up policy status, no-action status, and `recommended_next_step=hold_no_action_and_monitor_only` when already aligned long one share.
+- If saved evidence is missing, it reports `missing_saved_evidence` or manual review instead of approving execution.
+- It does not create, edit, trigger, or schedule Hermes cron jobs; call Alpaca; read live positions; run postcheck; run QQQ100 paper execution; create executable order instructions; approve execution; approve paper execution; approve repeat execution; approve follow-up orders; approve scheduling; or approve live trading.
+- Every row preserves `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, `followup_order_approved=false`, `repeat_execution_approved=false`, and `never_schedule_order_capable_commands=true`.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.

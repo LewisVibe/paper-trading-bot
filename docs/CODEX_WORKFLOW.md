@@ -284,3 +284,5 @@ Paper-live evidence reconciliation uses `python bot.py --paper-live-evidence-aud
 QQQ100 postcheck readiness uses `python bot.py --qqq100-postcheck-readiness-report` and `python bot.py --show-qqq100-postcheck-readiness-report`. These commands are runbook-only and must not run `python bot.py --qqq100-paper-postcheck --confirm-readonly-alpaca-check`; that read-only broker check requires a separate explicit user approval.
 
 QQQ100 follow-up policy uses `python bot.py --qqq100-followup-policy-report` and `python bot.py --show-qqq100-followup-policy-report`. These commands are saved-output-only and may report `no_action_required_already_aligned`, but they must not create executable order instructions or approve repeat/follow-up orders.
+
+Paper-live monitoring status uses `python bot.py --paper-live-monitoring-status` and `python bot.py --show-paper-live-monitoring-status`. These commands are saved-output-only monitoring/report commands; they must not create, edit, trigger, or schedule Hermes cron jobs and must preserve `never_schedule_order_capable_commands=true`.
