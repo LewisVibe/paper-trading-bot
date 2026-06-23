@@ -63,6 +63,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq100-paper-execution-readiness-report",
     "--paper-live-promotion-gate",
     "--show-paper-live-promotion-gate",
+    "--paper-live-readiness-report",
+    "--show-paper-live-readiness-report",
     "--qqq100-paper-postcheck",
     "--show-qqq100-paper-postcheck",
     "--qqq100-repeat-alignment-workflow-design",

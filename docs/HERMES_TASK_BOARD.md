@@ -13,6 +13,8 @@ Latest execution-safety checkpoint: normal `python bot.py` is now monitoring-onl
 
 Paper-live promotion checkpoint: `python bot.py --paper-live-promotion-gate` is saved-output/report-only and limited to `qqq_100_trend_gate` / `QQQ` as the first paper-live candidate discussion gate. `paper_live_candidate=True` is a manual-discussion label only; execution, paper execution, scheduling, and order instructions remain false. Do not use this gate to promote SMA, slow-SMA, high-growth, crypto, QQQ150, or adaptive QQQ.
 
+Paper-live readiness checkpoint: `python bot.py --paper-live-readiness-report` is saved-output/report-only and summarizes whether the project is ready for any future manually confirmed QQQ100 paper-action discussion. It must keep `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, and `live_trading_approved=false`; it must not be used to create schedules or run order-capable commands.
+
 ## 1. Safe now
 
 ### Task: QQQ100 repeat/alignment workflow design review

@@ -198,6 +198,15 @@ The paper-live promotion gate comes from `python bot.py --paper-live-promotion-g
 - Missing required saved/static evidence is recorded as blocked/manual-review rather than silently promoting the candidate.
 - Explicit human approval is still required before any future manually confirmed paper execution command.
 
+The paper-live readiness report comes from `python bot.py --paper-live-readiness-report`, with saved display through `python bot.py --show-paper-live-readiness-report`:
+
+- It writes `data/paper_live_readiness_report.csv`, `data/paper_live_readiness_summary.csv`, `data/paper_live_readiness_blockers.csv`, and `data/paper_live_readiness_evidence.csv`.
+- It is the Step 7 readiness checkpoint for future manual QQQ100 paper-action discussion only.
+- It checks repo-safety, baseline-freeze, paper-live promotion, QQQ100 exact alignment, and QQQ100 execution verifiers; monitoring-only normal bot policy; Alpaca paper-only/no-live boundaries; fixed `QQQ` and `qqq_100_trend_gate` scope; exact zero/one-share alignment; excluded SMA/slow-SMA/high-growth/crypto branches; separate confirmation-gated paper execution; open-order and duplicate-order requirements; postcheck/position-readability, portfolio/risk, and execution-readiness evidence; and no scheduling.
+- Missing saved evidence is listed as a blocker or warning.
+- It does not call Alpaca, read positions, refresh market data, create order instructions, approve execution, approve paper execution, approve scheduling, or approve live trading.
+- Every summary row preserves `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, and `live_trading_approved=false`.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.

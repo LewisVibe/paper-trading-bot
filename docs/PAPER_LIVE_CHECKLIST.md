@@ -73,6 +73,12 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 
 ## 7. Build The Paper-Live Readiness Report
 
+Implemented checkpoint: `python bot.py --paper-live-readiness-report`.
+
+Saved display: `python bot.py --show-paper-live-readiness-report`.
+
+Outputs: `data/paper_live_readiness_report.csv`, `data/paper_live_readiness_summary.csv`, `data/paper_live_readiness_blockers.csv`, and `data/paper_live_readiness_evidence.csv`.
+
 The readiness report should check:
 
 - repo safety,
@@ -87,6 +93,8 @@ The readiness report should check:
 - no SMA promotion,
 - no high-growth promotion,
 - no crypto promotion.
+
+The readiness report is manual-review status only. It must preserve `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, and `live_trading_approved=false`.
 
 ## 8. Keep Manual Paper Execution Narrow
 
