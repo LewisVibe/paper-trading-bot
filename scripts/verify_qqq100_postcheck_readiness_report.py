@@ -23,8 +23,13 @@ OUTPUTS = [
 
 REQUIRED_MODULE_TOKENS = [
     "qqq100_postcheck_manual_approval_required",
+    "qqq100_postcheck_evidence_available_manual_review_required",
     "data\\qqq100_paper_postcheck.csv",
     "position_quantity_abs_or_current_position_quantity_abs",
+    "saved_postcheck_evidence_available",
+    "recent_order_match_found",
+    "position_quantity_abs",
+    "aligned_long_one_share",
     "python bot.py --qqq100-paper-postcheck --confirm-readonly-alpaca-check",
     "manual_approval_required_before_running_postcheck",
     "postcheck_creates_orders",

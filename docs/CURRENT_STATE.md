@@ -231,7 +231,7 @@ The paper-live evidence audit comes from `python bot.py --paper-live-evidence-au
 The QQQ100 postcheck readiness report comes from `python bot.py --qqq100-postcheck-readiness-report`, with saved display through `python bot.py --show-qqq100-postcheck-readiness-report`:
 
 - It writes `data/qqq100_postcheck_readiness_report.csv`, `data/qqq100_postcheck_readiness_summary.csv`, `data/qqq100_postcheck_readiness_blockers.csv`, and `data/qqq100_postcheck_readiness_runbook.csv`.
-- It is a saved-output/runbook-only checkpoint for the VPS state where `data\qqq100_paper_postcheck.csv` or `position_quantity_abs_or_current_position_quantity_abs` is missing.
+- It is a saved-output/runbook-only checkpoint for the VPS postcheck evidence state. It names exact missing evidence when `data\qqq100_paper_postcheck.csv` or `position_quantity_abs_or_current_position_quantity_abs` is missing, and reports saved postcheck status, recent-order match flag, saved QQQ position quantity, and alignment state when evidence is present.
 - It documents that the only relevant future evidence command is `python bot.py --qqq100-paper-postcheck --confirm-readonly-alpaca-check`.
 - It does not run that command. The read-only postcheck must not be run without explicit user approval.
 - It does not call Alpaca, read live positions, run postcheck, run QQQ100 paper execution, create order instructions, approve execution, approve paper execution, approve follow-up orders, approve scheduling, or approve live trading.
