@@ -126,6 +126,12 @@ If postcheck cannot verify the result, mark manual review required.
 
 ## 10. Create The Paper-Live State Summary
 
+Implemented checkpoint: `python bot.py --paper-live-state-summary`.
+
+Saved display: `python bot.py --show-paper-live-state-summary`.
+
+Outputs: `data/paper_live_state_summary.csv`, `data/paper_live_state_components.csv`, `data/paper_live_state_blockers.csv`, and `data/paper_live_state_evidence.csv`.
+
 Add one saved-output command that answers:
 
 - active paper-monitoring strategy,
@@ -137,6 +143,8 @@ Add one saved-output command that answers:
 - execution and scheduling flags.
 
 This should be the daily check before touching any paper order command.
+
+The state summary is not a readiness upgrade and must preserve `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, and `followup_order_approved=false`.
 
 ## 11. Schedule Monitoring Only
 

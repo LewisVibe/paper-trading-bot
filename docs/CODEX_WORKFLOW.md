@@ -16,6 +16,7 @@ This project is a Python paper trading bot. Future Codex prompts should keep saf
 - The QQQ100 paper path must enforce exact zero/one-share QQQ alignment: more than one QQQ share must block/manual review, not count as aligned and not trigger an automatic reduce-to-one or sell-all flow.
 - The paper-live promotion gate may label `qqq_100_trend_gate` as `paper_live_candidate=True` for manual discussion only. That label must not create order instructions, approve execution, approve paper execution, approve scheduling, or include SMA, slow-SMA, high-growth, crypto, QQQ150, or adaptive QQQ as paper-live candidates.
 - The paper-live readiness report is a saved-output checklist only. It may summarize readiness blockers for future manual QQQ100 paper-action discussion, but `execution_approved`, `paper_execution_approved`, `scheduling_approved`, and `live_trading_approved` must remain false.
+- The paper-live state summary is a saved-output daily checkpoint only. It may summarize saved QQQ100 desired state, saved position/alignment context, saved order result, promotion/readiness status, and blockers, but it must keep `execution_approved`, `paper_execution_approved`, `scheduling_approved`, `live_trading_approved`, and `followup_order_approved` false.
 
 ## Task Risk Levels
 

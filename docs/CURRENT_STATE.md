@@ -207,6 +207,16 @@ The paper-live readiness report comes from `python bot.py --paper-live-readiness
 - It does not call Alpaca, read positions, refresh market data, create order instructions, approve execution, approve paper execution, approve scheduling, or approve live trading.
 - Every summary row preserves `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, and `live_trading_approved=false`.
 
+The paper-live state summary comes from `python bot.py --paper-live-state-summary`, with saved display through `python bot.py --show-paper-live-state-summary`:
+
+- It writes `data/paper_live_state_summary.csv`, `data/paper_live_state_components.csv`, `data/paper_live_state_blockers.csv`, and `data/paper_live_state_evidence.csv`.
+- It is the Step 10 daily checkpoint before any future manually confirmed QQQ100 paper command is considered.
+- It reads saved QQQ100 preview/action/postcheck/order evidence, paper-live promotion gate output, paper-live readiness output, and saved paper-execution state files where available.
+- It reports active strategy, active ticker, desired state, saved paper-position state, last saved QQQ100 order result, current saved alignment state, promotion gate status, readiness status, missing saved-evidence blockers, manual-discussion allowance, follow-up/repeat allowance, scheduling allowance, and live-trading allowance.
+- Missing saved evidence is reported as blocked/manual-review or unavailable.
+- It is not a readiness upgrade and does not call Alpaca, read live positions, refresh market data, create order instructions, approve execution, approve paper execution, approve follow-up orders, approve scheduling, or approve live trading.
+- Every summary row preserves `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, and `followup_order_approved=false`.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.

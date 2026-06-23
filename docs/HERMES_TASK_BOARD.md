@@ -15,6 +15,8 @@ Paper-live promotion checkpoint: `python bot.py --paper-live-promotion-gate` is 
 
 Paper-live readiness checkpoint: `python bot.py --paper-live-readiness-report` is saved-output/report-only and summarizes whether the project is ready for any future manually confirmed QQQ100 paper-action discussion. It must keep `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, and `live_trading_approved=false`; it must not be used to create schedules or run order-capable commands.
 
+Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved-output/report-only and summarizes the current saved QQQ100 paper-live state before any future manual command discussion. It must keep `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, and `followup_order_approved=false`; it must not read live positions or trigger order-capable commands.
+
 ## 1. Safe now
 
 ### Task: QQQ100 repeat/alignment workflow design review
