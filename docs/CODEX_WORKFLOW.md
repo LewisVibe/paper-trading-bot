@@ -9,8 +9,10 @@ This project is a Python paper trading bot. Future Codex prompts should keep saf
 - `dry_run` defaults to `true`.
 - `alpaca.paper` must remain `true`.
 - `config.json`, API keys, Discord webhook URLs, account IDs, and other secrets stay private.
+- Normal `python bot.py` is monitoring-only. It may log intended actions, but must not submit Alpaca orders or mutate position state.
 - Research, preview, display, and report commands must not execute trades.
 - Paper execution commands must remain separate, explicit, and protected by confirmation flags.
+- Manual paper sell paths must not oversell a long position while `allow_shorting` is false.
 
 ## Task Risk Levels
 
@@ -37,6 +39,7 @@ Codex must not auto-push:
 
 - Alpaca or order submission changes.
 - Normal `python bot.py` runtime behaviour changes.
+- Reintroducing order submission to the normal `python bot.py` path.
 - Slow SMA paper execution changes.
 - Paper-order smoke test changes.
 - Command-routing changes touching execution paths.

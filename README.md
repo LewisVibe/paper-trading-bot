@@ -16,7 +16,9 @@ The default config uses:
 - `allow_shorting: false`
 - Alpaca paper mode only
 
-The bot refuses to run if `alpaca.paper` is set to `false`. Research and backtest modes do not submit Alpaca orders and do not send Discord alerts.
+The bot refuses to run if `alpaca.paper` is set to `false`. The normal `python bot.py` run is monitoring-only: it may log intended trade actions as `monitor_only`, but it does not submit Alpaca orders or mutate position state. Paper orders remain limited to separate, explicitly confirmed commands such as the manual paper smoke test, slow-SMA paper execution, and QQQ100 paper execution.
+
+Research and backtest modes do not submit Alpaca orders and do not send Discord alerts.
 
 Short selling is riskier than normal long-only trading because losses can grow quickly if price rises. In this project, short selling is only simulated or sent to an Alpaca paper account, never live trading.
 
@@ -130,7 +132,8 @@ Important settings:
 - `short_window` - shorter moving average window.
 - `long_window` - longer moving average window.
 - `order_quantity` - number of shares to paper trade.
-- `dry_run` - when `true`, the bot does not submit Alpaca orders.
+- `dry_run` - when `true`, the bot does not submit Alpaca orders. The normal bot run remains monitoring-only even when `dry_run` is `false`.
+- `paper_kill_switch_enabled` - optional future/dedicated paper-execution safety flag. The safe default is `false`; it does not make the normal bot order-capable.
 - `allow_shorting` - when `false`, the bot only opens and closes long positions.
 - `database_path` - where SQLite trade history is stored.
 - `log_file` - where the text log is stored.
@@ -149,7 +152,7 @@ If `alpaca.paper` is `false`, the bot refuses to run.
 
 ## Alpaca Paper Trading
 
-You only need Alpaca keys when `dry_run` is `false`.
+You only need Alpaca keys when a separate, explicitly confirmed paper-execution command needs read/write Alpaca paper access. The normal `python bot.py` run remains monitoring-only and does not submit orders.
 
 Create or log into an Alpaca account and use paper trading API keys, not live keys:
 

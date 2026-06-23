@@ -2,14 +2,19 @@
 
 This checkpoint is documentation only. It summarizes the project state for future Codex or ChatGPT sessions without changing code, configs, strategy logic, CSV outputs, or execution behavior.
 
+For the ordered paper-live implementation path, see `docs/PAPER_LIVE_CHECKLIST.md`.
+
 ## Safety Boundary
 
 - This project is paper-only. Live trading is out of scope.
 - `dry_run` defaults to `true`.
 - `alpaca.paper` must remain `true`; the bot refuses non-paper Alpaca mode.
 - `config.json`, API keys, and Discord webhook URLs stay private.
+- Normal `python bot.py` is monitoring-only. It may record intended actions with `order_status=monitor_only`, but it must not submit orders or mutate position state.
 - Research, backtest, report, preview, and display commands do not approve execution.
 - Execution-related commands are separate high-risk paths and must stay behind explicit confirmation and review.
+- `paper_kill_switch_enabled` is a real config/env field with a safe default of `false`; it does not make the normal bot order-capable.
+- Manual paper sells now have an oversell guard when shorting is disabled.
 - `python scripts\verify_repo_safety.py` should be run before commits and pushes.
 - Deployment readiness and VPS checklist docs are audits/planning aids only. They do not deploy, schedule, or approve execution.
 - Portfolio risk policy reporting is not runtime enforcement and does not approve execution.
