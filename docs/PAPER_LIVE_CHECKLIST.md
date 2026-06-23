@@ -195,6 +195,14 @@ Outputs: `data/paper_live_checklist_status.csv`, `data/paper_live_checklist_stat
 
 Current expected closeout status is `paper_live_checklist_current_qqq100_monitoring_phase_closed_out`: Steps 1-11 are complete or complete-for-current-QQQ100-monitoring-phase, QQQ100 is aligned long one share, no further QQQ order is needed now, repeat/follow-up orders remain blocked, and scheduling remains monitoring-only.
 
+Implemented F6/F7 audit checkpoint: `python bot.py --paper-live-f6-f7-audit`.
+
+Saved display: `python bot.py --show-paper-live-f6-f7-audit`.
+
+Outputs: `data/paper_live_f6_f7_audit.csv`, `data/paper_live_f6_f7_audit_summary.csv`, `data/paper_live_f6_f7_audit_blockers.csv`, and `data/paper_live_f6_f7_audit_evidence.csv`.
+
+Current expected audit status is `paper_live_f6_f7_audit_manual_review_required`: F6 confirms some loud position unknown / position unavailable boundaries but still needs future promotion-ladder review, and F7 requires starting-cash/accounting tests or verifiers before portfolio backtests are used as promotion evidence.
+
 ## 12. Build A Future Promotion System Later
 
 Later, after QQQ100 is stable, build a generic promotion ladder:

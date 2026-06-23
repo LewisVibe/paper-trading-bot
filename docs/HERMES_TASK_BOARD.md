@@ -948,3 +948,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `paper_live_checklist_current_qqq100_monitoring_phase_closed_out` when QQQ100 is aligned long one share, no action is required, and Step 12 remains future-only.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, QQQ100 paper execution, QQQ100 postcheck unless separately approved, paper-order tests, normal bot execution, scheduler changes.
 - **Stop condition:** Stop if the task would build the generic promotion ladder, approve another QQQ order, change the Hermes cron sequence, or touch execution/config/secrets.
+
+### Task: Paper-live F6/F7 audit
+- **Purpose:** Use `python bot.py --paper-live-f6-f7-audit` to audit remaining external-review items before any generic promotion ladder or multi-sleeve paper-live work.
+- **Risk level:** Low/report-only when limited to static/source review and saved output files.
+- **Allowed commands:** `python bot.py --paper-live-f6-f7-audit`, `python bot.py --show-paper-live-f6-f7-audit`.
+- **Expected status:** `paper_live_f6_f7_audit_manual_review_required`; F6 unknown-position handling is partially confirmed and F7 accounting consistency still needs targeted tests/verifiers.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, QQQ100 paper execution, paper-order tests, normal bot execution, market-data backtests, yfinance refresh, Alpaca reads, scheduler changes.
+- **Stop condition:** Stop if the task would treat unknown positions as flat, use portfolio backtests as promotion evidence, approve execution, or build the generic promotion ladder.

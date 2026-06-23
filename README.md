@@ -1886,6 +1886,31 @@ data/paper_live_checklist_status_evidence.csv
 
 Expected closeout label is `paper_live_checklist_current_qqq100_monitoring_phase_closed_out` when saved monitoring status confirms `qqq_100_trend_gate` / `QQQ` is aligned long one share, no action is required, and `recommended_next_step=hold_no_action_and_monitor_only`. The generic promotion ladder remains Step 12 future-only.
 
+Paper-live F6/F7 audit mode is the saved-output/report-only checkpoint for remaining external-review items before any future generic promotion ladder or multi-sleeve paper-live work. F6 checks whether preview/action/report paths keep unknown positions loud (`position_unknown`, `position_unavailable`, `manual_review_required`) and never silently assume flat. F7 checks whether portfolio backtest starting-cash/accounting consistency still needs review before backtest results are used as promotion evidence. This audit is static/source-review oriented; it does not rerun market-data backtests, refresh yfinance, call Alpaca, read positions, approve execution, or build the generic promotion ladder.
+
+Command:
+
+```text
+python bot.py --paper-live-f6-f7-audit
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-live-f6-f7-audit
+```
+
+Outputs:
+
+```text
+data/paper_live_f6_f7_audit.csv
+data/paper_live_f6_f7_audit_summary.csv
+data/paper_live_f6_f7_audit_blockers.csv
+data/paper_live_f6_f7_audit_evidence.csv
+```
+
+Expected audit status remains conservative: `paper_live_f6_f7_audit_manual_review_required`. F6 has partially confirmed loud unknown-position boundaries, while F7 requires targeted starting-cash/accounting tests or verifiers before portfolio backtests can become promotion evidence.
+
 QQQ100 manual paper execution is a separate high-risk, confirmation-gated command for the clean QQQ lead only. It reads `data/qqq100_preview_signal_pack.csv`, requires `--confirm-qqq100-paper`, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, checks the QQQ paper position, blocks on open QQQ orders or recent matching QQQ one-share broker orders, and can only align `qqq_100_trend_gate` / `QQQ` to exactly zero or one share. It does not use the normal config ticker universe and does not apply to high-growth, crypto, QQQ150, or adaptive QQQ alternatives. General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false; only the narrow `strategy_execution_approved` / `qqq100_one_share_alignment_approved` flags can be true for the exact manually confirmed QQQ100 path.
 
 Command:

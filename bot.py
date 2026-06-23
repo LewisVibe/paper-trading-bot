@@ -452,6 +452,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-f6-f7-audit"]:
+        from trading_bot.research.paper_live_f6_f7_audit import generate_paper_live_f6_f7_audit
+
+        result = generate_paper_live_f6_f7_audit()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-f6-f7-audit"]:
+        from trading_bot.research.paper_live_f6_f7_audit import show_paper_live_f6_f7_audit
+
+        code, lines = show_paper_live_f6_f7_audit()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if "--qqq100-paper-postcheck" in sys.argv[1:]:
         from trading_bot.research.qqq100_paper_postcheck import generate_qqq100_paper_postcheck
 
@@ -1227,6 +1241,10 @@ from trading_bot.research.paper_live_monitoring_status import (
 from trading_bot.research.paper_live_checklist_status import (
     generate_paper_live_checklist_status,
     show_paper_live_checklist_status,
+)
+from trading_bot.research.paper_live_f6_f7_audit import (
+    generate_paper_live_f6_f7_audit,
+    show_paper_live_f6_f7_audit,
 )
 from trading_bot.research.qqq100_paper_postcheck import (
     generate_qqq100_paper_postcheck,
@@ -5745,6 +5763,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved paper-live checklist status without broker reads or scheduling changes.",
     )
     parser.add_argument(
+        "--paper-live-f6-f7-audit",
+        action="store_true",
+        help="Create a saved-output F6/F7 audit for paper-live promotion readiness without broker reads.",
+    )
+    parser.add_argument(
+        "--show-paper-live-f6-f7-audit",
+        action="store_true",
+        help="Display the saved paper-live F6/F7 audit without broker reads or scheduling changes.",
+    )
+    parser.add_argument(
         "--qqq100-paper-postcheck",
         action="store_true",
         help="Create a read-only QQQ100 paper postcheck; broker reads require --confirm-readonly-alpaca-check.",
@@ -7260,6 +7288,20 @@ def main() -> int:
         return 0
     if args.show_paper_live_checklist_status:
         status_code, lines = show_paper_live_checklist_status()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_f6_f7_audit:
+        try:
+            result = generate_paper_live_f6_f7_audit()
+        except Exception as exc:
+            print(f"Paper-live F6/F7 audit failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_f6_f7_audit:
+        status_code, lines = show_paper_live_f6_f7_audit()
         for line in lines:
             print(line)
         return status_code

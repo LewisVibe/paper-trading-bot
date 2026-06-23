@@ -264,6 +264,14 @@ The paper-live checklist status closeout comes from `python bot.py --paper-live-
 - PAPER_LIVE_CHECKLIST Steps 1-11 are complete or complete-for-current-QQQ100-monitoring-phase; Step 12 remains future-only for a later generic promotion ladder, starting QQQ100 only.
 - It does not approve execution, paper execution, repeat/follow-up orders, scheduling, live trading, or executable order instructions.
 
+The paper-live F6/F7 audit comes from `python bot.py --paper-live-f6-f7-audit`, with saved display through `python bot.py --show-paper-live-f6-f7-audit`:
+
+- It writes `data/paper_live_f6_f7_audit.csv`, `data/paper_live_f6_f7_audit_summary.csv`, `data/paper_live_f6_f7_audit_blockers.csv`, and `data/paper_live_f6_f7_audit_evidence.csv`.
+- F6 audits preview/action/report paths so unknown positions stay loud (`position_unknown`, `position_unavailable`, `manual_review_required`) and are not assumed flat.
+- F7 audits starting-cash/accounting consistency for portfolio backtests before any backtest output can become promotion evidence.
+- Current expected status is `paper_live_f6_f7_audit_manual_review_required`: F6 boundaries are partially confirmed, and F7 needs targeted accounting tests or verifiers before any generic promotion ladder or multi-sleeve paper-live work.
+- It does not run market-data backtests, call Alpaca/yfinance, read positions, approve execution, approve scheduling, or build the generic promotion ladder.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.
@@ -870,6 +878,7 @@ python scripts\verify_vps_monitoring_freshness.py
 python scripts\verify_vps_daily_monitoring_summary.py
 python scripts\verify_paper_live_monitoring_in_vps_summary.py
 python scripts\verify_paper_live_checklist_status.py
+python scripts\verify_paper_live_f6_f7_audit.py
 python scripts\verify_hermes_promoted_review_refresh_cron_design.py
 python scripts\verify_hermes_cron_monitoring_runbook.py
 python scripts\verify_report_only_import_safety.py
