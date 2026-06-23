@@ -46,6 +46,10 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 ## 5. Create A Strategy Promotion Gate
 
 - Define what promoted to paper-live candidate means.
+- Implemented checkpoint: `python bot.py --paper-live-promotion-gate`.
+- Saved display: `python bot.py --show-paper-live-promotion-gate`.
+- Outputs: `data/paper_live_promotion_gate.csv`, `data/paper_live_promotion_gate_summary.csv`, `data/paper_live_promotion_gate_blockers.csv`, and `data/paper_live_promotion_gate_evidence.csv`.
+- `paper_live_candidate=True` means manual candidate-discussion status only.
 - Require saved research decision evidence.
 - Require saved preview signal evidence.
 - Require saved action preview evidence.
@@ -55,6 +59,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - Require explicit human approval before any paper execution command can be used.
 - Promotion must not create orders.
 - Promotion may output `paper_live_candidate=True`, but general `execution_approved` must remain false until the actual manual execution command.
+- `paper_execution_approved` and `scheduling_approved` must also remain false.
 
 ## 6. Maintain QQQ100 Exact Alignment Before Further QQQ Paper Orders
 

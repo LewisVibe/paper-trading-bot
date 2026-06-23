@@ -14,6 +14,7 @@ This project is a Python paper trading bot. Future Codex prompts should keep saf
 - Paper execution commands must remain separate, explicit, and protected by confirmation flags.
 - Manual paper sell paths must not oversell a long position while `allow_shorting` is false.
 - The QQQ100 paper path must enforce exact zero/one-share QQQ alignment: more than one QQQ share must block/manual review, not count as aligned and not trigger an automatic reduce-to-one or sell-all flow.
+- The paper-live promotion gate may label `qqq_100_trend_gate` as `paper_live_candidate=True` for manual discussion only. That label must not create order instructions, approve execution, approve paper execution, approve scheduling, or include SMA, slow-SMA, high-growth, crypto, QQQ150, or adaptive QQQ as paper-live candidates.
 
 ## Task Risk Levels
 

@@ -188,6 +188,16 @@ The QQQ100 paper execution readiness report comes from `python bot.py --qqq100-p
 - It writes `data/qqq100_paper_execution_readiness_report.csv`, `data/qqq100_paper_execution_readiness_summary.csv`, `data/qqq100_paper_execution_readiness_evidence.csv`, and `data/qqq100_paper_execution_readiness_blockers.csv`.
 - It may say QQQ100 is ready for manual execution-design review, but it does not itself approve broad paper execution, call Alpaca, read positions, create orders, write SQLite `trade_log`, send alerts, schedule anything, or connect strategies to paper orders.
 
+The paper-live promotion gate comes from `python bot.py --paper-live-promotion-gate`, with saved display through `python bot.py --show-paper-live-promotion-gate`:
+
+- It writes `data/paper_live_promotion_gate.csv`, `data/paper_live_promotion_gate_summary.csv`, `data/paper_live_promotion_gate_blockers.csv`, and `data/paper_live_promotion_gate_evidence.csv`.
+- It is the Step 5 gate for manual paper-live candidate discussion only.
+- It is limited to `qqq_100_trend_gate` / `QQQ`.
+- `codex_qqq_adaptive_trend_exposure` remains an ambitious alternative only, `qqq_150_trend_gate` remains rejected, SMA/slow-SMA are excluded, and high-growth plus crypto remain research-only.
+- `paper_live_candidate=True` can mean candidate-discussion status only. It does not approve execution, paper execution, order instructions, scheduling, or strategy-to-execution wiring.
+- Missing required saved/static evidence is recorded as blocked/manual-review rather than silently promoting the candidate.
+- Explicit human approval is still required before any future manually confirmed paper execution command.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.

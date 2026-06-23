@@ -324,6 +324,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-promotion-gate"]:
+        from trading_bot.research.paper_live_promotion_gate import generate_paper_live_promotion_gate
+
+        result = generate_paper_live_promotion_gate()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-promotion-gate"]:
+        from trading_bot.research.paper_live_promotion_gate import show_paper_live_promotion_gate
+
+        code, lines = show_paper_live_promotion_gate()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if "--qqq100-paper-postcheck" in sys.argv[1:]:
         from trading_bot.research.qqq100_paper_postcheck import generate_qqq100_paper_postcheck
 
@@ -1067,6 +1081,10 @@ from trading_bot.research.qqq100_paper_readiness_blocker_report import (
 from trading_bot.research.qqq100_paper_execution_readiness_report import (
     generate_qqq100_paper_execution_readiness_report,
     show_qqq100_paper_execution_readiness_report,
+)
+from trading_bot.research.paper_live_promotion_gate import (
+    generate_paper_live_promotion_gate,
+    show_paper_live_promotion_gate,
 )
 from trading_bot.research.qqq100_paper_postcheck import (
     generate_qqq100_paper_postcheck,
@@ -5505,6 +5523,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ100 paper execution readiness report without refreshing data.",
     )
     parser.add_argument(
+        "--paper-live-promotion-gate",
+        action="store_true",
+        help="Create a saved-output paper-live candidate promotion gate for qqq_100_trend_gate without approving execution.",
+    )
+    parser.add_argument(
+        "--show-paper-live-promotion-gate",
+        action="store_true",
+        help="Display the saved paper-live promotion gate without refreshing data or reading broker state.",
+    )
+    parser.add_argument(
         "--qqq100-paper-postcheck",
         action="store_true",
         help="Create a read-only QQQ100 paper postcheck; broker reads require --confirm-readonly-alpaca-check.",
@@ -6908,6 +6936,20 @@ def main() -> int:
         return 0
     if args.show_qqq100_paper_execution_readiness_report:
         status_code, lines = show_qqq100_paper_execution_readiness_report()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_promotion_gate:
+        try:
+            result = generate_paper_live_promotion_gate()
+        except Exception as exc:
+            print(f"Paper-live promotion gate failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_promotion_gate:
+        status_code, lines = show_paper_live_promotion_gate()
         for line in lines:
             print(line)
         return status_code
