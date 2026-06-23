@@ -434,6 +434,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-checklist-status"]:
+        from trading_bot.research.paper_live_checklist_status import (
+            generate_paper_live_checklist_status,
+        )
+
+        result = generate_paper_live_checklist_status()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-checklist-status"]:
+        from trading_bot.research.paper_live_checklist_status import (
+            show_paper_live_checklist_status,
+        )
+
+        code, lines = show_paper_live_checklist_status()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if "--qqq100-paper-postcheck" in sys.argv[1:]:
         from trading_bot.research.qqq100_paper_postcheck import generate_qqq100_paper_postcheck
 
@@ -1205,6 +1223,10 @@ from trading_bot.research.qqq100_followup_policy_report import (
 from trading_bot.research.paper_live_monitoring_status import (
     generate_paper_live_monitoring_status,
     show_paper_live_monitoring_status,
+)
+from trading_bot.research.paper_live_checklist_status import (
+    generate_paper_live_checklist_status,
+    show_paper_live_checklist_status,
 )
 from trading_bot.research.qqq100_paper_postcheck import (
     generate_qqq100_paper_postcheck,
@@ -5713,6 +5735,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved paper-live monitoring status without broker reads or scheduling changes.",
     )
     parser.add_argument(
+        "--paper-live-checklist-status",
+        action="store_true",
+        help="Create a saved-output paper-live checklist closeout status without broker reads or scheduling changes.",
+    )
+    parser.add_argument(
+        "--show-paper-live-checklist-status",
+        action="store_true",
+        help="Display the saved paper-live checklist status without broker reads or scheduling changes.",
+    )
+    parser.add_argument(
         "--qqq100-paper-postcheck",
         action="store_true",
         help="Create a read-only QQQ100 paper postcheck; broker reads require --confirm-readonly-alpaca-check.",
@@ -7214,6 +7246,20 @@ def main() -> int:
         return 0
     if args.show_paper_live_monitoring_status:
         status_code, lines = show_paper_live_monitoring_status()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_checklist_status:
+        try:
+            result = generate_paper_live_checklist_status()
+        except Exception as exc:
+            print(f"Paper-live checklist status failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_checklist_status:
+        status_code, lines = show_paper_live_checklist_status()
         for line in lines:
             print(line)
         return status_code

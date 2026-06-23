@@ -940,3 +940,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **VPS integration:** `python bot.py --vps-monitoring-status` and `python bot.py --vps-daily-monitoring-summary` now include the saved paper-live monitoring status when available. The existing `paper-bot-vps-status-check` cron command sequence is unchanged; do not add paper-live commands to cron.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, QQQ100 paper execution, QQQ100 postcheck unless separately approved, paper-order tests, normal bot execution, scheduler changes.
 - **Stop condition:** Stop if the task would call Alpaca, read live positions, create executable order instructions, approve repeat/follow-up orders, or change scheduling.
+
+### Task: Paper-live checklist status closeout
+- **Purpose:** Use `python bot.py --paper-live-checklist-status` to close out the current QQQ100 paper-live monitoring phase with saved evidence only.
+- **Risk level:** Low/report-only when it reads `data/paper_live_monitoring_status.csv` only.
+- **Allowed commands:** `python bot.py --paper-live-checklist-status`, `python bot.py --show-paper-live-checklist-status`.
+- **Expected status:** `paper_live_checklist_current_qqq100_monitoring_phase_closed_out` when QQQ100 is aligned long one share, no action is required, and Step 12 remains future-only.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, QQQ100 paper execution, QQQ100 postcheck unless separately approved, paper-order tests, normal bot execution, scheduler changes.
+- **Stop condition:** Stop if the task would build the generic promotion ladder, approve another QQQ order, change the Hermes cron sequence, or touch execution/config/secrets.

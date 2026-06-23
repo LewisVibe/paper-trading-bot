@@ -257,6 +257,13 @@ The paper-live monitoring status comes from `python bot.py --paper-live-monitori
 - It does not create, edit, trigger, or schedule Hermes cron jobs; call Alpaca; read live positions; run postcheck; run QQQ100 paper execution; create executable order instructions; approve execution; approve paper execution; approve repeat execution; approve follow-up orders; approve scheduling; or approve live trading.
 - Every row preserves `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, `followup_order_approved=false`, `repeat_execution_approved=false`, and `never_schedule_order_capable_commands=true`.
 
+The paper-live checklist status closeout comes from `python bot.py --paper-live-checklist-status`, with saved display through `python bot.py --show-paper-live-checklist-status`:
+
+- It writes `data/paper_live_checklist_status.csv`, `data/paper_live_checklist_status_summary.csv`, `data/paper_live_checklist_status_blockers.csv`, and `data/paper_live_checklist_status_evidence.csv`.
+- It reads saved paper-live monitoring status only and records `paper_live_checklist_current_qqq100_monitoring_phase_closed_out` when QQQ100 is aligned long one share, no action is required, and `recommended_next_step=hold_no_action_and_monitor_only`.
+- PAPER_LIVE_CHECKLIST Steps 1-11 are complete or complete-for-current-QQQ100-monitoring-phase; Step 12 remains future-only for a later generic promotion ladder, starting QQQ100 only.
+- It does not approve execution, paper execution, repeat/follow-up orders, scheduling, live trading, or executable order instructions.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.
@@ -862,6 +869,7 @@ python scripts\verify_vps_monitoring_status.py
 python scripts\verify_vps_monitoring_freshness.py
 python scripts\verify_vps_daily_monitoring_summary.py
 python scripts\verify_paper_live_monitoring_in_vps_summary.py
+python scripts\verify_paper_live_checklist_status.py
 python scripts\verify_hermes_promoted_review_refresh_cron_design.py
 python scripts\verify_hermes_cron_monitoring_runbook.py
 python scripts\verify_report_only_import_safety.py

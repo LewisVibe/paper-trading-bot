@@ -187,6 +187,14 @@ If desired state is `long` and saved QQQ position is long exactly one share, the
 - Hermes cron must not run paper-order tests.
 - Scheduled output should say monitoring only and no orders.
 
+Implemented checklist closeout checkpoint: `python bot.py --paper-live-checklist-status`.
+
+Saved display: `python bot.py --show-paper-live-checklist-status`.
+
+Outputs: `data/paper_live_checklist_status.csv`, `data/paper_live_checklist_status_summary.csv`, `data/paper_live_checklist_status_blockers.csv`, and `data/paper_live_checklist_status_evidence.csv`.
+
+Current expected closeout status is `paper_live_checklist_current_qqq100_monitoring_phase_closed_out`: Steps 1-11 are complete or complete-for-current-QQQ100-monitoring-phase, QQQ100 is aligned long one share, no further QQQ order is needed now, repeat/follow-up orders remain blocked, and scheduling remains monitoring-only.
+
 ## 12. Build A Future Promotion System Later
 
 Later, after QQQ100 is stable, build a generic promotion ladder:

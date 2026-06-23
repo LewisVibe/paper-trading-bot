@@ -75,6 +75,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq100-followup-policy-report",
     "--paper-live-monitoring-status",
     "--show-paper-live-monitoring-status",
+    "--paper-live-checklist-status",
+    "--show-paper-live-checklist-status",
     "--qqq100-paper-postcheck",
     "--show-qqq100-paper-postcheck",
     "--qqq100-repeat-alignment-workflow-design",
