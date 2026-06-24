@@ -2028,6 +2028,29 @@ data/paper_live_high_growth_evidence_gap_blockers.csv
 data/paper_live_high_growth_evidence_gap_evidence.csv
 ```
 
+Paper-live high-growth evidence quality mode is the saved-output/manual-review checkpoint after the high-growth evidence files are present. It reads only the canonical saved high-growth evidence CSVs and summarizes concentration/outlier quality, drawdown quality, component attribution quality, survivorship/current-constituent bias warnings, and promotion-readiness boundaries. It may surface TSLA/outlier dependency or severe drawdown context from saved evidence, but it does not approve high-growth promotion. No high-growth preview candidate, paper-live candidate, action preview, order instruction, execution wiring, market refresh, broker call, or scheduling is approved.
+
+Command:
+
+```text
+python bot.py --paper-live-high-growth-evidence-quality
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-live-high-growth-evidence-quality
+```
+
+Outputs:
+
+```text
+data/paper_live_high_growth_evidence_quality.csv
+data/paper_live_high_growth_evidence_quality_summary.csv
+data/paper_live_high_growth_evidence_quality_blockers.csv
+data/paper_live_high_growth_evidence_quality_evidence.csv
+```
+
 QQQ100 manual paper execution is a separate high-risk, confirmation-gated command for the clean QQQ lead only. It reads `data/qqq100_preview_signal_pack.csv`, requires `--confirm-qqq100-paper`, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, checks the QQQ paper position, blocks on open QQQ orders or recent matching QQQ one-share broker orders, and can only align `qqq_100_trend_gate` / `QQQ` to exactly zero or one share. It does not use the normal config ticker universe and does not apply to high-growth, crypto, QQQ150, or adaptive QQQ alternatives. General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false; only the narrow `strategy_execution_approved` / `qqq100_one_share_alignment_approved` flags can be true for the exact manually confirmed QQQ100 path.
 
 Command:

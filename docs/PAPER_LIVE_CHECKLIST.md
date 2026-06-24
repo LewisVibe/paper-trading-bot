@@ -247,6 +247,14 @@ Outputs: `data/paper_live_high_growth_evidence_gap.csv`, `data/paper_live_high_g
 
 Current expected high-growth evidence-gap status is `paper_live_high_growth_evidence_gap_manual_review_required`: the audit checks saved-output file presence only for saved high-growth lead evidence, concentration/top-contributor dependency evidence, drawdown evidence, attribution evidence, bias-risk warnings, and promotion readiness. No high-growth sleeve is promoted, no action previews or order instructions are created, no research is rerun, no market data is refreshed, and no portfolio execution or scheduling is implemented.
 
+Implemented high-growth evidence quality review checkpoint: `python bot.py --paper-live-high-growth-evidence-quality`.
+
+Saved display: `python bot.py --show-paper-live-high-growth-evidence-quality`.
+
+Outputs: `data/paper_live_high_growth_evidence_quality.csv`, `data/paper_live_high_growth_evidence_quality_summary.csv`, `data/paper_live_high_growth_evidence_quality_blockers.csv`, and `data/paper_live_high_growth_evidence_quality_evidence.csv`.
+
+Current expected high-growth quality status is `high_growth_evidence_quality_manual_review_required`: saved evidence may be present, but concentration/outlier, drawdown, attribution, survivorship/current-constituent, and promotion-readiness quality remain manual-review items. No high-growth preview candidate, paper-live candidate, action preview, order instruction, execution wiring, market refresh, broker call, or scheduling is approved.
+
 ## 12. Build A Future Promotion System Later
 
 Later, after QQQ100 is stable, build a generic promotion ladder:

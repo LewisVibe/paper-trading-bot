@@ -314,6 +314,26 @@ def spec_to_row(root: Path, spec: EvidenceAreaSpec) -> dict[str, Any]:
 def build_summary_rows(report_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     missing_count = sum(1 for row in report_rows if row.get("key_missing_evidence") != "none")
     present_count = sum(1 for row in report_rows if row.get("saved_evidence_present") is True)
+    largest_blocker = (
+        "high_growth_missing_saved_evidence_blocks_promotion"
+        if missing_count
+        else "high_growth_evidence_present_quality_review_required"
+    )
+    largest_blocker_details = (
+        "Missing concentration, drawdown, attribution, bias-risk, F6/F7, or portfolio-risk evidence blocks future ladder movement."
+        if missing_count
+        else "Saved evidence files are present, but quality/manual review is still required before any high-growth promotion discussion."
+    )
+    next_step = (
+        "choose_one_high_growth_missing_evidence_blocker_for_saved_output_review"
+        if missing_count
+        else "run_high_growth_evidence_quality_review_before_any_promotion_discussion"
+    )
+    next_step_details = (
+        "Pick one high-growth evidence blocker and address it with a separate saved-output checkpoint."
+        if missing_count
+        else "Review concentration, drawdown, attribution, bias, and promotion-readiness quality without approving high-growth."
+    )
     summary_items = [
         (
             "final_high_growth_evidence_gap_status",
@@ -337,8 +357,8 @@ def build_summary_rows(report_rows: list[dict[str, Any]]) -> list[dict[str, Any]
         ),
         (
             "largest_blocker",
-            "high_growth_missing_saved_evidence_blocks_promotion",
-            "Missing concentration, drawdown, attribution, bias-risk, F6/F7, or portfolio-risk evidence blocks future ladder movement.",
+            largest_blocker,
+            largest_blocker_details,
         ),
         (
             "allowed_next_action",
@@ -352,8 +372,8 @@ def build_summary_rows(report_rows: list[dict[str, Any]]) -> list[dict[str, Any]
         ),
         (
             "next_safe_development_step",
-            "choose_one_high_growth_missing_evidence_blocker_for_saved_output_review",
-            "Pick one high-growth evidence blocker and address it with a separate saved-output checkpoint.",
+            next_step,
+            next_step_details,
         ),
     ]
     return [summary_row(name, value, details) for name, value, details in summary_items]

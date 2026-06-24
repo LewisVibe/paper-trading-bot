@@ -320,6 +320,13 @@ The paper-live high-growth evidence-gap audit comes from `python bot.py --paper-
 - Missing saved outputs are blockers/manual-review items, not execution approval.
 - No high-growth sleeve is promoted, no action previews or order instructions are created, no research is rerun, no market data is refreshed, and no portfolio execution or scheduling is implemented.
 
+The paper-live high-growth evidence quality review comes from `python bot.py --paper-live-high-growth-evidence-quality`, with saved display through `python bot.py --show-paper-live-high-growth-evidence-quality`:
+
+- It writes `data/paper_live_high_growth_evidence_quality.csv`, `data/paper_live_high_growth_evidence_quality_summary.csv`, `data/paper_live_high_growth_evidence_quality_blockers.csv`, and `data/paper_live_high_growth_evidence_quality_evidence.csv`.
+- It reads only canonical saved high-growth evidence CSVs and summarizes concentration/outlier quality, drawdown quality, component attribution quality, survivorship/current-constituent bias warnings, and promotion-readiness boundaries.
+- It may surface TSLA/outlier dependency or severe drawdown context from saved evidence, but this remains manual-review context only.
+- No high-growth sleeve is promoted, no preview candidate or paper-live candidate is approved, no action previews or order instructions are created, no market data is refreshed, and no execution or scheduling is approved.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.

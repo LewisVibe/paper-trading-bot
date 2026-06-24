@@ -1004,3 +1004,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `paper_live_high_growth_evidence_gap_manual_review_required`; missing lead, concentration/top-contributor, drawdown, attribution, survivorship/outlier, F6/F7, or portfolio-risk evidence remains a blocker.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, research reruns, market-data refresh, Alpaca reads, action previews, order instructions, portfolio execution implementation, or high-growth promotion.
 - **Stop condition:** Stop if the task would read broker state, refresh data, promote high-growth, create action previews/order instructions, or treat saved metrics as execution evidence.
+
+### Task: Paper-live high-growth evidence quality review
+- **Purpose:** Use `python bot.py --paper-live-high-growth-evidence-quality` to review present high-growth evidence quality before any future high-growth promotion-ladder discussion.
+- **Risk level:** Low/report-only when limited to saved-output CSV summaries and no broker reads.
+- **Allowed commands:** `python bot.py --paper-live-high-growth-evidence-quality`, `python bot.py --show-paper-live-high-growth-evidence-quality`.
+- **Expected status:** `high_growth_evidence_quality_manual_review_required`; saved evidence can be present while concentration/outlier, drawdown, attribution, survivorship/current-constituent, and promotion-readiness blockers remain manual-review items.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, research reruns, market-data refresh, Alpaca reads, action previews, order instructions, portfolio execution implementation, or high-growth promotion.
+- **Stop condition:** Stop if the task would approve preview/paper-live/execution/scheduling, hide TSLA/outlier/concentration/bias warnings, or treat saved metrics as order instructions.
