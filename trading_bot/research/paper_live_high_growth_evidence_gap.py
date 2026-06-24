@@ -245,7 +245,9 @@ def build_evidence_area_specs() -> list[EvidenceAreaSpec]:
             "attribution_evidence",
             (
                 "data/high_growth_component_attribution.csv",
-                "data/high_growth_component_attribution_evidence.csv",
+                "data/high_growth_component_attribution_summary.csv",
+                "data/high_growth_component_contributions.csv",
+                "data/high_growth_component_drawdown_contributions.csv",
                 "data/high_growth_component_streams.csv",
                 "data/high_growth_component_streams_summary.csv",
             ),
