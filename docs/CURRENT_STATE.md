@@ -304,6 +304,15 @@ The paper-live next-phase backlog checkpoint comes from `python bot.py --paper-l
 - Monitoring/Hermes remains monitoring-only and order-capable commands must never be scheduled.
 - This checkpoint is report-only and does not implement portfolio execution, execution approval, order instructions, broker reads, scheduling, or strategy-to-execution wiring.
 
+The paper-live multi-sleeve evidence-gap audit comes from `python bot.py --paper-live-multi-sleeve-evidence-gap`, with saved display through `python bot.py --show-paper-live-multi-sleeve-evidence-gap`:
+
+- It writes `data/paper_live_multi_sleeve_evidence_gap.csv`, `data/paper_live_multi_sleeve_evidence_gap_summary.csv`, `data/paper_live_multi_sleeve_evidence_gap_blockers.csv`, and `data/paper_live_multi_sleeve_evidence_gap_evidence.csv`.
+- It checks saved-output file presence only for QQQ100 core, defensive sleeve, high-growth sleeve, crypto sleeve, and multi-sleeve allocator evidence.
+- Missing saved outputs are blockers/manual-review items, not execution approval.
+- QQQ100 core remains the only current paper-live monitor base, aligned long one share with no action required.
+- Defensive, high-growth, crypto, and allocator sleeves stay future-only/research-only until missing evidence blockers are closed.
+- No sleeve is promoted, no action previews or order instructions are created, no research is rerun, no market data is refreshed, and no portfolio execution or scheduling is implemented.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.
@@ -915,6 +924,7 @@ python scripts\verify_paper_live_f6_f7_targeted_checks.py
 python scripts\verify_paper_live_promotion_ladder_design.py
 python scripts\verify_paper_live_multi_sleeve_roadmap.py
 python scripts\verify_paper_live_next_phase_backlog.py
+python scripts\verify_paper_live_multi_sleeve_evidence_gap.py
 python scripts\verify_hermes_promoted_review_refresh_cron_design.py
 python scripts\verify_hermes_cron_monitoring_runbook.py
 python scripts\verify_report_only_import_safety.py

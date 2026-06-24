@@ -988,3 +988,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `paper_live_next_phase_backlog_report_only`; only saved-output reviews and verifiers are allowed next.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, scheduler changes, portfolio execution implementation.
 - **Stop condition:** Stop if the task would create execution wiring, order instructions, scheduling, promote a sleeve, or treat portfolio metrics as promotion evidence before accounting is proven.
+
+### Task: Paper-live multi-sleeve evidence-gap audit
+- **Purpose:** Use `python bot.py --paper-live-multi-sleeve-evidence-gap` to map present/missing saved evidence before any future sleeve can move through the promotion ladder.
+- **Risk level:** Low/report-only when limited to saved-output file presence checks and no broker reads.
+- **Allowed commands:** `python bot.py --paper-live-multi-sleeve-evidence-gap`, `python bot.py --show-paper-live-multi-sleeve-evidence-gap`.
+- **Expected status:** `paper_live_multi_sleeve_evidence_gap_manual_review_required`; missing saved outputs are blockers/manual-review items.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, research reruns, market-data refresh, Alpaca reads, action previews, order instructions, portfolio execution implementation.
+- **Stop condition:** Stop if the task would read broker state, refresh data, promote a sleeve, create action previews/order instructions, or treat missing evidence as approval.

@@ -1982,6 +1982,29 @@ data/paper_live_next_phase_backlog_blockers.csv
 data/paper_live_next_phase_backlog_evidence.csv
 ```
 
+Paper-live multi-sleeve evidence-gap audit mode is the saved-output/report-only checkpoint that maps which expected evidence files exist and which are still missing before any future sleeve can move through the promotion ladder. It uses saved-output file presence only and treats missing saved outputs as blockers/manual-review items, not execution approval. QQQ100 core remains the only current paper-live monitor base, aligned long one share with no action required. Defensive, high-growth, crypto, and allocator sleeves stay future-only/research-only until their missing evidence blockers are closed. The audit does not rerun research, fetch market data, promote sleeves, create action previews, create order instructions, wire portfolio execution, or schedule anything.
+
+Command:
+
+```text
+python bot.py --paper-live-multi-sleeve-evidence-gap
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-live-multi-sleeve-evidence-gap
+```
+
+Outputs:
+
+```text
+data/paper_live_multi_sleeve_evidence_gap.csv
+data/paper_live_multi_sleeve_evidence_gap_summary.csv
+data/paper_live_multi_sleeve_evidence_gap_blockers.csv
+data/paper_live_multi_sleeve_evidence_gap_evidence.csv
+```
+
 QQQ100 manual paper execution is a separate high-risk, confirmation-gated command for the clean QQQ lead only. It reads `data/qqq100_preview_signal_pack.csv`, requires `--confirm-qqq100-paper`, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, checks the QQQ paper position, blocks on open QQQ orders or recent matching QQQ one-share broker orders, and can only align `qqq_100_trend_gate` / `QQQ` to exactly zero or one share. It does not use the normal config ticker universe and does not apply to high-growth, crypto, QQQ150, or adaptive QQQ alternatives. General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false; only the narrow `strategy_execution_approved` / `qqq100_one_share_alignment_approved` flags can be true for the exact manually confirmed QQQ100 path.
 
 Command:

@@ -231,6 +231,14 @@ Outputs: `data/paper_live_next_phase_backlog.csv`, `data/paper_live_next_phase_b
 
 Current expected backlog status is `paper_live_next_phase_backlog_report_only`: QQQ100 core remains monitor-only/no-action, generic ladder implementation is future-only, F6/F7 requires loud unknown-position handling and portfolio accounting proof, defensive/high-growth/crypto/allocator work needs saved-output evidence review, and Monitoring/Hermes remains monitoring-only with order-capable commands never scheduled.
 
+Implemented multi-sleeve evidence-gap audit checkpoint: `python bot.py --paper-live-multi-sleeve-evidence-gap`.
+
+Saved display: `python bot.py --show-paper-live-multi-sleeve-evidence-gap`.
+
+Outputs: `data/paper_live_multi_sleeve_evidence_gap.csv`, `data/paper_live_multi_sleeve_evidence_gap_summary.csv`, `data/paper_live_multi_sleeve_evidence_gap_blockers.csv`, and `data/paper_live_multi_sleeve_evidence_gap_evidence.csv`.
+
+Current expected evidence-gap status is `paper_live_multi_sleeve_evidence_gap_manual_review_required`: the audit checks saved-output file presence only, treats missing saved outputs as blockers/manual-review items, and does not rerun research, refresh market data, promote sleeves, create action previews, create order instructions, wire portfolio execution, or schedule anything.
+
 ## 12. Build A Future Promotion System Later
 
 Later, after QQQ100 is stable, build a generic promotion ladder:
