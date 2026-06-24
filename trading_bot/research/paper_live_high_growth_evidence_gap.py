@@ -163,6 +163,7 @@ def generate_paper_live_high_growth_evidence_gap(root_dir: Path | str = ".") -> 
 def show_paper_live_high_growth_evidence_gap(root_dir: Path | str = ".") -> tuple[int, list[str]]:
     root = Path(root_dir)
     summary_path = root / OUTPUT_FILES["summary"]
+    blockers_path = root / OUTPUT_FILES["blockers"]
     if not summary_path.exists():
         return 1, [
             "Paper-live high-growth evidence-gap audit is missing.",
@@ -170,7 +171,7 @@ def show_paper_live_high_growth_evidence_gap(root_dir: Path | str = ".") -> tupl
             "execution_approved=false; paper_execution_approved=false; scheduling_approved=false; live_trading_approved=false; high_growth_promotion_approved=false",
         ]
     rows = read_csv_rows(summary_path)
-    return 0, [
+    lines = [
         "Paper-live high-growth evidence-gap saved display. Report only; no high-growth promotion or execution approved.",
         f"final_high_growth_evidence_gap_status: {summary_value(rows, 'final_high_growth_evidence_gap_status')}",
         f"areas_checked: {summary_value(rows, 'areas_checked')}",
@@ -180,9 +181,12 @@ def show_paper_live_high_growth_evidence_gap(root_dir: Path | str = ".") -> tupl
         f"allowed_next_action: {summary_value(rows, 'allowed_next_action')}",
         f"forbidden_action_summary: {summary_value(rows, 'forbidden_action_summary')}",
         f"next_safe_development_step: {summary_value(rows, 'next_safe_development_step')}",
+        "exact_missing_evidence_blockers:",
+        *format_missing_blocker_lines(blockers_path),
         "execution_approved=false; paper_execution_approved=false; scheduling_approved=false; live_trading_approved=false; followup_order_approved=false; repeat_execution_approved=false; high_growth_promotion_approved=false",
         "never_schedule_order_capable_commands=true",
     ]
+    return 0, lines
 
 
 def build_evidence_area_specs() -> list[EvidenceAreaSpec]:
@@ -225,7 +229,9 @@ def build_evidence_area_specs() -> list[EvidenceAreaSpec]:
                 "data/multi_sleeve_high_growth_drawdown_decomposition.csv",
                 "data/multi_sleeve_high_growth_drawdown_summary.csv",
                 "data/multi_sleeve_high_growth_drawdown_periods.csv",
-                "data/high_growth_stock_drawdown_control.csv",
+                "data/high_growth_stock_drawdown_control_report.csv",
+                "data/high_growth_stock_drawdown_control_summary.csv",
+                "data/high_growth_stock_drawdown_control_drawdowns.csv",
             ),
             "missing_high_growth_drawdown_window_or_contribution_evidence",
             "drawdown_saved_evidence_present_manual_review_required",
@@ -462,6 +468,24 @@ def summary_value(rows: list[dict[str, Any]], name: str) -> str:
         if row.get("summary_name") == name:
             return str(row.get("summary_value", ""))
     return "unavailable"
+
+
+def format_missing_blocker_lines(blockers_path: Path) -> list[str]:
+    if not blockers_path.exists():
+        return ["- blocker_details_unavailable: blockers file missing"]
+    rows = read_csv_rows(blockers_path)
+    missing_rows = [
+        row
+        for row in rows
+        if str(row.get("blocker_name", "")).endswith("_missing_evidence")
+        and str(row.get("details", "")).startswith("Missing evidence:")
+    ]
+    if not missing_rows:
+        return ["- none"]
+    return [
+        f"- {row.get('blocker_name')}: {row.get('details')}; required_next_step={row.get('required_next_step')}"
+        for row in missing_rows
+    ]
 
 
 def write_rows(path: Path, fieldnames: list[str], rows: list[dict[str, Any]]) -> None:

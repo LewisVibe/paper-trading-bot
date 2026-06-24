@@ -68,6 +68,10 @@ REQUIRED_MODULE_TOKENS = [
     "missing_concentration_or_top_contributor_dependency_evidence",
     "drawdown_evidence",
     "missing_high_growth_drawdown_window_or_contribution_evidence",
+    "data/high_growth_stock_drawdown_control_report.csv",
+    "data/high_growth_stock_drawdown_control_summary.csv",
+    "data/high_growth_stock_drawdown_control_drawdowns.csv",
+    "exact_missing_evidence_blockers",
     "attribution_evidence",
     "missing_component_ticker_weight_or_contribution_attribution",
     "bias_risk_warnings",
@@ -166,6 +170,8 @@ def verify_module(module_source: str, failures: list[str]) -> None:
     for token in FORBIDDEN_CALL_TOKENS:
         if token in module_source:
             failures.append(f"forbidden broker/order/config/market/scheduling call token in module: {token}")
+    if '"data/high_growth_stock_drawdown_control.csv"' in module_source:
+        failures.append("module must not expect non-canonical high_growth_stock_drawdown_control.csv")
     if "read_csv_rows(" in module_source and "show_paper_live_high_growth_evidence_gap" not in module_source:
         failures.append("module should not read generated CSV contents while building evidence gap")
 
@@ -234,6 +240,9 @@ def verify_report_output_from_fixture(failures: list[str]) -> None:
         "repeat_execution_approved=false",
         "high_growth_promotion_approved=false",
         "never_schedule_order_capable_commands=true",
+        "exact_missing_evidence_blockers",
+        "attribution_evidence_missing_evidence",
+        "data/high_growth_component_attribution_evidence.csv",
     ]:
         if phrase not in output:
             failures.append(f"fixture output missing phrase: {phrase}")
@@ -253,8 +262,10 @@ def verify_report_output_from_fixture(failures: list[str]) -> None:
         failures.append("fixture should mark high-growth saved lead evidence present")
     if by_area.get("concentration_evidence", {}).get("saved_evidence_present") != "True":
         failures.append("fixture should mark concentration saved evidence present")
-    if by_area.get("drawdown_evidence", {}).get("saved_evidence_present") != "False":
-        failures.append("fixture should mark drawdown saved evidence missing")
+    if by_area.get("drawdown_evidence", {}).get("saved_evidence_present") != "True":
+        failures.append("fixture should mark drawdown saved evidence present from canonical saved files")
+    if by_area.get("drawdown_evidence", {}).get("key_missing_evidence") != "none":
+        failures.append("fixture should not report missing drawdown evidence when canonical saved files exist")
     if "not_approved" not in by_area.get("promotion_readiness", {}).get("current_status", ""):
         failures.append("promotion readiness must preserve high-growth not approved")
     if "preview_or_paper_live" not in by_area.get("attribution_evidence", {}).get("blocker", ""):
@@ -267,6 +278,12 @@ def create_fixture_files(root: Path) -> None:
         "data/high_growth_stock_manual_review_pack.csv",
         "data/high_growth_component_streams.csv",
         "data/high_growth_component_attribution.csv",
+        "data/multi_sleeve_high_growth_drawdown_decomposition.csv",
+        "data/multi_sleeve_high_growth_drawdown_summary.csv",
+        "data/multi_sleeve_high_growth_drawdown_periods.csv",
+        "data/high_growth_stock_drawdown_control_report.csv",
+        "data/high_growth_stock_drawdown_control_summary.csv",
+        "data/high_growth_stock_drawdown_control_drawdowns.csv",
         "data/paper_live_multi_sleeve_evidence_gap.csv",
     ]:
         path = root / relative
