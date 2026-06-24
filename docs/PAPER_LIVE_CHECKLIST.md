@@ -255,6 +255,14 @@ Outputs: `data/paper_live_high_growth_evidence_quality.csv`, `data/paper_live_hi
 
 Current expected high-growth quality status is `high_growth_evidence_quality_manual_review_required`: saved evidence may be present, but concentration/outlier, drawdown, attribution, survivorship/current-constituent, and promotion-readiness quality remain manual-review items. No high-growth preview candidate, paper-live candidate, action preview, order instruction, execution wiring, market refresh, broker call, or scheduling is approved.
 
+Implemented high-growth manual-review decision checkpoint: `python bot.py --paper-live-high-growth-manual-review-decision`.
+
+Saved display: `python bot.py --show-paper-live-high-growth-manual-review-decision`.
+
+Outputs: `data/paper_live_high_growth_manual_review_decision.csv`, `data/paper_live_high_growth_manual_review_decision_summary.csv`, `data/paper_live_high_growth_manual_review_decision_blockers.csv`, and `data/paper_live_high_growth_manual_review_decision_evidence.csv`.
+
+Current expected decision is `high_growth_remains_research_only_manual_review_required`: high-growth is not a preview candidate, not a paper-live candidate, and not promoted. QQQ100 remains the cleaner current paper-live monitor base. High-growth can be reconsidered later only with stronger concentration-control, component/drawdown attribution, split/cost, portfolio-accounting, F6/F7, and risk-policy evidence, with no order instructions or scheduling.
+
 ## 12. Build A Future Promotion System Later
 
 Later, after QQQ100 is stable, build a generic promotion ladder:

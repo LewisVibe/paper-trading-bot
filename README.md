@@ -2051,6 +2051,31 @@ data/paper_live_high_growth_evidence_quality_blockers.csv
 data/paper_live_high_growth_evidence_quality_evidence.csv
 ```
 
+Paper-live high-growth manual-review decision mode is the saved-output checkpoint after the high-growth evidence-gap and evidence-quality reviews. It reads only those saved outputs, summarizes the current manual-review reason, and keeps the high-growth branch research-only when the saved quality review shows outlier dependence, one-name concentration, severe drawdown, survivorship/current-constituent warnings, or `high_growth_stock_outlier_dependent`. QQQ100 remains the cleaner current paper-live monitor base. High-growth is not permanently rejected, but future reconsideration requires concentration control evidence, component/drawdown attribution review with acceptable dependency, split/cost review, portfolio accounting consistency, F6/F7 compatibility, risk policy review, and no order instructions or scheduling.
+
+Command:
+
+```text
+python bot.py --paper-live-high-growth-manual-review-decision
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-live-high-growth-manual-review-decision
+```
+
+Outputs:
+
+```text
+data/paper_live_high_growth_manual_review_decision.csv
+data/paper_live_high_growth_manual_review_decision_summary.csv
+data/paper_live_high_growth_manual_review_decision_blockers.csv
+data/paper_live_high_growth_manual_review_decision_evidence.csv
+```
+
+Expected decision status is `high_growth_remains_research_only_manual_review_required`. No high-growth preview candidate, paper-live candidate, promotion, action preview, order instruction, execution wiring, market refresh, broker call, or scheduling is approved.
+
 QQQ100 manual paper execution is a separate high-risk, confirmation-gated command for the clean QQQ lead only. It reads `data/qqq100_preview_signal_pack.csv`, requires `--confirm-qqq100-paper`, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, checks the QQQ paper position, blocks on open QQQ orders or recent matching QQQ one-share broker orders, and can only align `qqq_100_trend_gate` / `QQQ` to exactly zero or one share. It does not use the normal config ticker universe and does not apply to high-growth, crypto, QQQ150, or adaptive QQQ alternatives. General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false; only the narrow `strategy_execution_approved` / `qqq100_one_share_alignment_approved` flags can be true for the exact manually confirmed QQQ100 path.
 
 Command:

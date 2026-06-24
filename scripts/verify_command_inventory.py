@@ -91,6 +91,8 @@ REQUIRED_COMMANDS = [
     "--show-paper-live-high-growth-evidence-gap",
     "--paper-live-high-growth-evidence-quality",
     "--show-paper-live-high-growth-evidence-quality",
+    "--paper-live-high-growth-manual-review-decision",
+    "--show-paper-live-high-growth-manual-review-decision",
     "--qqq100-paper-postcheck",
     "--show-qqq100-paper-postcheck",
     "--qqq100-repeat-alignment-workflow-design",

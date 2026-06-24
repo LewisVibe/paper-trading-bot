@@ -566,6 +566,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-high-growth-manual-review-decision"]:
+        from trading_bot.research.paper_live_high_growth_manual_review_decision import (
+            generate_paper_live_high_growth_manual_review_decision,
+        )
+
+        result = generate_paper_live_high_growth_manual_review_decision()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-high-growth-manual-review-decision"]:
+        from trading_bot.research.paper_live_high_growth_manual_review_decision import (
+            show_paper_live_high_growth_manual_review_decision,
+        )
+
+        code, lines = show_paper_live_high_growth_manual_review_decision()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if "--qqq100-paper-postcheck" in sys.argv[1:]:
         from trading_bot.research.qqq100_paper_postcheck import generate_qqq100_paper_postcheck
 
@@ -1369,6 +1387,10 @@ from trading_bot.research.paper_live_high_growth_evidence_gap import (
 from trading_bot.research.paper_live_high_growth_evidence_quality import (
     generate_paper_live_high_growth_evidence_quality,
     show_paper_live_high_growth_evidence_quality,
+)
+from trading_bot.research.paper_live_high_growth_manual_review_decision import (
+    generate_paper_live_high_growth_manual_review_decision,
+    show_paper_live_high_growth_manual_review_decision,
 )
 from trading_bot.research.qqq100_paper_postcheck import (
     generate_qqq100_paper_postcheck,
@@ -5957,6 +5979,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved high-growth evidence quality review without broker reads.",
     )
     parser.add_argument(
+        "--paper-live-high-growth-manual-review-decision",
+        action="store_true",
+        help="Create a saved-output high-growth manual-review decision without rerunning research.",
+    )
+    parser.add_argument(
+        "--show-paper-live-high-growth-manual-review-decision",
+        action="store_true",
+        help="Display the saved high-growth manual-review decision without broker reads.",
+    )
+    parser.add_argument(
         "--qqq100-paper-postcheck",
         action="store_true",
         help="Create a read-only QQQ100 paper postcheck; broker reads require --confirm-readonly-alpaca-check.",
@@ -7570,6 +7602,20 @@ def main() -> int:
         return 0
     if args.show_paper_live_high_growth_evidence_quality:
         status_code, lines = show_paper_live_high_growth_evidence_quality()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_high_growth_manual_review_decision:
+        try:
+            result = generate_paper_live_high_growth_manual_review_decision()
+        except Exception as exc:
+            print(f"Paper-live high-growth manual-review decision failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_high_growth_manual_review_decision:
+        status_code, lines = show_paper_live_high_growth_manual_review_decision()
         for line in lines:
             print(line)
         return status_code

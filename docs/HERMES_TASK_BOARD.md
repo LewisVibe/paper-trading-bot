@@ -1012,3 +1012,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `high_growth_evidence_quality_manual_review_required`; saved evidence can be present while concentration/outlier, drawdown, attribution, survivorship/current-constituent, and promotion-readiness blockers remain manual-review items.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, research reruns, market-data refresh, Alpaca reads, action previews, order instructions, portfolio execution implementation, or high-growth promotion.
 - **Stop condition:** Stop if the task would approve preview/paper-live/execution/scheduling, hide TSLA/outlier/concentration/bias warnings, or treat saved metrics as order instructions.
+
+### Task: Paper-live high-growth manual-review decision
+- **Purpose:** Use `python bot.py --paper-live-high-growth-manual-review-decision` to record the current high-growth manual-review decision from saved gap/quality outputs only.
+- **Risk level:** Low/report-only when limited to saved evidence-gap and evidence-quality outputs and no broker reads.
+- **Allowed commands:** `python bot.py --paper-live-high-growth-manual-review-decision`, `python bot.py --show-paper-live-high-growth-manual-review-decision`.
+- **Expected status:** `high_growth_remains_research_only_manual_review_required`; QQQ100 remains the cleaner current paper-live monitor base, and high-growth preview/paper-live/promotion flags remain false.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, research reruns, market-data refresh, Alpaca reads, action previews, order instructions, portfolio execution implementation, or high-growth promotion.
+- **Stop condition:** Stop if the task would promote high-growth, approve preview/paper-live/execution/scheduling, create order instructions, or treat the decision checkpoint as permanent rejection rather than future manual-review context.
