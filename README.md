@@ -1959,6 +1959,29 @@ data/paper_live_multi_sleeve_roadmap_blockers.csv
 data/paper_live_multi_sleeve_roadmap_evidence.csv
 ```
 
+Paper-live next-phase backlog mode is the saved-output/report-only checkpoint listing what must happen before any future sleeve can move through the promotion ladder. It keeps QQQ100 as the current monitor-only base, aligned long one share, with no action required and no repeat/follow-up order approved. It records that the generic promotion ladder design exists but implementation is future-only with no execution wiring; F6/F7 targeted checks exist, unknown positions must stay loud, and portfolio backtest accounting must be proven before portfolio metrics become promotion evidence. Defensive, high-growth, crypto, and allocator work are all blocked behind saved-output evidence reviews. Monitoring/Hermes stays monitoring-only and order-capable commands must never be scheduled.
+
+Command:
+
+```text
+python bot.py --paper-live-next-phase-backlog
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-live-next-phase-backlog
+```
+
+Outputs:
+
+```text
+data/paper_live_next_phase_backlog.csv
+data/paper_live_next_phase_backlog_summary.csv
+data/paper_live_next_phase_backlog_blockers.csv
+data/paper_live_next_phase_backlog_evidence.csv
+```
+
 QQQ100 manual paper execution is a separate high-risk, confirmation-gated command for the clean QQQ lead only. It reads `data/qqq100_preview_signal_pack.csv`, requires `--confirm-qqq100-paper`, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, checks the QQQ paper position, blocks on open QQQ orders or recent matching QQQ one-share broker orders, and can only align `qqq_100_trend_gate` / `QQQ` to exactly zero or one share. It does not use the normal config ticker universe and does not apply to high-growth, crypto, QQQ150, or adaptive QQQ alternatives. General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false; only the narrow `strategy_execution_approved` / `qqq100_one_share_alignment_approved` flags can be true for the exact manually confirmed QQQ100 path.
 
 Command:

@@ -498,6 +498,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-next-phase-backlog"]:
+        from trading_bot.research.paper_live_next_phase_backlog import generate_paper_live_next_phase_backlog
+
+        result = generate_paper_live_next_phase_backlog()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-next-phase-backlog"]:
+        from trading_bot.research.paper_live_next_phase_backlog import show_paper_live_next_phase_backlog
+
+        code, lines = show_paper_live_next_phase_backlog()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if "--qqq100-paper-postcheck" in sys.argv[1:]:
         from trading_bot.research.qqq100_paper_postcheck import generate_qqq100_paper_postcheck
 
@@ -1285,6 +1299,10 @@ from trading_bot.research.paper_live_promotion_ladder_design import (
 from trading_bot.research.paper_live_multi_sleeve_roadmap import (
     generate_paper_live_multi_sleeve_roadmap,
     show_paper_live_multi_sleeve_roadmap,
+)
+from trading_bot.research.paper_live_next_phase_backlog import (
+    generate_paper_live_next_phase_backlog,
+    show_paper_live_next_phase_backlog,
 )
 from trading_bot.research.qqq100_paper_postcheck import (
     generate_qqq100_paper_postcheck,
@@ -5833,6 +5851,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ-led multi-sleeve paper-live roadmap without broker reads.",
     )
     parser.add_argument(
+        "--paper-live-next-phase-backlog",
+        action="store_true",
+        help="Create a saved-output paper-live next-phase backlog without promotion or execution wiring.",
+    )
+    parser.add_argument(
+        "--show-paper-live-next-phase-backlog",
+        action="store_true",
+        help="Display the saved paper-live next-phase backlog without broker reads.",
+    )
+    parser.add_argument(
         "--qqq100-paper-postcheck",
         action="store_true",
         help="Create a read-only QQQ100 paper postcheck; broker reads require --confirm-readonly-alpaca-check.",
@@ -7390,6 +7418,20 @@ def main() -> int:
         return 0
     if args.show_paper_live_multi_sleeve_roadmap:
         status_code, lines = show_paper_live_multi_sleeve_roadmap()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_next_phase_backlog:
+        try:
+            result = generate_paper_live_next_phase_backlog()
+        except Exception as exc:
+            print(f"Paper-live next-phase backlog failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_next_phase_backlog:
+        status_code, lines = show_paper_live_next_phase_backlog()
         for line in lines:
             print(line)
         return status_code

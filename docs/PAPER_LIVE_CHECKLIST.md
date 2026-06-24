@@ -223,6 +223,14 @@ Outputs: `data/paper_live_multi_sleeve_roadmap.csv`, `data/paper_live_multi_slee
 
 Current expected roadmap status is `paper_live_multi_sleeve_roadmap_report_only`: QQQ100 core remains the current monitor-only base and only current seed, defensive sleeve is future review only, high-growth remains research-only until concentration/drawdown/attribution review is complete, crypto remains research-only/capped/future-only with no crypto execution approved, and the allocator has no portfolio execution wiring, no order instructions, and no scheduled execution.
 
+Implemented next-phase backlog checkpoint: `python bot.py --paper-live-next-phase-backlog`.
+
+Saved display: `python bot.py --show-paper-live-next-phase-backlog`.
+
+Outputs: `data/paper_live_next_phase_backlog.csv`, `data/paper_live_next_phase_backlog_summary.csv`, `data/paper_live_next_phase_backlog_blockers.csv`, and `data/paper_live_next_phase_backlog_evidence.csv`.
+
+Current expected backlog status is `paper_live_next_phase_backlog_report_only`: QQQ100 core remains monitor-only/no-action, generic ladder implementation is future-only, F6/F7 requires loud unknown-position handling and portfolio accounting proof, defensive/high-growth/crypto/allocator work needs saved-output evidence review, and Monitoring/Hermes remains monitoring-only with order-capable commands never scheduled.
+
 ## 12. Build A Future Promotion System Later
 
 Later, after QQQ100 is stable, build a generic promotion ladder:

@@ -83,6 +83,8 @@ REQUIRED_COMMANDS = [
     "--show-paper-live-promotion-ladder-design",
     "--paper-live-multi-sleeve-roadmap",
     "--show-paper-live-multi-sleeve-roadmap",
+    "--paper-live-next-phase-backlog",
+    "--show-paper-live-next-phase-backlog",
     "--qqq100-paper-postcheck",
     "--show-qqq100-paper-postcheck",
     "--qqq100-repeat-alignment-workflow-design",

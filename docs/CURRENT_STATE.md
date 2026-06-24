@@ -293,6 +293,17 @@ The paper-live QQQ-led multi-sleeve roadmap checkpoint comes from `python bot.py
 - Multi-sleeve allocator is future-only with no portfolio execution wiring, no order instructions, and no scheduling.
 - This checkpoint is report-only and does not implement portfolio execution, execution approval, order instructions, broker reads, scheduling, or strategy-to-execution wiring.
 
+The paper-live next-phase backlog checkpoint comes from `python bot.py --paper-live-next-phase-backlog`, with saved display through `python bot.py --show-paper-live-next-phase-backlog`:
+
+- It writes `data/paper_live_next_phase_backlog.csv`, `data/paper_live_next_phase_backlog_summary.csv`, `data/paper_live_next_phase_backlog_blockers.csv`, and `data/paper_live_next_phase_backlog_evidence.csv`.
+- It lists the required future work for QQQ100 core, generic promotion ladder, F6/F7, defensive sleeve, high-growth sleeve, crypto sleeve, multi-sleeve allocator, and Monitoring/Hermes.
+- QQQ100 remains the current monitor-only base, aligned long one share, with no action required and no repeat/follow-up order approved.
+- Generic promotion ladder implementation remains future-only with no execution wiring.
+- F6/F7 targeted checks exist, unknown positions must stay loud, and portfolio backtest accounting must be proven before portfolio metrics become promotion evidence.
+- Defensive, high-growth, crypto, and allocator work are blocked behind saved-output evidence reviews; no sleeve is promoted.
+- Monitoring/Hermes remains monitoring-only and order-capable commands must never be scheduled.
+- This checkpoint is report-only and does not implement portfolio execution, execution approval, order instructions, broker reads, scheduling, or strategy-to-execution wiring.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.
@@ -903,6 +914,7 @@ python scripts\verify_paper_live_f6_f7_audit.py
 python scripts\verify_paper_live_f6_f7_targeted_checks.py
 python scripts\verify_paper_live_promotion_ladder_design.py
 python scripts\verify_paper_live_multi_sleeve_roadmap.py
+python scripts\verify_paper_live_next_phase_backlog.py
 python scripts\verify_hermes_promoted_review_refresh_cron_design.py
 python scripts\verify_hermes_cron_monitoring_runbook.py
 python scripts\verify_report_only_import_safety.py

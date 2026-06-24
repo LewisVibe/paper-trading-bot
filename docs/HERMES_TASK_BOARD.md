@@ -980,3 +980,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `paper_live_multi_sleeve_roadmap_report_only`; QQQ100 core remains monitor-only, defensive is future review only, high-growth and crypto remain research-only, and allocator execution wiring is absent.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, scheduler changes, portfolio execution implementation.
 - **Stop condition:** Stop if the task would create portfolio execution wiring, order instructions, scheduling, crypto execution, or promote high-growth/defensive/crypto/SMA/slow-SMA paths.
+
+### Task: Paper-live next-phase backlog
+- **Purpose:** Use `python bot.py --paper-live-next-phase-backlog` to list exactly what must happen before any future sleeve can move through the promotion ladder.
+- **Risk level:** Low/report-only when limited to saved output files and no broker reads.
+- **Allowed commands:** `python bot.py --paper-live-next-phase-backlog`, `python bot.py --show-paper-live-next-phase-backlog`.
+- **Expected status:** `paper_live_next_phase_backlog_report_only`; only saved-output reviews and verifiers are allowed next.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, scheduler changes, portfolio execution implementation.
+- **Stop condition:** Stop if the task would create execution wiring, order instructions, scheduling, promote a sleeve, or treat portfolio metrics as promotion evidence before accounting is proven.
