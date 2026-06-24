@@ -996,3 +996,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `paper_live_multi_sleeve_evidence_gap_manual_review_required`; missing saved outputs are blockers/manual-review items.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, research reruns, market-data refresh, Alpaca reads, action previews, order instructions, portfolio execution implementation.
 - **Stop condition:** Stop if the task would read broker state, refresh data, promote a sleeve, create action previews/order instructions, or treat missing evidence as approval.
+
+### Task: Paper-live high-growth evidence-gap audit
+- **Purpose:** Use `python bot.py --paper-live-high-growth-evidence-gap` to map present/missing saved high-growth evidence before any future high-growth sleeve promotion-ladder discussion.
+- **Risk level:** Low/report-only when limited to saved-output file presence checks and no broker reads.
+- **Allowed commands:** `python bot.py --paper-live-high-growth-evidence-gap`, `python bot.py --show-paper-live-high-growth-evidence-gap`.
+- **Expected status:** `paper_live_high_growth_evidence_gap_manual_review_required`; missing lead, concentration/top-contributor, drawdown, attribution, survivorship/outlier, F6/F7, or portfolio-risk evidence remains a blocker.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, research reruns, market-data refresh, Alpaca reads, action previews, order instructions, portfolio execution implementation, or high-growth promotion.
+- **Stop condition:** Stop if the task would read broker state, refresh data, promote high-growth, create action previews/order instructions, or treat saved metrics as execution evidence.

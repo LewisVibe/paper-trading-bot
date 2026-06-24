@@ -239,6 +239,14 @@ Outputs: `data/paper_live_multi_sleeve_evidence_gap.csv`, `data/paper_live_multi
 
 Current expected evidence-gap status is `paper_live_multi_sleeve_evidence_gap_manual_review_required`: the audit checks saved-output file presence only, treats missing saved outputs as blockers/manual-review items, and does not rerun research, refresh market data, promote sleeves, create action previews, create order instructions, wire portfolio execution, or schedule anything.
 
+Implemented high-growth evidence-gap audit checkpoint: `python bot.py --paper-live-high-growth-evidence-gap`.
+
+Saved display: `python bot.py --show-paper-live-high-growth-evidence-gap`.
+
+Outputs: `data/paper_live_high_growth_evidence_gap.csv`, `data/paper_live_high_growth_evidence_gap_summary.csv`, `data/paper_live_high_growth_evidence_gap_blockers.csv`, and `data/paper_live_high_growth_evidence_gap_evidence.csv`.
+
+Current expected high-growth evidence-gap status is `paper_live_high_growth_evidence_gap_manual_review_required`: the audit checks saved-output file presence only for saved high-growth lead evidence, concentration/top-contributor dependency evidence, drawdown evidence, attribution evidence, bias-risk warnings, and promotion readiness. No high-growth sleeve is promoted, no action previews or order instructions are created, no research is rerun, no market data is refreshed, and no portfolio execution or scheduling is implemented.
+
 ## 12. Build A Future Promotion System Later
 
 Later, after QQQ100 is stable, build a generic promotion ladder:

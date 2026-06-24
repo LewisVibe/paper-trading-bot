@@ -313,6 +313,13 @@ The paper-live multi-sleeve evidence-gap audit comes from `python bot.py --paper
 - Defensive, high-growth, crypto, and allocator sleeves stay future-only/research-only until missing evidence blockers are closed.
 - No sleeve is promoted, no action previews or order instructions are created, no research is rerun, no market data is refreshed, and no portfolio execution or scheduling is implemented.
 
+The paper-live high-growth evidence-gap audit comes from `python bot.py --paper-live-high-growth-evidence-gap`, with saved display through `python bot.py --show-paper-live-high-growth-evidence-gap`:
+
+- It writes `data/paper_live_high_growth_evidence_gap.csv`, `data/paper_live_high_growth_evidence_gap_summary.csv`, `data/paper_live_high_growth_evidence_gap_blockers.csv`, and `data/paper_live_high_growth_evidence_gap_evidence.csv`.
+- It checks saved-output file presence only for high-growth saved lead evidence, concentration/top-contributor dependency evidence, drawdown-window evidence, component attribution evidence, survivorship/current-constituent/outlier warning evidence, and promotion-readiness blockers.
+- Missing saved outputs are blockers/manual-review items, not execution approval.
+- No high-growth sleeve is promoted, no action previews or order instructions are created, no research is rerun, no market data is refreshed, and no portfolio execution or scheduling is implemented.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.

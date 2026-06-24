@@ -530,6 +530,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-high-growth-evidence-gap"]:
+        from trading_bot.research.paper_live_high_growth_evidence_gap import (
+            generate_paper_live_high_growth_evidence_gap,
+        )
+
+        result = generate_paper_live_high_growth_evidence_gap()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-high-growth-evidence-gap"]:
+        from trading_bot.research.paper_live_high_growth_evidence_gap import (
+            show_paper_live_high_growth_evidence_gap,
+        )
+
+        code, lines = show_paper_live_high_growth_evidence_gap()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if "--qqq100-paper-postcheck" in sys.argv[1:]:
         from trading_bot.research.qqq100_paper_postcheck import generate_qqq100_paper_postcheck
 
@@ -1325,6 +1343,10 @@ from trading_bot.research.paper_live_next_phase_backlog import (
 from trading_bot.research.paper_live_multi_sleeve_evidence_gap import (
     generate_paper_live_multi_sleeve_evidence_gap,
     show_paper_live_multi_sleeve_evidence_gap,
+)
+from trading_bot.research.paper_live_high_growth_evidence_gap import (
+    generate_paper_live_high_growth_evidence_gap,
+    show_paper_live_high_growth_evidence_gap,
 )
 from trading_bot.research.qqq100_paper_postcheck import (
     generate_qqq100_paper_postcheck,
@@ -5893,6 +5915,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved QQQ-led multi-sleeve evidence-gap audit without broker reads.",
     )
     parser.add_argument(
+        "--paper-live-high-growth-evidence-gap",
+        action="store_true",
+        help="Create a saved-output high-growth sleeve evidence-gap audit without rerunning research.",
+    )
+    parser.add_argument(
+        "--show-paper-live-high-growth-evidence-gap",
+        action="store_true",
+        help="Display the saved high-growth sleeve evidence-gap audit without broker reads.",
+    )
+    parser.add_argument(
         "--qqq100-paper-postcheck",
         action="store_true",
         help="Create a read-only QQQ100 paper postcheck; broker reads require --confirm-readonly-alpaca-check.",
@@ -7478,6 +7510,20 @@ def main() -> int:
         return 0
     if args.show_paper_live_multi_sleeve_evidence_gap:
         status_code, lines = show_paper_live_multi_sleeve_evidence_gap()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_high_growth_evidence_gap:
+        try:
+            result = generate_paper_live_high_growth_evidence_gap()
+        except Exception as exc:
+            print(f"Paper-live high-growth evidence-gap audit failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_high_growth_evidence_gap:
+        status_code, lines = show_paper_live_high_growth_evidence_gap()
         for line in lines:
             print(line)
         return status_code

@@ -87,6 +87,8 @@ REQUIRED_COMMANDS = [
     "--show-paper-live-next-phase-backlog",
     "--paper-live-multi-sleeve-evidence-gap",
     "--show-paper-live-multi-sleeve-evidence-gap",
+    "--paper-live-high-growth-evidence-gap",
+    "--show-paper-live-high-growth-evidence-gap",
     "--qqq100-paper-postcheck",
     "--show-qqq100-paper-postcheck",
     "--qqq100-repeat-alignment-workflow-design",
