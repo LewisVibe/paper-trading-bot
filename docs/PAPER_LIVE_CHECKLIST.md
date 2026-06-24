@@ -215,6 +215,14 @@ Outputs: `data/paper_live_promotion_ladder_design.csv`, `data/paper_live_promoti
 
 Current expected design status is `paper_live_promotion_ladder_design_report_only`: QQQ100 is the only current ladder seed, QQQ100 remains monitor-only and aligned long one share, no repeat/follow-up QQQ order is approved, multi-sleeve is future-only, high-growth and crypto remain research-only, defensive sleeves remain future review only, no SMA or slow-SMA paper-live promotion is allowed, portfolio backtests are not promotion evidence until accounting consistency is proven, unknown positions block/manual-review, and no scheduled execution is allowed.
 
+Implemented QQQ-led multi-sleeve roadmap checkpoint: `python bot.py --paper-live-multi-sleeve-roadmap`.
+
+Saved display: `python bot.py --show-paper-live-multi-sleeve-roadmap`.
+
+Outputs: `data/paper_live_multi_sleeve_roadmap.csv`, `data/paper_live_multi_sleeve_roadmap_summary.csv`, `data/paper_live_multi_sleeve_roadmap_blockers.csv`, and `data/paper_live_multi_sleeve_roadmap_evidence.csv`.
+
+Current expected roadmap status is `paper_live_multi_sleeve_roadmap_report_only`: QQQ100 core remains the current monitor-only base and only current seed, defensive sleeve is future review only, high-growth remains research-only until concentration/drawdown/attribution review is complete, crypto remains research-only/capped/future-only with no crypto execution approved, and the allocator has no portfolio execution wiring, no order instructions, and no scheduled execution.
+
 ## 12. Build A Future Promotion System Later
 
 Later, after QQQ100 is stable, build a generic promotion ladder:

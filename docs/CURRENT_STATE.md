@@ -282,6 +282,17 @@ The paper-live promotion ladder design checkpoint comes from `python bot.py --pa
 - Portfolio backtests are not promotion evidence until accounting consistency is proven; unknown positions block/manual-review rather than assume flat; no scheduled execution is allowed.
 - This checkpoint is report-only and does not implement generic promotion logic, execution, order instructions, broker reads, scheduling, or strategy-to-execution wiring.
 
+The paper-live QQQ-led multi-sleeve roadmap checkpoint comes from `python bot.py --paper-live-multi-sleeve-roadmap`, with saved display through `python bot.py --show-paper-live-multi-sleeve-roadmap`:
+
+- It writes `data/paper_live_multi_sleeve_roadmap.csv`, `data/paper_live_multi_sleeve_roadmap_summary.csv`, `data/paper_live_multi_sleeve_roadmap_blockers.csv`, and `data/paper_live_multi_sleeve_roadmap_evidence.csv`.
+- It documents the future QQQ-led multi-sleeve direction only and does not change the current QQQ100-only monitoring phase.
+- QQQ100 core sleeve remains the current monitor-only base, aligned long one share, and the only current ladder seed.
+- Defensive sleeve is future review only and must pass the promotion ladder separately.
+- High-growth sleeve remains research-only until concentration, drawdown, and attribution review are complete.
+- Crypto sleeve remains research-only/capped/future-only with no crypto execution approved.
+- Multi-sleeve allocator is future-only with no portfolio execution wiring, no order instructions, and no scheduling.
+- This checkpoint is report-only and does not implement portfolio execution, execution approval, order instructions, broker reads, scheduling, or strategy-to-execution wiring.
+
 The QQQ100 manual paper execution command is `python bot.py --execute-qqq100-paper --confirm-qqq100-paper`:
 
 - It is high-risk and manually confirmed.
@@ -891,6 +902,7 @@ python scripts\verify_paper_live_checklist_status.py
 python scripts\verify_paper_live_f6_f7_audit.py
 python scripts\verify_paper_live_f6_f7_targeted_checks.py
 python scripts\verify_paper_live_promotion_ladder_design.py
+python scripts\verify_paper_live_multi_sleeve_roadmap.py
 python scripts\verify_hermes_promoted_review_refresh_cron_design.py
 python scripts\verify_hermes_cron_monitoring_runbook.py
 python scripts\verify_report_only_import_safety.py

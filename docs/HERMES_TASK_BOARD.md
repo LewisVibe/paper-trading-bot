@@ -972,3 +972,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `paper_live_promotion_ladder_design_report_only`; QQQ100 is the only current seed and remains monitor-only/aligned long one share with no repeat/follow-up order approved.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, scheduler changes, real promotion implementation.
 - **Stop condition:** Stop if the task would implement generic promotion logic, treat portfolio backtests as promotion evidence, assume unknown positions are flat, approve execution/scheduling, or promote multi-sleeve, high-growth, defensive, crypto, SMA, or slow-SMA paths.
+
+### Task: Paper-live multi-sleeve roadmap
+- **Purpose:** Use `python bot.py --paper-live-multi-sleeve-roadmap` to document the future QQQ-led multi-sleeve direction without changing current QQQ100-only monitoring.
+- **Risk level:** Low/report-only when limited to saved output files and no broker reads.
+- **Allowed commands:** `python bot.py --paper-live-multi-sleeve-roadmap`, `python bot.py --show-paper-live-multi-sleeve-roadmap`.
+- **Expected status:** `paper_live_multi_sleeve_roadmap_report_only`; QQQ100 core remains monitor-only, defensive is future review only, high-growth and crypto remain research-only, and allocator execution wiring is absent.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, scheduler changes, portfolio execution implementation.
+- **Stop condition:** Stop if the task would create portfolio execution wiring, order instructions, scheduling, crypto execution, or promote high-growth/defensive/crypto/SMA/slow-SMA paths.

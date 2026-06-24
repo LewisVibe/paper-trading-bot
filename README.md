@@ -1936,6 +1936,29 @@ data/paper_live_promotion_ladder_design_blockers.csv
 data/paper_live_promotion_ladder_design_evidence.csv
 ```
 
+Paper-live multi-sleeve roadmap mode is the saved-output/report-only checkpoint for the future QQQ-led multi-sleeve direction. It does not change the current QQQ100-only monitoring phase. The QQQ100 core sleeve remains the current monitor-only base, aligned long one share, and the only current ladder seed. The defensive sleeve is future review only and must pass the promotion ladder separately. The high-growth sleeve remains research-only until concentration, drawdown, and attribution review are complete. The crypto sleeve remains research-only/capped/future-only with no crypto execution approved. The multi-sleeve allocator is future-only with no portfolio execution wiring, no order instructions, and no scheduling. No portfolio execution is implemented or approved.
+
+Command:
+
+```text
+python bot.py --paper-live-multi-sleeve-roadmap
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-live-multi-sleeve-roadmap
+```
+
+Outputs:
+
+```text
+data/paper_live_multi_sleeve_roadmap.csv
+data/paper_live_multi_sleeve_roadmap_summary.csv
+data/paper_live_multi_sleeve_roadmap_blockers.csv
+data/paper_live_multi_sleeve_roadmap_evidence.csv
+```
+
 QQQ100 manual paper execution is a separate high-risk, confirmation-gated command for the clean QQQ lead only. It reads `data/qqq100_preview_signal_pack.csv`, requires `--confirm-qqq100-paper`, requires Alpaca paper mode, refuses live mode, refuses shorting/leverage, checks the QQQ paper position, blocks on open QQQ orders or recent matching QQQ one-share broker orders, and can only align `qqq_100_trend_gate` / `QQQ` to exactly zero or one share. It does not use the normal config ticker universe and does not apply to high-growth, crypto, QQQ150, or adaptive QQQ alternatives. General `execution_approved`, `paper_execution_approved`, and `scheduling_approved` remain false; only the narrow `strategy_execution_approved` / `qqq100_one_share_alignment_approved` flags can be true for the exact manually confirmed QQQ100 path.
 
 Command:
