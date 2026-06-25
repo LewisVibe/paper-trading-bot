@@ -66,7 +66,7 @@ EXPECTED_EVIDENCE_FILES = [
     "data/defensive_allocation_risk_preview.csv",
     "data/defensive_allocation_decision_report.csv",
     "data/etf_defensive_drawdown_comparison.csv",
-    "data/vol_managed_etf_robustness.csv",
+    "data/vol_managed_etf_robustness_report.csv",
     "data/defensive_research_refresh_summary.csv",
 ]
 

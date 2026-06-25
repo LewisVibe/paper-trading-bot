@@ -23,7 +23,7 @@ DEFENSIVE_EVIDENCE_FILES = {
     "defensive_allocation_risk_preview": Path("data/defensive_allocation_risk_preview.csv"),
     "defensive_allocation_decision": Path("data/defensive_allocation_decision_report.csv"),
     "etf_defensive_drawdown_comparison": Path("data/etf_defensive_drawdown_comparison.csv"),
-    "vol_managed_robustness": Path("data/vol_managed_etf_robustness.csv"),
+    "vol_managed_robustness": Path("data/vol_managed_etf_robustness_report.csv"),
     "defensive_refresh_summary": Path("data/defensive_research_refresh_summary.csv"),
 }
 
