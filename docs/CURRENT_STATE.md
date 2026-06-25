@@ -743,6 +743,15 @@ The volatility-targeted growth nearby-variants review comes from `python bot.py 
 - `higher_growth_multi_sleeve_target_vol_20_win_20_cap_1x` is the nearest higher-volatility step, while `higher_growth_multi_sleeve_target_vol_25_win_20_cap_1x` is the highest-CAGR/higher-drawdown challenger; both should be reviewed manually before any preview-design decision.
 - Preview status remains `preview_design_still_blocked_pending_variant_review`; preview implementation, paper execution, order instructions, high-growth/crypto promotion, and scheduling remain false.
 
+The volatility-targeted growth preview-readiness decision comes from `python bot.py --vol-targeted-growth-preview-readiness-decision`, with saved display through `python bot.py --show-vol-targeted-growth-preview-readiness-decision`:
+
+- It reads only saved nearby-variant, robustness, and manual-review summaries.
+- It writes `data/vol_targeted_growth_preview_readiness_decision.csv`, `data/vol_targeted_growth_preview_readiness_summary.csv`, `data/vol_targeted_growth_preview_readiness_evidence.csv`, and `data/vol_targeted_growth_preview_readiness_blockers.csv`.
+- Current expected status is `vol_targeted_growth_15_20_selected_for_preview_design_review`.
+- It selects `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` as the disciplined volatility-targeted growth lead for a future preview-design review.
+- It keeps `higher_growth_multi_sleeve_target_vol_20_win_20_cap_1x` as the nearest higher-volatility challenger and `higher_growth_multi_sleeve_target_vol_25_win_20_cap_1x` as the aggressive higher-CAGR/higher-drawdown challenger.
+- Preview-design discussion status is `preview_design_discussion_ready_manual_review_required`, but preview implementation remains `preview_implementation_not_added`; paper execution, order instructions, high-growth/crypto promotion, and scheduling remain false.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

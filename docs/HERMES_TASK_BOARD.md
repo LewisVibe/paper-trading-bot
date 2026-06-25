@@ -1142,3 +1142,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_nearby_variants_manual_review_required`; preview status remains `preview_design_still_blocked_pending_variant_review`.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, preview signals, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
 - **Stop condition:** Stop if the task would implement preview mode, create action previews/order instructions, approve execution/scheduling, or treat a nearby variant as paper-live approval.
+
+### Task: Volatility-targeted growth preview-readiness decision
+- **Purpose:** Use `python bot.py --vol-targeted-growth-preview-readiness-decision` to select the disciplined volatility-targeted growth variant for a future preview-design review.
+- **Risk level:** Low/report-only when limited to saved nearby-variant/robustness outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-preview-readiness-decision`, `python bot.py --show-vol-targeted-growth-preview-readiness-decision`, and `python scripts\verify_vol_targeted_growth_preview_readiness_decision.py`.
+- **Expected status:** `vol_targeted_growth_15_20_selected_for_preview_design_review`; preview-design discussion may be ready for manual review, but preview implementation remains `preview_implementation_not_added`.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, preview signals, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
+- **Stop condition:** Stop if the task would implement preview mode, create action previews/order instructions, approve execution/scheduling, or treat preview-readiness as paper-live approval.

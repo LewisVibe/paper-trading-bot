@@ -167,6 +167,8 @@ Volatility-targeted growth robustness checkpoint is saved-output-only: `python b
 
 Volatility-targeted growth nearby-variants review is saved-output-only: `python bot.py --vol-targeted-growth-nearby-variants-review` and `python bot.py --show-vol-targeted-growth-nearby-variants-review` compare the preferred 15% target / 20-day window against adjacent multi-sleeve volatility-targeted variants. Current interpretation keeps `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` as the best risk-adjusted variant, while `higher_growth_multi_sleeve_target_vol_20_win_20_cap_1x` is the nearest higher-volatility step and `higher_growth_multi_sleeve_target_vol_25_win_20_cap_1x` is the highest-CAGR/higher-drawdown challenger. Preview implementation, paper execution, order instructions, and scheduling remain unapproved.
 
+Volatility-targeted growth preview-readiness decision is saved-output-only: `python bot.py --vol-targeted-growth-preview-readiness-decision` and `python bot.py --show-vol-targeted-growth-preview-readiness-decision` select `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` for a future preview-design review, keep `20/20` and `25/20` as challengers, and record `preview_design_discussion_ready_manual_review_required`. It still does not implement preview mode, create preview signals or order instructions, approve execution, or approve scheduling.
+
 
 ## Architecture
 
