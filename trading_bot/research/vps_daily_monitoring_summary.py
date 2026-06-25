@@ -25,6 +25,8 @@ from trading_bot.research.vps_monitoring_status import (
     format_counts,
     paper_live_monitoring_status_lines,
     qqq100_daily_decision_status_lines,
+    qqq100_manual_flatten_readiness_status_lines,
+    qqq100_manual_flatten_runbook_status_lines,
     read_csv_rows,
 )
 
@@ -100,6 +102,20 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         ]
     )
     lines.extend(qqq100_daily_decision_status_lines(root_path))
+    lines.extend(
+        [
+            "",
+            "QQQ100 manual flatten readiness:",
+        ]
+    )
+    lines.extend(qqq100_manual_flatten_readiness_status_lines(root_path))
+    lines.extend(
+        [
+            "",
+            "QQQ100 manual flatten runbook:",
+        ]
+    )
+    lines.extend(qqq100_manual_flatten_runbook_status_lines(root_path))
     lines.extend(
         [
             "",

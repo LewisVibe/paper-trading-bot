@@ -39,6 +39,8 @@ PROMOTED_REVIEW_SUMMARY_PATH = "data/promoted_review_refresh_summary.csv"
 PROMOTED_DECISION_PREVIEW_PATH = "data/promoted_decision_preview.csv"
 PAPER_LIVE_MONITORING_STATUS_PATH = "data/paper_live_monitoring_status.csv"
 QQQ100_DAILY_DECISION_SUMMARY_PATH = "data/qqq100_daily_decision_summary.csv"
+QQQ100_MANUAL_FLATTEN_READINESS_SUMMARY_PATH = "data/qqq100_manual_flatten_readiness_summary.csv"
+QQQ100_MANUAL_FLATTEN_RUNBOOK_SUMMARY_PATH = "data/qqq100_manual_flatten_runbook_summary.csv"
 
 PAPER_LIVE_REQUIRED_SUMMARY_VALUES = {
     "active_strategy": "qqq_100_trend_gate",
@@ -86,6 +88,14 @@ GENERATED_OUTPUT_PATHS = [
     "data/qqq100_daily_decision_summary.csv",
     "data/qqq100_daily_decision_blockers.csv",
     "data/qqq100_daily_decision_evidence.csv",
+    "data/qqq100_manual_flatten_readiness_report.csv",
+    "data/qqq100_manual_flatten_readiness_summary.csv",
+    "data/qqq100_manual_flatten_readiness_blockers.csv",
+    "data/qqq100_manual_flatten_readiness_evidence.csv",
+    "data/qqq100_manual_flatten_runbook_report.csv",
+    "data/qqq100_manual_flatten_runbook_summary.csv",
+    "data/qqq100_manual_flatten_runbook_blockers.csv",
+    "data/qqq100_manual_flatten_runbook_evidence.csv",
 ]
 
 
@@ -136,6 +146,12 @@ def build_vps_monitoring_status_lines(root: Path | str = ".") -> list[str]:
     lines.append("")
     lines.append("QQQ100 daily decision:")
     lines.extend(qqq100_daily_decision_status_lines(root_path))
+    lines.append("")
+    lines.append("QQQ100 manual flatten readiness:")
+    lines.extend(qqq100_manual_flatten_readiness_status_lines(root_path))
+    lines.append("")
+    lines.append("QQQ100 manual flatten runbook:")
+    lines.extend(qqq100_manual_flatten_runbook_status_lines(root_path))
     lines.append("")
     lines.append("Saved-output freshness:")
     lines.extend(format_freshness_lines(build_freshness_statuses(root_path)))
@@ -318,6 +334,65 @@ def qqq100_daily_decision_status_lines(root: Path) -> list[str]:
         "- qqq100_daily_decision_warning: monitor only; this is not order approval.",
     ]
     return lines
+
+
+def qqq100_manual_flatten_readiness_status_lines(root: Path) -> list[str]:
+    rows = read_csv_rows(root / QQQ100_MANUAL_FLATTEN_READINESS_SUMMARY_PATH)
+    values = {row.get("summary_name", ""): str(row.get("summary_value", "")).strip() for row in rows}
+    if not rows:
+        return [
+            "- qqq100_manual_flatten_readiness_present: False",
+            "- qqq100_manual_flatten_readiness_missing_saved_output: data/qqq100_manual_flatten_readiness_summary.csv",
+            "- qqq100_manual_flatten_readiness_warning: monitor only; run the safe readiness report before relying on this status.",
+        ]
+    return [
+        "- qqq100_manual_flatten_readiness_present: True",
+        f"- flatten_readiness_status: {values.get('flatten_readiness_status', 'missing')}",
+        f"- active_strategy: {values.get('active_strategy', 'missing')}",
+        f"- active_ticker: {values.get('active_ticker', 'missing')}",
+        f"- desired_state: {values.get('desired_state', 'missing')}",
+        f"- saved_position_state: {values.get('saved_position_state', 'missing')}",
+        f"- saved_position_quantity: {values.get('saved_position_quantity', 'missing')}",
+        f"- alignment_state: {values.get('alignment_state', 'missing')}",
+        f"- followup_policy_status: {values.get('followup_policy_status', 'missing')}",
+        f"- manual_flatten_discussion_status: {values.get('manual_flatten_discussion_status', 'missing')}",
+        f"- recommended_next_step: {values.get('recommended_next_step', 'missing')}",
+        f"- followup_order_approved: {values.get('followup_order_approved', 'False')}",
+        f"- repeat_execution_approved: {values.get('repeat_execution_approved', 'False')}",
+        f"- flatten_execution_approved: {values.get('flatten_execution_approved', 'False')}",
+        f"- never_schedule_order_capable_commands: {values.get('never_schedule_order_capable_commands', 'missing')}",
+        "- qqq100_manual_flatten_readiness_warning: monitor only; this is not flatten approval.",
+    ]
+
+
+def qqq100_manual_flatten_runbook_status_lines(root: Path) -> list[str]:
+    rows = read_csv_rows(root / QQQ100_MANUAL_FLATTEN_RUNBOOK_SUMMARY_PATH)
+    values = {row.get("summary_name", ""): str(row.get("summary_value", "")).strip() for row in rows}
+    if not rows:
+        return [
+            "- qqq100_manual_flatten_runbook_present: False",
+            "- qqq100_manual_flatten_runbook_missing_saved_output: data/qqq100_manual_flatten_runbook_summary.csv",
+            "- qqq100_manual_flatten_runbook_warning: monitor only; run the safe runbook report before relying on this status.",
+        ]
+    return [
+        "- qqq100_manual_flatten_runbook_present: True",
+        f"- runbook_status: {values.get('runbook_status', 'missing')}",
+        f"- active_strategy: {values.get('active_strategy', 'missing')}",
+        f"- active_ticker: {values.get('active_ticker', 'missing')}",
+        f"- desired_state: {values.get('desired_state', 'missing')}",
+        f"- saved_position_state: {values.get('saved_position_state', 'missing')}",
+        f"- saved_position_quantity: {values.get('saved_position_quantity', 'missing')}",
+        f"- alignment_state: {values.get('alignment_state', 'missing')}",
+        f"- flatten_readiness_status: {values.get('flatten_readiness_status', 'missing')}",
+        f"- manual_flatten_discussion_status: {values.get('manual_flatten_discussion_status', 'missing')}",
+        f"- recommended_next_step: {values.get('recommended_next_step', 'missing')}",
+        f"- followup_order_approved: {values.get('followup_order_approved', 'False')}",
+        f"- repeat_execution_approved: {values.get('repeat_execution_approved', 'False')}",
+        f"- flatten_execution_approved: {values.get('flatten_execution_approved', 'False')}",
+        f"- manual_flatten_approved: {values.get('manual_flatten_approved', 'False')}",
+        f"- never_schedule_order_capable_commands: {values.get('never_schedule_order_capable_commands', 'missing')}",
+        "- qqq100_manual_flatten_runbook_warning: monitor only; this is not manual flatten approval.",
+    ]
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
