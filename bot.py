@@ -1387,6 +1387,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-research-sprint"]:
+        from trading_bot.research.vol_targeted_growth_research_sprint import (
+            generate_vol_targeted_growth_research_sprint,
+        )
+
+        result = generate_vol_targeted_growth_research_sprint()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-research-sprint"]:
+        from trading_bot.research.vol_targeted_growth_research_sprint import (
+            show_vol_targeted_growth_research_sprint,
+        )
+
+        code, lines = show_vol_targeted_growth_research_sprint()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -1823,6 +1841,10 @@ from trading_bot.research.higher_growth_candidate_selection_decision import (
 from trading_bot.research.higher_growth_preview_design import (
     generate_higher_growth_preview_design,
     show_higher_growth_preview_design,
+)
+from trading_bot.research.vol_targeted_growth_research_sprint import (
+    generate_vol_targeted_growth_research_sprint,
+    show_vol_targeted_growth_research_sprint,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -6785,6 +6807,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved higher-growth preview design without broker reads or execution.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-research-sprint",
+        action="store_true",
+        help="Create a saved-output-only volatility-targeted growth research sprint without market refresh, broker reads, or execution.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-research-sprint",
+        action="store_true",
+        help="Display the saved volatility-targeted growth research sprint without market refresh, broker reads, or execution.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -8670,6 +8702,20 @@ def main() -> int:
         return 0
     if args.show_higher_growth_preview_design:
         status_code, lines = show_higher_growth_preview_design()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_research_sprint:
+        try:
+            result = generate_vol_targeted_growth_research_sprint()
+        except Exception as exc:
+            print(f"Volatility-targeted growth research sprint failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_research_sprint:
+        status_code, lines = show_vol_targeted_growth_research_sprint()
         for line in lines:
             print(line)
         return status_code

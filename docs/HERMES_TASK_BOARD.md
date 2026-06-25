@@ -1110,3 +1110,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `higher_growth_preview_design_ready_for_future_preview_implementation`; target weights are 70% QQQ100 core, 20% high-growth stock research sleeve, 5% crypto research sleeve, and 5% defensive cash/bond sleeve.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
 - **Stop condition:** Stop if the task would create an actual preview signal, include order side/quantity/type/account fields, approve execution/scheduling, or treat the design as paper-live approval.
+
+### Task: Volatility-targeted growth research sprint
+- **Purpose:** Use `python bot.py --vol-targeted-growth-research-sprint` to test saved-stream volatility-targeted growth candidates as an alternative to simply adding more growth exposure.
+- **Risk level:** Low/report-only when limited to saved return streams and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-research-sprint`, `python bot.py --show-vol-targeted-growth-research-sprint`, and `python scripts\verify_vol_targeted_growth_research_sprint.py`.
+- **Expected status:** `vol_targeted_growth_research_two_or_more_strong_candidates_found`; current top research candidates are `high_growth_balanced_target_vol_25_win_20_cap_1x` and `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x`.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, preview signals, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
+- **Stop condition:** Stop if the task would call yfinance, create preview signals, include order side/quantity/type/account fields, approve execution/scheduling, or treat research candidates as paper-live approval.

@@ -193,6 +193,8 @@ REQUIRED_COMMANDS = [
     "--show-higher-growth-candidate-selection-decision",
     "--higher-growth-preview-design",
     "--show-higher-growth-preview-design",
+    "--vol-targeted-growth-research-sprint",
+    "--show-vol-targeted-growth-research-sprint",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",

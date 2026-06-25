@@ -707,6 +707,16 @@ The higher-growth preview design checkpoint comes from `python bot.py --higher-g
 - Largest blocker is `preview_signal_not_implemented_and_no_order_instructions_allowed`; recommended next step is `implement_saved_output_preview_signal_for_higher_growth_70_20_5_5_in_separate_prompt`.
 - Preview signal creation, action preview creation, order instructions, paper execution approval, execution approval, scheduling approval, high-growth promotion, and crypto execution remain false.
 
+The volatility-targeted growth research sprint comes from `python bot.py --vol-targeted-growth-research-sprint`, with saved display through `python bot.py --show-vol-targeted-growth-research-sprint`:
+
+- It reads saved QQQ100 recovered reference, high-growth, crypto, sleeve, QQQ100 metric, high-growth metric, and higher-growth selection outputs only; it does not refresh yfinance data.
+- It writes `data/vol_targeted_growth_research_sprint.csv`, `data/vol_targeted_growth_candidate_summary.csv`, `data/vol_targeted_growth_rejected_candidates.csv`, `data/vol_targeted_growth_robustness_audit.csv`, and `data/vol_targeted_growth_parameter_sensitivity.csv`.
+- It tests volatility-targeting methods including fixed target vol levels of 10%, 15%, 20%, and 25%; 20/60/120-day rolling realized-vol windows; long/cash exposure scaling capped at 1x; drawdown-control partial de-risking; inverse-volatility sleeve allocation; and QQQ100/high-growth/crypto/multi-sleeve source streams.
+- Current saved status is `vol_targeted_growth_research_two_or_more_strong_candidates_found`: 64 strategies, 7 candidate families, and 4 distinct strong research candidates.
+- Top saved candidates are `high_growth_balanced_target_vol_25_win_20_cap_1x` with CAGR `33.5011`, Sharpe `1.2296`, MaxDD `-28.3531`, Calmar `1.1816`, realized vol `26.3073`; and `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` with CAGR `19.0011`, Sharpe `1.2861`, MaxDD `-18.1016`, Calmar `1.0497`, realized vol `14.331`.
+- QQQ100-only volatility-targeted variants that became too low-return are rejected as smooth/low-return rather than rewarded just for safety, and concentrated Top1 variants remain fragile/outlier-dependent even when volatility targeting improves the drawdown.
+- The sprint is research/report-only. It does not create preview signals, action previews, order instructions, execution approval, paper execution approval, scheduling approval, high-growth promotion, or crypto execution approval.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
