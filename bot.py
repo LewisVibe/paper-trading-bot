@@ -1423,6 +1423,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-robustness-checkpoint"]:
+        from trading_bot.research.vol_targeted_growth_robustness_checkpoint import (
+            generate_vol_targeted_growth_robustness_checkpoint,
+        )
+
+        result = generate_vol_targeted_growth_robustness_checkpoint()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-robustness-checkpoint"]:
+        from trading_bot.research.vol_targeted_growth_robustness_checkpoint import (
+            show_vol_targeted_growth_robustness_checkpoint,
+        )
+
+        code, lines = show_vol_targeted_growth_robustness_checkpoint()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -1867,6 +1885,10 @@ from trading_bot.research.vol_targeted_growth_research_sprint import (
 from trading_bot.research.vol_targeted_growth_manual_review_pack import (
     generate_vol_targeted_growth_manual_review_pack,
     show_vol_targeted_growth_manual_review_pack,
+)
+from trading_bot.research.vol_targeted_growth_robustness_checkpoint import (
+    generate_vol_targeted_growth_robustness_checkpoint,
+    show_vol_targeted_growth_robustness_checkpoint,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -6849,6 +6871,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved volatility-targeted growth manual review pack without market refresh, broker reads, or execution.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-robustness-checkpoint",
+        action="store_true",
+        help="Create a saved-output-only robustness checkpoint for the preferred volatility-targeted growth candidate.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-robustness-checkpoint",
+        action="store_true",
+        help="Display the saved volatility-targeted growth robustness checkpoint without market refresh, broker reads, or execution.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -8762,6 +8794,20 @@ def main() -> int:
         return 0
     if args.show_vol_targeted_growth_manual_review_pack:
         status_code, lines = show_vol_targeted_growth_manual_review_pack()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_robustness_checkpoint:
+        try:
+            result = generate_vol_targeted_growth_robustness_checkpoint()
+        except Exception as exc:
+            print(f"Volatility-targeted growth robustness checkpoint failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_robustness_checkpoint:
+        status_code, lines = show_vol_targeted_growth_robustness_checkpoint()
         for line in lines:
             print(line)
         return status_code

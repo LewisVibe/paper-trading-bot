@@ -1126,3 +1126,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_manual_review_required`; current interpretation favours `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` as the cleaner next research path, while `high_growth_balanced_target_vol_25_win_20_cap_1x` remains higher-return/higher-risk.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, preview signals, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
 - **Stop condition:** Stop if the task would implement preview mode, create action previews/order instructions, approve execution/scheduling, or treat the manual-review result as paper-live approval.
+
+### Task: Volatility-targeted growth robustness checkpoint
+- **Purpose:** Use `python bot.py --vol-targeted-growth-robustness-checkpoint` to review the preferred multi-sleeve volatility-targeted candidate before any preview-design discussion.
+- **Risk level:** Low/report-only when limited to saved volatility-targeted sprint/manual-review outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-robustness-checkpoint`, `python bot.py --show-vol-targeted-growth-robustness-checkpoint`, and `python scripts\verify_vol_targeted_growth_robustness_checkpoint.py`.
+- **Expected status:** `vol_targeted_growth_robustness_manual_review_required`; preview readiness remains `vol_targeted_growth_preview_design_not_ready_robustness_review_required`.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, preview signals, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
+- **Stop condition:** Stop if the task would implement preview mode, create action previews/order instructions, approve execution/scheduling, or treat robustness review as paper-live approval.
