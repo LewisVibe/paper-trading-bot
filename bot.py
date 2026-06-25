@@ -452,6 +452,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--qqq100-manual-flatten-runbook-report"]:
+        from trading_bot.research.qqq100_manual_flatten_runbook_report import (
+            generate_qqq100_manual_flatten_runbook_report,
+        )
+
+        result = generate_qqq100_manual_flatten_runbook_report()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-qqq100-manual-flatten-runbook-report"]:
+        from trading_bot.research.qqq100_manual_flatten_runbook_report import (
+            show_qqq100_manual_flatten_runbook_report,
+        )
+
+        code, lines = show_qqq100_manual_flatten_runbook_report()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-live-monitoring-status"]:
         from trading_bot.research.paper_live_monitoring_status import (
             generate_paper_live_monitoring_status,
@@ -5947,6 +5965,16 @@ def parse_args() -> argparse.Namespace:
         "--show-qqq100-manual-flatten-readiness-report",
         action="store_true",
         help="Display the saved QQQ100 manual flatten readiness report without broker reads.",
+    )
+    parser.add_argument(
+        "--qqq100-manual-flatten-runbook-report",
+        action="store_true",
+        help="Create a saved-output QQQ100 manual flatten runbook/design report without broker reads.",
+    )
+    parser.add_argument(
+        "--show-qqq100-manual-flatten-runbook-report",
+        action="store_true",
+        help="Display the saved QQQ100 manual flatten runbook/design report without broker reads.",
     )
     parser.add_argument(
         "--paper-live-monitoring-status",

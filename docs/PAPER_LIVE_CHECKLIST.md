@@ -188,6 +188,14 @@ Outputs: `data/qqq100_manual_flatten_readiness_report.csv`, `data/qqq100_manual_
 
 The manual flatten readiness report reads saved QQQ100 evidence and the saved follow-up/no-action policy only. Current aligned-long evidence should report `flatten_not_needed_currently`. If a future saved signal says desired state is `flat` while saved QQQ position is long exactly one share, it may report `future_manual_flatten_discussion_possible_not_approved`; that remains only a separate manual discussion checkpoint and does not approve a sell, repeat execution, follow-up order, scheduling, or executable order instruction.
 
+Implemented manual flatten runbook/design checkpoint: `python bot.py --qqq100-manual-flatten-runbook-report`.
+
+Saved display: `python bot.py --show-qqq100-manual-flatten-runbook-report`.
+
+Outputs: `data/qqq100_manual_flatten_runbook_report.csv`, `data/qqq100_manual_flatten_runbook_summary.csv`, `data/qqq100_manual_flatten_runbook_blockers.csv`, and `data/qqq100_manual_flatten_runbook_evidence.csv`.
+
+The manual flatten runbook reads the saved flatten readiness checkpoint only. Current aligned-long evidence should report `manual_flatten_runbook_not_needed_currently`. If a future saved signal says desired state is `flat` while saved QQQ position is long exactly one share, it may report `manual_flatten_runbook_manual_review_required_not_approved`; this remains a design/runbook checkpoint and still does not approve a sell, repeat execution, follow-up order, scheduling, or executable order instruction.
+
 ## 11. Schedule Monitoring Only
 
 - Implemented report-only monitoring checkpoint: `python bot.py --paper-live-monitoring-status`.

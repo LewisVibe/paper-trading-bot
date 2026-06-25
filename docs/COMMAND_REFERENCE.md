@@ -1891,6 +1891,31 @@ data/qqq100_manual_flatten_readiness_evidence.csv
 
 Expected current status when QQQ100 is already aligned long one share is `flatten_not_needed_currently` with `recommended_next_step=hold_no_action_and_monitor_only`. If saved evidence later shows desired state `flat` while saved QQQ position is long exactly one share, the report may label `future_manual_flatten_discussion_possible_not_approved`; that still does not approve an order.
 
+QQQ100 manual flatten runbook mode is the saved-output/report-only design checkpoint for the same future flat-signal case. It reads the saved QQQ100 manual flatten readiness checkpoint and documents the required manual-review boundaries. It can say `manual_flatten_runbook_not_needed_currently`, `manual_flatten_runbook_not_needed_already_flat`, `manual_flatten_runbook_manual_review_required_not_approved`, or `manual_flatten_runbook_blocked_missing_or_contradictory_evidence`. It does not call Alpaca, read live positions, refresh market data, create executable order instructions, run QQQ100 paper execution, approve manual flatten, approve flatten execution, approve repeat/follow-up orders, approve scheduling, or approve live trading.
+
+Command:
+
+```text
+python bot.py --qqq100-manual-flatten-runbook-report
+```
+
+Saved display:
+
+```text
+python bot.py --show-qqq100-manual-flatten-runbook-report
+```
+
+Outputs:
+
+```text
+data/qqq100_manual_flatten_runbook_report.csv
+data/qqq100_manual_flatten_runbook_summary.csv
+data/qqq100_manual_flatten_runbook_blockers.csv
+data/qqq100_manual_flatten_runbook_evidence.csv
+```
+
+Expected current status when QQQ100 is already aligned long one share is `manual_flatten_runbook_not_needed_currently` with `recommended_next_step=hold_no_action_and_monitor_only`. If saved evidence later shows desired state `flat` while saved QQQ position is long exactly one share, the report may label `manual_flatten_runbook_manual_review_required_not_approved`; that remains a design checkpoint, not an order approval.
+
 Paper-live monitoring status mode is the saved-output/report-only Step 11 checkpoint for VPS/Hermes-safe monitoring displays. It reads saved QQQ100 paper-live evidence and the saved follow-up policy report, then surfaces `active_strategy=qqq_100_trend_gate`, `active_ticker=QQQ`, saved position state/quantity, alignment state, follow-up policy status, no-action status, and `recommended_next_step=hold_no_action_and_monitor_only` when QQQ100 is already aligned long one share. The VPS monitoring status and daily monitoring summary now include this saved status plus the saved QQQ100 daily decision, so Telegram can show that QQQ100 is aligned long one, the daily decision is hold/no-action, and repeat/follow-up orders remain unapproved. It does not create, edit, trigger, or schedule Hermes cron jobs, and it never approves order-capable scheduling.
 
 Command:

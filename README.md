@@ -135,6 +135,8 @@ QQQ100 daily decision monitoring is included in the VPS status outputs. The save
 
 QQQ100 manual flatten readiness is also saved-output-only. `python bot.py --qqq100-manual-flatten-readiness-report` and `python bot.py --show-qqq100-manual-flatten-readiness-report` document whether a future flat signal would need a separate manual flatten discussion; the current aligned-long state should report `flatten_not_needed_currently`, and the report does not approve execution.
 
+The companion runbook/design checkpoint is `python bot.py --qqq100-manual-flatten-runbook-report`. It should report `manual_flatten_runbook_not_needed_currently` while QQQ100 remains aligned long one share, and it still does not create order instructions or approve a flatten action.
+
 
 ## Architecture
 
