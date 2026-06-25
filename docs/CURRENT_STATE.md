@@ -679,6 +679,24 @@ The high-growth strategy discovery sprint comes from `python bot.py --high-growt
 - Current saved status is `high_growth_strategy_discovery_two_or_more_strong_candidates_found` with 16 strategies, 7 candidate families, and 4 distinct strong research candidates. The top two are `higher_growth_70_20_5_5` and `qqq100_plus_high_growth_plus_crypto_research`.
 - Fragile standalone references such as broad Top1 and standalone crypto sleeves remain rejected or watchlist due drawdown/concentration risk. The sprint is research/report-only and does not approve preview promotion, paper execution, order instructions, scheduling, or high-growth promotion.
 
+The higher-growth preview readiness pack comes from `python bot.py --higher-growth-preview-readiness-pack`, with saved display through `python bot.py --show-higher-growth-preview-readiness-pack`:
+
+- It reads saved discovery-sprint, higher-growth review, multi-sleeve portfolio-backtest, and QQQ100 recovered-reference outputs only; it does not refresh yfinance data.
+- It writes `data/higher_growth_preview_readiness_pack.csv`, `data/higher_growth_preview_readiness_summary.csv`, `data/higher_growth_preview_readiness_evidence.csv`, and `data/higher_growth_preview_readiness_blockers.csv`.
+- Current saved status is `higher_growth_preview_discussion_ready_manual_review_required`.
+- It compares `higher_growth_70_20_5_5` against `qqq100_only_reference` and `balanced_multi_sleeve_research_portfolio`: target metrics are CAGR `23.6634`, Sharpe `1.2232`, MaxDD `-22.5209`, Calmar `1.0507`; QQQ100 reference is CAGR `16.9832`, Sharpe `1.0073`, MaxDD `-23.4576`, Calmar `0.724`; balanced comparator is CAGR `20.9941`, Sharpe `1.1947`, MaxDD `-21.6286`, Calmar `0.9707`.
+- The strongest evidence is the target's saved CAGR/Sharpe/Calmar improvement versus QQQ100; the largest blocker remains `preview_implementation_not_added_and_manual_review_required`.
+- It supports manual preview discussion only. It does not implement preview mode, create action previews or order instructions, approve paper execution, approve scheduling, or promote high-growth.
+
+The higher-growth candidate selection decision comes from `python bot.py --higher-growth-candidate-selection-decision`, with saved display through `python bot.py --show-higher-growth-candidate-selection-decision`:
+
+- It reads saved higher-growth preview-readiness, discovery-sprint, higher-growth review, higher-growth summary, and multi-sleeve portfolio-backtest outputs only.
+- It writes `data/higher_growth_candidate_selection_decision.csv`, `data/higher_growth_candidate_selection_summary.csv`, `data/higher_growth_candidate_selection_evidence.csv`, and `data/higher_growth_candidate_selection_blockers.csv`.
+- Current saved status is `higher_growth_candidate_selected_for_preview_design_review`.
+- It selects `higher_growth_70_20_5_5` for the next future preview-design review, keeps `balanced_multi_sleeve_research_portfolio` as the calmer runner-up, and keeps `qqq100_plus_high_growth_plus_crypto_research` behind separate crypto policy/volatility review.
+- The recommended next step is `design_saved_output_preview_only_mode_for_higher_growth_70_20_5_5`.
+- Preview candidate approval, preview implementation approval, paper execution approval, execution approval, scheduling approval, high-growth promotion, and crypto execution remain false.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

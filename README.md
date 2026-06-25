@@ -153,6 +153,10 @@ Paper-live defensive sleeve evidence-quality review is saved-output-only: `pytho
 
 High-growth strategy discovery sprint is saved-output-only: `python bot.py --high-growth-strategy-discovery-sprint` and `python bot.py --show-high-growth-strategy-discovery-sprint` consolidate existing high-growth stock, crypto, QQQ100, and multi-sleeve evidence into subagent-style workstreams. Current saved output reports `high_growth_strategy_discovery_two_or_more_strong_candidates_found`, with `higher_growth_70_20_5_5` and `qqq100_plus_high_growth_plus_crypto_research` as the top two research candidates, while standalone high-growth/crypto drawdown-heavy references remain fragile. This does not approve preview promotion, paper execution, order instructions, or scheduling.
 
+Higher-growth preview readiness is also saved-output-only: `python bot.py --higher-growth-preview-readiness-pack` and `python bot.py --show-higher-growth-preview-readiness-pack` compare `higher_growth_70_20_5_5` against the clean QQQ100 baseline and `balanced_multi_sleeve_research_portfolio`. Current saved status is `higher_growth_preview_discussion_ready_manual_review_required`; preview implementation, paper execution, order instructions, and scheduling remain unapproved.
+
+Higher-growth candidate selection is the follow-up saved-output decision: `python bot.py --higher-growth-candidate-selection-decision` and `python bot.py --show-higher-growth-candidate-selection-decision` select `higher_growth_70_20_5_5` for future preview-design review, keep `balanced_multi_sleeve_research_portfolio` as the calmer runner-up, and defer `qqq100_plus_high_growth_plus_crypto_research` behind crypto policy review. This still does not implement preview mode or approve execution.
+
 
 ## Architecture
 

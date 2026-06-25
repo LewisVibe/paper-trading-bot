@@ -1337,6 +1337,42 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--higher-growth-preview-readiness-pack"]:
+        from trading_bot.research.higher_growth_preview_readiness_pack import (
+            generate_higher_growth_preview_readiness_pack,
+        )
+
+        result = generate_higher_growth_preview_readiness_pack()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-higher-growth-preview-readiness-pack"]:
+        from trading_bot.research.higher_growth_preview_readiness_pack import (
+            show_higher_growth_preview_readiness_pack,
+        )
+
+        code, lines = show_higher_growth_preview_readiness_pack()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
+    if sys.argv[1:] == ["--higher-growth-candidate-selection-decision"]:
+        from trading_bot.research.higher_growth_candidate_selection_decision import (
+            generate_higher_growth_candidate_selection_decision,
+        )
+
+        result = generate_higher_growth_candidate_selection_decision()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-higher-growth-candidate-selection-decision"]:
+        from trading_bot.research.higher_growth_candidate_selection_decision import (
+            show_higher_growth_candidate_selection_decision,
+        )
+
+        code, lines = show_higher_growth_candidate_selection_decision()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -1761,6 +1797,14 @@ from trading_bot.research.high_growth_stock_final_validation_pack import (
 from trading_bot.research.high_growth_strategy_discovery_sprint import (
     generate_high_growth_strategy_discovery_sprint,
     show_high_growth_strategy_discovery_sprint,
+)
+from trading_bot.research.higher_growth_preview_readiness_pack import (
+    generate_higher_growth_preview_readiness_pack,
+    show_higher_growth_preview_readiness_pack,
+)
+from trading_bot.research.higher_growth_candidate_selection_decision import (
+    generate_higher_growth_candidate_selection_decision,
+    show_higher_growth_candidate_selection_decision,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -6693,6 +6737,26 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved high-growth strategy discovery sprint without market refresh, broker reads, or execution.",
     )
     parser.add_argument(
+        "--higher-growth-preview-readiness-pack",
+        action="store_true",
+        help="Create a saved-output-only manual preview-readiness pack for higher_growth_70_20_5_5 without broker reads or execution.",
+    )
+    parser.add_argument(
+        "--show-higher-growth-preview-readiness-pack",
+        action="store_true",
+        help="Display the saved higher-growth preview-readiness pack without broker reads or execution.",
+    )
+    parser.add_argument(
+        "--higher-growth-candidate-selection-decision",
+        action="store_true",
+        help="Create a saved-output-only decision choosing the next higher-growth preview-design review candidate.",
+    )
+    parser.add_argument(
+        "--show-higher-growth-candidate-selection-decision",
+        action="store_true",
+        help="Display the saved higher-growth candidate selection decision without broker reads or execution.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -8536,6 +8600,34 @@ def main() -> int:
         return 0
     if args.show_high_growth_strategy_discovery_sprint:
         status_code, lines = show_high_growth_strategy_discovery_sprint()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.higher_growth_preview_readiness_pack:
+        try:
+            result = generate_higher_growth_preview_readiness_pack()
+        except Exception as exc:
+            print(f"Higher-growth preview readiness pack failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_higher_growth_preview_readiness_pack:
+        status_code, lines = show_higher_growth_preview_readiness_pack()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.higher_growth_candidate_selection_decision:
+        try:
+            result = generate_higher_growth_candidate_selection_decision()
+        except Exception as exc:
+            print(f"Higher-growth candidate selection decision failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_higher_growth_candidate_selection_decision:
+        status_code, lines = show_higher_growth_candidate_selection_decision()
         for line in lines:
             print(line)
         return status_code

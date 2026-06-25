@@ -1086,3 +1086,19 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `high_growth_strategy_discovery_two_or_more_strong_candidates_found` when at least two distinct saved-evidence candidate families pass the research screen; current top candidates are `higher_growth_70_20_5_5` and `qqq100_plus_high_growth_plus_crypto_research`.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, action previews, order instructions, portfolio execution implementation, high-growth promotion, or scheduling.
 - **Stop condition:** Stop if the task would refresh yfinance data, promote high-growth, approve preview/paper-live/execution/scheduling, create order instructions, or treat the sprint as paper-live approval.
+
+### Task: Higher-growth preview readiness pack
+- **Purpose:** Use `python bot.py --higher-growth-preview-readiness-pack` to compare `higher_growth_70_20_5_5` against QQQ100 and `balanced_multi_sleeve_research_portfolio` before any preview-design discussion.
+- **Risk level:** Low/report-only when limited to saved CSV outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --higher-growth-preview-readiness-pack`, `python bot.py --show-higher-growth-preview-readiness-pack`, and `python scripts\verify_higher_growth_preview_readiness_pack.py`.
+- **Expected status:** `higher_growth_preview_discussion_ready_manual_review_required`; this means manual discussion is reasonable, not that preview mode or execution is approved.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, action previews, order instructions, portfolio execution implementation, high-growth promotion, or scheduling.
+- **Stop condition:** Stop if the task would implement preview mode, create action previews/order instructions, approve execution/scheduling, or treat the pack as paper-live approval.
+
+### Task: Higher-growth candidate selection decision
+- **Purpose:** Use `python bot.py --higher-growth-candidate-selection-decision` to choose the next saved-output preview-design review candidate from the higher-growth shortlist.
+- **Risk level:** Low/report-only when limited to saved CSV outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --higher-growth-candidate-selection-decision`, `python bot.py --show-higher-growth-candidate-selection-decision`, and `python scripts\verify_higher_growth_candidate_selection_decision.py`.
+- **Expected status:** `higher_growth_candidate_selected_for_preview_design_review`; selected candidate is `higher_growth_70_20_5_5`, runner-up is `balanced_multi_sleeve_research_portfolio`, and crypto blend remains deferred.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
+- **Stop condition:** Stop if the task would implement preview mode, create action previews/order instructions, approve execution/scheduling, promote high-growth/crypto, or treat the decision as paper-live approval.
