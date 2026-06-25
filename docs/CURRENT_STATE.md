@@ -301,7 +301,8 @@ The paper-live promotion ladder design checkpoint comes from `python bot.py --pa
 
 - It writes `data/paper_live_promotion_ladder_design.csv`, `data/paper_live_promotion_ladder_design_summary.csv`, `data/paper_live_promotion_ladder_design_blockers.csv`, and `data/paper_live_promotion_ladder_design_evidence.csv`.
 - It documents future stage labels only: `research_candidate`, `preview_candidate`, `paper_live_candidate`, and `manually_executable_candidate`.
-- QQQ100 is the only current ladder seed and remains monitor-only/aligned long one share; no repeat or follow-up QQQ order is approved.
+- QQQ100 is the only current ladder seed and remains monitor-only/aligned long one share; no repeat, follow-up, or flatten QQQ order is approved.
+- It includes the saved QQQ100 manual flatten readiness/runbook checkpoints: current expected labels are `flatten_not_needed_currently` and `manual_flatten_runbook_not_needed_currently`.
 - Multi-sleeve is future-only, high-growth and crypto remain research-only, defensive sleeves remain future review only, and no SMA or slow-SMA paper-live promotion is allowed.
 - Portfolio backtests are not promotion evidence until accounting consistency is proven; unknown positions block/manual-review rather than assume flat; no scheduled execution is allowed.
 - This checkpoint is report-only and does not implement generic promotion logic, execution, order instructions, broker reads, scheduling, or strategy-to-execution wiring.

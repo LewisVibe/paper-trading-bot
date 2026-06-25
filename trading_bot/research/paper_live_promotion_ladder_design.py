@@ -157,6 +157,8 @@ def show_paper_live_promotion_ladder_design(root_dir: Path | str = ".") -> tuple
         f"final_design_status: {summary_value(rows, 'final_design_status')}",
         f"only_current_ladder_seed: {summary_value(rows, 'only_current_ladder_seed')}",
         f"current_qqq100_state: {summary_value(rows, 'current_qqq100_state')}",
+        f"qqq100_manual_flatten_status: {summary_value(rows, 'qqq100_manual_flatten_status')}",
+        f"qqq100_manual_flatten_runbook_status: {summary_value(rows, 'qqq100_manual_flatten_runbook_status')}",
         f"future_multi_sleeve_status: {summary_value(rows, 'future_multi_sleeve_status')}",
         f"portfolio_backtest_evidence_status: {summary_value(rows, 'portfolio_backtest_evidence_status')}",
         f"unknown_position_boundary: {summary_value(rows, 'unknown_position_boundary')}",
@@ -186,10 +188,10 @@ def build_ladder_stages() -> list[LadderStage]:
         ),
         LadderStage(
             "paper_live_candidate",
-            "QQQ100 monitoring state only: aligned long 1, no action required, no repeat or follow-up order approved.",
-            "Saved paper-live monitoring, follow-up policy, evidence audit, and manual review before any action discussion.",
+            "QQQ100 monitoring state only: aligned long 1, no action required, no repeat, follow-up, or flatten order approved.",
+            "Saved paper-live monitoring, follow-up policy, evidence audit, manual flatten readiness/runbook, and manual review before any action discussion.",
             "qqq100_monitor_only_aligned_long_one",
-            "repeat_followup_order_not_approved",
+            "repeat_followup_flatten_order_not_approved",
             "hold_no_action_and_monitor_only; do not add candidates without separate review",
         ),
         LadderStage(
@@ -233,6 +235,16 @@ def build_summary_rows(stages: list[LadderStage]) -> list[dict[str, Any]]:
             "Saved state remains QQQ100 aligned long one share with no repeat/follow-up order approved.",
         ),
         (
+            "qqq100_manual_flatten_status",
+            "flatten_not_needed_currently_and_not_approved",
+            "Saved flatten readiness says flatten is not currently needed, and flatten execution remains unapproved.",
+        ),
+        (
+            "qqq100_manual_flatten_runbook_status",
+            "manual_flatten_runbook_not_needed_currently",
+            "Saved flatten runbook says the current aligned-long state does not need a flatten discussion.",
+        ),
+        (
             "future_multi_sleeve_status",
             "future_only_not_promoted",
             "Eventual paper-live direction may be QQQ-led multi-sleeve from research, but not in this checkpoint.",
@@ -274,7 +286,7 @@ def build_summary_rows(stages: list[LadderStage]) -> list[dict[str, Any]]:
         ),
         (
             "next_safe_development_step",
-            "manual_review_qqq100_only_ladder_design_before_any_implementation",
+            "review_step12_design_with_f6_f7_and_flatten_boundaries_before_any_implementation",
             "Review this report before any future ladder implementation; do not add execution or scheduling.",
         ),
     ]
@@ -303,6 +315,13 @@ def build_blocker_rows() -> list[dict[str, Any]]:
             "high",
             "Unknown position state must block/manual-review and must not be treated as flat or aligned.",
             "Keep F6 targeted checks passing before any future ladder work.",
+        ),
+        (
+            "manual_flatten_not_approved",
+            "blocked",
+            "high",
+            "The saved manual flatten readiness/runbook checkpoints show flatten is not currently needed and not approved.",
+            "Keep flatten as a separate manual review path if a future saved flat signal appears.",
         ),
         (
             "high_growth_crypto_defensive_research_only",
@@ -343,6 +362,11 @@ def build_evidence_rows() -> list[dict[str, Any]]:
             "qqq100_current_monitoring_state",
             "aligned_long_one_no_action_required",
             "QQQ100 is the only current seed and remains monitor-only with no repeat/follow-up order approved.",
+        ),
+        (
+            "qqq100_manual_flatten_checkpoints",
+            "flatten_not_needed_currently;manual_flatten_runbook_not_needed_currently",
+            "Flatten readiness and runbook checkpoints exist and do not approve flatten execution.",
         ),
         (
             "required_ladder_stages",
@@ -393,6 +417,8 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"final_design_status={summary_value(summary_rows, 'final_design_status')}",
         f"only_current_ladder_seed={summary_value(summary_rows, 'only_current_ladder_seed')}",
         f"current_qqq100_state={summary_value(summary_rows, 'current_qqq100_state')}",
+        f"qqq100_manual_flatten_status={summary_value(summary_rows, 'qqq100_manual_flatten_status')}",
+        f"qqq100_manual_flatten_runbook_status={summary_value(summary_rows, 'qqq100_manual_flatten_runbook_status')}",
         f"future_multi_sleeve_status={summary_value(summary_rows, 'future_multi_sleeve_status')}",
         f"portfolio_backtest_evidence_status={summary_value(summary_rows, 'portfolio_backtest_evidence_status')}",
         f"unknown_position_boundary={summary_value(summary_rows, 'unknown_position_boundary')}",
