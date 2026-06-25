@@ -2015,7 +2015,7 @@ data/paper_live_promotion_ladder_design_blockers.csv
 data/paper_live_promotion_ladder_design_evidence.csv
 ```
 
-Paper-live promotion ladder status mode is the saved-output/report-only scaffold that reads the ladder design plus current QQQ100 saved monitoring evidence and produces a current ladder table. QQQ100 is the only current seed, with expected status `monitor_only_aligned_long_one`. High-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests remain not promotion evidence until accounting consistency is proven. It does not promote strategies, create order instructions, call Alpaca, read positions, approve execution, approve scheduling, or implement generic promotion logic.
+Paper-live promotion ladder status mode is the saved-output/report-only scaffold that reads the ladder design, current QQQ100 saved monitoring evidence, and the saved F7 accounting proof status. QQQ100 is the only current seed, with expected status `monitor_only_aligned_long_one`. High-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests remain not promotion evidence. The accepted F7 accounting proof confirms the static accounting checkpoint only; it does not promote strategies, create order instructions, call Alpaca, read positions, approve execution, approve scheduling, or implement generic promotion logic.
 
 Command:
 
@@ -2038,7 +2038,7 @@ data/paper_live_promotion_ladder_status_blockers.csv
 data/paper_live_promotion_ladder_status_evidence.csv
 ```
 
-Paper-live F7 accounting proof mode is the saved-output/report-only checkpoint for the F7 portfolio accounting boundary. It statically inspects the multi-sleeve portfolio backtest source and checks that portfolio metrics use weighted daily returns and no independent starting cash is detected. It does not rerun backtests, refresh market data, call Alpaca, read positions, create order instructions, approve promotion, approve execution, or approve scheduling. Portfolio backtests remain not promotion evidence until manual review accepts the accounting proof.
+Paper-live F7 accounting proof mode is the saved-output/report-only checkpoint for the F7 portfolio accounting boundary. It statically inspects the multi-sleeve portfolio backtest source and checks that portfolio metrics use weighted daily returns and no independent starting cash is detected. The current proof has been accepted for the accounting checkpoint. It does not rerun backtests, refresh market data, call Alpaca, read positions, create order instructions, approve promotion, approve execution, or approve scheduling. Portfolio backtests remain not promotion evidence without a separate promotion review.
 
 Command:
 

@@ -979,7 +979,7 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Purpose:** Use `python bot.py --paper-live-promotion-ladder-status` to summarize the current report-only promotion ladder state from saved outputs.
 - **Risk level:** Low/report-only when it reads saved ladder design and QQQ100 monitoring outputs only.
 - **Allowed commands:** `python bot.py --paper-live-promotion-ladder-status`, `python bot.py --show-paper-live-promotion-ladder-status`.
-- **Expected status:** `paper_live_promotion_ladder_status_report_only` with QQQ100 as the only current seed and `monitor_only_aligned_long_one`.
+- **Expected status:** `paper_live_promotion_ladder_status_report_only` with QQQ100 as the only current seed, `monitor_only_aligned_long_one`, and F7 accounting proof accepted while portfolio backtests remain not promotion evidence.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, generic promotion implementation, QQQ100 paper execution, paper-order tests, normal bot execution, scheduler changes.
 - **Stop condition:** Stop if the task would promote high-growth/crypto/defensive/SMA/slow-SMA, treat portfolio backtests as promotion evidence before accounting proof, create order instructions, or touch execution/config/secrets.
 
@@ -987,7 +987,7 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Purpose:** Use `python bot.py --paper-live-f7-accounting-proof` to statically check the F7 portfolio accounting boundary.
 - **Risk level:** Low/report-only when limited to source inspection and saved CSV outputs.
 - **Allowed commands:** `python bot.py --paper-live-f7-accounting-proof`, `python bot.py --show-paper-live-f7-accounting-proof`, and `python scripts\verify_paper_live_f7_accounting_proof.py`.
-- **Expected status:** `f7_accounting_static_proof_ready_for_manual_review`; weighted daily returns are confirmed and no independent starting cash is detected, but portfolio backtests remain not promotion evidence pending manual review.
+- **Expected status:** `f7_accounting_static_proof_ready_for_manual_review`; weighted daily returns are confirmed and no independent starting cash is detected. This F7 accounting checkpoint is accepted, but portfolio backtests remain not promotion evidence without separate promotion review.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, scheduler changes, generic ladder implementation.
 - **Stop condition:** Stop if the task would use portfolio backtests as promotion evidence without manual review, create order instructions, or approve execution/scheduling.
 

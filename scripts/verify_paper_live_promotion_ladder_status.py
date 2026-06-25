@@ -39,8 +39,10 @@ REQUIRED_MODULE_TOKENS = [
     "blocked_research_only",
     "future_review_only",
     "sma_slow_sma_not_paper_live_candidates",
-    "blocked_until_accounting_consistency_proven",
+    "f7_accounting_proof_accepted_portfolio_backtests_still_not_promotion_evidence",
+    "missing_saved_f7_accounting_proof",
     "unknown_position_blocks_manual_review",
+    "manual_review_next_ladder_candidate_scope_without_execution",
     "promotion_approved",
     "order_instructions_created",
     "qqq_100_trend_gate",
@@ -197,6 +199,8 @@ def verify_fixture_output(failures: list[str]) -> None:
         "qqq100_daily_decision_status=qqq100_daily_decision_hold_no_action_aligned_long",
         "qqq100_flatten_status=flatten_not_needed_currently",
         "qqq100_flatten_runbook_status=manual_flatten_runbook_not_needed_currently",
+        "f7_accounting_status=f7_accounting_static_proof_ready_for_manual_review",
+        "portfolio_backtest_evidence_status=f7_accounting_proof_accepted_portfolio_backtests_still_not_promotion_evidence",
         "blocked_branches=high_growth;crypto;defensive_sleeve;sma;slow_sma",
         "execution_approved=false",
         "paper_execution_approved=false",
@@ -229,6 +233,8 @@ def verify_fixture_output(failures: list[str]) -> None:
     summary = {row.get("summary_name"): row.get("summary_value") for row in summary_rows}
     if summary.get("final_ladder_status") != "paper_live_promotion_ladder_status_report_only":
         failures.append("final_ladder_status should be report-only when fixture evidence is present")
+    if summary.get("portfolio_backtest_evidence_status") != "f7_accounting_proof_accepted_portfolio_backtests_still_not_promotion_evidence":
+        failures.append("portfolio_backtest_evidence_status should reflect accepted F7 proof while blocking promotion evidence")
     for row in status_rows + summary_rows:
         assert_false_flags(row, failures)
 
@@ -252,6 +258,7 @@ def create_fixture(root: Path) -> None:
     write_csv(data / "qqq100_daily_decision_summary.csv", ["summary_name", "summary_value"], [["daily_decision_status", "qqq100_daily_decision_hold_no_action_aligned_long"]])
     write_csv(data / "qqq100_manual_flatten_readiness_summary.csv", ["summary_name", "summary_value"], [["flatten_readiness_status", "flatten_not_needed_currently"]])
     write_csv(data / "qqq100_manual_flatten_runbook_summary.csv", ["summary_name", "summary_value"], [["runbook_status", "manual_flatten_runbook_not_needed_currently"]])
+    write_csv(data / "paper_live_f7_accounting_proof_summary.csv", ["summary_name", "summary_value"], [["final_f7_accounting_status", "f7_accounting_static_proof_ready_for_manual_review"]])
 
 
 def assert_false_flags(row: dict[str, str], failures: list[str]) -> None:

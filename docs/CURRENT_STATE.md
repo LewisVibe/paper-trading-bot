@@ -32,7 +32,8 @@ For the ordered paper-live implementation path, see `docs/PAPER_LIVE_CHECKLIST.m
 - `python bot.py --paper-live-f7-accounting-proof` is a report-only static checkpoint for the F7 accounting boundary.
 - The checkpoint verifies weighted daily returns and no independent starting cash in the multi-sleeve portfolio backtest source.
 - Expected status is `f7_accounting_static_proof_ready_for_manual_review` when those static checks pass.
-- Portfolio backtests remain not promotion evidence until manual review accepts the accounting proof.
+- This F7 checkpoint has been accepted as the static accounting proof.
+- Portfolio backtests remain not promotion evidence without a separate promotion review.
 - Execution, paper execution, scheduling, live trading, repeat execution, and promotion approvals remain false.
 
 ## Stock/ETF Research State
@@ -320,7 +321,7 @@ The paper-live promotion ladder status scaffold comes from `python bot.py --pape
 - It writes `data/paper_live_promotion_ladder_status.csv`, `data/paper_live_promotion_ladder_status_summary.csv`, `data/paper_live_promotion_ladder_status_blockers.csv`, and `data/paper_live_promotion_ladder_status_evidence.csv`.
 - It reads saved ladder design, paper-live monitoring, daily decision, and QQQ100 flatten readiness/runbook summaries only.
 - QQQ100 is the only current seed; current expected status is `paper_live_promotion_ladder_status_report_only` with QQQ100 `monitor_only_aligned_long_one`.
-- High-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests remain not promotion evidence until accounting consistency is proven.
+- High-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests remain not promotion evidence. F7 accounting proof is accepted as a static accounting checkpoint, but it does not approve promotion.
 - This scaffold does not promote strategies, create order instructions, call Alpaca, read positions, approve execution, approve scheduling, or implement generic promotion logic.
 
 The paper-live QQQ-led multi-sleeve roadmap checkpoint comes from `python bot.py --paper-live-multi-sleeve-roadmap`, with saved display through `python bot.py --show-paper-live-multi-sleeve-roadmap`:

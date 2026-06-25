@@ -137,9 +137,9 @@ QQQ100 manual flatten readiness is also saved-output-only. `python bot.py --qqq1
 
 The companion runbook/design checkpoint is `python bot.py --qqq100-manual-flatten-runbook-report`. It should report `manual_flatten_runbook_not_needed_currently` while QQQ100 remains aligned long one share, and it still does not create order instructions or approve a flatten action.
 
-Paper-live promotion ladder status is report-only: `python bot.py --paper-live-promotion-ladder-status` reads saved ladder/QQQ100 monitoring outputs and keeps QQQ100 as the only current seed while high-growth and crypto remain research-only, defensive sleeves remain future-review-only, and portfolio backtests remain not promotion evidence until accounting consistency is proven.
+Paper-live promotion ladder status is report-only: `python bot.py --paper-live-promotion-ladder-status` reads saved ladder/QQQ100 monitoring outputs and keeps QQQ100 as the only current seed while high-growth and crypto remain research-only, defensive sleeves remain future-review-only, and portfolio backtests remain not promotion evidence. The F7 accounting proof is accepted as a static accounting checkpoint, but it does not approve promotion or execution.
 
-Paper-live F7 accounting proof is report-only: `python bot.py --paper-live-f7-accounting-proof` statically checks that the multi-sleeve portfolio backtest uses weighted daily returns and no independent starting cash. It still treats portfolio backtests as not promotion evidence until manual review accepts the accounting proof.
+Paper-live F7 accounting proof is report-only: `python bot.py --paper-live-f7-accounting-proof` statically checks that the multi-sleeve portfolio backtest uses weighted daily returns and no independent starting cash. The current proof has been accepted for the accounting checkpoint, while portfolio backtests still require separate promotion review before they can be treated as promotion evidence.
 
 
 ## Architecture

@@ -24,6 +24,7 @@ INPUT_FILES = {
     "daily_decision_summary": Path("data/qqq100_daily_decision_summary.csv"),
     "flatten_readiness_summary": Path("data/qqq100_manual_flatten_readiness_summary.csv"),
     "flatten_runbook_summary": Path("data/qqq100_manual_flatten_runbook_summary.csv"),
+    "f7_accounting_proof_summary": Path("data/paper_live_f7_accounting_proof_summary.csv"),
 }
 
 OUTPUT_FILES = {
@@ -107,9 +108,12 @@ class LadderStatusContext:
     daily_decision_status: str
     flatten_status: str
     flatten_runbook_status: str
+    f7_accounting_status: str
+    portfolio_backtest_evidence_status: str
     qqq100_monitoring_consistent: bool
     design_present: bool
     monitoring_present: bool
+    f7_accounting_accepted: bool
 
 
 @dataclass
@@ -162,6 +166,8 @@ def show_paper_live_promotion_ladder_status(root_dir: Path | str = ".") -> tuple
         f"qqq100_daily_decision_status: {summary_value(rows, 'qqq100_daily_decision_status')}",
         f"qqq100_flatten_status: {summary_value(rows, 'qqq100_flatten_status')}",
         f"qqq100_flatten_runbook_status: {summary_value(rows, 'qqq100_flatten_runbook_status')}",
+        f"f7_accounting_status: {summary_value(rows, 'f7_accounting_status')}",
+        f"portfolio_backtest_evidence_status: {summary_value(rows, 'portfolio_backtest_evidence_status')}",
         f"blocked_branches: {summary_value(rows, 'blocked_branches')}",
         f"next_safe_development_step: {summary_value(rows, 'next_safe_development_step')}",
         "execution_approved=false; paper_execution_approved=false; scheduling_approved=false; live_trading_approved=false; followup_order_approved=false; repeat_execution_approved=false; flatten_execution_approved=false; manual_flatten_approved=false; promotion_approved=false",
@@ -175,6 +181,7 @@ def build_ladder_status_context(root: Path) -> LadderStatusContext:
     daily_rows = read_csv_rows(root / INPUT_FILES["daily_decision_summary"])
     flatten_rows = read_csv_rows(root / INPUT_FILES["flatten_readiness_summary"])
     runbook_rows = read_csv_rows(root / INPUT_FILES["flatten_runbook_summary"])
+    f7_rows = read_csv_rows(root / INPUT_FILES["f7_accounting_proof_summary"])
 
     qqq100_state = summary_value(monitoring_rows, "recommended_next_step")
     monitoring_consistent = (
@@ -185,15 +192,25 @@ def build_ladder_status_context(root: Path) -> LadderStatusContext:
         and summary_value(monitoring_rows, "recommended_next_step") == "hold_no_action_and_monitor_only"
         and summary_value(monitoring_rows, "execution_approved") == "False"
     )
+    f7_status = summary_value(f7_rows, "final_f7_accounting_status") or "missing_saved_f7_accounting_proof"
+    f7_accepted = f7_status == "f7_accounting_static_proof_ready_for_manual_review"
+    portfolio_evidence_status = (
+        "f7_accounting_proof_accepted_portfolio_backtests_still_not_promotion_evidence"
+        if f7_accepted
+        else "blocked_until_accounting_consistency_proven"
+    )
     return LadderStatusContext(
         design_status=summary_value(design_rows, "final_design_status") or "missing_saved_ladder_design",
         qqq100_state=qqq100_state or "missing_saved_paper_live_monitoring",
         daily_decision_status=summary_value(daily_rows, "daily_decision_status") or "missing_saved_daily_decision",
         flatten_status=summary_value(flatten_rows, "flatten_readiness_status") or "missing_saved_flatten_readiness",
         flatten_runbook_status=summary_value(runbook_rows, "runbook_status") or "missing_saved_flatten_runbook",
+        f7_accounting_status=f7_status,
+        portfolio_backtest_evidence_status=portfolio_evidence_status,
         qqq100_monitoring_consistent=monitoring_consistent,
         design_present=bool(design_rows),
         monitoring_present=bool(monitoring_rows),
+        f7_accounting_accepted=f7_accepted,
     )
 
 
@@ -212,8 +229,8 @@ def build_status_rows(context: LadderStatusContext) -> list[dict[str, Any]]:
             TICKER,
             "passed_current_seed_only",
             "seed_only_not_generic_promotion",
-            "portfolio_backtests_not_promotion_evidence_until_accounting_review",
-            "keep QQQ100 as only seed; prove F7 accounting before adding portfolio evidence",
+            context.portfolio_backtest_evidence_status,
+            "keep QQQ100 as only seed; do not use portfolio backtests as promotion evidence without separate promotion review",
         ),
         status_row(
             "qqq100_preview_candidate",
@@ -314,7 +331,7 @@ def status_row(
 def build_summary_rows(context: LadderStatusContext) -> list[dict[str, Any]]:
     final_status = (
         "paper_live_promotion_ladder_status_report_only"
-        if context.design_present and context.qqq100_monitoring_consistent
+        if context.design_present and context.qqq100_monitoring_consistent and context.f7_accounting_accepted
         else "paper_live_promotion_ladder_status_manual_review_required"
     )
     rows = [
@@ -326,9 +343,10 @@ def build_summary_rows(context: LadderStatusContext) -> list[dict[str, Any]]:
         ("qqq100_flatten_runbook_status", context.flatten_runbook_status, "Saved QQQ100 manual flatten runbook status."),
         ("design_status", context.design_status, "Saved Step 12 design status."),
         ("blocked_branches", "high_growth;crypto;defensive_sleeve;sma;slow_sma", "Non-QQQ branches are not promoted."),
-        ("portfolio_backtest_evidence_status", "blocked_until_accounting_consistency_proven", "F7 accounting proof is required before portfolio backtests become promotion evidence."),
+        ("f7_accounting_status", context.f7_accounting_status, "Saved F7 accounting proof status."),
+        ("portfolio_backtest_evidence_status", context.portfolio_backtest_evidence_status, "F7 accounting proof is accepted for accounting review, but portfolio backtests are still not promotion evidence without separate promotion review."),
         ("unknown_position_boundary", "unknown_position_blocks_manual_review", "F6 unknown positions must stay loud."),
-        ("next_safe_development_step", "review_ladder_status_then_add_f7_accounting_proof_before_any_broader_promotion", "Next step remains report/test-only."),
+        ("next_safe_development_step", "manual_review_next_ladder_candidate_scope_without_execution", "Next step remains report/test-only; do not implement execution or generic promotion."),
         ("never_schedule_order_capable_commands", "True", "Order-capable commands must not be scheduled."),
         ("execution_approved", "False", "Execution approval remains false."),
         ("paper_execution_approved", "False", "Paper execution approval remains false."),
@@ -347,7 +365,7 @@ def build_blocker_rows(context: LadderStatusContext) -> list[dict[str, Any]]:
     blockers = [
         ("promotion_not_approved", "blocked", "critical", "This ladder status does not approve promotion.", "Do not wire strategies to execution."),
         ("execution_not_approved", "blocked", "critical", "Execution and paper execution remain unapproved.", "Do not run order-capable commands from this status."),
-        ("portfolio_backtests_not_promotion_evidence", "blocked", "high", "Portfolio metrics require accounting proof before promotion use.", "Add F7 accounting proof before broader promotion work."),
+        ("portfolio_backtests_not_promotion_evidence", "blocked", "high", "F7 accounting proof is accepted, but portfolio metrics still require separate promotion review before promotion use.", "Keep portfolio metrics out of promotion evidence until the next manual ladder scope is approved."),
         ("unknown_position_not_flat", "blocked", "high", "Unknown positions must block/manual-review.", "Keep F6 targeted checks passing."),
         ("non_qqq_branches_not_promoted", "blocked", "high", "High-growth, crypto, defensive, SMA, and slow-SMA are not promoted.", "Keep non-QQQ branches research-only or future-review."),
         ("scheduled_execution_forbidden", "blocked", "critical", "Order-capable commands must never be scheduled.", "Keep Hermes/VPS monitoring-only."),
@@ -370,6 +388,9 @@ def build_evidence_rows(context: LadderStatusContext) -> list[dict[str, Any]]:
         ("daily_decision_status", context.daily_decision_status, "Saved QQQ100 daily decision status."),
         ("flatten_readiness_status", context.flatten_status, "Saved QQQ100 flatten readiness status."),
         ("flatten_runbook_status", context.flatten_runbook_status, "Saved QQQ100 flatten runbook status."),
+        ("f7_accounting_status", context.f7_accounting_status, "Saved F7 accounting proof status."),
+        ("f7_accounting_accepted", str(context.f7_accounting_accepted), "User accepted the current F7 accounting proof checkpoint for manual review."),
+        ("portfolio_backtest_evidence_status", context.portfolio_backtest_evidence_status, "Portfolio backtest evidence remains blocked from promotion use without separate review."),
         ("approval_flags", "all_false", "Execution, paper execution, scheduling, live trading, follow-up, repeat, flatten, and promotion approvals remain false."),
     ]
     return [{"evidence_name": name, "evidence_value": value, "details": details, **SAFETY_FLAGS} for name, value, details in rows]
@@ -384,6 +405,8 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"qqq100_daily_decision_status={summary_value(summary_rows, 'qqq100_daily_decision_status')}",
         f"qqq100_flatten_status={summary_value(summary_rows, 'qqq100_flatten_status')}",
         f"qqq100_flatten_runbook_status={summary_value(summary_rows, 'qqq100_flatten_runbook_status')}",
+        f"f7_accounting_status={summary_value(summary_rows, 'f7_accounting_status')}",
+        f"portfolio_backtest_evidence_status={summary_value(summary_rows, 'portfolio_backtest_evidence_status')}",
         f"blocked_branches={summary_value(summary_rows, 'blocked_branches')}",
         f"next_safe_development_step={summary_value(summary_rows, 'next_safe_development_step')}",
         f"saved_report={output_paths['status']}",
