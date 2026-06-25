@@ -933,11 +933,19 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** QQQ100 paper execution, QQQ100 postcheck unless separately approved, paper-order tests, normal bot execution, scheduler changes.
 - **Stop condition:** Stop if the task would call Alpaca, read live positions, create executable order instructions, approve repeat/follow-up orders, or change scheduling.
 
+### Task: QQQ100 daily decision report
+- **Purpose:** Use `python bot.py --qqq100-daily-decision-report` to turn saved QQQ100 paper-live evidence into a daily hold/manual-discussion/blocked status.
+- **Risk level:** Low/report-only when it reads saved evidence and saved follow-up policy only.
+- **Allowed commands:** `python bot.py --qqq100-daily-decision-report`, `python bot.py --show-qqq100-daily-decision-report`.
+- **Expected status:** `qqq100_daily_decision_hold_no_action_aligned_long` when QQQ100 is already aligned long one share.
+- **Forbidden commands:** QQQ100 paper execution, QQQ100 postcheck unless separately approved, paper-order tests, normal bot execution, scheduler changes.
+- **Stop condition:** Stop if the task would call Alpaca, read live positions, refresh market data, create executable order instructions, approve repeat/follow-up orders, or change scheduling.
+
 ### Task: Paper-live monitoring status
 - **Purpose:** Use `python bot.py --paper-live-monitoring-status` to include QQQ100 no-action/aligned state in safe VPS/Hermes monitoring output.
 - **Risk level:** Low/report-only when it reads saved evidence only.
 - **Allowed commands:** `python bot.py --paper-live-monitoring-status`, `python bot.py --show-paper-live-monitoring-status`.
-- **VPS integration:** `python bot.py --vps-monitoring-status` and `python bot.py --vps-daily-monitoring-summary` now include the saved paper-live monitoring status when available. The existing `paper-bot-vps-status-check` cron command sequence is unchanged; do not add paper-live commands to cron.
+- **VPS integration:** `python bot.py --vps-monitoring-status` and `python bot.py --vps-daily-monitoring-summary` now include the saved paper-live monitoring status and saved QQQ100 daily decision when available. The existing `paper-bot-vps-status-check` cron command sequence is unchanged; do not add paper-live commands to cron.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, QQQ100 paper execution, QQQ100 postcheck unless separately approved, paper-order tests, normal bot execution, scheduler changes.
 - **Stop condition:** Stop if the task would call Alpaca, read live positions, create executable order instructions, approve repeat/follow-up orders, or change scheduling.
 

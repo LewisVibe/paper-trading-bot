@@ -129,7 +129,10 @@ python scripts\verify_repo_safety.py
 | Check deployment readiness | `python bot.py --deployment-readiness-report` |
 | Verify repo safety | `python scripts\verify_repo_safety.py` |
 
+
 The full command catalogue lives in [docs/COMMAND_REFERENCE.md](docs/COMMAND_REFERENCE.md).
+QQQ100 daily decision monitoring is included in the VPS status outputs. The saved-output-only command `python bot.py --qqq100-daily-decision-report` can report `qqq100_daily_decision_hold_no_action_aligned_long` when QQQ100 is already aligned long one share; `python bot.py --vps-monitoring-status` and `python bot.py --vps-daily-monitoring-summary` surface that status without approving execution, repeat/follow-up orders, or scheduling.
+
 
 ## Architecture
 

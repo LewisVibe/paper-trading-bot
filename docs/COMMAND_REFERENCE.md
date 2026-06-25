@@ -1841,7 +1841,32 @@ data/qqq100_followup_policy_evidence.csv
 
 The report never creates executable order instructions and preserves `repeat_execution_approved=false`, `followup_order_approved=false`, `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, and `live_trading_approved=false`.
 
-Paper-live monitoring status mode is the saved-output/report-only Step 11 checkpoint for VPS/Hermes-safe monitoring displays. It reads saved QQQ100 paper-live evidence and the saved follow-up policy report, then surfaces `active_strategy=qqq_100_trend_gate`, `active_ticker=QQQ`, saved position state/quantity, alignment state, follow-up policy status, no-action status, and `recommended_next_step=hold_no_action_and_monitor_only` when QQQ100 is already aligned long one share. The VPS monitoring status and daily monitoring summary now include this saved status so Telegram can show that QQQ100 is aligned long one, no action is required, and repeat/follow-up orders remain unapproved. It does not create, edit, trigger, or schedule Hermes cron jobs, and it never approves order-capable scheduling.
+QQQ100 daily decision mode is the saved-output/report-only checkpoint for turning the current QQQ100 evidence into a plain daily status. It reads saved QQQ100 paper-live evidence and the saved follow-up/no-action policy only. It can say hold/no-action aligned long, hold/no-action aligned flat, manual buy discussion possible but not approved, manual flatten discussion possible but not approved, or blocked/manual-review. It does not call Alpaca, read live positions, refresh market data, create executable order instructions, run QQQ100 paper execution, approve execution, approve repeat/follow-up orders, approve scheduling, or approve live trading.
+
+Command:
+
+```text
+python bot.py --qqq100-daily-decision-report
+```
+
+Saved display:
+
+```text
+python bot.py --show-qqq100-daily-decision-report
+```
+
+Outputs:
+
+```text
+data/qqq100_daily_decision_report.csv
+data/qqq100_daily_decision_summary.csv
+data/qqq100_daily_decision_blockers.csv
+data/qqq100_daily_decision_evidence.csv
+```
+
+Expected current status when QQQ100 is already aligned long one share is `qqq100_daily_decision_hold_no_action_aligned_long` with `recommended_next_step=hold_no_action_and_monitor_only`.
+
+Paper-live monitoring status mode is the saved-output/report-only Step 11 checkpoint for VPS/Hermes-safe monitoring displays. It reads saved QQQ100 paper-live evidence and the saved follow-up policy report, then surfaces `active_strategy=qqq_100_trend_gate`, `active_ticker=QQQ`, saved position state/quantity, alignment state, follow-up policy status, no-action status, and `recommended_next_step=hold_no_action_and_monitor_only` when QQQ100 is already aligned long one share. The VPS monitoring status and daily monitoring summary now include this saved status plus the saved QQQ100 daily decision, so Telegram can show that QQQ100 is aligned long one, the daily decision is hold/no-action, and repeat/follow-up orders remain unapproved. It does not create, edit, trigger, or schedule Hermes cron jobs, and it never approves order-capable scheduling.
 
 Command:
 

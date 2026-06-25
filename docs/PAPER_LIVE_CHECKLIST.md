@@ -172,13 +172,21 @@ Outputs: `data/qqq100_followup_policy_report.csv`, `data/qqq100_followup_policy_
 
 If desired state is `long` and saved QQQ position is long exactly one share, the policy status is `no_action_required_already_aligned`. This must not approve another buy, repeat execution, follow-up orders, scheduling, live trading, or executable order instructions.
 
+Implemented daily decision checkpoint: `python bot.py --qqq100-daily-decision-report`.
+
+Saved display: `python bot.py --show-qqq100-daily-decision-report`.
+
+Outputs: `data/qqq100_daily_decision_report.csv`, `data/qqq100_daily_decision_summary.csv`, `data/qqq100_daily_decision_blockers.csv`, and `data/qqq100_daily_decision_evidence.csv`.
+
+The daily decision reads saved QQQ100 paper-live evidence and the saved follow-up/no-action policy only. It can report `qqq100_daily_decision_hold_no_action_aligned_long`, `qqq100_daily_decision_hold_no_action_aligned_flat`, `qqq100_daily_decision_manual_buy_discussion_possible_not_approved`, `qqq100_daily_decision_manual_flatten_discussion_possible_not_approved`, or `qqq100_daily_decision_blocked_manual_review_required`. It does not approve execution, paper execution, repeat/follow-up orders, scheduling, or executable order instructions.
+
 ## 11. Schedule Monitoring Only
 
 - Implemented report-only monitoring checkpoint: `python bot.py --paper-live-monitoring-status`.
 - Saved display: `python bot.py --show-paper-live-monitoring-status`.
 - Outputs: `data/paper_live_monitoring_status.csv`, `data/paper_live_monitoring_components.csv`, and `data/paper_live_monitoring_blockers.csv`.
 - This checkpoint may show `qqq_100_trend_gate` / `QQQ` aligned long one share with `no_action_required=True` and `recommended_next_step=hold_no_action_and_monitor_only`.
-- `python bot.py --vps-monitoring-status` and `python bot.py --vps-daily-monitoring-summary` include the saved paper-live monitoring status when available, so the current status-only Hermes output can show aligned long one share without adding a new cron command.
+- `python bot.py --vps-monitoring-status` and `python bot.py --vps-daily-monitoring-summary` include the saved paper-live monitoring status and saved QQQ100 daily decision when available, so the current status-only Hermes output can show aligned long one share and hold/no-action without adding a new cron command.
 - It does not create, edit, trigger, or schedule Hermes cron jobs and must preserve `never_schedule_order_capable_commands=True`.
 - Hermes cron may run status/report commands only.
 - Hermes cron must not run QQQ100 execution.

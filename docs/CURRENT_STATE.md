@@ -247,12 +247,19 @@ The QQQ100 follow-up policy report comes from `python bot.py --qqq100-followup-p
 - It does not call Alpaca, read live positions, run postcheck, run QQQ100 paper execution, create executable order instructions, approve execution, approve paper execution, approve repeat execution, approve follow-up orders, approve scheduling, or approve live trading.
 - Every row preserves `repeat_execution_approved=false`, `followup_order_approved=false`, `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, and `live_trading_approved=false`.
 
+The QQQ100 daily decision report comes from `python bot.py --qqq100-daily-decision-report`, with saved display through `python bot.py --show-qqq100-daily-decision-report`:
+
+- It writes `data/qqq100_daily_decision_report.csv`, `data/qqq100_daily_decision_summary.csv`, `data/qqq100_daily_decision_blockers.csv`, and `data/qqq100_daily_decision_evidence.csv`.
+- It reads saved QQQ100 paper-live evidence and saved follow-up/no-action policy only.
+- It can report `qqq100_daily_decision_hold_no_action_aligned_long`, `qqq100_daily_decision_hold_no_action_aligned_flat`, `qqq100_daily_decision_manual_buy_discussion_possible_not_approved`, `qqq100_daily_decision_manual_flatten_discussion_possible_not_approved`, or `qqq100_daily_decision_blocked_manual_review_required`.
+- It does not call Alpaca, read live positions, refresh market data, create executable order instructions, run QQQ100 paper execution, approve execution, approve repeat/follow-up orders, approve scheduling, or approve live trading.
+
 The paper-live monitoring status comes from `python bot.py --paper-live-monitoring-status`, with saved display through `python bot.py --show-paper-live-monitoring-status`:
 
 - It writes `data/paper_live_monitoring_status.csv`, `data/paper_live_monitoring_components.csv`, and `data/paper_live_monitoring_blockers.csv`.
 - It is a saved-output/report-only Step 11 checkpoint for VPS/Hermes-safe monitoring displays.
 - It reports `active_strategy=qqq_100_trend_gate`, `active_ticker=QQQ`, saved QQQ position state/quantity, alignment state, follow-up policy status, no-action status, and `recommended_next_step=hold_no_action_and_monitor_only` when already aligned long one share.
-- `python bot.py --vps-monitoring-status` and `python bot.py --vps-daily-monitoring-summary` include this saved paper-live status so VPS/Hermes output can show QQQ100 is aligned long one, no action is required, repeat/follow-up orders are unapproved, and `never_schedule_order_capable_commands=True`.
+- `python bot.py --vps-monitoring-status` and `python bot.py --vps-daily-monitoring-summary` include this saved paper-live status and the saved QQQ100 daily decision so VPS/Hermes output can show QQQ100 is aligned long one, the daily decision is hold/no-action, repeat/follow-up orders are unapproved, and `never_schedule_order_capable_commands=True`.
 - If saved evidence is missing, it reports `missing_saved_evidence` or manual review instead of approving execution.
 - It does not create, edit, trigger, or schedule Hermes cron jobs; call Alpaca; read live positions; run postcheck; run QQQ100 paper execution; create executable order instructions; approve execution; approve paper execution; approve repeat execution; approve follow-up orders; approve scheduling; or approve live trading.
 - Every row preserves `execution_approved=false`, `paper_execution_approved=false`, `scheduling_approved=false`, `live_trading_approved=false`, `followup_order_approved=false`, `repeat_execution_approved=false`, and `never_schedule_order_capable_commands=true`.

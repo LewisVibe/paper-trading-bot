@@ -38,6 +38,7 @@ DEFENSIVE_SAVED_INPUTS = [
 PROMOTED_REVIEW_SUMMARY_PATH = "data/promoted_review_refresh_summary.csv"
 PROMOTED_DECISION_PREVIEW_PATH = "data/promoted_decision_preview.csv"
 PAPER_LIVE_MONITORING_STATUS_PATH = "data/paper_live_monitoring_status.csv"
+QQQ100_DAILY_DECISION_SUMMARY_PATH = "data/qqq100_daily_decision_summary.csv"
 
 PAPER_LIVE_REQUIRED_SUMMARY_VALUES = {
     "active_strategy": "qqq_100_trend_gate",
@@ -81,6 +82,10 @@ GENERATED_OUTPUT_PATHS = [
     "data/paper_live_monitoring_status.csv",
     "data/paper_live_monitoring_components.csv",
     "data/paper_live_monitoring_blockers.csv",
+    "data/qqq100_daily_decision_report.csv",
+    "data/qqq100_daily_decision_summary.csv",
+    "data/qqq100_daily_decision_blockers.csv",
+    "data/qqq100_daily_decision_evidence.csv",
 ]
 
 
@@ -128,6 +133,9 @@ def build_vps_monitoring_status_lines(root: Path | str = ".") -> list[str]:
     lines.append("")
     lines.append("Paper-live monitoring status:")
     lines.extend(paper_live_monitoring_status_lines(root_path))
+    lines.append("")
+    lines.append("QQQ100 daily decision:")
+    lines.extend(qqq100_daily_decision_status_lines(root_path))
     lines.append("")
     lines.append("Saved-output freshness:")
     lines.extend(format_freshness_lines(build_freshness_statuses(root_path)))
@@ -279,6 +287,36 @@ def paper_live_monitoring_status_lines(root: Path) -> list[str]:
     if context.missing_or_mismatched:
         lines.append("- paper_live_monitoring_manual_review_items: " + "; ".join(context.missing_or_mismatched))
     lines.append("- paper_live_monitoring_warning: monitor only; repeat/follow-up orders are not approved.")
+    return lines
+
+
+def qqq100_daily_decision_status_lines(root: Path) -> list[str]:
+    rows = read_csv_rows(root / QQQ100_DAILY_DECISION_SUMMARY_PATH)
+    values = {row.get("summary_name", ""): str(row.get("summary_value", "")).strip() for row in rows}
+    if not rows:
+        return [
+            "- qqq100_daily_decision_present: False",
+            "- qqq100_daily_decision_missing_saved_output: data/qqq100_daily_decision_summary.csv",
+            "- qqq100_daily_decision_warning: monitor only; run the safe daily decision report before relying on this status.",
+        ]
+    lines = [
+        "- qqq100_daily_decision_present: True",
+        f"- daily_decision_status: {values.get('daily_decision_status', 'missing')}",
+        f"- active_strategy: {values.get('active_strategy', 'missing')}",
+        f"- active_ticker: {values.get('active_ticker', 'missing')}",
+        f"- desired_state: {values.get('desired_state', 'missing')}",
+        f"- saved_position_state: {values.get('saved_position_state', 'missing')}",
+        f"- saved_position_quantity: {values.get('saved_position_quantity', 'missing')}",
+        f"- alignment_state: {values.get('alignment_state', 'missing')}",
+        f"- followup_policy_status: {values.get('followup_policy_status', 'missing')}",
+        f"- no_action_required: {values.get('no_action_required', 'missing')}",
+        f"- manual_discussion_status: {values.get('manual_discussion_status', 'missing')}",
+        f"- recommended_next_step: {values.get('recommended_next_step', 'missing')}",
+        f"- followup_order_approved: {values.get('followup_order_approved', 'False')}",
+        f"- repeat_execution_approved: {values.get('repeat_execution_approved', 'False')}",
+        f"- never_schedule_order_capable_commands: {values.get('never_schedule_order_capable_commands', 'missing')}",
+        "- qqq100_daily_decision_warning: monitor only; this is not order approval.",
+    ]
     return lines
 
 

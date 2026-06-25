@@ -12,8 +12,10 @@ VPS_DAILY_MODULE = ROOT / "trading_bot" / "research" / "vps_daily_monitoring_sum
 
 REQUIRED_SOURCE_TOKENS = [
     "PAPER_LIVE_MONITORING_STATUS_PATH",
+    "QQQ100_DAILY_DECISION_SUMMARY_PATH",
     "build_paper_live_monitoring_context",
     "paper_live_monitoring_status_lines",
+    "qqq100_daily_decision_status_lines",
     "qqq_100_trend_gate",
     "paper_position_long",
     "aligned_long",
@@ -24,6 +26,8 @@ REQUIRED_SOURCE_TOKENS = [
     "never_schedule_order_capable_commands",
     "paper_live_monitoring_saved_status_missing_or_inconsistent",
     "refresh_report_only_paper_live_monitoring_status",
+    "qqq100_daily_decision_saved_status_missing",
+    "refresh_report_only_qqq100_daily_decision",
 ]
 
 REQUIRED_OUTPUT_PHRASES = [
@@ -43,6 +47,11 @@ REQUIRED_OUTPUT_PHRASES = [
     "repeat_execution_approved: False",
     "never_schedule_order_capable_commands: True",
     "paper_live_monitoring_warning: monitor only; repeat/follow-up orders are not approved.",
+    "QQQ100 daily decision:",
+    "qqq100_daily_decision_present: True",
+    "daily_decision_status: qqq100_daily_decision_hold_no_action_aligned_long",
+    "manual_discussion_status: manual_trade_discussion_not_needed",
+    "qqq100_daily_decision_warning: monitor only; this is not order approval.",
 ]
 
 FORBIDDEN_SOURCE_TOKENS = [
@@ -103,6 +112,7 @@ def verify_output_with_saved_status(failures: list[str]) -> None:
         data_dir = root / "data"
         data_dir.mkdir()
         write_saved_paper_live_status(data_dir / "paper_live_monitoring_status.csv")
+        write_saved_qqq100_daily_decision(data_dir / "qqq100_daily_decision_summary.csv")
         write_promoted_decision(data_dir / "promoted_decision_preview.csv")
         output = "\n".join(build_vps_monitoring_status_lines(root))
         output += "\n" + "\n".join(build_vps_daily_monitoring_summary_lines(root))
@@ -148,6 +158,31 @@ def write_saved_paper_live_status(path: Path) -> None:
         "alignment_state,aligned_long,Saved QQQ alignment state.,False,False,False,False,False,False\n"
         "followup_policy_status,no_action_required_already_aligned,Saved policy.,False,False,False,False,False,False\n"
         "no_action_required,True,No paper action is needed.,False,False,False,False,False,False\n"
+        "recommended_next_step,hold_no_action_and_monitor_only,Monitor only.,False,False,False,False,False,False\n"
+        "never_schedule_order_capable_commands,True,Do not schedule order-capable commands.,False,False,False,False,False,False\n"
+        "execution_approved,False,Execution approval remains false.,False,False,False,False,False,False\n"
+        "paper_execution_approved,False,Paper execution approval remains false.,False,False,False,False,False,False\n"
+        "scheduling_approved,False,Scheduling approval remains false.,False,False,False,False,False,False\n"
+        "live_trading_approved,False,Live trading approval remains false.,False,False,False,False,False,False\n"
+        "followup_order_approved,False,Follow-up order approval remains false.,False,False,False,False,False,False\n"
+        "repeat_execution_approved,False,Repeat execution approval remains false.,False,False,False,False,False,False\n",
+        encoding="utf-8",
+    )
+
+
+def write_saved_qqq100_daily_decision(path: Path) -> None:
+    path.write_text(
+        "summary_name,summary_value,details,execution_approved,paper_execution_approved,scheduling_approved,live_trading_approved,followup_order_approved,repeat_execution_approved\n"
+        "daily_decision_status,qqq100_daily_decision_hold_no_action_aligned_long,Saved daily decision.,False,False,False,False,False,False\n"
+        "active_strategy,qqq_100_trend_gate,Only QQQ100 in scope.,False,False,False,False,False,False\n"
+        "active_ticker,QQQ,Only QQQ in scope.,False,False,False,False,False,False\n"
+        "desired_state,long,Saved desired state.,False,False,False,False,False,False\n"
+        "saved_position_state,paper_position_long,Saved QQQ paper position state.,False,False,False,False,False,False\n"
+        "saved_position_quantity,1,Saved QQQ quantity.,False,False,False,False,False,False\n"
+        "alignment_state,aligned_long,Saved alignment state.,False,False,False,False,False,False\n"
+        "followup_policy_status,no_action_required_already_aligned,Saved policy.,False,False,False,False,False,False\n"
+        "no_action_required,True,No action needed.,False,False,False,False,False,False\n"
+        "manual_discussion_status,manual_trade_discussion_not_needed,No trade discussion needed.,False,False,False,False,False,False\n"
         "recommended_next_step,hold_no_action_and_monitor_only,Monitor only.,False,False,False,False,False,False\n"
         "never_schedule_order_capable_commands,True,Do not schedule order-capable commands.,False,False,False,False,False,False\n"
         "execution_approved,False,Execution approval remains false.,False,False,False,False,False,False\n"

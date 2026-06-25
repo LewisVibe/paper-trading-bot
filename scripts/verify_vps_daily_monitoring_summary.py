@@ -19,6 +19,10 @@ REQUIRED_OUTPUT_PHRASES = [
     "Promoted review summary:",
     "Defensive refresh summary:",
     "Paper-live monitoring status:",
+    "QQQ100 daily decision:",
+    "qqq100_daily_decision_present: True",
+    "daily_decision_status: qqq100_daily_decision_hold_no_action_aligned_long",
+    "manual_discussion_status: manual_trade_discussion_not_needed",
     "active_strategy: qqq_100_trend_gate",
     "active_ticker: QQQ",
     "alignment_state: aligned_long",
@@ -51,6 +55,9 @@ REQUIRED_ACTION_STATES = [
     "refresh_or_investigate_saved_monitoring_inputs",
     "paper_live_monitoring_saved_status_missing_or_inconsistent",
     "refresh_report_only_paper_live_monitoring_status",
+    "qqq100_daily_decision_saved_status_missing",
+    "refresh_report_only_qqq100_daily_decision",
+    "qqq100_daily_decision_approval_flags_need_review",
 ]
 
 FORBIDDEN_CALLS = [
