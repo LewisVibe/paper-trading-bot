@@ -610,6 +610,42 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-defensive-sleeve-manual-review"]:
+        from trading_bot.research.paper_live_defensive_sleeve_manual_review import (
+            generate_paper_live_defensive_sleeve_manual_review,
+        )
+
+        result = generate_paper_live_defensive_sleeve_manual_review()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-defensive-sleeve-manual-review"]:
+        from trading_bot.research.paper_live_defensive_sleeve_manual_review import (
+            show_paper_live_defensive_sleeve_manual_review,
+        )
+
+        code, lines = show_paper_live_defensive_sleeve_manual_review()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-defensive-sleeve-preview-readiness"]:
+        from trading_bot.research.paper_live_defensive_sleeve_preview_readiness import (
+            generate_paper_live_defensive_sleeve_preview_readiness,
+        )
+
+        result = generate_paper_live_defensive_sleeve_preview_readiness()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-defensive-sleeve-preview-readiness"]:
+        from trading_bot.research.paper_live_defensive_sleeve_preview_readiness import (
+            show_paper_live_defensive_sleeve_preview_readiness,
+        )
+
+        code, lines = show_paper_live_defensive_sleeve_preview_readiness()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-live-multi-sleeve-roadmap"]:
         from trading_bot.research.paper_live_multi_sleeve_roadmap import generate_paper_live_multi_sleeve_roadmap
 
@@ -1513,6 +1549,14 @@ from trading_bot.research.paper_live_next_ladder_candidate_scope import (
 from trading_bot.research.paper_live_defensive_sleeve_ladder_scope_review import (
     generate_paper_live_defensive_sleeve_ladder_scope_review,
     show_paper_live_defensive_sleeve_ladder_scope_review,
+)
+from trading_bot.research.paper_live_defensive_sleeve_manual_review import (
+    generate_paper_live_defensive_sleeve_manual_review,
+    show_paper_live_defensive_sleeve_manual_review,
+)
+from trading_bot.research.paper_live_defensive_sleeve_preview_readiness import (
+    generate_paper_live_defensive_sleeve_preview_readiness,
+    show_paper_live_defensive_sleeve_preview_readiness,
 )
 from trading_bot.research.paper_live_multi_sleeve_roadmap import (
     generate_paper_live_multi_sleeve_roadmap,
@@ -6145,6 +6189,26 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved defensive sleeve ladder-scope review without broker reads.",
     )
     parser.add_argument(
+        "--paper-live-defensive-sleeve-manual-review",
+        action="store_true",
+        help="Create a saved-output defensive sleeve manual review pack without promotion or broker reads.",
+    )
+    parser.add_argument(
+        "--show-paper-live-defensive-sleeve-manual-review",
+        action="store_true",
+        help="Display the saved defensive sleeve manual review pack without broker reads.",
+    )
+    parser.add_argument(
+        "--paper-live-defensive-sleeve-preview-readiness",
+        action="store_true",
+        help="Create a saved-output defensive sleeve preview-readiness checkpoint without promotion or broker reads.",
+    )
+    parser.add_argument(
+        "--show-paper-live-defensive-sleeve-preview-readiness",
+        action="store_true",
+        help="Display the saved defensive sleeve preview-readiness checkpoint without broker reads.",
+    )
+    parser.add_argument(
         "--paper-live-multi-sleeve-roadmap",
         action="store_true",
         help="Create a saved-output QQQ-led multi-sleeve paper-live roadmap without portfolio execution.",
@@ -7818,6 +7882,34 @@ def main() -> int:
         return 0
     if args.show_paper_live_defensive_sleeve_ladder_scope_review:
         status_code, lines = show_paper_live_defensive_sleeve_ladder_scope_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_defensive_sleeve_manual_review:
+        try:
+            result = generate_paper_live_defensive_sleeve_manual_review()
+        except Exception as exc:
+            print(f"Paper-live defensive sleeve manual review failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_defensive_sleeve_manual_review:
+        status_code, lines = show_paper_live_defensive_sleeve_manual_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_defensive_sleeve_preview_readiness:
+        try:
+            result = generate_paper_live_defensive_sleeve_preview_readiness()
+        except Exception as exc:
+            print(f"Paper-live defensive sleeve preview readiness failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_defensive_sleeve_preview_readiness:
+        status_code, lines = show_paper_live_defensive_sleeve_preview_readiness()
         for line in lines:
             print(line)
         return status_code

@@ -145,6 +145,10 @@ Paper-live next ladder candidate scope is report-only: `python bot.py --paper-li
 
 Paper-live defensive sleeve ladder-scope review is report-only: `python bot.py --paper-live-defensive-sleeve-ladder-scope-review` checks saved defensive evidence file presence and reports whether a future defensive candidate discussion is even ready for manual review. The defensive sleeve is not promoted and no orders are approved.
 
+Paper-live defensive sleeve manual review is also saved-output/report-only: `python bot.py --paper-live-defensive-sleeve-manual-review` summarizes the complete defensive evidence stack, keeps `qqq_100_trend_gate` as the clean paper-live lead, and records `defensive_sleeve_manual_review_required` without approving preview, promotion, orders, or scheduling.
+
+Paper-live defensive sleeve preview-readiness is the next blocked checkpoint: `python bot.py --paper-live-defensive-sleeve-preview-readiness` records `defensive_sleeve_preview_candidate_not_approved_manual_review_required`. This is intentionally not a preview implementation; the defensive sleeve remains research-only until a separate manual decision changes that label.
+
 
 ## Architecture
 

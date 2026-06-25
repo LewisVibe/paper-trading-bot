@@ -16,6 +16,8 @@ from typing import Any
 STRATEGY_NAME = "qqq_100_trend_gate"
 TICKER = "QQQ"
 PAPER_LIVE_MONITORING_SUMMARY = Path("data/paper_live_monitoring_status.csv")
+DEFENSIVE_MANUAL_REVIEW_SUMMARY = Path("data/paper_live_defensive_sleeve_manual_review_summary.csv")
+DEFENSIVE_PREVIEW_READINESS_SUMMARY = Path("data/paper_live_defensive_sleeve_preview_readiness_summary.csv")
 
 OUTPUT_FILES = {
     "report": Path("data/paper_live_checklist_status.csv"),
@@ -62,6 +64,9 @@ REPORT_COLUMNS = [
     "alignment_state",
     "followup_policy_status",
     "no_action_required",
+    "defensive_sleeve_manual_review_status",
+    "defensive_sleeve_preview_readiness_status",
+    "defensive_sleeve_preview_candidate_status",
     "paper_live_monitoring_status",
     "checklist_phase_status",
     "finding",
@@ -116,6 +121,9 @@ class PaperLiveChecklistSnapshot:
     alignment_state: str
     followup_policy_status: str
     no_action_required: str
+    defensive_sleeve_manual_review_status: str
+    defensive_sleeve_preview_readiness_status: str
+    defensive_sleeve_preview_candidate_status: str
     recommended_next_step: str
     paper_live_monitoring_status: str
     checklist_phase_status: str
@@ -173,6 +181,9 @@ def show_paper_live_checklist_status(root_dir: Path | str = ".") -> tuple[int, l
         f"saved_position_quantity: {summary_value(rows, 'saved_position_quantity')}",
         f"alignment_state: {summary_value(rows, 'alignment_state')}",
         f"followup_policy_status: {summary_value(rows, 'followup_policy_status')}",
+        f"defensive_sleeve_manual_review_status: {summary_value(rows, 'defensive_sleeve_manual_review_status')}",
+        f"defensive_sleeve_preview_readiness_status: {summary_value(rows, 'defensive_sleeve_preview_readiness_status')}",
+        f"defensive_sleeve_preview_candidate_status: {summary_value(rows, 'defensive_sleeve_preview_candidate_status')}",
         f"no_action_required: {summary_value(rows, 'no_action_required')}",
         f"paper_live_monitoring_status: {summary_value(rows, 'paper_live_monitoring_status')}",
         f"current_monitoring_recommended_next_step: {summary_value(rows, 'current_monitoring_recommended_next_step')}",
@@ -193,6 +204,9 @@ def build_checklist_snapshot(root: Path) -> PaperLiveChecklistSnapshot:
     followup_policy_status = values.get("followup_policy_status") or "missing_saved_evidence"
     no_action_required = values.get("no_action_required") or "False"
     recommended = values.get("recommended_next_step") or "regenerate_report_only_paper_live_monitoring_status"
+    defensive_manual = read_summary_value(root / DEFENSIVE_MANUAL_REVIEW_SUMMARY, "final_manual_review_status") or "not_run"
+    defensive_preview = read_summary_value(root / DEFENSIVE_PREVIEW_READINESS_SUMMARY, "final_preview_readiness_status") or "not_run"
+    defensive_preview_candidate = read_summary_value(root / DEFENSIVE_PREVIEW_READINESS_SUMMARY, "preview_candidate_status") or "defensive_preview_candidate_not_approved"
 
     evidence_complete = (
         active_strategy == STRATEGY_NAME
@@ -207,7 +221,12 @@ def build_checklist_snapshot(root: Path) -> PaperLiveChecklistSnapshot:
     if evidence_complete:
         paper_live_monitoring_status = "qqq100_aligned_long_one_monitor_only"
         checklist_phase_status = "paper_live_checklist_current_qqq100_monitoring_phase_closed_out"
-        next_step = "continue_monitoring_only_then_review_future_f6_f7_or_generic_promotion_ladder_separately"
+        if defensive_preview == "defensive_sleeve_preview_candidate_not_approved_manual_review_required":
+            next_step = "manual_review_defensive_sleeve_before_any_preview_or_candidate_label_change"
+        elif defensive_manual == "defensive_sleeve_manual_review_required":
+            next_step = "run_defensive_sleeve_preview_readiness_checkpoint_before_candidate_label_change"
+        else:
+            next_step = "continue_monitoring_only_then_review_future_f6_f7_or_generic_promotion_ladder_separately"
     else:
         paper_live_monitoring_status = "paper_live_monitoring_saved_evidence_missing_or_inconsistent"
         checklist_phase_status = "paper_live_checklist_manual_review_required"
@@ -221,6 +240,9 @@ def build_checklist_snapshot(root: Path) -> PaperLiveChecklistSnapshot:
         alignment_state=alignment_state,
         followup_policy_status=followup_policy_status,
         no_action_required=no_action_required,
+        defensive_sleeve_manual_review_status=defensive_manual,
+        defensive_sleeve_preview_readiness_status=defensive_preview,
+        defensive_sleeve_preview_candidate_status=defensive_preview_candidate,
         recommended_next_step=recommended,
         paper_live_monitoring_status=paper_live_monitoring_status,
         checklist_phase_status=checklist_phase_status,
@@ -255,6 +277,9 @@ def build_report_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, An
             "alignment_state": snapshot.alignment_state,
             "followup_policy_status": snapshot.followup_policy_status,
             "no_action_required": snapshot.no_action_required,
+            "defensive_sleeve_manual_review_status": snapshot.defensive_sleeve_manual_review_status,
+            "defensive_sleeve_preview_readiness_status": snapshot.defensive_sleeve_preview_readiness_status,
+            "defensive_sleeve_preview_candidate_status": snapshot.defensive_sleeve_preview_candidate_status,
             "paper_live_monitoring_status": snapshot.paper_live_monitoring_status,
             "checklist_phase_status": snapshot.checklist_phase_status,
             "finding": finding,
@@ -275,6 +300,9 @@ def build_summary_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, A
         ("alignment_state", snapshot.alignment_state, "Saved QQQ100 alignment state."),
         ("followup_policy_status", snapshot.followup_policy_status, "Saved QQQ100 follow-up/no-action policy status."),
         ("no_action_required", snapshot.no_action_required, "True when current saved state needs no QQQ paper action."),
+        ("defensive_sleeve_manual_review_status", snapshot.defensive_sleeve_manual_review_status, "Saved defensive sleeve manual review status."),
+        ("defensive_sleeve_preview_readiness_status", snapshot.defensive_sleeve_preview_readiness_status, "Saved defensive sleeve preview-readiness status."),
+        ("defensive_sleeve_preview_candidate_status", snapshot.defensive_sleeve_preview_candidate_status, "Defensive sleeve preview candidate approval remains blocked."),
         ("paper_live_monitoring_status", snapshot.paper_live_monitoring_status, "Saved paper-live monitor interpretation."),
         ("current_monitoring_recommended_next_step", snapshot.recommended_next_step, "Saved paper-live monitoring recommendation."),
         ("steps_1_to_11_status", "complete_for_current_qqq100_monitoring_phase", "Current phase is closed out through Step 11."),
@@ -298,6 +326,7 @@ def build_blocker_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, A
         ("scheduling_not_approved", "blocked", "critical", "Scheduling remains monitoring-only; order-capable commands must never be scheduled.", "Do not create, edit, trigger, or schedule execution commands."),
         ("live_trading_not_approved", "blocked", "critical", "Live-money trading remains outside project scope.", "Keep Alpaca paper-only boundaries."),
         ("generic_promotion_ladder_future_only", "future_only", "medium", "Step 12 is intentionally not implemented in this checkpoint.", "Design a promotion ladder later, starting QQQ100 only."),
+        ("defensive_sleeve_preview_not_approved", "blocked", "critical", "Defensive sleeve review/checkpoints do not approve a preview candidate, promotion, or execution.", "manual review required before any defensive preview label change."),
     ]
     if snapshot.checklist_phase_status != "paper_live_checklist_current_qqq100_monitoring_phase_closed_out":
         rows.insert(
@@ -328,6 +357,7 @@ def build_evidence_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, 
         ("paper_live_monitoring_summary_source", str(PAPER_LIVE_MONITORING_SUMMARY), "Saved-output source only; no broker read."),
         ("current_saved_alignment", f"{snapshot.saved_position_state}; quantity={snapshot.saved_position_quantity}; {snapshot.alignment_state}", "Explains why no further QQQ order is needed now."),
         ("current_followup_policy", f"{snapshot.followup_policy_status}; no_action_required={snapshot.no_action_required}", "Repeat/follow-up orders remain blocked."),
+        ("defensive_sleeve_saved_review_state", f"manual={snapshot.defensive_sleeve_manual_review_status}; preview={snapshot.defensive_sleeve_preview_readiness_status}; candidate={snapshot.defensive_sleeve_preview_candidate_status}", "Defensive sleeve remains blocked from preview/execution."),
         ("current_scheduling_boundary", "monitoring_only; never_schedule_order_capable_commands=True", "Hermes/VPS scheduling remains status/report-only."),
     ]
     return [{"evidence_name": name, "evidence_value": value, "details": details, **SAFETY_FLAGS} for name, value, details in rows]
@@ -342,6 +372,9 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"Saved position: {summary_value(summary_rows, 'saved_position_state')} quantity={summary_value(summary_rows, 'saved_position_quantity')}",
         f"Alignment state: {summary_value(summary_rows, 'alignment_state')}",
         f"Follow-up policy status: {summary_value(summary_rows, 'followup_policy_status')}",
+        f"Defensive sleeve manual review status: {summary_value(summary_rows, 'defensive_sleeve_manual_review_status')}",
+        f"Defensive sleeve preview readiness status: {summary_value(summary_rows, 'defensive_sleeve_preview_readiness_status')}",
+        f"Defensive sleeve preview candidate status: {summary_value(summary_rows, 'defensive_sleeve_preview_candidate_status')}",
         f"No action required: {summary_value(summary_rows, 'no_action_required')}",
         f"Paper-live monitoring status: {summary_value(summary_rows, 'paper_live_monitoring_status')}",
         f"Current monitoring recommended next step: {summary_value(summary_rows, 'current_monitoring_recommended_next_step')}",
@@ -358,6 +391,10 @@ def summary_value(rows: list[dict[str, Any]], key: str) -> str:
         if str(row.get("summary_name", "")) == key:
             return str(row.get("summary_value", "")).strip()
     return ""
+
+
+def read_summary_value(path: Path, key: str) -> str:
+    return summary_value(read_csv_rows(path), key)
 
 
 def read_csv_rows(path: Path) -> list[dict[str, Any]]:

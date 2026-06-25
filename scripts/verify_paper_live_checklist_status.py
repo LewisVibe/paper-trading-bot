@@ -31,6 +31,11 @@ REQUIRED_MODULE_TOKENS = [
     "alignment_state",
     "followup_policy_status",
     "no_action_required",
+    "defensive_sleeve_manual_review_status",
+    "defensive_sleeve_preview_readiness_status",
+    "defensive_sleeve_preview_candidate_status",
+    "defensive_sleeve_preview_candidate_not_approved_manual_review_required",
+    "defensive_preview_candidate_not_approved",
     "paper_live_monitoring_status",
     "checklist_phase_status",
     "next_safe_development_step",
@@ -183,6 +188,8 @@ def verify_report_output_from_fixture(failures: list[str]) -> None:
         data_dir = root / "data"
         data_dir.mkdir()
         write_monitoring_fixture(data_dir / "paper_live_monitoring_status.csv")
+        write_defensive_manual_fixture(data_dir / "paper_live_defensive_sleeve_manual_review_summary.csv")
+        write_defensive_preview_fixture(data_dir / "paper_live_defensive_sleeve_preview_readiness_summary.csv")
         result = generate_paper_live_checklist_status(root)
         status_code, lines = show_paper_live_checklist_status(root)
 
@@ -197,6 +204,10 @@ def verify_report_output_from_fixture(failures: list[str]) -> None:
         "aligned_long",
         "no_action_required_already_aligned",
         "hold_no_action_and_monitor_only",
+        "defensive_sleeve_manual_review_required",
+        "defensive_sleeve_preview_candidate_not_approved_manual_review_required",
+        "defensive_preview_candidate_not_approved",
+        "manual_review_defensive_sleeve_before_any_preview_or_candidate_label_change",
         "future_only",
         "execution_approved=false",
         "paper_execution_approved=false",
@@ -221,6 +232,23 @@ def write_monitoring_fixture(path: Path) -> None:
         "followup_policy_status,no_action_required_already_aligned,Saved policy.,False,False,False,False,False,False\n"
         "no_action_required,True,No paper action is needed.,False,False,False,False,False,False\n"
         "recommended_next_step,hold_no_action_and_monitor_only,Monitor only.,False,False,False,False,False,False\n",
+        encoding="utf-8",
+    )
+
+
+def write_defensive_manual_fixture(path: Path) -> None:
+    path.write_text(
+        "summary_name,summary_value,details,execution_approved,paper_execution_approved,scheduling_approved,live_trading_approved,followup_order_approved,repeat_execution_approved,promotion_approved,preview_candidate_approved,defensive_sleeve_promoted\n"
+        "final_manual_review_status,defensive_sleeve_manual_review_required,Manual review required,False,False,False,False,False,False,False,False,False\n",
+        encoding="utf-8",
+    )
+
+
+def write_defensive_preview_fixture(path: Path) -> None:
+    path.write_text(
+        "summary_name,summary_value,details,execution_approved,paper_execution_approved,scheduling_approved,live_trading_approved,followup_order_approved,repeat_execution_approved,promotion_approved,preview_candidate_approved,defensive_sleeve_promoted\n"
+        "final_preview_readiness_status,defensive_sleeve_preview_candidate_not_approved_manual_review_required,Preview not approved,False,False,False,False,False,False,False,False,False\n"
+        "preview_candidate_status,defensive_preview_candidate_not_approved,Not approved,False,False,False,False,False,False,False,False,False\n",
         encoding="utf-8",
     )
 

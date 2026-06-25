@@ -272,6 +272,22 @@ Outputs: `data/paper_live_defensive_sleeve_ladder_scope_review.csv`, `data/paper
 
 Current expected defensive scope status is either `defensive_sleeve_ladder_scope_review_ready_for_manual_review` when the saved defensive evidence stack is present, or `defensive_sleeve_ladder_scope_missing_saved_evidence_manual_review_required` when files are missing. In both cases, the defensive sleeve is not promoted, no candidate label changes are approved, and no orders or scheduling are approved.
 
+Implemented defensive sleeve manual review checkpoint: `python bot.py --paper-live-defensive-sleeve-manual-review`.
+
+Saved display: `python bot.py --show-paper-live-defensive-sleeve-manual-review`.
+
+Outputs: `data/paper_live_defensive_sleeve_manual_review.csv`, `data/paper_live_defensive_sleeve_manual_review_summary.csv`, `data/paper_live_defensive_sleeve_manual_review_blockers.csv`, and `data/paper_live_defensive_sleeve_manual_review_evidence.csv`.
+
+Current expected manual review status is `defensive_sleeve_manual_review_required` when saved defensive evidence is complete. This confirms the branch can be discussed manually while `qqq_100_trend_gate` remains the clean paper-live lead. Preview, promotion, execution, paper execution, repeat orders, live trading, and scheduling remain unapproved.
+
+Implemented defensive sleeve preview-readiness checkpoint: `python bot.py --paper-live-defensive-sleeve-preview-readiness`.
+
+Saved display: `python bot.py --show-paper-live-defensive-sleeve-preview-readiness`.
+
+Outputs: `data/paper_live_defensive_sleeve_preview_readiness.csv`, `data/paper_live_defensive_sleeve_preview_readiness_summary.csv`, `data/paper_live_defensive_sleeve_preview_readiness_blockers.csv`, and `data/paper_live_defensive_sleeve_preview_readiness_evidence.csv`.
+
+Current expected preview-readiness status is `defensive_sleeve_preview_candidate_not_approved_manual_review_required`: the defensive sleeve remains research-only and not a preview candidate until a separate manual decision approves a label change. The paper-live checklist status now carries this blocked defensive state alongside the QQQ100 aligned/no-action state.
+
 Implemented QQQ-led multi-sleeve roadmap checkpoint: `python bot.py --paper-live-multi-sleeve-roadmap`.
 
 Saved display: `python bot.py --show-paper-live-multi-sleeve-roadmap`.
