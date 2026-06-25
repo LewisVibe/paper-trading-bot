@@ -18,6 +18,7 @@ This project is a Python paper trading bot. Future Codex prompts should keep saf
 - The paper-live readiness report is a saved-output checklist only. It may summarize readiness blockers for future manual QQQ100 paper-action discussion, but `execution_approved`, `paper_execution_approved`, `scheduling_approved`, and `live_trading_approved` must remain false.
 - The paper-live state summary is a saved-output daily checkpoint only. It may summarize saved QQQ100 desired state, saved position/alignment context, saved order result, promotion/readiness status, and blockers, but it must keep `execution_approved`, `paper_execution_approved`, `scheduling_approved`, `live_trading_approved`, and `followup_order_approved` false.
 - The F7 accounting proof is report-only. It may statically confirm weighted daily returns and no independent starting cash in multi-sleeve portfolio backtests. The current proof is accepted as an accounting checkpoint, but portfolio backtests remain not promotion evidence without a separate promotion review.
+- The next ladder candidate scope checkpoint is report-only. Defensive sleeve may be selected as the next manual review scope, while allocator/high-growth/crypto remain blocked from promotion unless separate saved-output reviews are completed.
 
 ## Task Risk Levels
 

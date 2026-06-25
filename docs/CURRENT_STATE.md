@@ -36,6 +36,15 @@ For the ordered paper-live implementation path, see `docs/PAPER_LIVE_CHECKLIST.m
 - Portfolio backtests remain not promotion evidence without a separate promotion review.
 - Execution, paper execution, scheduling, live trading, repeat execution, and promotion approvals remain false.
 
+## Paper-Live Next Ladder Candidate Scope
+
+- `python bot.py --paper-live-next-ladder-candidate-scope` is a report-only checkpoint for the next manual ladder review scope.
+- Current expected status is `next_ladder_candidate_scope_report_only`.
+- Defensive sleeve is the next conservative report-only review scope.
+- Multi-sleeve allocator is deferred until after defensive scope review.
+- High-growth remains research-only and is not the next ladder scope.
+- No promotion, execution, scheduling, order instructions, or portfolio backtest promotion evidence is approved.
+
 ## Stock/ETF Research State
 
 - Best benchmark: `buy_and_hold_baseline`.

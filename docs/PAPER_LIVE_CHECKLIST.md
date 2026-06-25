@@ -256,6 +256,14 @@ Outputs: `data/paper_live_f7_accounting_proof.csv`, `data/paper_live_f7_accounti
 
 Current expected F7 status is `f7_accounting_static_proof_ready_for_manual_review`: the saved-output multi-sleeve portfolio backtest uses weighted daily returns and no independent starting cash is detected in the source. This checkpoint has been accepted as the F7 accounting proof, but portfolio backtests are still not promotion evidence without separate promotion review; execution, paper execution, scheduling, live trading, repeat execution, and promotion approval remain false.
 
+Implemented next ladder candidate scope checkpoint: `python bot.py --paper-live-next-ladder-candidate-scope`.
+
+Saved display: `python bot.py --show-paper-live-next-ladder-candidate-scope`.
+
+Outputs: `data/paper_live_next_ladder_candidate_scope.csv`, `data/paper_live_next_ladder_candidate_scope_summary.csv`, `data/paper_live_next_ladder_candidate_scope_blockers.csv`, and `data/paper_live_next_ladder_candidate_scope_evidence.csv`.
+
+Current expected scope status is `next_ladder_candidate_scope_report_only`: defensive sleeve is the next conservative report-only review scope, multi-sleeve allocator is deferred until after defensive review, and high-growth remains research-only. This does not approve promotion, execution, scheduling, order instructions, or portfolio backtest promotion evidence.
+
 Implemented QQQ-led multi-sleeve roadmap checkpoint: `python bot.py --paper-live-multi-sleeve-roadmap`.
 
 Saved display: `python bot.py --show-paper-live-multi-sleeve-roadmap`.

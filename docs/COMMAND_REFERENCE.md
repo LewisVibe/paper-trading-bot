@@ -2061,6 +2061,29 @@ data/paper_live_f7_accounting_proof_blockers.csv
 data/paper_live_f7_accounting_proof_evidence.csv
 ```
 
+Paper-live next ladder candidate scope mode is the saved-output/report-only checkpoint that chooses which branch should be reviewed next after the accepted F7 accounting checkpoint. It records defensive sleeve as the next conservative report-only scope, defers the multi-sleeve allocator until after defensive review, keeps high-growth research-only, and keeps crypto research-only/future-only. It does not promote strategies, create order instructions, call Alpaca, read positions, refresh market data, approve execution, approve scheduling, or treat portfolio backtests as promotion evidence.
+
+Command:
+
+```text
+python bot.py --paper-live-next-ladder-candidate-scope
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-live-next-ladder-candidate-scope
+```
+
+Outputs:
+
+```text
+data/paper_live_next_ladder_candidate_scope.csv
+data/paper_live_next_ladder_candidate_scope_summary.csv
+data/paper_live_next_ladder_candidate_scope_blockers.csv
+data/paper_live_next_ladder_candidate_scope_evidence.csv
+```
+
 Paper-live multi-sleeve roadmap mode is the saved-output/report-only checkpoint for the future QQQ-led multi-sleeve direction. It does not change the current QQQ100-only monitoring phase. The QQQ100 core sleeve remains the current monitor-only base, aligned long one share, and the only current ladder seed. The defensive sleeve is future review only and must pass the promotion ladder separately. The high-growth sleeve remains research-only until concentration, drawdown, and attribution review are complete. The crypto sleeve remains research-only/capped/future-only with no crypto execution approved. The multi-sleeve allocator is future-only with no portfolio execution wiring, no order instructions, and no scheduling. No portfolio execution is implemented or approved.
 
 Command:

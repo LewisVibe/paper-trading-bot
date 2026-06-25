@@ -574,6 +574,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-next-ladder-candidate-scope"]:
+        from trading_bot.research.paper_live_next_ladder_candidate_scope import (
+            generate_paper_live_next_ladder_candidate_scope,
+        )
+
+        result = generate_paper_live_next_ladder_candidate_scope()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-next-ladder-candidate-scope"]:
+        from trading_bot.research.paper_live_next_ladder_candidate_scope import (
+            show_paper_live_next_ladder_candidate_scope,
+        )
+
+        code, lines = show_paper_live_next_ladder_candidate_scope()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-live-multi-sleeve-roadmap"]:
         from trading_bot.research.paper_live_multi_sleeve_roadmap import generate_paper_live_multi_sleeve_roadmap
 
@@ -1469,6 +1487,10 @@ from trading_bot.research.paper_live_promotion_ladder_status import (
 from trading_bot.research.paper_live_f7_accounting_proof import (
     generate_paper_live_f7_accounting_proof,
     show_paper_live_f7_accounting_proof,
+)
+from trading_bot.research.paper_live_next_ladder_candidate_scope import (
+    generate_paper_live_next_ladder_candidate_scope,
+    show_paper_live_next_ladder_candidate_scope,
 )
 from trading_bot.research.paper_live_multi_sleeve_roadmap import (
     generate_paper_live_multi_sleeve_roadmap,
@@ -6081,6 +6103,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved F7 accounting proof checkpoint without broker reads.",
     )
     parser.add_argument(
+        "--paper-live-next-ladder-candidate-scope",
+        action="store_true",
+        help="Create a saved-output next ladder candidate scope report without promotion or broker reads.",
+    )
+    parser.add_argument(
+        "--show-paper-live-next-ladder-candidate-scope",
+        action="store_true",
+        help="Display the saved next ladder candidate scope report without broker reads.",
+    )
+    parser.add_argument(
         "--paper-live-multi-sleeve-roadmap",
         action="store_true",
         help="Create a saved-output QQQ-led multi-sleeve paper-live roadmap without portfolio execution.",
@@ -7726,6 +7758,20 @@ def main() -> int:
         return 0
     if args.show_paper_live_f7_accounting_proof:
         status_code, lines = show_paper_live_f7_accounting_proof()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_next_ladder_candidate_scope:
+        try:
+            result = generate_paper_live_next_ladder_candidate_scope()
+        except Exception as exc:
+            print(f"Paper-live next ladder candidate scope failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_next_ladder_candidate_scope:
+        status_code, lines = show_paper_live_next_ladder_candidate_scope()
         for line in lines:
             print(line)
         return status_code

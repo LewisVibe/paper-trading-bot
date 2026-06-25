@@ -141,6 +141,8 @@ Paper-live promotion ladder status is report-only: `python bot.py --paper-live-p
 
 Paper-live F7 accounting proof is report-only: `python bot.py --paper-live-f7-accounting-proof` statically checks that the multi-sleeve portfolio backtest uses weighted daily returns and no independent starting cash. The current proof has been accepted for the accounting checkpoint, while portfolio backtests still require separate promotion review before they can be treated as promotion evidence.
 
+Paper-live next ladder candidate scope is report-only: `python bot.py --paper-live-next-ladder-candidate-scope` records defensive sleeve as the next conservative review scope, keeps the multi-sleeve allocator behind later review, and keeps high-growth research-only. It does not promote anything or approve orders.
+
 
 ## Architecture
 
