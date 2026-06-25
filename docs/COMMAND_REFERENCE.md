@@ -2153,6 +2153,29 @@ data/paper_live_defensive_sleeve_preview_readiness_blockers.csv
 data/paper_live_defensive_sleeve_preview_readiness_evidence.csv
 ```
 
+Paper-live defensive sleeve evidence-quality mode reads saved defensive manual-review, preview-readiness, candidate-comparison, robustness, drawdown, allocation-preview, risk-preview, and decision reports. It focuses the next review on split sensitivity, full-period drawdown, allocation decision blockers, and the QQQ100 role boundary. It is not preview design, does not refresh market data, and does not approve preview candidacy, promotion, execution, paper execution, order instructions, or scheduling.
+
+Command:
+
+```text
+python bot.py --paper-live-defensive-sleeve-evidence-quality
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-live-defensive-sleeve-evidence-quality
+```
+
+Outputs:
+
+```text
+data/paper_live_defensive_sleeve_evidence_quality.csv
+data/paper_live_defensive_sleeve_evidence_quality_summary.csv
+data/paper_live_defensive_sleeve_evidence_quality_blockers.csv
+data/paper_live_defensive_sleeve_evidence_quality_evidence.csv
+```
+
 Paper-live multi-sleeve roadmap mode is the saved-output/report-only checkpoint for the future QQQ-led multi-sleeve direction. It does not change the current QQQ100-only monitoring phase. The QQQ100 core sleeve remains the current monitor-only base, aligned long one share, and the only current ladder seed. The defensive sleeve is future review only and must pass the promotion ladder separately. The high-growth sleeve remains research-only until concentration, drawdown, and attribution review are complete. The crypto sleeve remains research-only/capped/future-only with no crypto execution approved. The multi-sleeve allocator is future-only with no portfolio execution wiring, no order instructions, and no scheduling. No portfolio execution is implemented or approved.
 
 Command:

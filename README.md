@@ -149,6 +149,8 @@ Paper-live defensive sleeve manual review is also saved-output/report-only: `pyt
 
 Paper-live defensive sleeve preview-readiness is the next blocked checkpoint: `python bot.py --paper-live-defensive-sleeve-preview-readiness` records `defensive_sleeve_preview_candidate_not_approved_manual_review_required`. This is intentionally not a preview implementation; the defensive sleeve remains research-only until a separate manual decision changes that label.
 
+Paper-live defensive sleeve evidence-quality review is saved-output-only: `python bot.py --paper-live-defensive-sleeve-evidence-quality` focuses the manual review on split sensitivity, full-period drawdown, allocation-decision blockers, and the QQQ100 role boundary. It does not approve defensive preview design, promotion, execution, orders, or scheduling.
+
 
 ## Architecture
 

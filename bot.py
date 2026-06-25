@@ -646,6 +646,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-defensive-sleeve-evidence-quality"]:
+        from trading_bot.research.paper_live_defensive_sleeve_evidence_quality import (
+            generate_paper_live_defensive_sleeve_evidence_quality,
+        )
+
+        result = generate_paper_live_defensive_sleeve_evidence_quality()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-defensive-sleeve-evidence-quality"]:
+        from trading_bot.research.paper_live_defensive_sleeve_evidence_quality import (
+            show_paper_live_defensive_sleeve_evidence_quality,
+        )
+
+        code, lines = show_paper_live_defensive_sleeve_evidence_quality()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-live-multi-sleeve-roadmap"]:
         from trading_bot.research.paper_live_multi_sleeve_roadmap import generate_paper_live_multi_sleeve_roadmap
 
@@ -1557,6 +1575,10 @@ from trading_bot.research.paper_live_defensive_sleeve_manual_review import (
 from trading_bot.research.paper_live_defensive_sleeve_preview_readiness import (
     generate_paper_live_defensive_sleeve_preview_readiness,
     show_paper_live_defensive_sleeve_preview_readiness,
+)
+from trading_bot.research.paper_live_defensive_sleeve_evidence_quality import (
+    generate_paper_live_defensive_sleeve_evidence_quality,
+    show_paper_live_defensive_sleeve_evidence_quality,
 )
 from trading_bot.research.paper_live_multi_sleeve_roadmap import (
     generate_paper_live_multi_sleeve_roadmap,
@@ -6209,6 +6231,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved defensive sleeve preview-readiness checkpoint without broker reads.",
     )
     parser.add_argument(
+        "--paper-live-defensive-sleeve-evidence-quality",
+        action="store_true",
+        help="Create a saved-output defensive sleeve evidence-quality review without promotion or broker reads.",
+    )
+    parser.add_argument(
+        "--show-paper-live-defensive-sleeve-evidence-quality",
+        action="store_true",
+        help="Display the saved defensive sleeve evidence-quality review without broker reads.",
+    )
+    parser.add_argument(
         "--paper-live-multi-sleeve-roadmap",
         action="store_true",
         help="Create a saved-output QQQ-led multi-sleeve paper-live roadmap without portfolio execution.",
@@ -7910,6 +7942,20 @@ def main() -> int:
         return 0
     if args.show_paper_live_defensive_sleeve_preview_readiness:
         status_code, lines = show_paper_live_defensive_sleeve_preview_readiness()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_defensive_sleeve_evidence_quality:
+        try:
+            result = generate_paper_live_defensive_sleeve_evidence_quality()
+        except Exception as exc:
+            print(f"Paper-live defensive sleeve evidence quality failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_defensive_sleeve_evidence_quality:
+        status_code, lines = show_paper_live_defensive_sleeve_evidence_quality()
         for line in lines:
             print(line)
         return status_code

@@ -53,6 +53,7 @@ For the ordered paper-live implementation path, see `docs/PAPER_LIVE_CHECKLIST.m
 - If evidence files are missing, expected status is `defensive_sleeve_ladder_scope_missing_saved_evidence_manual_review_required`.
 - `python bot.py --paper-live-defensive-sleeve-manual-review` now converts the complete saved defensive evidence stack into a manual-review checkpoint with `defensive_sleeve_manual_review_required`. QQQ100 remains the clean paper-live lead; the defensive sleeve is not promoted.
 - `python bot.py --paper-live-defensive-sleeve-preview-readiness` records `defensive_sleeve_preview_candidate_not_approved_manual_review_required`, so defensive preview, promotion, execution, paper execution, repeat orders, live trading, and scheduling remain blocked until a separate manual decision.
+- `python bot.py --paper-live-defensive-sleeve-evidence-quality` records `defensive_sleeve_evidence_quality_manual_review_required`, focusing the next review on split sensitivity, full-period drawdown, allocation decision blockers, and the QQQ100 role boundary. It is not a preview design and does not approve promotion or execution.
 - `python bot.py --paper-live-checklist-status` now carries the defensive manual-review and preview-readiness statuses alongside the aligned QQQ100 no-action state.
 - The defensive sleeve is not promoted, and no execution, scheduling, order instructions, or candidate label changes are approved.
 

@@ -99,6 +99,8 @@ REQUIRED_COMMANDS = [
     "--show-paper-live-defensive-sleeve-manual-review",
     "--paper-live-defensive-sleeve-preview-readiness",
     "--show-paper-live-defensive-sleeve-preview-readiness",
+    "--paper-live-defensive-sleeve-evidence-quality",
+    "--show-paper-live-defensive-sleeve-evidence-quality",
     "--paper-live-multi-sleeve-roadmap",
     "--show-paper-live-multi-sleeve-roadmap",
     "--paper-live-next-phase-backlog",

@@ -288,6 +288,14 @@ Outputs: `data/paper_live_defensive_sleeve_preview_readiness.csv`, `data/paper_l
 
 Current expected preview-readiness status is `defensive_sleeve_preview_candidate_not_approved_manual_review_required`: the defensive sleeve remains research-only and not a preview candidate until a separate manual decision approves a label change. The paper-live checklist status now carries this blocked defensive state alongside the QQQ100 aligned/no-action state.
 
+Implemented defensive sleeve evidence-quality review checkpoint: `python bot.py --paper-live-defensive-sleeve-evidence-quality`.
+
+Saved display: `python bot.py --show-paper-live-defensive-sleeve-evidence-quality`.
+
+Outputs: `data/paper_live_defensive_sleeve_evidence_quality.csv`, `data/paper_live_defensive_sleeve_evidence_quality_summary.csv`, `data/paper_live_defensive_sleeve_evidence_quality_blockers.csv`, and `data/paper_live_defensive_sleeve_evidence_quality_evidence.csv`.
+
+Current expected evidence-quality status is `defensive_sleeve_evidence_quality_manual_review_required`: the saved evidence can support continued defensive research, but split sensitivity, full-period drawdown, allocation decision blockers, and the QQQ100 role boundary must be manually reviewed before any defensive preview design. It does not approve preview candidacy, promotion, execution, paper execution, repeat orders, live trading, or scheduling.
+
 Implemented QQQ-led multi-sleeve roadmap checkpoint: `python bot.py --paper-live-multi-sleeve-roadmap`.
 
 Saved display: `python bot.py --show-paper-live-multi-sleeve-roadmap`.
