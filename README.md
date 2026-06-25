@@ -139,6 +139,8 @@ The companion runbook/design checkpoint is `python bot.py --qqq100-manual-flatte
 
 Paper-live promotion ladder status is report-only: `python bot.py --paper-live-promotion-ladder-status` reads saved ladder/QQQ100 monitoring outputs and keeps QQQ100 as the only current seed while high-growth and crypto remain research-only, defensive sleeves remain future-review-only, and portfolio backtests remain not promotion evidence until accounting consistency is proven.
 
+Paper-live F7 accounting proof is report-only: `python bot.py --paper-live-f7-accounting-proof` statically checks that the multi-sleeve portfolio backtest uses weighted daily returns and no independent starting cash. It still treats portfolio backtests as not promotion evidence until manual review accepts the accounting proof.
+
 
 ## Architecture
 

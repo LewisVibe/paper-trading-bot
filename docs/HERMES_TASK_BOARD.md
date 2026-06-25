@@ -983,6 +983,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, generic promotion implementation, QQQ100 paper execution, paper-order tests, normal bot execution, scheduler changes.
 - **Stop condition:** Stop if the task would promote high-growth/crypto/defensive/SMA/slow-SMA, treat portfolio backtests as promotion evidence before accounting proof, create order instructions, or touch execution/config/secrets.
 
+### Task: Paper-live F7 accounting proof
+- **Purpose:** Use `python bot.py --paper-live-f7-accounting-proof` to statically check the F7 portfolio accounting boundary.
+- **Risk level:** Low/report-only when limited to source inspection and saved CSV outputs.
+- **Allowed commands:** `python bot.py --paper-live-f7-accounting-proof`, `python bot.py --show-paper-live-f7-accounting-proof`, and `python scripts\verify_paper_live_f7_accounting_proof.py`.
+- **Expected status:** `f7_accounting_static_proof_ready_for_manual_review`; weighted daily returns are confirmed and no independent starting cash is detected, but portfolio backtests remain not promotion evidence pending manual review.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, scheduler changes, generic ladder implementation.
+- **Stop condition:** Stop if the task would use portfolio backtests as promotion evidence without manual review, create order instructions, or approve execution/scheduling.
+
 ### Task: Paper-live F6/F7 audit
 - **Purpose:** Use `python bot.py --paper-live-f6-f7-audit` to audit remaining external-review items before any generic promotion ladder or multi-sleeve paper-live work.
 - **Risk level:** Low/report-only when limited to static/source review and saved output files.

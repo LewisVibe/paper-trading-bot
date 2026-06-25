@@ -248,6 +248,14 @@ Outputs: `data/paper_live_promotion_ladder_status.csv`, `data/paper_live_promoti
 
 Current expected status is `paper_live_promotion_ladder_status_report_only`: QQQ100 is the only current seed with `monitor_only_aligned_long_one`; high-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests are not promotion evidence until accounting consistency is proven.
 
+Implemented F7 accounting proof checkpoint: `python bot.py --paper-live-f7-accounting-proof`.
+
+Saved display: `python bot.py --show-paper-live-f7-accounting-proof`.
+
+Outputs: `data/paper_live_f7_accounting_proof.csv`, `data/paper_live_f7_accounting_proof_summary.csv`, `data/paper_live_f7_accounting_proof_blockers.csv`, and `data/paper_live_f7_accounting_proof_evidence.csv`.
+
+Current expected F7 status is `f7_accounting_static_proof_ready_for_manual_review`: the saved-output multi-sleeve portfolio backtest uses weighted daily returns and no independent starting cash is detected in the source. Portfolio backtests are still not promotion evidence until manual review accepts the accounting proof; execution, paper execution, scheduling, live trading, repeat execution, and promotion approval remain false.
+
 Implemented QQQ-led multi-sleeve roadmap checkpoint: `python bot.py --paper-live-multi-sleeve-roadmap`.
 
 Saved display: `python bot.py --show-paper-live-multi-sleeve-roadmap`.

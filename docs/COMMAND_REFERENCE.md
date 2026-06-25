@@ -2038,6 +2038,29 @@ data/paper_live_promotion_ladder_status_blockers.csv
 data/paper_live_promotion_ladder_status_evidence.csv
 ```
 
+Paper-live F7 accounting proof mode is the saved-output/report-only checkpoint for the F7 portfolio accounting boundary. It statically inspects the multi-sleeve portfolio backtest source and checks that portfolio metrics use weighted daily returns and no independent starting cash is detected. It does not rerun backtests, refresh market data, call Alpaca, read positions, create order instructions, approve promotion, approve execution, or approve scheduling. Portfolio backtests remain not promotion evidence until manual review accepts the accounting proof.
+
+Command:
+
+```text
+python bot.py --paper-live-f7-accounting-proof
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-live-f7-accounting-proof
+```
+
+Outputs:
+
+```text
+data/paper_live_f7_accounting_proof.csv
+data/paper_live_f7_accounting_proof_summary.csv
+data/paper_live_f7_accounting_proof_blockers.csv
+data/paper_live_f7_accounting_proof_evidence.csv
+```
+
 Paper-live multi-sleeve roadmap mode is the saved-output/report-only checkpoint for the future QQQ-led multi-sleeve direction. It does not change the current QQQ100-only monitoring phase. The QQQ100 core sleeve remains the current monitor-only base, aligned long one share, and the only current ladder seed. The defensive sleeve is future review only and must pass the promotion ladder separately. The high-growth sleeve remains research-only until concentration, drawdown, and attribution review are complete. The crypto sleeve remains research-only/capped/future-only with no crypto execution approved. The multi-sleeve allocator is future-only with no portfolio execution wiring, no order instructions, and no scheduling. No portfolio execution is implemented or approved.
 
 Command:

@@ -27,6 +27,14 @@ For the ordered paper-live implementation path, see `docs/PAPER_LIVE_CHECKLIST.m
 - VPS daily monitoring summary reported `final_status=healthy_monitoring_state`, `action_required=no_action_required`, all monitored saved outputs fresh, `execution_approved=False`, and `scheduling_approved=False`.
 - This checkpoint confirms monitoring/report health only. It does not approve execution, crypto execution, scheduling, paper orders, live trading, or strategy-to-execution wiring.
 
+## Paper-Live F7 Accounting Checkpoint
+
+- `python bot.py --paper-live-f7-accounting-proof` is a report-only static checkpoint for the F7 accounting boundary.
+- The checkpoint verifies weighted daily returns and no independent starting cash in the multi-sleeve portfolio backtest source.
+- Expected status is `f7_accounting_static_proof_ready_for_manual_review` when those static checks pass.
+- Portfolio backtests remain not promotion evidence until manual review accepts the accounting proof.
+- Execution, paper execution, scheduling, live trading, repeat execution, and promotion approvals remain false.
+
 ## Stock/ETF Research State
 
 - Best benchmark: `buy_and_hold_baseline`.
