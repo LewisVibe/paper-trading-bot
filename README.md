@@ -169,6 +169,8 @@ Volatility-targeted growth nearby-variants review is saved-output-only: `python 
 
 Volatility-targeted growth preview-readiness decision is saved-output-only: `python bot.py --vol-targeted-growth-preview-readiness-decision` and `python bot.py --show-vol-targeted-growth-preview-readiness-decision` select `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` for a future preview-design review, keep `20/20` and `25/20` as challengers, and record `preview_design_discussion_ready_manual_review_required`. It still does not implement preview mode, create preview signals or order instructions, approve execution, or approve scheduling.
 
+Volatility-targeted growth preview design is the next saved-output checkpoint: `python bot.py --vol-targeted-growth-preview-design` and `python bot.py --show-vol-targeted-growth-preview-design` document a future preview-only shape for `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x`: higher-growth multi-sleeve base allocation, 15% volatility target, 20-day volatility window, 1x exposure cap, no leverage, and saved candidate/weight/status/blocker outputs only. It creates no preview signal, no action preview, no order instructions, and no execution approval.
+
 
 ## Architecture
 

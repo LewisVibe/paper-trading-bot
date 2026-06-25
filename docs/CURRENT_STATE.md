@@ -752,6 +752,16 @@ The volatility-targeted growth preview-readiness decision comes from `python bot
 - It keeps `higher_growth_multi_sleeve_target_vol_20_win_20_cap_1x` as the nearest higher-volatility challenger and `higher_growth_multi_sleeve_target_vol_25_win_20_cap_1x` as the aggressive higher-CAGR/higher-drawdown challenger.
 - Preview-design discussion status is `preview_design_discussion_ready_manual_review_required`, but preview implementation remains `preview_implementation_not_added`; paper execution, order instructions, high-growth/crypto promotion, and scheduling remain false.
 
+The volatility-targeted growth preview design checkpoint comes from `python bot.py --vol-targeted-growth-preview-design`, with saved display through `python bot.py --show-vol-targeted-growth-preview-design`:
+
+- It reads only saved volatility-targeted preview-readiness, nearby-variant, and robustness summaries.
+- It writes `data/vol_targeted_growth_preview_design.csv`, `data/vol_targeted_growth_preview_design_summary.csv`, `data/vol_targeted_growth_preview_design_evidence.csv`, and `data/vol_targeted_growth_preview_design_blockers.csv`.
+- Current expected status is `vol_targeted_growth_preview_design_ready_for_future_preview_implementation`.
+- The documented future target variant is `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x`: higher-growth multi-sleeve base allocation, 15% volatility target, 20-day volatility window, 1x exposure cap, and no leverage.
+- Future preview output scope is saved candidate identity, target weights, volatility target/window, sleeve statuses, blockers, and safety flags only; no order side, quantity, type, account, or executable order fields are allowed.
+- Largest blocker is `preview_signal_not_implemented_and_no_order_instructions_allowed`; recommended next step is `implement_saved_output_preview_signal_for_vol_targeted_growth_15_20_in_separate_prompt`.
+- Preview signal creation, action preview creation, order instructions, paper execution approval, execution approval, scheduling approval, high-growth promotion, and crypto execution remain false.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

@@ -1150,3 +1150,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_15_20_selected_for_preview_design_review`; preview-design discussion may be ready for manual review, but preview implementation remains `preview_implementation_not_added`.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, preview signals, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
 - **Stop condition:** Stop if the task would implement preview mode, create action previews/order instructions, approve execution/scheduling, or treat preview-readiness as paper-live approval.
+
+### Task: Volatility-targeted growth preview design
+- **Purpose:** Use `python bot.py --vol-targeted-growth-preview-design` to document the future preview-only shape for `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x`.
+- **Risk level:** Low/report-only when limited to saved preview-readiness outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-preview-design`, `python bot.py --show-vol-targeted-growth-preview-design`, and `python scripts\verify_vol_targeted_growth_preview_design.py`.
+- **Expected status:** `vol_targeted_growth_preview_design_ready_for_future_preview_implementation`; target variant is higher-growth multi-sleeve, 15% vol target, 20-day vol window, 1x cap, and no leverage.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, preview signals, action previews, order side/quantity/type/account fields, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
+- **Stop condition:** Stop if the task would create an actual preview signal, include executable order fields, approve execution/scheduling, or treat the design as paper-live approval.
