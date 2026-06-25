@@ -157,6 +157,8 @@ Higher-growth preview readiness is also saved-output-only: `python bot.py --high
 
 Higher-growth candidate selection is the follow-up saved-output decision: `python bot.py --higher-growth-candidate-selection-decision` and `python bot.py --show-higher-growth-candidate-selection-decision` select `higher_growth_70_20_5_5` for future preview-design review, keep `balanced_multi_sleeve_research_portfolio` as the calmer runner-up, and defer `qqq100_plus_high_growth_plus_crypto_research` behind crypto policy review. This still does not implement preview mode or approve execution.
 
+Higher-growth preview design is the next saved-output checkpoint: `python bot.py --higher-growth-preview-design` and `python bot.py --show-higher-growth-preview-design` document the future preview-only shape for `higher_growth_70_20_5_5`: 70% QQQ100 core, 20% high-growth stock research sleeve, 5% crypto research sleeve, and 5% defensive cash/bond sleeve. It creates no preview signal, no action preview, no order instructions, and no execution approval.
+
 
 ## Architecture
 

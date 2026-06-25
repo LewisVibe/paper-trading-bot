@@ -1102,3 +1102,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `higher_growth_candidate_selected_for_preview_design_review`; selected candidate is `higher_growth_70_20_5_5`, runner-up is `balanced_multi_sleeve_research_portfolio`, and crypto blend remains deferred.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
 - **Stop condition:** Stop if the task would implement preview mode, create action previews/order instructions, approve execution/scheduling, promote high-growth/crypto, or treat the decision as paper-live approval.
+
+### Task: Higher-growth preview design
+- **Purpose:** Use `python bot.py --higher-growth-preview-design` to document the future preview-only shape for `higher_growth_70_20_5_5`.
+- **Risk level:** Low/report-only when limited to saved CSV outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --higher-growth-preview-design`, `python bot.py --show-higher-growth-preview-design`, and `python scripts\verify_higher_growth_preview_design.py`.
+- **Expected status:** `higher_growth_preview_design_ready_for_future_preview_implementation`; target weights are 70% QQQ100 core, 20% high-growth stock research sleeve, 5% crypto research sleeve, and 5% defensive cash/bond sleeve.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
+- **Stop condition:** Stop if the task would create an actual preview signal, include order side/quantity/type/account fields, approve execution/scheduling, or treat the design as paper-live approval.

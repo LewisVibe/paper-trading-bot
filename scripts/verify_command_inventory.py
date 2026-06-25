@@ -191,6 +191,8 @@ REQUIRED_COMMANDS = [
     "--show-higher-growth-preview-readiness-pack",
     "--higher-growth-candidate-selection-decision",
     "--show-higher-growth-candidate-selection-decision",
+    "--higher-growth-preview-design",
+    "--show-higher-growth-preview-design",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",

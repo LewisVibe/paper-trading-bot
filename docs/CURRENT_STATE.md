@@ -697,6 +697,16 @@ The higher-growth candidate selection decision comes from `python bot.py --highe
 - The recommended next step is `design_saved_output_preview_only_mode_for_higher_growth_70_20_5_5`.
 - Preview candidate approval, preview implementation approval, paper execution approval, execution approval, scheduling approval, high-growth promotion, and crypto execution remain false.
 
+The higher-growth preview design checkpoint comes from `python bot.py --higher-growth-preview-design`, with saved display through `python bot.py --show-higher-growth-preview-design`:
+
+- It reads saved higher-growth candidate-selection, preview-readiness, higher-growth review, and multi-sleeve portfolio-backtest outputs only.
+- It writes `data/higher_growth_preview_design.csv`, `data/higher_growth_preview_design_summary.csv`, `data/higher_growth_preview_design_evidence.csv`, and `data/higher_growth_preview_design_blockers.csv`.
+- Current saved status is `higher_growth_preview_design_ready_for_future_preview_implementation`.
+- The documented future target sleeve weights are 70% `qqq100_core_trend_sleeve`, 20% `high_growth_stock_research_sleeve`, 5% `crypto_research_sleeve`, and 5% `defensive_cash_or_bond_sleeve`.
+- Future preview output scope is saved target weights, sleeve statuses, blockers, and safety flags only; no order side, quantity, type, account, or executable order fields are allowed.
+- Largest blocker is `preview_signal_not_implemented_and_no_order_instructions_allowed`; recommended next step is `implement_saved_output_preview_signal_for_higher_growth_70_20_5_5_in_separate_prompt`.
+- Preview signal creation, action preview creation, order instructions, paper execution approval, execution approval, scheduling approval, high-growth promotion, and crypto execution remain false.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

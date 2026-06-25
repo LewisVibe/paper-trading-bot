@@ -1373,6 +1373,20 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--higher-growth-preview-design"]:
+        from trading_bot.research.higher_growth_preview_design import generate_higher_growth_preview_design
+
+        result = generate_higher_growth_preview_design()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-higher-growth-preview-design"]:
+        from trading_bot.research.higher_growth_preview_design import show_higher_growth_preview_design
+
+        code, lines = show_higher_growth_preview_design()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -1805,6 +1819,10 @@ from trading_bot.research.higher_growth_preview_readiness_pack import (
 from trading_bot.research.higher_growth_candidate_selection_decision import (
     generate_higher_growth_candidate_selection_decision,
     show_higher_growth_candidate_selection_decision,
+)
+from trading_bot.research.higher_growth_preview_design import (
+    generate_higher_growth_preview_design,
+    show_higher_growth_preview_design,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -6757,6 +6775,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved higher-growth candidate selection decision without broker reads or execution.",
     )
     parser.add_argument(
+        "--higher-growth-preview-design",
+        action="store_true",
+        help="Create a saved-output-only preview design for higher_growth_70_20_5_5 without creating signals, orders, or execution.",
+    )
+    parser.add_argument(
+        "--show-higher-growth-preview-design",
+        action="store_true",
+        help="Display the saved higher-growth preview design without broker reads or execution.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -8628,6 +8656,20 @@ def main() -> int:
         return 0
     if args.show_higher_growth_candidate_selection_decision:
         status_code, lines = show_higher_growth_candidate_selection_decision()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.higher_growth_preview_design:
+        try:
+            result = generate_higher_growth_preview_design()
+        except Exception as exc:
+            print(f"Higher-growth preview design failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_higher_growth_preview_design:
+        status_code, lines = show_higher_growth_preview_design()
         for line in lines:
             print(line)
         return status_code
