@@ -1495,6 +1495,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-preview-signal"]:
+        from trading_bot.research.vol_targeted_growth_preview_signal import (
+            generate_vol_targeted_growth_preview_signal,
+        )
+
+        result = generate_vol_targeted_growth_preview_signal()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-preview-signal"]:
+        from trading_bot.research.vol_targeted_growth_preview_signal import (
+            show_vol_targeted_growth_preview_signal,
+        )
+
+        code, lines = show_vol_targeted_growth_preview_signal()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -1955,6 +1973,10 @@ from trading_bot.research.vol_targeted_growth_preview_readiness_decision import 
 from trading_bot.research.vol_targeted_growth_preview_design import (
     generate_vol_targeted_growth_preview_design,
     show_vol_targeted_growth_preview_design,
+)
+from trading_bot.research.vol_targeted_growth_preview_signal import (
+    generate_vol_targeted_growth_preview_signal,
+    show_vol_targeted_growth_preview_signal,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -6977,6 +6999,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved volatility-targeted growth preview design without market refresh, broker reads, or execution.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-preview-signal",
+        action="store_true",
+        help="Create a saved-output-only preview signal for the selected volatility-targeted growth candidate without action preview, orders, or execution.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-preview-signal",
+        action="store_true",
+        help="Display the saved volatility-targeted growth preview signal without market refresh, broker reads, or execution.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -8946,6 +8978,20 @@ def main() -> int:
         return 0
     if args.show_vol_targeted_growth_preview_design:
         status_code, lines = show_vol_targeted_growth_preview_design()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_preview_signal:
+        try:
+            result = generate_vol_targeted_growth_preview_signal()
+        except Exception as exc:
+            print(f"Volatility-targeted growth preview signal failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_preview_signal:
+        status_code, lines = show_vol_targeted_growth_preview_signal()
         for line in lines:
             print(line)
         return status_code

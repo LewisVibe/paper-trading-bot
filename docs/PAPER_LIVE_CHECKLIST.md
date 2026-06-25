@@ -50,6 +50,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - `python bot.py --vol-targeted-growth-nearby-variants-review` may compare 15%/20-day against nearby multi-sleeve vol-targeted settings, but it still does not choose a paper-live strategy, create preview signals, approve execution, or approve scheduling.
 - `python bot.py --vol-targeted-growth-preview-readiness-decision` may select 15%/20-day for a future preview-design review, but it still does not implement preview mode, create action previews, create order instructions, approve execution, or approve scheduling.
 - `python bot.py --vol-targeted-growth-preview-design` may document the future preview-only output shape for 15%/20-day, but it still does not create a preview signal, action preview, order instructions, paper execution, or scheduling approval.
+- `python bot.py --vol-targeted-growth-preview-signal` may write saved candidate identity, target sleeve weights, volatility settings, blockers, and safety flags for 15%/20-day, but it still does not create an action preview, order instructions, paper execution, or scheduling approval.
 - Keep crypto research-only.
 - Keep SMA/slow-SMA out of paper-live promotion.
 

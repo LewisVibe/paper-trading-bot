@@ -762,6 +762,14 @@ The volatility-targeted growth preview design checkpoint comes from `python bot.
 - Largest blocker is `preview_signal_not_implemented_and_no_order_instructions_allowed`; recommended next step is `implement_saved_output_preview_signal_for_vol_targeted_growth_15_20_in_separate_prompt`.
 - Preview signal creation, action preview creation, order instructions, paper execution approval, execution approval, scheduling approval, high-growth promotion, and crypto execution remain false.
 
+The volatility-targeted growth preview signal comes from `python bot.py --vol-targeted-growth-preview-signal`, with saved display through `python bot.py --show-vol-targeted-growth-preview-signal`:
+
+- It reads only saved volatility-targeted preview-design, preview-readiness, and nearby-variant outputs.
+- It writes `data/vol_targeted_growth_preview_signal.csv`, `data/vol_targeted_growth_preview_signal_summary.csv`, `data/vol_targeted_growth_preview_signal_evidence.csv`, and `data/vol_targeted_growth_preview_signal_blockers.csv`.
+- Current expected status is `vol_targeted_growth_preview_signal_created_saved_output_only`.
+- It records `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x`, 15% volatility target, 20-day volatility window, 1x exposure cap, no leverage, and saved target sleeve weights only.
+- It does not create an action preview, executable order instructions, order side/quantity/type/account fields, broker calls, paper execution approval, execution approval, or scheduling approval.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

@@ -205,6 +205,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-preview-readiness-decision",
     "--vol-targeted-growth-preview-design",
     "--show-vol-targeted-growth-preview-design",
+    "--vol-targeted-growth-preview-signal",
+    "--show-vol-targeted-growth-preview-signal",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",
