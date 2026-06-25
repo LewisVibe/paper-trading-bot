@@ -999,6 +999,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, scheduler changes, promotion implementation.
 - **Stop condition:** Stop if the task would promote defensive/high-growth/crypto/allocator, create order instructions, or approve execution/scheduling.
 
+### Task: Paper-live defensive sleeve ladder-scope review
+- **Purpose:** Use `python bot.py --paper-live-defensive-sleeve-ladder-scope-review` to check saved defensive evidence before any candidate discussion.
+- **Risk level:** Low/report-only when limited to saved-output file presence.
+- **Allowed commands:** `python bot.py --paper-live-defensive-sleeve-ladder-scope-review`, `python bot.py --show-paper-live-defensive-sleeve-ladder-scope-review`, and `python scripts\verify_paper_live_defensive_sleeve_ladder_scope_review.py`.
+- **Expected status:** `defensive_sleeve_ladder_scope_review_ready_for_manual_review` if saved evidence is present, or `defensive_sleeve_ladder_scope_missing_saved_evidence_manual_review_required` if evidence is missing.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, scheduler changes, defensive promotion implementation.
+- **Stop condition:** Stop if the task would promote the defensive sleeve, create order instructions, rerun research, or approve execution/scheduling.
+
 ### Task: Paper-live F6/F7 audit
 - **Purpose:** Use `python bot.py --paper-live-f6-f7-audit` to audit remaining external-review items before any generic promotion ladder or multi-sleeve paper-live work.
 - **Risk level:** Low/report-only when limited to static/source review and saved output files.

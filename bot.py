@@ -592,6 +592,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-defensive-sleeve-ladder-scope-review"]:
+        from trading_bot.research.paper_live_defensive_sleeve_ladder_scope_review import (
+            generate_paper_live_defensive_sleeve_ladder_scope_review,
+        )
+
+        result = generate_paper_live_defensive_sleeve_ladder_scope_review()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-defensive-sleeve-ladder-scope-review"]:
+        from trading_bot.research.paper_live_defensive_sleeve_ladder_scope_review import (
+            show_paper_live_defensive_sleeve_ladder_scope_review,
+        )
+
+        code, lines = show_paper_live_defensive_sleeve_ladder_scope_review()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-live-multi-sleeve-roadmap"]:
         from trading_bot.research.paper_live_multi_sleeve_roadmap import generate_paper_live_multi_sleeve_roadmap
 
@@ -1491,6 +1509,10 @@ from trading_bot.research.paper_live_f7_accounting_proof import (
 from trading_bot.research.paper_live_next_ladder_candidate_scope import (
     generate_paper_live_next_ladder_candidate_scope,
     show_paper_live_next_ladder_candidate_scope,
+)
+from trading_bot.research.paper_live_defensive_sleeve_ladder_scope_review import (
+    generate_paper_live_defensive_sleeve_ladder_scope_review,
+    show_paper_live_defensive_sleeve_ladder_scope_review,
 )
 from trading_bot.research.paper_live_multi_sleeve_roadmap import (
     generate_paper_live_multi_sleeve_roadmap,
@@ -6113,6 +6135,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved next ladder candidate scope report without broker reads.",
     )
     parser.add_argument(
+        "--paper-live-defensive-sleeve-ladder-scope-review",
+        action="store_true",
+        help="Create a saved-output defensive sleeve ladder-scope review without promotion or broker reads.",
+    )
+    parser.add_argument(
+        "--show-paper-live-defensive-sleeve-ladder-scope-review",
+        action="store_true",
+        help="Display the saved defensive sleeve ladder-scope review without broker reads.",
+    )
+    parser.add_argument(
         "--paper-live-multi-sleeve-roadmap",
         action="store_true",
         help="Create a saved-output QQQ-led multi-sleeve paper-live roadmap without portfolio execution.",
@@ -7772,6 +7804,20 @@ def main() -> int:
         return 0
     if args.show_paper_live_next_ladder_candidate_scope:
         status_code, lines = show_paper_live_next_ladder_candidate_scope()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_defensive_sleeve_ladder_scope_review:
+        try:
+            result = generate_paper_live_defensive_sleeve_ladder_scope_review()
+        except Exception as exc:
+            print(f"Paper-live defensive sleeve ladder-scope review failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_defensive_sleeve_ladder_scope_review:
+        status_code, lines = show_paper_live_defensive_sleeve_ladder_scope_review()
         for line in lines:
             print(line)
         return status_code

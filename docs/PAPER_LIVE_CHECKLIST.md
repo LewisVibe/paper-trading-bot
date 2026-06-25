@@ -264,6 +264,14 @@ Outputs: `data/paper_live_next_ladder_candidate_scope.csv`, `data/paper_live_nex
 
 Current expected scope status is `next_ladder_candidate_scope_report_only`: defensive sleeve is the next conservative report-only review scope, multi-sleeve allocator is deferred until after defensive review, and high-growth remains research-only. This does not approve promotion, execution, scheduling, order instructions, or portfolio backtest promotion evidence.
 
+Implemented defensive sleeve ladder-scope review: `python bot.py --paper-live-defensive-sleeve-ladder-scope-review`.
+
+Saved display: `python bot.py --show-paper-live-defensive-sleeve-ladder-scope-review`.
+
+Outputs: `data/paper_live_defensive_sleeve_ladder_scope_review.csv`, `data/paper_live_defensive_sleeve_ladder_scope_review_summary.csv`, `data/paper_live_defensive_sleeve_ladder_scope_review_blockers.csv`, and `data/paper_live_defensive_sleeve_ladder_scope_review_evidence.csv`.
+
+Current expected defensive scope status is either `defensive_sleeve_ladder_scope_review_ready_for_manual_review` when the saved defensive evidence stack is present, or `defensive_sleeve_ladder_scope_missing_saved_evidence_manual_review_required` when files are missing. In both cases, the defensive sleeve is not promoted, no candidate label changes are approved, and no orders or scheduling are approved.
+
 Implemented QQQ-led multi-sleeve roadmap checkpoint: `python bot.py --paper-live-multi-sleeve-roadmap`.
 
 Saved display: `python bot.py --show-paper-live-multi-sleeve-roadmap`.

@@ -143,6 +143,8 @@ Paper-live F7 accounting proof is report-only: `python bot.py --paper-live-f7-ac
 
 Paper-live next ladder candidate scope is report-only: `python bot.py --paper-live-next-ladder-candidate-scope` records defensive sleeve as the next conservative review scope, keeps the multi-sleeve allocator behind later review, and keeps high-growth research-only. It does not promote anything or approve orders.
 
+Paper-live defensive sleeve ladder-scope review is report-only: `python bot.py --paper-live-defensive-sleeve-ladder-scope-review` checks saved defensive evidence file presence and reports whether a future defensive candidate discussion is even ready for manual review. The defensive sleeve is not promoted and no orders are approved.
+
 
 ## Architecture
 

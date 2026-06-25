@@ -2084,6 +2084,29 @@ data/paper_live_next_ladder_candidate_scope_blockers.csv
 data/paper_live_next_ladder_candidate_scope_evidence.csv
 ```
 
+Paper-live defensive sleeve ladder-scope review mode is the saved-output/report-only checkpoint for the defensive sleeve after it is selected as the next conservative review scope. It checks expected saved defensive evidence file presence only, including defensive strategy, comparison, research-state, allocation preview, risk preview, allocation decision, drawdown comparison, volatility-managed robustness, and refresh-summary outputs. It does not read broker state, rerun research, refresh market data, promote the defensive sleeve, create order instructions, approve execution, approve scheduling, or treat portfolio backtests as promotion evidence. There is no promotion from this review.
+
+Command:
+
+```text
+python bot.py --paper-live-defensive-sleeve-ladder-scope-review
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-live-defensive-sleeve-ladder-scope-review
+```
+
+Outputs:
+
+```text
+data/paper_live_defensive_sleeve_ladder_scope_review.csv
+data/paper_live_defensive_sleeve_ladder_scope_review_summary.csv
+data/paper_live_defensive_sleeve_ladder_scope_review_blockers.csv
+data/paper_live_defensive_sleeve_ladder_scope_review_evidence.csv
+```
+
 Paper-live multi-sleeve roadmap mode is the saved-output/report-only checkpoint for the future QQQ-led multi-sleeve direction. It does not change the current QQQ100-only monitoring phase. The QQQ100 core sleeve remains the current monitor-only base, aligned long one share, and the only current ladder seed. The defensive sleeve is future review only and must pass the promotion ladder separately. The high-growth sleeve remains research-only until concentration, drawdown, and attribution review are complete. The crypto sleeve remains research-only/capped/future-only with no crypto execution approved. The multi-sleeve allocator is future-only with no portfolio execution wiring, no order instructions, and no scheduling. No portfolio execution is implemented or approved.
 
 Command:

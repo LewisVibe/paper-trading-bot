@@ -45,6 +45,14 @@ For the ordered paper-live implementation path, see `docs/PAPER_LIVE_CHECKLIST.m
 - High-growth remains research-only and is not the next ladder scope.
 - No promotion, execution, scheduling, order instructions, or portfolio backtest promotion evidence is approved.
 
+## Paper-Live Defensive Sleeve Ladder-Scope Review
+
+- `python bot.py --paper-live-defensive-sleeve-ladder-scope-review` is a saved-output/report-only defensive sleeve review.
+- It checks saved defensive evidence file presence only.
+- Expected status is `defensive_sleeve_ladder_scope_review_ready_for_manual_review` when the saved defensive evidence stack is present.
+- If evidence files are missing, expected status is `defensive_sleeve_ladder_scope_missing_saved_evidence_manual_review_required`.
+- The defensive sleeve is not promoted, and no execution, scheduling, order instructions, or candidate label changes are approved.
+
 ## Stock/ETF Research State
 
 - Best benchmark: `buy_and_hold_baseline`.

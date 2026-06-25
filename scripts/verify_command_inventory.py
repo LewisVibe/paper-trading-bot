@@ -93,6 +93,8 @@ REQUIRED_COMMANDS = [
     "--show-paper-live-f7-accounting-proof",
     "--paper-live-next-ladder-candidate-scope",
     "--show-paper-live-next-ladder-candidate-scope",
+    "--paper-live-defensive-sleeve-ladder-scope-review",
+    "--show-paper-live-defensive-sleeve-ladder-scope-review",
     "--paper-live-multi-sleeve-roadmap",
     "--show-paper-live-multi-sleeve-roadmap",
     "--paper-live-next-phase-backlog",
