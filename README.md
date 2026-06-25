@@ -151,6 +151,8 @@ Paper-live defensive sleeve preview-readiness is the next blocked checkpoint: `p
 
 Paper-live defensive sleeve evidence-quality review is saved-output-only: `python bot.py --paper-live-defensive-sleeve-evidence-quality` focuses the manual review on split sensitivity, full-period drawdown, allocation-decision blockers, and the QQQ100 role boundary. It does not approve defensive preview design, promotion, execution, orders, or scheduling.
 
+High-growth strategy discovery sprint is saved-output-only: `python bot.py --high-growth-strategy-discovery-sprint` and `python bot.py --show-high-growth-strategy-discovery-sprint` consolidate existing high-growth stock, crypto, QQQ100, and multi-sleeve evidence into subagent-style workstreams. Current saved output reports `high_growth_strategy_discovery_two_or_more_strong_candidates_found`, with `higher_growth_70_20_5_5` and `qqq100_plus_high_growth_plus_crypto_research` as the top two research candidates, while standalone high-growth/crypto drawdown-heavy references remain fragile. This does not approve preview promotion, paper execution, order instructions, or scheduling.
+
 
 ## Architecture
 

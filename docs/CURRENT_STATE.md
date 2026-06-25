@@ -671,6 +671,14 @@ The high-growth stock final validation pack comes from `python bot.py --high-gro
 - It checks return improvement, drawdown tradeoff, broad Top1 improvement, Calmar/Sharpe tradeoff, cost, split, concentration, outlier, survivorship/current-constituent bias, and whether the high-risk branch has a clear role separate from `qqq_100_trend_gate`.
 - It keeps `qqq_100_trend_gate` as the clean main lead, keeps broad Top1 rejected, keeps preview and execution blocked, and does not approve execution, preview promotion, paper execution, or scheduling.
 
+The high-growth strategy discovery sprint comes from `python bot.py --high-growth-strategy-discovery-sprint`, with saved display through `python bot.py --show-high-growth-strategy-discovery-sprint`:
+
+- It reads saved high-growth stock, crypto, QQQ100, multi-sleeve, higher-growth allocation, robustness, component, and paper-live high-growth decision outputs where present; it does not refresh yfinance data.
+- It writes `data/high_growth_strategy_discovery_sprint.csv`, `data/high_growth_strategy_discovery_sprint_summary.csv`, `data/high_growth_strategy_discovery_sprint_evidence.csv`, and `data/high_growth_strategy_discovery_sprint_blockers.csv`.
+- It records seven subagent-style workstreams: aggressive trend/breakout, relative strength/rotation, crypto/risk-on sleeves, unconstrained experimental allocation, backtest engineering, robustness/audit, and evidence/reporting.
+- Current saved status is `high_growth_strategy_discovery_two_or_more_strong_candidates_found` with 16 strategies, 7 candidate families, and 4 distinct strong research candidates. The top two are `higher_growth_70_20_5_5` and `qqq100_plus_high_growth_plus_crypto_research`.
+- Fragile standalone references such as broad Top1 and standalone crypto sleeves remain rejected or watchlist due drawdown/concentration risk. The sprint is research/report-only and does not approve preview promotion, paper execution, order instructions, scheduling, or high-growth promotion.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

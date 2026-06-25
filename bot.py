@@ -1319,6 +1319,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--high-growth-strategy-discovery-sprint"]:
+        from trading_bot.research.high_growth_strategy_discovery_sprint import (
+            generate_high_growth_strategy_discovery_sprint,
+        )
+
+        result = generate_high_growth_strategy_discovery_sprint()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-high-growth-strategy-discovery-sprint"]:
+        from trading_bot.research.high_growth_strategy_discovery_sprint import (
+            show_high_growth_strategy_discovery_sprint,
+        )
+
+        code, lines = show_high_growth_strategy_discovery_sprint()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -1739,6 +1757,10 @@ from trading_bot.research.high_growth_stock_branch_decision_checkpoint import (
 from trading_bot.research.high_growth_stock_final_validation_pack import (
     generate_high_growth_stock_final_validation_pack,
     show_high_growth_stock_final_validation_pack,
+)
+from trading_bot.research.high_growth_strategy_discovery_sprint import (
+    generate_high_growth_strategy_discovery_sprint,
+    show_high_growth_strategy_discovery_sprint,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -6661,6 +6683,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved high-growth stock final validation pack without refreshing data.",
     )
     parser.add_argument(
+        "--high-growth-strategy-discovery-sprint",
+        action="store_true",
+        help="Create a saved-output-only high-growth strategy discovery sprint without market refresh, broker reads, or execution.",
+    )
+    parser.add_argument(
+        "--show-high-growth-strategy-discovery-sprint",
+        action="store_true",
+        help="Display the saved high-growth strategy discovery sprint without market refresh, broker reads, or execution.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -8490,6 +8522,20 @@ def main() -> int:
         return 0
     if args.show_high_growth_stock_final_validation_pack:
         status_code, lines = show_high_growth_stock_final_validation_pack()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.high_growth_strategy_discovery_sprint:
+        try:
+            result = generate_high_growth_strategy_discovery_sprint()
+        except Exception as exc:
+            print(f"High-growth strategy discovery sprint failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_high_growth_strategy_discovery_sprint:
+        status_code, lines = show_high_growth_strategy_discovery_sprint()
         for line in lines:
             print(line)
         return status_code

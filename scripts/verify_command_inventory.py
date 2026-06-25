@@ -185,6 +185,8 @@ REQUIRED_COMMANDS = [
     "--show-high-growth-stock-branch-decision-checkpoint",
     "--high-growth-stock-final-validation-pack",
     "--show-high-growth-stock-final-validation-pack",
+    "--high-growth-strategy-discovery-sprint",
+    "--show-high-growth-strategy-discovery-sprint",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",

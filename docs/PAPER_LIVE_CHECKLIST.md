@@ -40,6 +40,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - Keep `codex_qqq_adaptive_trend_exposure` as an ambitious alternative only.
 - Keep `qqq_150_trend_gate` rejected.
 - Keep the high-growth stock branch research-only.
+- `python bot.py --high-growth-strategy-discovery-sprint` may identify strong high-growth research candidates such as `higher_growth_70_20_5_5` and `qqq100_plus_high_growth_plus_crypto_research`, but that sprint is not preview promotion, paper-live approval, or execution approval.
 - Keep crypto research-only.
 - Keep SMA/slow-SMA out of paper-live promotion.
 

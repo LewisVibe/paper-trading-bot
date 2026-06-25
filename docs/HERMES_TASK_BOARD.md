@@ -1078,3 +1078,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `high_growth_remains_research_only_manual_review_required`; QQQ100 remains the cleaner current paper-live monitor base, and high-growth preview/paper-live/promotion flags remain false.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, research reruns, market-data refresh, Alpaca reads, action previews, order instructions, portfolio execution implementation, or high-growth promotion.
 - **Stop condition:** Stop if the task would promote high-growth, approve preview/paper-live/execution/scheduling, create order instructions, or treat the decision checkpoint as permanent rejection rather than future manual-review context.
+
+### Task: High-growth strategy discovery sprint
+- **Purpose:** Use `python bot.py --high-growth-strategy-discovery-sprint` to consolidate saved high-growth, crypto, QQQ100, and multi-sleeve research into a subagent-style candidate sprint.
+- **Risk level:** Low/report-only when limited to saved CSV outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --high-growth-strategy-discovery-sprint`, `python bot.py --show-high-growth-strategy-discovery-sprint`, and `python scripts\verify_high_growth_strategy_discovery_sprint.py`.
+- **Expected status:** `high_growth_strategy_discovery_two_or_more_strong_candidates_found` when at least two distinct saved-evidence candidate families pass the research screen; current top candidates are `higher_growth_70_20_5_5` and `qqq100_plus_high_growth_plus_crypto_research`.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, action previews, order instructions, portfolio execution implementation, high-growth promotion, or scheduling.
+- **Stop condition:** Stop if the task would refresh yfinance data, promote high-growth, approve preview/paper-live/execution/scheduling, create order instructions, or treat the sprint as paper-live approval.
