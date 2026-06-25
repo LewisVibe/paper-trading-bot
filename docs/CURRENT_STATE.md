@@ -254,6 +254,14 @@ The QQQ100 daily decision report comes from `python bot.py --qqq100-daily-decisi
 - It can report `qqq100_daily_decision_hold_no_action_aligned_long`, `qqq100_daily_decision_hold_no_action_aligned_flat`, `qqq100_daily_decision_manual_buy_discussion_possible_not_approved`, `qqq100_daily_decision_manual_flatten_discussion_possible_not_approved`, or `qqq100_daily_decision_blocked_manual_review_required`.
 - It does not call Alpaca, read live positions, refresh market data, create executable order instructions, run QQQ100 paper execution, approve execution, approve repeat/follow-up orders, approve scheduling, or approve live trading.
 
+The QQQ100 manual flatten readiness report comes from `python bot.py --qqq100-manual-flatten-readiness-report`, with saved display through `python bot.py --show-qqq100-manual-flatten-readiness-report`:
+
+- It writes `data/qqq100_manual_flatten_readiness_report.csv`, `data/qqq100_manual_flatten_readiness_summary.csv`, `data/qqq100_manual_flatten_readiness_blockers.csv`, and `data/qqq100_manual_flatten_readiness_evidence.csv`.
+- It reads saved QQQ100 paper-live evidence and saved follow-up/no-action policy only.
+- Current aligned-long evidence should report `flatten_not_needed_currently` with `recommended_next_step=hold_no_action_and_monitor_only`.
+- If a future saved signal says desired state is `flat` while saved QQQ position is long exactly one share, it can report `future_manual_flatten_discussion_possible_not_approved`, which is only a manual review checkpoint.
+- It does not call Alpaca, read live positions, refresh market data, create executable order instructions, run QQQ100 paper execution, approve flatten execution, approve repeat/follow-up orders, approve scheduling, or approve live trading.
+
 The paper-live monitoring status comes from `python bot.py --paper-live-monitoring-status`, with saved display through `python bot.py --show-paper-live-monitoring-status`:
 
 - It writes `data/paper_live_monitoring_status.csv`, `data/paper_live_monitoring_components.csv`, and `data/paper_live_monitoring_blockers.csv`.

@@ -180,6 +180,14 @@ Outputs: `data/qqq100_daily_decision_report.csv`, `data/qqq100_daily_decision_su
 
 The daily decision reads saved QQQ100 paper-live evidence and the saved follow-up/no-action policy only. It can report `qqq100_daily_decision_hold_no_action_aligned_long`, `qqq100_daily_decision_hold_no_action_aligned_flat`, `qqq100_daily_decision_manual_buy_discussion_possible_not_approved`, `qqq100_daily_decision_manual_flatten_discussion_possible_not_approved`, or `qqq100_daily_decision_blocked_manual_review_required`. It does not approve execution, paper execution, repeat/follow-up orders, scheduling, or executable order instructions.
 
+Implemented manual flatten readiness checkpoint: `python bot.py --qqq100-manual-flatten-readiness-report`.
+
+Saved display: `python bot.py --show-qqq100-manual-flatten-readiness-report`.
+
+Outputs: `data/qqq100_manual_flatten_readiness_report.csv`, `data/qqq100_manual_flatten_readiness_summary.csv`, `data/qqq100_manual_flatten_readiness_blockers.csv`, and `data/qqq100_manual_flatten_readiness_evidence.csv`.
+
+The manual flatten readiness report reads saved QQQ100 evidence and the saved follow-up/no-action policy only. Current aligned-long evidence should report `flatten_not_needed_currently`. If a future saved signal says desired state is `flat` while saved QQQ position is long exactly one share, it may report `future_manual_flatten_discussion_possible_not_approved`; that remains only a separate manual discussion checkpoint and does not approve a sell, repeat execution, follow-up order, scheduling, or executable order instruction.
+
 ## 11. Schedule Monitoring Only
 
 - Implemented report-only monitoring checkpoint: `python bot.py --paper-live-monitoring-status`.

@@ -75,6 +75,8 @@ REQUIRED_COMMANDS = [
     "--show-qqq100-followup-policy-report",
     "--qqq100-daily-decision-report",
     "--show-qqq100-daily-decision-report",
+    "--qqq100-manual-flatten-readiness-report",
+    "--show-qqq100-manual-flatten-readiness-report",
     "--paper-live-monitoring-status",
     "--show-paper-live-monitoring-status",
     "--paper-live-checklist-status",

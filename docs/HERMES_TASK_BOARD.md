@@ -941,6 +941,15 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** QQQ100 paper execution, QQQ100 postcheck unless separately approved, paper-order tests, normal bot execution, scheduler changes.
 - **Stop condition:** Stop if the task would call Alpaca, read live positions, refresh market data, create executable order instructions, approve repeat/follow-up orders, or change scheduling.
 
+### Task: QQQ100 manual flatten readiness report
+- **Purpose:** Use `python bot.py --qqq100-manual-flatten-readiness-report` to document whether a future saved flat signal would need a separate manual flatten discussion.
+- **Risk level:** Low/report-only when it reads saved evidence and saved follow-up policy only.
+- **Allowed commands:** `python bot.py --qqq100-manual-flatten-readiness-report`, `python bot.py --show-qqq100-manual-flatten-readiness-report`.
+- **Expected current status:** `flatten_not_needed_currently` when QQQ100 is already aligned long one share and desired state remains long.
+- **Future-only status:** `future_manual_flatten_discussion_possible_not_approved` if saved desired state is flat while saved QQQ position is long exactly one share.
+- **Forbidden commands:** QQQ100 paper execution, QQQ100 postcheck unless separately approved, paper-order tests, normal bot execution, scheduler changes.
+- **Stop condition:** Stop if the task would call Alpaca, read live positions, refresh market data, create executable order instructions, approve a flatten action, approve repeat/follow-up orders, or change scheduling.
+
 ### Task: Paper-live monitoring status
 - **Purpose:** Use `python bot.py --paper-live-monitoring-status` to include QQQ100 no-action/aligned state in safe VPS/Hermes monitoring output.
 - **Risk level:** Low/report-only when it reads saved evidence only.
