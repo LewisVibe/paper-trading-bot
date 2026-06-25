@@ -195,6 +195,8 @@ REQUIRED_COMMANDS = [
     "--show-higher-growth-preview-design",
     "--vol-targeted-growth-research-sprint",
     "--show-vol-targeted-growth-research-sprint",
+    "--vol-targeted-growth-manual-review-pack",
+    "--show-vol-targeted-growth-manual-review-pack",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",

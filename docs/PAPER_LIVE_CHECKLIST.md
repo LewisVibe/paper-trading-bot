@@ -45,6 +45,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - `python bot.py --higher-growth-candidate-selection-decision` may select `higher_growth_70_20_5_5` for a future preview-only design prompt, but preview implementation and all execution approvals remain blocked.
 - `python bot.py --higher-growth-preview-design` documents the future preview-only target weights and output shape for `higher_growth_70_20_5_5`, but it still does not create a preview signal, action preview, order instructions, or execution approval.
 - `python bot.py --vol-targeted-growth-research-sprint` may identify volatility-targeted growth research candidates, but it still does not create preview signals, action previews, order instructions, paper-live approval, execution approval, or scheduling approval.
+- `python bot.py --vol-targeted-growth-manual-review-pack` may favour `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` as a cleaner next research path, but it still does not implement preview mode, promote high-growth/crypto, approve paper execution, or approve scheduling.
 - Keep crypto research-only.
 - Keep SMA/slow-SMA out of paper-live promotion.
 

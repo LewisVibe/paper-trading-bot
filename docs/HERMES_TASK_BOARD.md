@@ -1118,3 +1118,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_research_two_or_more_strong_candidates_found`; current top research candidates are `high_growth_balanced_target_vol_25_win_20_cap_1x` and `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x`.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, preview signals, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
 - **Stop condition:** Stop if the task would call yfinance, create preview signals, include order side/quantity/type/account fields, approve execution/scheduling, or treat research candidates as paper-live approval.
+
+### Task: Volatility-targeted growth manual review pack
+- **Purpose:** Use `python bot.py --vol-targeted-growth-manual-review-pack` to compare the two leading volatility-targeted growth candidates side by side before any preview-design discussion.
+- **Risk level:** Low/report-only when limited to saved volatility-targeted sprint outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-manual-review-pack`, `python bot.py --show-vol-targeted-growth-manual-review-pack`, and `python scripts\verify_vol_targeted_growth_manual_review_pack.py`.
+- **Expected status:** `vol_targeted_growth_manual_review_required`; current interpretation favours `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` as the cleaner next research path, while `high_growth_balanced_target_vol_25_win_20_cap_1x` remains higher-return/higher-risk.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, preview signals, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
+- **Stop condition:** Stop if the task would implement preview mode, create action previews/order instructions, approve execution/scheduling, or treat the manual-review result as paper-live approval.

@@ -717,6 +717,15 @@ The volatility-targeted growth research sprint comes from `python bot.py --vol-t
 - QQQ100-only volatility-targeted variants that became too low-return are rejected as smooth/low-return rather than rewarded just for safety, and concentrated Top1 variants remain fragile/outlier-dependent even when volatility targeting improves the drawdown.
 - The sprint is research/report-only. It does not create preview signals, action previews, order instructions, execution approval, paper execution approval, scheduling approval, high-growth promotion, or crypto execution approval.
 
+The volatility-targeted growth manual review pack comes from `python bot.py --vol-targeted-growth-manual-review-pack`, with saved display through `python bot.py --show-vol-targeted-growth-manual-review-pack`:
+
+- It reads only the saved volatility-targeted sprint, summary, rejected-candidate, robustness-audit, and parameter-sensitivity CSVs.
+- It writes `data/vol_targeted_growth_manual_review_pack.csv`, `data/vol_targeted_growth_manual_review_summary.csv`, `data/vol_targeted_growth_manual_review_evidence.csv`, and `data/vol_targeted_growth_manual_review_blockers.csv`.
+- Current saved status is `vol_targeted_growth_manual_review_required`.
+- Current interpretation favours `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` as the cleaner next research path because it gives up raw CAGR but has a stronger Sharpe/Calmar and drawdown profile.
+- `high_growth_balanced_target_vol_25_win_20_cap_1x` remains exciting but higher-risk, with drawdown, concentration, and outlier-dependence review required before any label change.
+- The required next step is `run_saved_output_vol_targeted_growth_robustness_checkpoint_before_preview_design`; preview implementation, paper execution, order instructions, high-growth/crypto promotion, and scheduling remain false.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

@@ -161,6 +161,8 @@ Higher-growth preview design is the next saved-output checkpoint: `python bot.py
 
 Volatility-targeted growth research sprint is saved-output-only: `python bot.py --vol-targeted-growth-research-sprint` and `python bot.py --show-vol-targeted-growth-research-sprint` test QQQ100, high-growth, crypto, drawdown-control, and multi-sleeve volatility-targeted variants from saved return streams. Current saved status is `vol_targeted_growth_research_two_or_more_strong_candidates_found`, with `high_growth_balanced_target_vol_25_win_20_cap_1x` and `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` as the top two distinct research candidates. It does not create preview signals, order instructions, execution approval, or scheduling approval.
 
+Volatility-targeted growth manual review is also saved-output-only: `python bot.py --vol-targeted-growth-manual-review-pack` and `python bot.py --show-vol-targeted-growth-manual-review-pack` compare the two leading volatility-targeted candidates side by side. Current interpretation favours `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` as the cleaner next research path, while `high_growth_balanced_target_vol_25_win_20_cap_1x` remains a higher-return/higher-risk branch requiring drawdown, concentration, and outlier review. Preview implementation, paper execution, order instructions, and scheduling remain unapproved.
+
 
 ## Architecture
 
