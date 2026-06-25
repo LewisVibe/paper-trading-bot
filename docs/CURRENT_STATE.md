@@ -734,6 +734,15 @@ The volatility-targeted growth robustness checkpoint comes from `python bot.py -
 - It checks the preferred `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` candidate for nearby parameter sensitivity, saved split stability, drawdown tradeoff versus `high_growth_balanced_target_vol_25_win_20_cap_1x`, and QQQ100/balanced comparator context.
 - Preview readiness remains `vol_targeted_growth_preview_design_not_ready_robustness_review_required`; preview implementation, paper execution, order instructions, high-growth/crypto promotion, and scheduling remain false.
 
+The volatility-targeted growth nearby-variants review comes from `python bot.py --vol-targeted-growth-nearby-variants-review`, with saved display through `python bot.py --show-vol-targeted-growth-nearby-variants-review`:
+
+- It reads only saved volatility-targeted sprint, robustness-checkpoint, and parameter-sensitivity CSVs.
+- It writes `data/vol_targeted_growth_nearby_variants_review.csv`, `data/vol_targeted_growth_nearby_variants_summary.csv`, `data/vol_targeted_growth_nearby_variants_evidence.csv`, and `data/vol_targeted_growth_nearby_variants_blockers.csv`.
+- Current expected status is `vol_targeted_growth_nearby_variants_manual_review_required`.
+- Current interpretation keeps `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` as the best risk-adjusted variant because it leads the saved nearby grid on Sharpe and Calmar.
+- `higher_growth_multi_sleeve_target_vol_20_win_20_cap_1x` is the nearest higher-volatility step, while `higher_growth_multi_sleeve_target_vol_25_win_20_cap_1x` is the highest-CAGR/higher-drawdown challenger; both should be reviewed manually before any preview-design decision.
+- Preview status remains `preview_design_still_blocked_pending_variant_review`; preview implementation, paper execution, order instructions, high-growth/crypto promotion, and scheduling remain false.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

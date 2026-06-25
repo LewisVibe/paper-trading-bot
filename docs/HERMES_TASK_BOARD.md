@@ -1134,3 +1134,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_robustness_manual_review_required`; preview readiness remains `vol_targeted_growth_preview_design_not_ready_robustness_review_required`.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, preview signals, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
 - **Stop condition:** Stop if the task would implement preview mode, create action previews/order instructions, approve execution/scheduling, or treat robustness review as paper-live approval.
+
+### Task: Volatility-targeted growth nearby-variants review
+- **Purpose:** Use `python bot.py --vol-targeted-growth-nearby-variants-review` to compare the preferred 15% target / 20-day variant against adjacent multi-sleeve volatility-targeted variants.
+- **Risk level:** Low/report-only when limited to saved volatility-targeted sprint/robustness outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-nearby-variants-review`, `python bot.py --show-vol-targeted-growth-nearby-variants-review`, and `python scripts\verify_vol_targeted_growth_nearby_variants_review.py`.
+- **Expected status:** `vol_targeted_growth_nearby_variants_manual_review_required`; preview status remains `preview_design_still_blocked_pending_variant_review`.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, preview signals, action previews, order instructions, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
+- **Stop condition:** Stop if the task would implement preview mode, create action previews/order instructions, approve execution/scheduling, or treat a nearby variant as paper-live approval.
