@@ -137,6 +137,8 @@ QQQ100 manual flatten readiness is also saved-output-only. `python bot.py --qqq1
 
 The companion runbook/design checkpoint is `python bot.py --qqq100-manual-flatten-runbook-report`. It should report `manual_flatten_runbook_not_needed_currently` while QQQ100 remains aligned long one share, and it still does not create order instructions or approve a flatten action.
 
+Paper-live promotion ladder status is report-only: `python bot.py --paper-live-promotion-ladder-status` reads saved ladder/QQQ100 monitoring outputs and keeps QQQ100 as the only current seed while high-growth and crypto remain research-only, defensive sleeves remain future-review-only, and portfolio backtests remain not promotion evidence until accounting consistency is proven.
+
 
 ## Architecture
 

@@ -87,6 +87,8 @@ REQUIRED_COMMANDS = [
     "--show-paper-live-f6-f7-audit",
     "--paper-live-promotion-ladder-design",
     "--show-paper-live-promotion-ladder-design",
+    "--paper-live-promotion-ladder-status",
+    "--show-paper-live-promotion-ladder-status",
     "--paper-live-multi-sleeve-roadmap",
     "--show-paper-live-multi-sleeve-roadmap",
     "--paper-live-next-phase-backlog",

@@ -538,6 +538,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-promotion-ladder-status"]:
+        from trading_bot.research.paper_live_promotion_ladder_status import (
+            generate_paper_live_promotion_ladder_status,
+        )
+
+        result = generate_paper_live_promotion_ladder_status()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-promotion-ladder-status"]:
+        from trading_bot.research.paper_live_promotion_ladder_status import (
+            show_paper_live_promotion_ladder_status,
+        )
+
+        code, lines = show_paper_live_promotion_ladder_status()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-live-multi-sleeve-roadmap"]:
         from trading_bot.research.paper_live_multi_sleeve_roadmap import generate_paper_live_multi_sleeve_roadmap
 
@@ -1425,6 +1443,10 @@ from trading_bot.research.paper_live_f6_f7_audit import (
 from trading_bot.research.paper_live_promotion_ladder_design import (
     generate_paper_live_promotion_ladder_design,
     show_paper_live_promotion_ladder_design,
+)
+from trading_bot.research.paper_live_promotion_ladder_status import (
+    generate_paper_live_promotion_ladder_status,
+    show_paper_live_promotion_ladder_status,
 )
 from trading_bot.research.paper_live_multi_sleeve_roadmap import (
     generate_paper_live_multi_sleeve_roadmap,
@@ -6017,6 +6039,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved generic promotion ladder design checkpoint without broker reads.",
     )
     parser.add_argument(
+        "--paper-live-promotion-ladder-status",
+        action="store_true",
+        help="Create a saved-output paper-live promotion ladder status scaffold without promotion or broker reads.",
+    )
+    parser.add_argument(
+        "--show-paper-live-promotion-ladder-status",
+        action="store_true",
+        help="Display the saved paper-live promotion ladder status scaffold without broker reads.",
+    )
+    parser.add_argument(
         "--paper-live-multi-sleeve-roadmap",
         action="store_true",
         help="Create a saved-output QQQ-led multi-sleeve paper-live roadmap without portfolio execution.",
@@ -7634,6 +7666,20 @@ def main() -> int:
         return 0
     if args.show_paper_live_promotion_ladder_design:
         status_code, lines = show_paper_live_promotion_ladder_design()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_promotion_ladder_status:
+        try:
+            result = generate_paper_live_promotion_ladder_status()
+        except Exception as exc:
+            print(f"Paper-live promotion ladder status failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_promotion_ladder_status:
+        status_code, lines = show_paper_live_promotion_ladder_status()
         for line in lines:
             print(line)
         return status_code

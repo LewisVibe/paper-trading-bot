@@ -975,6 +975,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, QQQ100 paper execution, QQQ100 postcheck unless separately approved, paper-order tests, normal bot execution, scheduler changes.
 - **Stop condition:** Stop if the task would build the generic promotion ladder, approve another QQQ order, change the Hermes cron sequence, or touch execution/config/secrets.
 
+### Task: Paper-live promotion ladder status
+- **Purpose:** Use `python bot.py --paper-live-promotion-ladder-status` to summarize the current report-only promotion ladder state from saved outputs.
+- **Risk level:** Low/report-only when it reads saved ladder design and QQQ100 monitoring outputs only.
+- **Allowed commands:** `python bot.py --paper-live-promotion-ladder-status`, `python bot.py --show-paper-live-promotion-ladder-status`.
+- **Expected status:** `paper_live_promotion_ladder_status_report_only` with QQQ100 as the only current seed and `monitor_only_aligned_long_one`.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, generic promotion implementation, QQQ100 paper execution, paper-order tests, normal bot execution, scheduler changes.
+- **Stop condition:** Stop if the task would promote high-growth/crypto/defensive/SMA/slow-SMA, treat portfolio backtests as promotion evidence before accounting proof, create order instructions, or touch execution/config/secrets.
+
 ### Task: Paper-live F6/F7 audit
 - **Purpose:** Use `python bot.py --paper-live-f6-f7-audit` to audit remaining external-review items before any generic promotion ladder or multi-sleeve paper-live work.
 - **Risk level:** Low/report-only when limited to static/source review and saved output files.

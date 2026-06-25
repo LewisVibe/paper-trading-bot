@@ -240,6 +240,14 @@ Outputs: `data/paper_live_promotion_ladder_design.csv`, `data/paper_live_promoti
 
 Current expected design status is `paper_live_promotion_ladder_design_report_only`: QQQ100 is the only current ladder seed, QQQ100 remains monitor-only and aligned long one share, no repeat/follow-up/flatten QQQ order is approved, saved flatten readiness/runbook statuses are `flatten_not_needed_currently` and `manual_flatten_runbook_not_needed_currently`, multi-sleeve is future-only, high-growth and crypto remain research-only, defensive sleeves remain future review only, no SMA or slow-SMA paper-live promotion is allowed, portfolio backtests are not promotion evidence until accounting consistency is proven, unknown positions block/manual-review, and no scheduled execution is allowed. No scheduled execution is allowed.
 
+Implemented first report-only promotion ladder status scaffold: `python bot.py --paper-live-promotion-ladder-status`.
+
+Saved display: `python bot.py --show-paper-live-promotion-ladder-status`.
+
+Outputs: `data/paper_live_promotion_ladder_status.csv`, `data/paper_live_promotion_ladder_status_summary.csv`, `data/paper_live_promotion_ladder_status_blockers.csv`, and `data/paper_live_promotion_ladder_status_evidence.csv`.
+
+Current expected status is `paper_live_promotion_ladder_status_report_only`: QQQ100 is the only current seed with `monitor_only_aligned_long_one`; high-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests are not promotion evidence until accounting consistency is proven.
+
 Implemented QQQ-led multi-sleeve roadmap checkpoint: `python bot.py --paper-live-multi-sleeve-roadmap`.
 
 Saved display: `python bot.py --show-paper-live-multi-sleeve-roadmap`.

@@ -307,6 +307,14 @@ The paper-live promotion ladder design checkpoint comes from `python bot.py --pa
 - Portfolio backtests are not promotion evidence until accounting consistency is proven; unknown positions block/manual-review rather than assume flat; no scheduled execution is allowed.
 - This checkpoint is report-only and does not implement generic promotion logic, execution, order instructions, broker reads, scheduling, or strategy-to-execution wiring.
 
+The paper-live promotion ladder status scaffold comes from `python bot.py --paper-live-promotion-ladder-status`, with saved display through `python bot.py --show-paper-live-promotion-ladder-status`:
+
+- It writes `data/paper_live_promotion_ladder_status.csv`, `data/paper_live_promotion_ladder_status_summary.csv`, `data/paper_live_promotion_ladder_status_blockers.csv`, and `data/paper_live_promotion_ladder_status_evidence.csv`.
+- It reads saved ladder design, paper-live monitoring, daily decision, and QQQ100 flatten readiness/runbook summaries only.
+- QQQ100 is the only current seed; current expected status is `paper_live_promotion_ladder_status_report_only` with QQQ100 `monitor_only_aligned_long_one`.
+- High-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests remain not promotion evidence until accounting consistency is proven.
+- This scaffold does not promote strategies, create order instructions, call Alpaca, read positions, approve execution, approve scheduling, or implement generic promotion logic.
+
 The paper-live QQQ-led multi-sleeve roadmap checkpoint comes from `python bot.py --paper-live-multi-sleeve-roadmap`, with saved display through `python bot.py --show-paper-live-multi-sleeve-roadmap`:
 
 - It writes `data/paper_live_multi_sleeve_roadmap.csv`, `data/paper_live_multi_sleeve_roadmap_summary.csv`, `data/paper_live_multi_sleeve_roadmap_blockers.csv`, and `data/paper_live_multi_sleeve_roadmap_evidence.csv`.

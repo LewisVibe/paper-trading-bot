@@ -2015,6 +2015,29 @@ data/paper_live_promotion_ladder_design_blockers.csv
 data/paper_live_promotion_ladder_design_evidence.csv
 ```
 
+Paper-live promotion ladder status mode is the saved-output/report-only scaffold that reads the ladder design plus current QQQ100 saved monitoring evidence and produces a current ladder table. QQQ100 is the only current seed, with expected status `monitor_only_aligned_long_one`. High-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests remain not promotion evidence until accounting consistency is proven. It does not promote strategies, create order instructions, call Alpaca, read positions, approve execution, approve scheduling, or implement generic promotion logic.
+
+Command:
+
+```text
+python bot.py --paper-live-promotion-ladder-status
+```
+
+Saved display:
+
+```text
+python bot.py --show-paper-live-promotion-ladder-status
+```
+
+Outputs:
+
+```text
+data/paper_live_promotion_ladder_status.csv
+data/paper_live_promotion_ladder_status_summary.csv
+data/paper_live_promotion_ladder_status_blockers.csv
+data/paper_live_promotion_ladder_status_evidence.csv
+```
+
 Paper-live multi-sleeve roadmap mode is the saved-output/report-only checkpoint for the future QQQ-led multi-sleeve direction. It does not change the current QQQ100-only monitoring phase. The QQQ100 core sleeve remains the current monitor-only base, aligned long one share, and the only current ladder seed. The defensive sleeve is future review only and must pass the promotion ladder separately. The high-growth sleeve remains research-only until concentration, drawdown, and attribution review are complete. The crypto sleeve remains research-only/capped/future-only with no crypto execution approved. The multi-sleeve allocator is future-only with no portfolio execution wiring, no order instructions, and no scheduling. No portfolio execution is implemented or approved.
 
 Command:
