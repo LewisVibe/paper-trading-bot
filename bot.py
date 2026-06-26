@@ -1789,6 +1789,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-seed-change-review"]:
+        from trading_bot.research.vol_targeted_growth_seed_change_review import (
+            generate_vol_targeted_growth_seed_change_review,
+        )
+
+        result = generate_vol_targeted_growth_seed_change_review()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-seed-change-review"]:
+        from trading_bot.research.vol_targeted_growth_seed_change_review import (
+            show_vol_targeted_growth_seed_change_review,
+        )
+
+        code, lines = show_vol_targeted_growth_seed_change_review()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -2313,6 +2331,10 @@ from trading_bot.research.vol_targeted_growth_proposal_preview_schema import (
 from trading_bot.research.vol_targeted_growth_proposal_preview import (
     generate_vol_targeted_growth_proposal_preview,
     show_vol_targeted_growth_proposal_preview,
+)
+from trading_bot.research.vol_targeted_growth_seed_change_review import (
+    generate_vol_targeted_growth_seed_change_review,
+    show_vol_targeted_growth_seed_change_review,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -7495,6 +7517,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved volatility-targeted growth proposal preview.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-seed-change-review",
+        action="store_true",
+        help="Create a saved-output-only seed-change review for the volatility-targeted growth proposal.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-seed-change-review",
+        action="store_true",
+        help="Display the saved volatility-targeted growth seed-change review.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -9690,6 +9722,20 @@ def main() -> int:
         return 0
     if args.show_vol_targeted_growth_proposal_preview:
         status_code, lines = show_vol_targeted_growth_proposal_preview()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_seed_change_review:
+        try:
+            result = generate_vol_targeted_growth_seed_change_review()
+        except Exception as exc:
+            print(f"Volatility-targeted growth seed-change review failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_seed_change_review:
+        status_code, lines = show_vol_targeted_growth_seed_change_review()
         for line in lines:
             print(line)
         return status_code

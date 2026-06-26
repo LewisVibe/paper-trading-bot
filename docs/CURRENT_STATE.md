@@ -866,6 +866,12 @@ The volatility-targeted growth proposal preview comes from `python bot.py --vol-
 - Current expected status is `vol_targeted_growth_proposal_preview_created_saved_output_only`.
 - This means sleeve-level proposal rows exist for manual review only. Current exposure is not read, QQQ100 remains the incumbent seed, and no action preview, order instruction, execution, repeat order, or scheduling is approved.
 
+The volatility-targeted growth seed-change review comes from `python bot.py --vol-targeted-growth-seed-change-review`, with saved display through `python bot.py --show-vol-targeted-growth-seed-change-review`:
+
+- It writes `data/vol_targeted_growth_seed_change_review.csv`, `data/vol_targeted_growth_seed_change_review_summary.csv`, `data/vol_targeted_growth_seed_change_review_evidence.csv`, and `data/vol_targeted_growth_seed_change_review_blockers.csv`.
+- Current expected status is `vol_targeted_growth_seed_change_review_created_manual_review_required`.
+- This means the volatility proposal can continue through manual seed-change review, but QQQ100 remains the seed. No QQQ100 displacement, seed change, action preview, order instruction, execution, repeat order, or scheduling is approved.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

@@ -66,6 +66,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - `python bot.py --vol-targeted-growth-proposal-implementation-design` may document a future non-executable preview/action proposal design only; it does not add implementation, create order fields, displace QQQ100, execute, repeat orders, or schedule.
 - `python bot.py --vol-targeted-growth-proposal-preview-schema` may document allowed/forbidden fields for a future proposal preview only; order side, quantity, order type, account, API key, webhook, token, and order ID fields are forbidden, and QQQ100 remains the incumbent seed.
 - `python bot.py --vol-targeted-growth-proposal-preview` may create saved sleeve-level proposal rows for manual review only; it does not read positions, create order fields, displace QQQ100, approve action, execute, repeat orders, or schedule.
+- `python bot.py --vol-targeted-growth-seed-change-review` may allow manual consideration of the volatility proposal to continue, but QQQ100 remains the seed and no displacement, seed change, action, execution, repeat order, or scheduling is approved.
 - Keep crypto research-only.
 - Keep SMA/slow-SMA out of paper-live promotion.
 

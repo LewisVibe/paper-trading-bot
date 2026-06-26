@@ -203,6 +203,8 @@ Volatility-targeted growth proposal preview schema is saved-output-only: `python
 
 Volatility-targeted growth proposal preview is saved-output-only: `python bot.py --vol-targeted-growth-proposal-preview` and `python bot.py --show-vol-targeted-growth-proposal-preview` create sleeve-level review rows using the approved schema. It does not read broker positions, create order fields, displace QQQ100, or approve action, execution, repeat orders, or scheduling.
 
+Volatility-targeted growth seed-change review is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-review` and `python bot.py --show-vol-targeted-growth-seed-change-review` compare the proposal preview against QQQ100 as the incumbent seed. It may allow manual consideration to continue, but QQQ100 is not displaced and no seed change, action, order, execution, or scheduling is approved.
+
 
 ## Architecture
 
