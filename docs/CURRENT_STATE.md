@@ -770,6 +770,14 @@ The volatility-targeted growth preview signal comes from `python bot.py --vol-ta
 - It records `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x`, 15% volatility target, 20-day volatility window, 1x exposure cap, no leverage, and saved target sleeve weights only.
 - It does not create an action preview, executable order instructions, order side/quantity/type/account fields, broker calls, paper execution approval, execution approval, or scheduling approval.
 
+The volatility-targeted growth action-preview design checkpoint comes from `python bot.py --vol-targeted-growth-action-preview-design`, with saved display through `python bot.py --show-vol-targeted-growth-action-preview-design`:
+
+- It reads only the saved volatility-targeted preview signal and design outputs.
+- It writes `data/vol_targeted_growth_action_preview_design.csv`, `data/vol_targeted_growth_action_preview_design_summary.csv`, `data/vol_targeted_growth_action_preview_design_evidence.csv`, and `data/vol_targeted_growth_action_preview_design_blockers.csv`.
+- Current expected status is `vol_targeted_growth_action_preview_design_ready_manual_review_required`.
+- It documents that any future action preview must use manual-review labels, treat unknown position state loudly, and avoid order side, order quantity, order type, account, order ID, API key, webhook, or secret fields.
+- It does not create actual action-preview rows, read broker positions, create orders, approve paper execution, approve live execution, or approve scheduling.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

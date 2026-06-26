@@ -1166,3 +1166,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_preview_signal_created_saved_output_only`; target variant is 15% vol target, 20-day vol window, 1x cap, no leverage, and saved target sleeve weights only.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, action previews, order side/quantity/type/account fields, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
 - **Stop condition:** Stop if the task would create an action preview, include executable order fields, approve execution/scheduling, or treat the preview signal as paper-live approval.
+
+### Task: Volatility-targeted growth action-preview design
+- **Purpose:** Use `python bot.py --vol-targeted-growth-action-preview-design` to document the shape of a possible future action-preview checkpoint after the saved 15/20 preview signal.
+- **Risk level:** Low/report-only when limited to saved preview-signal outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-action-preview-design`, `python bot.py --show-vol-targeted-growth-action-preview-design`, and `python scripts\verify_vol_targeted_growth_action_preview_design.py`.
+- **Expected status:** `vol_targeted_growth_action_preview_design_ready_manual_review_required`; it should remain design-only and require manual review before any saved action-preview implementation.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, actual action previews, order side/quantity/type/account fields, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
+- **Stop condition:** Stop if the task would create action rows, read broker positions, include executable order fields, approve execution/scheduling, or treat the design as paper-live approval.

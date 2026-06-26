@@ -173,6 +173,8 @@ Volatility-targeted growth preview design is the next saved-output checkpoint: `
 
 Volatility-targeted growth preview signal is saved-output-only: `python bot.py --vol-targeted-growth-preview-signal` and `python bot.py --show-vol-targeted-growth-preview-signal` write the selected 15% target / 20-day candidate identity, sleeve target weights, volatility settings, blockers, and safety flags from saved design evidence only. It creates no action preview, no order side/quantity/type/account fields, no broker calls, no execution approval, and no scheduling approval.
 
+Volatility-targeted growth action-preview design is saved-output-only: `python bot.py --vol-targeted-growth-action-preview-design` and `python bot.py --show-vol-targeted-growth-action-preview-design` review the saved preview signal and document the shape of a possible future action-preview checkpoint. It creates no action preview rows, reads no broker positions, includes no order side/quantity/type/account fields, and does not approve execution or scheduling.
+
 
 ## Architecture
 
