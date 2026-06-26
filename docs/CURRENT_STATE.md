@@ -836,6 +836,12 @@ The volatility-targeted growth stricter paper-live gate design comes from `pytho
 - Current expected status is `vol_targeted_growth_stricter_paper_live_gate_design_ready_manual_review_required`.
 - The gate requires QQQ100 to remain the incumbent paper-live seed, a separate allocation cap, high-growth and crypto to remain research-only, drawdown/stress review, current read-only broker-position context, no executable order fields, and all execution/scheduling approvals false. It defines requirements only; it does not enforce or approve the gate.
 
+The volatility-targeted growth gate review comes from `python bot.py --vol-targeted-growth-gate-review`, with saved display through `python bot.py --show-vol-targeted-growth-gate-review`:
+
+- It writes `data/vol_targeted_growth_gate_review.csv`, `data/vol_targeted_growth_gate_review_summary.csv`, `data/vol_targeted_growth_gate_review_evidence.csv`, and `data/vol_targeted_growth_gate_review_blockers.csv`.
+- Current expected status is `vol_targeted_growth_limited_manual_candidate_discussion_ready_gate_review_required`.
+- This means saved evidence can support a limited manual candidate discussion only. QQQ100 remains the incumbent paper-live seed, the stricter gate is not enforced, and paper-live candidacy, execution, order instructions, and scheduling remain unapproved.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
