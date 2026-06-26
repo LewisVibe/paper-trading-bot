@@ -854,6 +854,12 @@ The volatility-targeted growth proposal implementation design comes from `python
 - Current expected status is `vol_targeted_growth_proposal_implementation_design_ready_manual_review_required`.
 - This means the future proposal implementation requirements are documented only. No preview/action implementation, order instruction, Alpaca call, QQQ100 displacement, execution, repeat order, or scheduling is approved.
 
+The volatility-targeted growth proposal preview schema comes from `python bot.py --vol-targeted-growth-proposal-preview-schema`, with saved display through `python bot.py --show-vol-targeted-growth-proposal-preview-schema`:
+
+- It writes `data/vol_targeted_growth_proposal_preview_schema.csv`, `data/vol_targeted_growth_proposal_preview_schema_summary.csv`, `data/vol_targeted_growth_proposal_preview_schema_evidence.csv`, and `data/vol_targeted_growth_proposal_preview_schema_blockers.csv`.
+- Current expected status is `vol_targeted_growth_proposal_preview_schema_ready_manual_review_required`.
+- This means the allowed and forbidden fields for a future proposal preview are documented only. Order side, quantity, order type, account, API key, webhook, token, and order ID fields are forbidden; QQQ100 remains the incumbent seed and no implementation, execution, repeat order, or scheduling is approved.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
