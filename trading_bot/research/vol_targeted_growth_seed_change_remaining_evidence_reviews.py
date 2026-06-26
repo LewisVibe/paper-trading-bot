@@ -15,6 +15,7 @@ INCUMBENT_SEED = "qqq_100_trend_gate"
 COMPONENT_STATUS = "vol_targeted_growth_component_sleeve_evidence_created_manual_review_required"
 ACTION_STATUS = "vol_targeted_growth_action_preview_design_evidence_created_manual_review_required"
 PROPOSAL_STATUS = "vol_targeted_growth_seed_change_proposal_document_draft_created_manual_review_required"
+BROKER_EXPOSURE_STATUS = "vol_targeted_growth_broker_exposure_evidence_created_manual_review_required"
 
 OUTPUT_FILES = {
     "component_review": Path("data/vol_targeted_growth_seed_change_component_sleeve_review.csv"),
@@ -29,6 +30,10 @@ OUTPUT_FILES = {
     "proposal_summary": Path("data/vol_targeted_growth_seed_change_proposal_document_summary.csv"),
     "proposal_evidence": Path("data/vol_targeted_growth_seed_change_proposal_document_evidence.csv"),
     "proposal_blockers": Path("data/vol_targeted_growth_seed_change_proposal_document_blockers.csv"),
+    "broker_review": Path("data/vol_targeted_growth_seed_change_broker_exposure_review.csv"),
+    "broker_summary": Path("data/vol_targeted_growth_seed_change_broker_exposure_summary.csv"),
+    "broker_evidence": Path("data/vol_targeted_growth_seed_change_broker_exposure_evidence.csv"),
+    "broker_blockers": Path("data/vol_targeted_growth_seed_change_broker_exposure_blockers.csv"),
 }
 
 INPUT_FILES = {
@@ -42,6 +47,7 @@ INPUT_FILES = {
     "cost_turnover_summary": Path("data/vol_targeted_growth_seed_change_cost_turnover_summary.csv"),
     "split_stability_summary": Path("data/vol_targeted_growth_seed_change_split_stability_summary.csv"),
     "qqq100_followup_policy_summary": Path("data/qqq100_followup_policy_summary.csv"),
+    "broker_comparison_summary": Path("data/vol_targeted_growth_broker_position_comparison_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -54,6 +60,7 @@ SAFETY_FLAGS = {
     "component_sleeve_review_only": False,
     "action_preview_design_only": False,
     "proposal_document_draft_only": False,
+    "broker_exposure_review_only": False,
     "seed_changed": False,
     "seed_change_proposal_created": False,
     "formal_seed_change_proposal_created": False,
@@ -166,6 +173,27 @@ def generate_vol_targeted_growth_seed_change_proposal_document(root_dir: Path | 
     )
 
 
+def generate_vol_targeted_growth_seed_change_broker_exposure_review(root_dir: Path | str = ".") -> RemainingEvidenceReviewResult:
+    root = Path(root_dir)
+    inputs = {name: read_csv_rows(root / path) for name, path in INPUT_FILES.items()}
+    comparison_status = summary_value(inputs["broker_comparison_summary"], "final_comparison_status") or "missing_broker_comparison"
+    read_status = summary_value(inputs["broker_comparison_summary"], "broker_position_read_status") or "missing_broker_read_status"
+    return generate_review(
+        root_dir,
+        prefix="broker",
+        final_key="final_broker_exposure_status",
+        final_status=BROKER_EXPOSURE_STATUS,
+        true_flag="broker_exposure_review_only",
+        largest_blocker="broker_exposure_review_present_but_seed_change_still_not_approved",
+        next_step="manual_review_complete_evidence_before_formal_seed_change_proposal",
+        rows=[
+            ("saved_broker_comparison_status", "saved_readonly_broker_context_available_manual_review_required", f"comparison_status={comparison_status}; broker_position_read_status={read_status}"),
+            ("fresh_broker_read_boundary", "no_fresh_broker_read_performed", "This checkpoint reads saved broker-comparison output only and does not call Alpaca or read positions now."),
+            ("seed_boundary", "qqq100_seed_retained", "Broker exposure evidence does not displace QQQ100 or approve any order."),
+        ],
+    )
+
+
 def show_vol_targeted_growth_seed_change_component_sleeve_review(root_dir: Path | str = ".") -> tuple[int, list[str]]:
     return show_review(root_dir, "component", "final_component_sleeve_status", "--vol-targeted-growth-seed-change-component-sleeve-review")
 
@@ -176,6 +204,10 @@ def show_vol_targeted_growth_seed_change_action_preview_design(root_dir: Path | 
 
 def show_vol_targeted_growth_seed_change_proposal_document(root_dir: Path | str = ".") -> tuple[int, list[str]]:
     return show_review(root_dir, "proposal", "final_proposal_document_status", "--vol-targeted-growth-seed-change-proposal-document")
+
+
+def show_vol_targeted_growth_seed_change_broker_exposure_review(root_dir: Path | str = ".") -> tuple[int, list[str]]:
+    return show_review(root_dir, "broker", "final_broker_exposure_status", "--vol-targeted-growth-seed-change-broker-exposure-review")
 
 
 def generate_review(

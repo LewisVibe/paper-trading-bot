@@ -215,6 +215,8 @@ Volatility-targeted growth seed-change cost/turnover and split-stability reviews
 
 Volatility-targeted growth remaining seed-change evidence reviews are saved-output-only: `python bot.py --vol-targeted-growth-seed-change-component-sleeve-review`, `python bot.py --vol-targeted-growth-seed-change-action-preview-design`, and `python bot.py --vol-targeted-growth-seed-change-proposal-document`, with matching `--show-...` commands. They fill component-sleeve, action-preview-design, and draft proposal-document evidence, but broker exposure remains a manual-review blocker and QQQ100 is not displaced.
 
+Volatility-targeted growth seed-change broker-exposure review is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-broker-exposure-review` and `python bot.py --show-vol-targeted-growth-seed-change-broker-exposure-review` review the saved read-only broker-position comparison summary only. It does not call Alpaca or read positions again, and it still does not approve QQQ100 displacement, seed change, order instructions, execution, or scheduling.
+
 
 ## Architecture
 

@@ -908,6 +908,12 @@ The remaining volatility-targeted seed-change evidence reviews come from `python
 - Current expected statuses are `vol_targeted_growth_component_sleeve_evidence_created_manual_review_required`, `vol_targeted_growth_action_preview_design_evidence_created_manual_review_required`, and `vol_targeted_growth_seed_change_proposal_document_draft_created_manual_review_required`.
 - The proposal-document command is draft/checkpoint only. It does not create a formal seed-change proposal, does not displace QQQ100, and does not approve order instructions, execution, repeat orders, or scheduling. Broker exposure context remains a separate manual-review blocker.
 
+The volatility-targeted growth seed-change broker-exposure review comes from `python bot.py --vol-targeted-growth-seed-change-broker-exposure-review`, with saved display through `python bot.py --show-vol-targeted-growth-seed-change-broker-exposure-review`:
+
+- It writes `data/vol_targeted_growth_seed_change_broker_exposure_review.csv`, `data/vol_targeted_growth_seed_change_broker_exposure_summary.csv`, `data/vol_targeted_growth_seed_change_broker_exposure_evidence.csv`, and `data/vol_targeted_growth_seed_change_broker_exposure_blockers.csv`.
+- Current expected status is `vol_targeted_growth_broker_exposure_evidence_created_manual_review_required`.
+- It reviews saved broker-comparison output only. It does not call Alpaca or read positions now, and it does not approve a formal seed-change proposal, QQQ100 displacement, order instructions, execution, repeat orders, or scheduling.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

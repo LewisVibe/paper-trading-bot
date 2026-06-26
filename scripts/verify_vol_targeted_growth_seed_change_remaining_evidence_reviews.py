@@ -13,13 +13,16 @@ if str(ROOT) not in sys.path:
 
 from trading_bot.research.vol_targeted_growth_seed_change_remaining_evidence_reviews import (  # noqa: E402
     ACTION_STATUS,
+    BROKER_EXPOSURE_STATUS,
     COMPONENT_STATUS,
     OUTPUT_FILES,
     PROPOSAL_STATUS,
     SAFETY_FLAGS,
+    generate_vol_targeted_growth_seed_change_broker_exposure_review,
     generate_vol_targeted_growth_seed_change_action_preview_design,
     generate_vol_targeted_growth_seed_change_component_sleeve_review,
     generate_vol_targeted_growth_seed_change_proposal_document,
+    show_vol_targeted_growth_seed_change_broker_exposure_review,
     show_vol_targeted_growth_seed_change_action_preview_design,
     show_vol_targeted_growth_seed_change_component_sleeve_review,
     show_vol_targeted_growth_seed_change_proposal_document,
@@ -33,6 +36,8 @@ COMMANDS = [
     "--show-vol-targeted-growth-seed-change-action-preview-design",
     "--vol-targeted-growth-seed-change-proposal-document",
     "--show-vol-targeted-growth-seed-change-proposal-document",
+    "--vol-targeted-growth-seed-change-broker-exposure-review",
+    "--show-vol-targeted-growth-seed-change-broker-exposure-review",
 ]
 FALSE_FLAGS = [
     "seed_changed",
@@ -122,7 +127,9 @@ def verify_source(source: str, failures: list[str]) -> None:
         COMPONENT_STATUS,
         ACTION_STATUS,
         PROPOSAL_STATUS,
+        BROKER_EXPOSURE_STATUS,
         "broker_exposure_context_manual_review_required",
+        "no_fresh_broker_read_performed",
         "qqq100_displacement_approved",
         "seed_change_proposal_created",
         "formal_seed_change_proposal_created",
@@ -171,10 +178,12 @@ def verify_fixture(failures: list[str]) -> None:
         component = generate_vol_targeted_growth_seed_change_component_sleeve_review(root)
         action = generate_vol_targeted_growth_seed_change_action_preview_design(root)
         proposal = generate_vol_targeted_growth_seed_change_proposal_document(root)
+        broker = generate_vol_targeted_growth_seed_change_broker_exposure_review(root)
         expected = [
             (component, "final_component_sleeve_status", COMPONENT_STATUS, "component_sleeve_review_only"),
             (action, "final_action_preview_design_status", ACTION_STATUS, "action_preview_design_only"),
             (proposal, "final_proposal_document_status", PROPOSAL_STATUS, "proposal_document_draft_only"),
+            (broker, "final_broker_exposure_status", BROKER_EXPOSURE_STATUS, "broker_exposure_review_only"),
         ]
         for result, key, status, true_flag in expected:
             if summary_value(result.summary_rows, key) != status:
@@ -183,10 +192,13 @@ def verify_fixture(failures: list[str]) -> None:
                 verify_row_flags(row, true_flag, failures)
         if summary_value(proposal.summary_rows, "largest_blocker") != "proposal_document_draft_only_broker_exposure_context_still_manual_review":
             failures.append("proposal document must keep broker exposure as a blocker")
+        if summary_value(broker.summary_rows, "largest_blocker") != "broker_exposure_review_present_but_seed_change_still_not_approved":
+            failures.append("broker exposure review must not approve seed change")
         show_checks = [
             (show_vol_targeted_growth_seed_change_component_sleeve_review, COMPONENT_STATUS),
             (show_vol_targeted_growth_seed_change_action_preview_design, ACTION_STATUS),
             (show_vol_targeted_growth_seed_change_proposal_document, PROPOSAL_STATUS),
+            (show_vol_targeted_growth_seed_change_broker_exposure_review, BROKER_EXPOSURE_STATUS),
         ]
         for show_func, status in show_checks:
             code, lines = show_func(root)
@@ -221,8 +233,17 @@ def seed_inputs(root: Path) -> None:
         "vol_targeted_growth_seed_change_cost_turnover_summary.csv",
         "vol_targeted_growth_seed_change_split_stability_summary.csv",
         "qqq100_followup_policy_summary.csv",
+        "vol_targeted_growth_broker_position_comparison_summary.csv",
     ]:
         write_csv(data / path, ["summary_name", "summary_value"], [{"summary_name": "fixture", "summary_value": "present"}])
+    write_csv(
+        data / "vol_targeted_growth_broker_position_comparison_summary.csv",
+        ["summary_name", "summary_value"],
+        [
+            {"summary_name": "final_comparison_status", "summary_value": "vol_targeted_growth_broker_position_comparison_completed_readonly_manual_review_required"},
+            {"summary_name": "broker_position_read_status", "summary_value": "paper_positions_read_readonly"},
+        ],
+    )
 
 
 def write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, object]]) -> None:

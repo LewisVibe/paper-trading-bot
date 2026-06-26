@@ -41,6 +41,7 @@ INPUT_FILES = {
     "component_sleeve_summary": Path("data/vol_targeted_growth_seed_change_component_sleeve_summary.csv"),
     "action_preview_design_summary": Path("data/vol_targeted_growth_seed_change_action_preview_design_summary.csv"),
     "proposal_document_summary": Path("data/vol_targeted_growth_seed_change_proposal_document_summary.csv"),
+    "broker_exposure_summary": Path("data/vol_targeted_growth_seed_change_broker_exposure_summary.csv"),
     "qqq100_followup_policy_summary": Path("data/qqq100_followup_policy_summary.csv"),
     "paper_live_monitoring_summary": Path("data/paper_live_monitoring_status_summary.csv"),
 }
@@ -197,6 +198,10 @@ def build_pack_rows(created_at: str, inputs: dict[str, list[dict[str, str]]], fi
 
 def build_summary_rows(inputs: dict[str, list[dict[str, str]]], pack_rows: list[dict[str, Any]], final_status: str) -> list[dict[str, Any]]:
     missing_count = sum(1 for row in pack_rows if row.get("evidence_status") in {"missing_required", "not_created", "manual_review_required"})
+    all_evidence_present = missing_count == 0 and final_status == FINAL_STATUS
+    seed_readiness = "all_evidence_present_manual_review_required" if all_evidence_present else "not_ready_evidence_incomplete"
+    largest_blocker = "manual_review_required_before_any_seed_change_proposal" if all_evidence_present else "required_seed_change_evidence_incomplete" if final_status == FINAL_STATUS else "missing_seed_change_review"
+    next_step = "manual_review_complete_evidence_before_formal_seed_change_proposal" if all_evidence_present else NEXT_STEP if final_status == FINAL_STATUS else "run_seed_change_review_first"
     rows = [
         ("final_evidence_pack_status", final_status, "Whether saved seed-change review supports this evidence checklist."),
         ("incumbent_seed", INCUMBENT_SEED, "Current paper-live seed remains unchanged."),
@@ -204,9 +209,9 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], pack_rows: list[
         ("source_seed_change_review_status", summary_value(inputs["seed_change_review_summary"], "final_seed_change_review_status") or "missing_seed_change_review", "Saved seed-change review status."),
         ("required_evidence_count", str(len(pack_rows)), "Evidence items required before any seed-change proposal."),
         ("missing_required_evidence_count", str(missing_count), "Evidence items still missing or manual-review required."),
-        ("seed_change_readiness", "not_ready_evidence_incomplete", "Evidence is incomplete; no seed-change proposal is created."),
-        ("largest_blocker", "required_seed_change_evidence_incomplete" if final_status == FINAL_STATUS else "missing_seed_change_review", "Primary blocker."),
-        ("recommended_next_step", NEXT_STEP if final_status == FINAL_STATUS else "run_seed_change_review_first", "Next safe step."),
+        ("seed_change_readiness", seed_readiness, "Evidence state; this still does not approve seed change."),
+        ("largest_blocker", largest_blocker, "Primary blocker."),
+        ("recommended_next_step", next_step, "Next safe step."),
     ]
     return [{"summary_name": n, "summary_value": v, "details": d, **SAFETY_FLAGS} for n, v, d in rows]
 
@@ -250,7 +255,7 @@ def source_status_map(inputs: dict[str, list[dict[str, str]]]) -> dict[str, str]
     return {
         "qqq100_incumbent_state": summary_value(inputs["qqq100_followup_policy_summary"], "final_followup_policy_status") or "missing",
         "volatility_proposal_preview": summary_value(inputs["proposal_preview_summary"], "final_proposal_preview_status") or "missing",
-        "broker_exposure_context": summary_value(inputs["broker_comparison_summary"], "final_comparison_status") or "missing",
+        "broker_exposure_context": summary_value(inputs["broker_exposure_summary"], "final_broker_exposure_status") or summary_value(inputs["broker_comparison_summary"], "final_comparison_status") or "missing",
         "risk_reward_comparison": summary_value(inputs["risk_reward_summary"], "final_risk_reward_status") or "missing",
         "drawdown_stress_review": summary_value(inputs["drawdown_stress_summary"], "final_drawdown_stress_status") or "missing",
         "cost_turnover_review": summary_value(inputs["cost_turnover_summary"], "final_cost_turnover_status") or "missing",
@@ -269,6 +274,8 @@ def resolve_evidence_status(item: str, default_status: str, source_statuses: dic
     if item == "volatility_proposal_preview" and source_statuses.get(item, "missing") == "vol_targeted_growth_proposal_preview_created_saved_output_only":
         return "present_manual_review_required"
     if item == "broker_exposure_context" and source_statuses.get(item, "missing") != "missing":
+        if source_statuses.get(item) == "vol_targeted_growth_broker_exposure_evidence_created_manual_review_required":
+            return "present_manual_review_required"
         return "manual_review_required"
     if item == "risk_reward_comparison" and source_statuses.get(item, "missing") == "vol_targeted_growth_risk_reward_evidence_created_manual_review_required":
         return "present_manual_review_required"
