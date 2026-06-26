@@ -1238,3 +1238,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_stricter_paper_live_discussion_gate_ready_manual_review_required`; the stricter gate is not approved or implemented.
 - **Forbidden commands:** Broker reads, order creation, order instructions, market refresh, portfolio execution wiring, high-growth/crypto promotion, scheduling, or paper-live approval.
 - **Stop condition:** Stop if the task would call Alpaca, read positions, approve the stricter gate, approve paper-live candidacy, create order fields, or connect the candidate to execution.
+
+### Task: Volatility-targeted growth stricter paper-live gate design
+- **Purpose:** Use `python bot.py --vol-targeted-growth-stricter-paper-live-gate-design` to define hard blockers before any paper-live discussion of the volatility-targeted 15/20 candidate.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-stricter-paper-live-gate-design`, `python bot.py --show-vol-targeted-growth-stricter-paper-live-gate-design`, and `python scripts\verify_vol_targeted_growth_stricter_paper_live_gate_design.py`.
+- **Expected status:** `vol_targeted_growth_stricter_paper_live_gate_design_ready_manual_review_required`; the gate is not enforced and paper-live candidacy is not approved.
+- **Forbidden commands:** Broker reads, order creation, order instructions, market refresh, portfolio execution wiring, high-growth/crypto promotion, scheduling, or paper-live approval.
+- **Stop condition:** Stop if the task would enforce the gate, approve paper-live candidacy, call Alpaca, read positions, create order fields, or connect the candidate to execution.

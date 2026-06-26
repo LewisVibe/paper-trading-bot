@@ -1681,6 +1681,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-stricter-paper-live-gate-design"]:
+        from trading_bot.research.vol_targeted_growth_stricter_paper_live_gate_design import (
+            generate_vol_targeted_growth_stricter_paper_live_gate_design,
+        )
+
+        result = generate_vol_targeted_growth_stricter_paper_live_gate_design()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-stricter-paper-live-gate-design"]:
+        from trading_bot.research.vol_targeted_growth_stricter_paper_live_gate_design import (
+            show_vol_targeted_growth_stricter_paper_live_gate_design,
+        )
+
+        code, lines = show_vol_targeted_growth_stricter_paper_live_gate_design()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -2181,6 +2199,10 @@ from trading_bot.research.vol_targeted_growth_broker_position_comparison import 
 from trading_bot.research.vol_targeted_growth_post_comparison_decision import (
     generate_vol_targeted_growth_post_comparison_decision,
     show_vol_targeted_growth_post_comparison_decision,
+)
+from trading_bot.research.vol_targeted_growth_stricter_paper_live_gate_design import (
+    generate_vol_targeted_growth_stricter_paper_live_gate_design,
+    show_vol_targeted_growth_stricter_paper_live_gate_design,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -7303,6 +7325,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved volatility-targeted growth post-comparison decision checkpoint.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-stricter-paper-live-gate-design",
+        action="store_true",
+        help="Create a saved-output-only stricter manual paper-live gate design for the volatility-targeted growth candidate.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-stricter-paper-live-gate-design",
+        action="store_true",
+        help="Display the saved volatility-targeted growth stricter paper-live gate design.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -9414,6 +9446,20 @@ def main() -> int:
         return 0
     if args.show_vol_targeted_growth_post_comparison_decision:
         status_code, lines = show_vol_targeted_growth_post_comparison_decision()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_stricter_paper_live_gate_design:
+        try:
+            result = generate_vol_targeted_growth_stricter_paper_live_gate_design()
+        except Exception as exc:
+            print(f"Volatility-targeted growth stricter paper-live gate design failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_stricter_paper_live_gate_design:
+        status_code, lines = show_vol_targeted_growth_stricter_paper_live_gate_design()
         for line in lines:
             print(line)
         return status_code
