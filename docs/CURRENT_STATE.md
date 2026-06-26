@@ -914,6 +914,12 @@ The volatility-targeted growth seed-change broker-exposure review comes from `py
 - Current expected status is `vol_targeted_growth_broker_exposure_evidence_created_manual_review_required`.
 - It reviews saved broker-comparison output only. It does not call Alpaca or read positions now, and it does not approve a formal seed-change proposal, QQQ100 displacement, order instructions, execution, repeat orders, or scheduling.
 
+The volatility-targeted growth seed-change manual-review checkpoint comes from `python bot.py --vol-targeted-growth-seed-change-manual-review-checkpoint`, with saved display through `python bot.py --show-vol-targeted-growth-seed-change-manual-review-checkpoint`:
+
+- It writes `data/vol_targeted_growth_seed_change_manual_review_checkpoint.csv`, `data/vol_targeted_growth_seed_change_manual_review_summary.csv`, `data/vol_targeted_growth_seed_change_manual_review_evidence.csv`, and `data/vol_targeted_growth_seed_change_manual_review_blockers.csv`.
+- Current expected status is `vol_targeted_growth_seed_change_ready_for_formal_proposal_manual_review`.
+- This means the saved evidence pack can move to human formal-proposal review. It does not create a formal proposal, displace QQQ100, add action-preview implementation, create order instructions, approve execution, approve repeat orders, or approve scheduling.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

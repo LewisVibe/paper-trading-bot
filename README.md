@@ -217,6 +217,8 @@ Volatility-targeted growth remaining seed-change evidence reviews are saved-outp
 
 Volatility-targeted growth seed-change broker-exposure review is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-broker-exposure-review` and `python bot.py --show-vol-targeted-growth-seed-change-broker-exposure-review` review the saved read-only broker-position comparison summary only. It does not call Alpaca or read positions again, and it still does not approve QQQ100 displacement, seed change, order instructions, execution, or scheduling.
 
+Volatility-targeted growth seed-change manual-review checkpoint is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-manual-review-checkpoint` and `python bot.py --show-vol-targeted-growth-seed-change-manual-review-checkpoint` review the completed evidence pack. It may mark the chain ready for human formal-proposal review, but it does not create a formal proposal, displace QQQ100, add action preview implementation, or approve execution.
+
 
 ## Architecture
 

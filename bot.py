@@ -1969,6 +1969,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-seed-change-manual-review-checkpoint"]:
+        from trading_bot.research.vol_targeted_growth_seed_change_manual_review_checkpoint import (
+            generate_vol_targeted_growth_seed_change_manual_review_checkpoint,
+        )
+
+        result = generate_vol_targeted_growth_seed_change_manual_review_checkpoint()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-seed-change-manual-review-checkpoint"]:
+        from trading_bot.research.vol_targeted_growth_seed_change_manual_review_checkpoint import (
+            show_vol_targeted_growth_seed_change_manual_review_checkpoint,
+        )
+
+        code, lines = show_vol_targeted_growth_seed_change_manual_review_checkpoint()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -2527,6 +2545,10 @@ from trading_bot.research.vol_targeted_growth_seed_change_remaining_evidence_rev
     show_vol_targeted_growth_seed_change_action_preview_design,
     show_vol_targeted_growth_seed_change_component_sleeve_review,
     show_vol_targeted_growth_seed_change_proposal_document,
+)
+from trading_bot.research.vol_targeted_growth_seed_change_manual_review_checkpoint import (
+    generate_vol_targeted_growth_seed_change_manual_review_checkpoint,
+    show_vol_targeted_growth_seed_change_manual_review_checkpoint,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -7809,6 +7831,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved volatility-targeted growth seed-change broker-exposure review.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-seed-change-manual-review-checkpoint",
+        action="store_true",
+        help="Create a saved-output-only manual-review checkpoint for completed volatility seed-change evidence.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-seed-change-manual-review-checkpoint",
+        action="store_true",
+        help="Display the saved volatility-targeted growth seed-change manual-review checkpoint.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -10128,6 +10160,16 @@ def main() -> int:
         return 0
     if args.show_vol_targeted_growth_seed_change_broker_exposure_review:
         status_code, lines = show_vol_targeted_growth_seed_change_broker_exposure_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_seed_change_manual_review_checkpoint:
+        result = generate_vol_targeted_growth_seed_change_manual_review_checkpoint()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_seed_change_manual_review_checkpoint:
+        status_code, lines = show_vol_targeted_growth_seed_change_manual_review_checkpoint()
         for line in lines:
             print(line)
         return status_code
