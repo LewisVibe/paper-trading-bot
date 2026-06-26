@@ -25,11 +25,7 @@ activation, the intended sequence is:
 ```powershell
 .venv\Scripts\python.exe scripts\verify_repo_safety.py
 .venv\Scripts\python.exe scripts\verify_hermes_cron_readiness.py
-.venv\Scripts\python.exe scripts\verify_vol_targeted_growth_active_seed_readiness.py
-.venv\Scripts\python.exe bot.py --paper-live-monitoring-status
-.venv\Scripts\python.exe bot.py --paper-live-promotion-ladder-status
-.venv\Scripts\python.exe bot.py --paper-live-checklist-status
-.venv\Scripts\python.exe bot.py --vol-targeted-growth-active-seed-readiness
+.venv\Scripts\python.exe scripts\verify_vps_daily_monitoring_summary.py
 .venv\Scripts\python.exe bot.py --vps-daily-monitoring-summary
 ```
 
@@ -80,8 +76,8 @@ must confirm:
 
 - repo safety passes on the VPS;
 - Hermes cron readiness passes on the VPS;
-- volatility active-seed readiness passes on the VPS;
-- paper-live monitoring, promotion ladder, and checklist reports run safely;
+- VPS daily monitoring summary verifier passes on the VPS;
+- VPS daily monitoring summary includes the active volatility seed readiness section;
 - VPS daily monitoring summary remains status/report only;
 - the job remains script-only / no-agent where possible;
 - toolsets remain restricted to terminal;
