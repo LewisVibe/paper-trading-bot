@@ -673,6 +673,14 @@ For interpreting Telegram output from `paper-bot-vps-status-check`, use
 `monitoring_stale_or_missing_inputs`, and failed-step responses without
 approving execution or creating a second cron.
 
+The paused Hermes status-job checkpoint is documented in
+`docs/HERMES_PAUSED_STATUS_CRON_CHECKPOINT.md` and verified by
+`python scripts\verify_hermes_paused_status_cron_checkpoint.py`. It records
+`paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e` as disabled, paused,
+scheduled only at placeholder `2099-01-01 00:00`, and never run. It is not
+scheduling approval and does not create, edit, trigger, enable, or schedule any
+cron job.
+
 Create a research-only portfolio risk policy audit before any future execution discussion:
 
 ```powershell

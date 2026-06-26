@@ -1398,3 +1398,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_active_seed_monitoring_ready_manual_review_required` when saved reports consistently point at `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`; otherwise `vol_targeted_growth_active_seed_monitoring_incomplete_manual_review_required`.
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable/account/secret fields, action preview implementation, portfolio execution wiring, scheduling, or paper-live execution approval.
 - **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create order fields, approve execution, schedule anything, or connect the candidate to execution.
+
+### Task: Paused Hermes status cron checkpoint
+- **Purpose:** Document and verify the paused future status job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
+- **Risk level:** Low/docs-verifier-only when no Hermes job is created, edited, triggered, enabled, deleted, or scheduled.
+- **Allowed commands:** `python scripts\verify_hermes_paused_status_cron_checkpoint.py`, plus repo safety and static verification.
+- **Expected status:** The doc records `enabled=false`, `state=paused`, placeholder schedule `2099-01-01 00:00`, last run `never`, terminal-only toolset, and false execution/scheduling flags.
+- **Forbidden commands:** Creating, editing, triggering, enabling, deleting, or scheduling Hermes cron jobs; broker reads; Alpaca calls; market refresh; order creation; refresh commands; executable/account/secret fields; action preview implementation; portfolio execution wiring; or paper-live execution approval.
+- **Stop condition:** Stop if the task would change an actual Hermes job, approve scheduling, approve execution, create order fields, call Alpaca, read positions, schedule anything, or connect the candidate to execution.

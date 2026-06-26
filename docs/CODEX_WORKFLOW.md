@@ -141,6 +141,13 @@ CSV contents. A possible promoted-review refresh cron remains a future
 manual-review item documented in
 `docs/HERMES_PROMOTED_REVIEW_REFRESH_CRON_DESIGN.md`; do not create or trigger it
 during routine documentation or verifier work.
+The paused status-job checkpoint lives in
+`docs/HERMES_PAUSED_STATUS_CRON_CHECKPOINT.md`. Job
+`paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e` is disabled, paused,
+scheduled only as a harmless `2099-01-01 00:00` placeholder, and has never run.
+It records a future status/report command sequence only; activation still
+requires separate manual approval. Verify it with
+`python scripts\verify_hermes_paused_status_cron_checkpoint.py`.
 The older `docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md` file is a legacy pointer
 only. Use `docs/HERMES_CRON_MONITORING_RUNBOOK.md` and
 `python scripts\verify_hermes_cron_monitoring_runbook.py` when interpreting
