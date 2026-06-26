@@ -1825,6 +1825,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-seed-change-risk-reward-comparison"]:
+        from trading_bot.research.vol_targeted_growth_seed_change_risk_reward_comparison import (
+            generate_vol_targeted_growth_seed_change_risk_reward_comparison,
+        )
+
+        result = generate_vol_targeted_growth_seed_change_risk_reward_comparison()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-seed-change-risk-reward-comparison"]:
+        from trading_bot.research.vol_targeted_growth_seed_change_risk_reward_comparison import (
+            show_vol_targeted_growth_seed_change_risk_reward_comparison,
+        )
+
+        code, lines = show_vol_targeted_growth_seed_change_risk_reward_comparison()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -2357,6 +2375,10 @@ from trading_bot.research.vol_targeted_growth_seed_change_review import (
 from trading_bot.research.vol_targeted_growth_seed_change_evidence_pack import (
     generate_vol_targeted_growth_seed_change_evidence_pack,
     show_vol_targeted_growth_seed_change_evidence_pack,
+)
+from trading_bot.research.vol_targeted_growth_seed_change_risk_reward_comparison import (
+    generate_vol_targeted_growth_seed_change_risk_reward_comparison,
+    show_vol_targeted_growth_seed_change_risk_reward_comparison,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -7559,6 +7581,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved volatility-targeted growth seed-change evidence pack.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-seed-change-risk-reward-comparison",
+        action="store_true",
+        help="Create a saved-output-only QQQ100 versus volatility risk/reward comparison for seed-change evidence.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-seed-change-risk-reward-comparison",
+        action="store_true",
+        help="Display the saved volatility-targeted growth seed-change risk/reward comparison.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -9782,6 +9814,20 @@ def main() -> int:
         return 0
     if args.show_vol_targeted_growth_seed_change_evidence_pack:
         status_code, lines = show_vol_targeted_growth_seed_change_evidence_pack()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_seed_change_risk_reward_comparison:
+        try:
+            result = generate_vol_targeted_growth_seed_change_risk_reward_comparison()
+        except Exception as exc:
+            print(f"Volatility-targeted growth seed-change risk/reward comparison failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_seed_change_risk_reward_comparison:
+        status_code, lines = show_vol_targeted_growth_seed_change_risk_reward_comparison()
         for line in lines:
             print(line)
         return status_code

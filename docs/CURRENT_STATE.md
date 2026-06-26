@@ -878,6 +878,12 @@ The volatility-targeted growth seed-change evidence pack comes from `python bot.
 - Current expected status is `vol_targeted_growth_seed_change_evidence_pack_incomplete_manual_review_required`.
 - This means required evidence is explicitly incomplete. Component-sleeve approval review, risk/reward comparison, drawdown/stress review, cost/turnover review, split stability review, operational exposure context, action-preview design, and a formal seed-change proposal remain missing or manual-review required. QQQ100 remains the seed and no displacement, order instruction, execution, repeat order, or scheduling is approved.
 
+The volatility-targeted growth seed-change risk/reward comparison comes from `python bot.py --vol-targeted-growth-seed-change-risk-reward-comparison`, with saved display through `python bot.py --show-vol-targeted-growth-seed-change-risk-reward-comparison`:
+
+- It writes `data/vol_targeted_growth_seed_change_risk_reward_comparison.csv`, `data/vol_targeted_growth_seed_change_risk_reward_summary.csv`, `data/vol_targeted_growth_seed_change_risk_reward_evidence.csv`, and `data/vol_targeted_growth_seed_change_risk_reward_blockers.csv`.
+- Current expected status is `vol_targeted_growth_risk_reward_evidence_created_manual_review_required`.
+- Saved metrics show the volatility 15/20 candidate leading QQQ100 on CAGR, Sharpe, MaxDD, and Calmar, but the comparison is not a fresh apples-to-apples regeneration. Source mismatch, component, stress, cost, split, exposure, and formal proposal evidence remain blockers; QQQ100 remains the seed and no displacement, order instruction, execution, repeat order, or scheduling is approved.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

@@ -207,6 +207,8 @@ Volatility-targeted growth seed-change review is saved-output-only: `python bot.
 
 Volatility-targeted growth seed-change evidence pack is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-evidence-pack` and `python bot.py --show-vol-targeted-growth-seed-change-evidence-pack` list the evidence required before QQQ100 displacement could even be proposed. The expected status is incomplete/manual-review because component-sleeve, risk, stress, cost, split, exposure, and formal seed-change proposal evidence are still missing.
 
+Volatility-targeted growth seed-change risk/reward comparison is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-risk-reward-comparison` and `python bot.py --show-vol-targeted-growth-seed-change-risk-reward-comparison` compare saved QQQ100 benchmark metrics with the saved volatility 15/20 candidate. The volatility candidate leads the saved metrics, but source mismatch/manual review remains a blocker and QQQ100 is not displaced.
+
 
 ## Architecture
 
