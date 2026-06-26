@@ -197,6 +197,8 @@ Volatility-targeted growth gate review is saved-output-only: `python bot.py --vo
 
 Volatility-targeted growth candidate discussion is saved-output-only: `python bot.py --vol-targeted-growth-candidate-discussion` and `python bot.py --show-vol-targeted-growth-candidate-discussion` compare QQQ100 with the volatility-targeted candidate in plain terms. It may mark the volatility candidate as a non-executable paper-live candidate proposal for manual review, but QQQ100 remains the incumbent seed and no preview implementation, order instructions, Alpaca calls, execution, or scheduling are approved.
 
+Volatility-targeted growth proposal implementation design is saved-output-only: `python bot.py --vol-targeted-growth-proposal-implementation-design` and `python bot.py --show-vol-targeted-growth-proposal-implementation-design` define what a future non-executable preview/action proposal would need. It does not add implementation, create order fields, call Alpaca, displace QQQ100, or approve execution/scheduling.
+
 
 ## Architecture
 

@@ -231,6 +231,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-gate-review",
     "--vol-targeted-growth-candidate-discussion",
     "--show-vol-targeted-growth-candidate-discussion",
+    "--vol-targeted-growth-proposal-implementation-design",
+    "--show-vol-targeted-growth-proposal-implementation-design",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",
