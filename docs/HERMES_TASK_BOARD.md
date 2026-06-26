@@ -1334,3 +1334,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_split_stability_evidence_created_manual_review_required`; split evidence is supportive but QQQ100 displacement is not approved.
 - **Forbidden commands:** Broker reads, market refresh, fresh split regeneration, seed changes, seed-change proposal creation, order creation, executable/account/secret fields, action preview implementation, portfolio execution wiring, scheduling, or paper-live approval.
 - **Stop condition:** Stop if the task would refresh metrics, create a seed-change proposal, change the seed, approve QQQ100 displacement, read positions, create order fields, call Alpaca, or connect the candidate to execution.
+
+### Task: Volatility-targeted growth remaining seed-change evidence reviews
+- **Purpose:** Use `python bot.py --vol-targeted-growth-seed-change-component-sleeve-review`, `python bot.py --vol-targeted-growth-seed-change-action-preview-design`, and `python bot.py --vol-targeted-growth-seed-change-proposal-document` to fill the remaining non-broker evidence checkpoints.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** The three commands above, their matching `--show-...` commands, and `python scripts\verify_vol_targeted_growth_seed_change_remaining_evidence_reviews.py`.
+- **Expected status:** Component, action-preview, and proposal-document evidence are present/manual-review required; broker exposure remains separate and QQQ100 displacement is not approved.
+- **Forbidden commands:** Broker reads, market refresh, formal seed-change approval, seed changes, order creation, executable/account/secret fields, action preview implementation, portfolio execution wiring, scheduling, or paper-live approval.
+- **Stop condition:** Stop if the task would refresh metrics, create a formal seed-change approval, change the seed, approve QQQ100 displacement, read positions, create order fields, call Alpaca, or connect the candidate to execution.

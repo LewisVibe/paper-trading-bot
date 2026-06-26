@@ -213,6 +213,8 @@ Volatility-targeted growth seed-change drawdown/stress review is saved-output-on
 
 Volatility-targeted growth seed-change cost/turnover and split-stability reviews are saved-output-only: `python bot.py --vol-targeted-growth-seed-change-cost-turnover-review`, `python bot.py --show-vol-targeted-growth-seed-change-cost-turnover-review`, `python bot.py --vol-targeted-growth-seed-change-split-stability-review`, and `python bot.py --show-vol-targeted-growth-seed-change-split-stability-review`. Cost/turnover remains a manual-review gap because exact saved cost stress is missing; split stability is supportive but still not a seed-change approval.
 
+Volatility-targeted growth remaining seed-change evidence reviews are saved-output-only: `python bot.py --vol-targeted-growth-seed-change-component-sleeve-review`, `python bot.py --vol-targeted-growth-seed-change-action-preview-design`, and `python bot.py --vol-targeted-growth-seed-change-proposal-document`, with matching `--show-...` commands. They fill component-sleeve, action-preview-design, and draft proposal-document evidence, but broker exposure remains a manual-review blocker and QQQ100 is not displaced.
+
 
 ## Architecture
 

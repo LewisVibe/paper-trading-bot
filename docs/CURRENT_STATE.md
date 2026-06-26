@@ -902,6 +902,12 @@ The volatility-targeted growth seed-change split-stability review comes from `py
 - Current expected status is `vol_targeted_growth_split_stability_evidence_created_manual_review_required`.
 - Saved split stability is supportive, but nearby-variant fragility and the remaining seed-change evidence items keep this manual-review only. QQQ100 remains the seed and no displacement, order instruction, execution, repeat order, or scheduling is approved.
 
+The remaining volatility-targeted seed-change evidence reviews come from `python bot.py --vol-targeted-growth-seed-change-component-sleeve-review`, `python bot.py --vol-targeted-growth-seed-change-action-preview-design`, and `python bot.py --vol-targeted-growth-seed-change-proposal-document`, with matching saved display commands:
+
+- They write saved component-sleeve, action-preview-design, and proposal-document checkpoint CSVs under `data/vol_targeted_growth_seed_change_*`.
+- Current expected statuses are `vol_targeted_growth_component_sleeve_evidence_created_manual_review_required`, `vol_targeted_growth_action_preview_design_evidence_created_manual_review_required`, and `vol_targeted_growth_seed_change_proposal_document_draft_created_manual_review_required`.
+- The proposal-document command is draft/checkpoint only. It does not create a formal seed-change proposal, does not displace QQQ100, and does not approve order instructions, execution, repeat orders, or scheduling. Broker exposure context remains a separate manual-review blocker.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

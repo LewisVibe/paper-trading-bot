@@ -1897,6 +1897,60 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-seed-change-component-sleeve-review"]:
+        from trading_bot.research.vol_targeted_growth_seed_change_remaining_evidence_reviews import (
+            generate_vol_targeted_growth_seed_change_component_sleeve_review,
+        )
+
+        result = generate_vol_targeted_growth_seed_change_component_sleeve_review()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-seed-change-component-sleeve-review"]:
+        from trading_bot.research.vol_targeted_growth_seed_change_remaining_evidence_reviews import (
+            show_vol_targeted_growth_seed_change_component_sleeve_review,
+        )
+
+        code, lines = show_vol_targeted_growth_seed_change_component_sleeve_review()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-seed-change-action-preview-design"]:
+        from trading_bot.research.vol_targeted_growth_seed_change_remaining_evidence_reviews import (
+            generate_vol_targeted_growth_seed_change_action_preview_design,
+        )
+
+        result = generate_vol_targeted_growth_seed_change_action_preview_design()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-seed-change-action-preview-design"]:
+        from trading_bot.research.vol_targeted_growth_seed_change_remaining_evidence_reviews import (
+            show_vol_targeted_growth_seed_change_action_preview_design,
+        )
+
+        code, lines = show_vol_targeted_growth_seed_change_action_preview_design()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-seed-change-proposal-document"]:
+        from trading_bot.research.vol_targeted_growth_seed_change_remaining_evidence_reviews import (
+            generate_vol_targeted_growth_seed_change_proposal_document,
+        )
+
+        result = generate_vol_targeted_growth_seed_change_proposal_document()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-seed-change-proposal-document"]:
+        from trading_bot.research.vol_targeted_growth_seed_change_remaining_evidence_reviews import (
+            show_vol_targeted_growth_seed_change_proposal_document,
+        )
+
+        code, lines = show_vol_targeted_growth_seed_change_proposal_document()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -2445,6 +2499,14 @@ from trading_bot.research.vol_targeted_growth_seed_change_cost_turnover_review i
 from trading_bot.research.vol_targeted_growth_seed_change_split_stability_review import (
     generate_vol_targeted_growth_seed_change_split_stability_review,
     show_vol_targeted_growth_seed_change_split_stability_review,
+)
+from trading_bot.research.vol_targeted_growth_seed_change_remaining_evidence_reviews import (
+    generate_vol_targeted_growth_seed_change_action_preview_design,
+    generate_vol_targeted_growth_seed_change_component_sleeve_review,
+    generate_vol_targeted_growth_seed_change_proposal_document,
+    show_vol_targeted_growth_seed_change_action_preview_design,
+    show_vol_targeted_growth_seed_change_component_sleeve_review,
+    show_vol_targeted_growth_seed_change_proposal_document,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -7687,6 +7749,36 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved volatility-targeted growth seed-change split-stability review.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-seed-change-component-sleeve-review",
+        action="store_true",
+        help="Create a saved-output-only component-sleeve review for volatility seed-change evidence.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-seed-change-component-sleeve-review",
+        action="store_true",
+        help="Display the saved volatility-targeted growth seed-change component-sleeve review.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-seed-change-action-preview-design",
+        action="store_true",
+        help="Create a saved-output-only action-preview design checkpoint for volatility seed-change evidence.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-seed-change-action-preview-design",
+        action="store_true",
+        help="Display the saved volatility-targeted growth seed-change action-preview design checkpoint.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-seed-change-proposal-document",
+        action="store_true",
+        help="Create a saved-output-only proposal-document draft checkpoint for volatility seed-change evidence.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-seed-change-proposal-document",
+        action="store_true",
+        help="Display the saved volatility-targeted growth seed-change proposal-document checkpoint.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -9966,6 +10058,36 @@ def main() -> int:
         return 0
     if args.show_vol_targeted_growth_seed_change_split_stability_review:
         status_code, lines = show_vol_targeted_growth_seed_change_split_stability_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_seed_change_component_sleeve_review:
+        result = generate_vol_targeted_growth_seed_change_component_sleeve_review()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_seed_change_component_sleeve_review:
+        status_code, lines = show_vol_targeted_growth_seed_change_component_sleeve_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_seed_change_action_preview_design:
+        result = generate_vol_targeted_growth_seed_change_action_preview_design()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_seed_change_action_preview_design:
+        status_code, lines = show_vol_targeted_growth_seed_change_action_preview_design()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_seed_change_proposal_document:
+        result = generate_vol_targeted_growth_seed_change_proposal_document()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_seed_change_proposal_document:
+        status_code, lines = show_vol_targeted_growth_seed_change_proposal_document()
         for line in lines:
             print(line)
         return status_code
