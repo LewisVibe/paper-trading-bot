@@ -938,6 +938,12 @@ The volatility-targeted growth seed-change implementation design comes from `pyt
 - Current expected status is `vol_targeted_growth_seed_change_implementation_design_created_manual_review_required`.
 - This describes the future code-change boundaries for a possible seed switch. It does not change the active seed, displace QQQ100, add action-preview implementation, create order instructions, approve paper execution, approve live execution, approve repeat orders, or approve scheduling.
 
+The volatility-targeted growth seed-change dry-run diff comes from `python bot.py --vol-targeted-growth-seed-change-dry-run-diff`, with saved display through `python bot.py --show-vol-targeted-growth-seed-change-dry-run-diff`:
+
+- It writes `data/vol_targeted_growth_seed_change_dry_run_diff.csv`, `data/vol_targeted_growth_seed_change_dry_run_diff_summary.csv`, `data/vol_targeted_growth_seed_change_dry_run_diff_evidence.csv`, and `data/vol_targeted_growth_seed_change_dry_run_diff_blockers.csv`.
+- Current expected status is `vol_targeted_growth_seed_change_dry_run_diff_created_manual_review_required`.
+- This lists the future files/areas that would need review for a seed switch. It does not modify those files, change the active seed, displace QQQ100, add action-preview implementation, create order instructions, approve paper execution, approve live execution, approve repeat orders, or approve scheduling.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

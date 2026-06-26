@@ -78,6 +78,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - `python bot.py --vol-targeted-growth-formal-seed-change-proposal` may create the saved proposal document for human review only; it does not record approval, displace QQQ100, change the seed, implement action preview, execute, repeat orders, or schedule.
 - `python bot.py --vol-targeted-growth-seed-change-manual-approval-record` may record approval for the implementation-design checkpoint only; it does not displace QQQ100, change the seed, implement action preview, execute, repeat orders, or schedule.
 - `python bot.py --vol-targeted-growth-seed-change-implementation-design` may describe future seed-change code boundaries only; it does not displace QQQ100, change the seed, implement action preview, execute, repeat orders, or schedule.
+- `python bot.py --vol-targeted-growth-seed-change-dry-run-diff` may list future seed-switch target files/areas only; it does not modify those files, displace QQQ100, change the seed, implement action preview, execute, repeat orders, or schedule.
 - Keep crypto research-only.
 - Keep SMA/slow-SMA out of paper-live promotion.
 

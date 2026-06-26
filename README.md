@@ -225,6 +225,8 @@ Volatility-targeted growth seed-change manual approval record is saved-output-on
 
 Volatility-targeted growth seed-change implementation design is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-implementation-design` and `python bot.py --show-vol-targeted-growth-seed-change-implementation-design` describe the future code-change boundaries for switching the seed. The design does not change the active seed, displace QQQ100, add action preview, create order instructions, or approve execution.
 
+Volatility-targeted growth seed-change dry-run diff is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-dry-run-diff` and `python bot.py --show-vol-targeted-growth-seed-change-dry-run-diff` list the future files/areas that would need review for a seed switch. It does not modify those files, change the active seed, add action preview, create order instructions, or approve execution.
+
 
 ## Architecture
 
