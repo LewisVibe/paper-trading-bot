@@ -817,6 +817,13 @@ The volatility-targeted growth broker-comparison run-readiness checkpoint comes 
 - Current expected status is `vol_targeted_growth_readonly_broker_comparison_ready_for_explicit_manual_approval_required`.
 - This checkpoint only says the project is ready to ask for explicit manual approval before a future read-only broker-position comparison. It does not grant approval, call Alpaca, read positions, approve paper-live candidacy, create orders, approve execution, or approve scheduling.
 
+The volatility-targeted growth broker-position comparison comes from `python bot.py --vol-targeted-growth-broker-position-comparison`, with saved display through `python bot.py --show-vol-targeted-growth-broker-position-comparison`:
+
+- It writes `data/vol_targeted_growth_broker_position_comparison.csv`, `data/vol_targeted_growth_broker_position_comparison_summary.csv`, `data/vol_targeted_growth_broker_position_comparison_evidence.csv`, and `data/vol_targeted_growth_broker_position_comparison_blockers.csv`.
+- Default mode does not call Alpaca or read positions; it writes `vol_targeted_growth_broker_position_comparison_not_run_confirmation_required`.
+- Confirmed read-only mode requires `--confirm-readonly-alpaca-check` in a separately approved run. Even then, it compares saved target sleeves with paper-position context only and does not create order instructions, approve paper-live candidacy, approve execution, or approve scheduling.
+- Strategy explanation: the candidate is a research-only multi-sleeve growth portfolio with 70% QQQ100 core trend, 20% high-growth research, 5% crypto research, and 5% defensive buffer. It targets 15% volatility over a 20-day window with a 1x cap, so it tries to keep growth exposure while reducing exposure when recent volatility rises.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

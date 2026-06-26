@@ -1639,6 +1639,30 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if "--vol-targeted-growth-broker-position-comparison" in sys.argv[1:]:
+        from trading_bot.research.vol_targeted_growth_broker_position_comparison import (
+            generate_vol_targeted_growth_broker_position_comparison,
+        )
+
+        allowed = {"--vol-targeted-growth-broker-position-comparison", "--confirm-readonly-alpaca-check"}
+        if not set(sys.argv[1:]).issubset(allowed):
+            print("--vol-targeted-growth-broker-position-comparison only accepts --confirm-readonly-alpaca-check.")
+            raise SystemExit(2)
+        result = generate_vol_targeted_growth_broker_position_comparison(
+            confirm_readonly_alpaca_check="--confirm-readonly-alpaca-check" in sys.argv[1:]
+        )
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-broker-position-comparison"]:
+        from trading_bot.research.vol_targeted_growth_broker_position_comparison import (
+            show_vol_targeted_growth_broker_position_comparison,
+        )
+
+        code, lines = show_vol_targeted_growth_broker_position_comparison()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -2131,6 +2155,10 @@ from trading_bot.research.vol_targeted_growth_paper_live_decision import (
 from trading_bot.research.vol_targeted_growth_broker_comparison_run_readiness import (
     generate_vol_targeted_growth_broker_comparison_run_readiness,
     show_vol_targeted_growth_broker_comparison_run_readiness,
+)
+from trading_bot.research.vol_targeted_growth_broker_position_comparison import (
+    generate_vol_targeted_growth_broker_position_comparison,
+    show_vol_targeted_growth_broker_position_comparison,
 )
 from trading_bot.research.project_research_state_refresh import (
     generate_project_research_state_refresh,
@@ -7233,6 +7261,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved volatility-targeted growth broker-comparison run-readiness checkpoint.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-broker-position-comparison",
+        action="store_true",
+        help="Create a read-only/manual-review broker-position comparison for volatility-targeted growth; broker reads require --confirm-readonly-alpaca-check.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-broker-position-comparison",
+        action="store_true",
+        help="Display the saved volatility-targeted growth broker-position comparison.",
+    )
+    parser.add_argument(
         "--vol-managed-etf-backtest",
         action="store_true",
         help="Run a research-only volatility-managed ETF dual momentum backtest without execution.",
@@ -9314,6 +9352,22 @@ def main() -> int:
         return 0
     if args.show_vol_targeted_growth_broker_comparison_run_readiness:
         status_code, lines = show_vol_targeted_growth_broker_comparison_run_readiness()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_broker_position_comparison:
+        try:
+            result = generate_vol_targeted_growth_broker_position_comparison(
+                confirm_readonly_alpaca_check=args.confirm_readonly_alpaca_check
+            )
+        except Exception as exc:
+            print(f"Volatility-targeted growth broker-position comparison failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_broker_position_comparison:
+        status_code, lines = show_vol_targeted_growth_broker_position_comparison()
         for line in lines:
             print(line)
         return status_code

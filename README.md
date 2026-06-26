@@ -187,6 +187,8 @@ Volatility-targeted growth paper-live decision is saved-output-only: `python bot
 
 Volatility-targeted growth broker-comparison run-readiness is saved-output-only: `python bot.py --vol-targeted-growth-broker-comparison-run-readiness` and `python bot.py --show-vol-targeted-growth-broker-comparison-run-readiness` checks whether the project is ready to request explicit manual approval for a future read-only broker-position comparison. It does not grant that approval, call Alpaca, read positions, approve paper-live candidacy, create order instructions, or approve scheduling.
 
+Volatility-targeted growth broker-position comparison is read-only/manual-review: `python bot.py --vol-targeted-growth-broker-position-comparison` writes a safe blocked report unless `--confirm-readonly-alpaca-check` is supplied in a separately approved run. The strategy is a research-only multi-sleeve growth portfolio: 70% QQQ100 core trend, 20% high-growth research, 5% crypto research, and 5% defensive buffer, with a 15% volatility target over a 20-day window and a 1x exposure cap. The command compares saved target sleeves with paper-position context only; it does not create order instructions, approve paper-live candidacy, or approve scheduling.
+
 
 ## Architecture
 
