@@ -177,6 +177,10 @@ Volatility-targeted growth action-preview design is saved-output-only: `python b
 
 Volatility-targeted growth action preview is saved-output-only: `python bot.py --vol-targeted-growth-action-preview` and `python bot.py --show-vol-targeted-growth-action-preview` create sleeve-level manual-review rows from the saved 15/20 preview signal. Current exposure is deliberately `current_exposure_not_read`; it reads no broker positions, includes no order side/quantity/type/account fields, and does not approve execution or scheduling.
 
+Volatility-targeted growth broker-position comparison design is report-only: `python bot.py --vol-targeted-growth-broker-position-comparison-design` and `python bot.py --show-vol-targeted-growth-broker-position-comparison-design` document the future safety gates for an explicit read-only broker comparison. It does not call Alpaca, read positions, create orders, or approve execution.
+
+Volatility-targeted growth portfolio-risk review is saved-output-only: `python bot.py --vol-targeted-growth-portfolio-risk-review` and `python bot.py --show-vol-targeted-growth-portfolio-risk-review` keeps the 15/20 candidate research-only until broker comparison and portfolio risk policy are reviewed. It does not approve paper-live candidacy, execution, or scheduling.
+
 
 ## Architecture
 

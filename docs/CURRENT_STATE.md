@@ -786,6 +786,18 @@ The volatility-targeted growth action preview comes from `python bot.py --vol-ta
 - It creates sleeve-level manual-review rows for the saved 15/20 target weights, while `current_exposure_status=current_exposure_not_read` and `broker_positions_compared=false`.
 - It does not read broker positions, create executable order instructions, include order side/quantity/type/account fields, approve paper execution, approve live execution, or approve scheduling.
 
+The volatility-targeted growth broker-position comparison design comes from `python bot.py --vol-targeted-growth-broker-position-comparison-design`, with saved display through `python bot.py --show-vol-targeted-growth-broker-position-comparison-design`:
+
+- It writes `data/vol_targeted_growth_broker_position_comparison_design.csv`, `data/vol_targeted_growth_broker_position_comparison_design_summary.csv`, `data/vol_targeted_growth_broker_position_comparison_design_evidence.csv`, and `data/vol_targeted_growth_broker_position_comparison_design_blockers.csv`.
+- Current expected status is `vol_targeted_growth_broker_position_comparison_design_ready_manual_review_required`.
+- It is design-only and does not call Alpaca, read broker positions, create orders, or approve execution/scheduling.
+
+The volatility-targeted growth portfolio-risk review comes from `python bot.py --vol-targeted-growth-portfolio-risk-review`, with saved display through `python bot.py --show-vol-targeted-growth-portfolio-risk-review`:
+
+- It writes `data/vol_targeted_growth_portfolio_risk_review.csv`, `data/vol_targeted_growth_portfolio_risk_review_summary.csv`, `data/vol_targeted_growth_portfolio_risk_review_evidence.csv`, and `data/vol_targeted_growth_portfolio_risk_review_blockers.csv`.
+- Current expected status is `vol_targeted_growth_portfolio_risk_manual_review_required`.
+- It keeps the candidate research-only: broker-position comparison and portfolio risk policy remain unresolved, so paper-live discussion, paper execution, execution, and scheduling are not approved.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

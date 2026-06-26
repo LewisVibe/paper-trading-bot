@@ -1182,3 +1182,19 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_action_preview_created_saved_output_only`; current exposure should remain `current_exposure_not_read` and broker comparison should remain false.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, broker-position comparison, order side/quantity/type/account fields, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
 - **Stop condition:** Stop if the task would read broker positions, include executable order fields, approve execution/scheduling, or treat the saved action preview as paper-live approval.
+
+### Task: Volatility-targeted growth broker-position comparison design
+- **Purpose:** Use `python bot.py --vol-targeted-growth-broker-position-comparison-design` to document gates for a possible future explicit read-only broker-position comparison.
+- **Risk level:** Low/report-only when no broker read is performed.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-broker-position-comparison-design`, `python bot.py --show-vol-targeted-growth-broker-position-comparison-design`, and `python scripts\verify_vol_targeted_growth_broker_position_comparison_design.py`.
+- **Expected status:** `vol_targeted_growth_broker_position_comparison_design_ready_manual_review_required`; broker positions remain unread.
+- **Forbidden commands:** Alpaca calls, position reads, order-capable commands, executable order fields, scheduling, or paper-live approval.
+- **Stop condition:** Stop if the task would perform the broker read instead of only designing it.
+
+### Task: Volatility-targeted growth portfolio-risk review
+- **Purpose:** Use `python bot.py --vol-targeted-growth-portfolio-risk-review` to decide whether the 15/20 candidate stays research-only or can enter paper-live discussion.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-portfolio-risk-review`, `python bot.py --show-vol-targeted-growth-portfolio-risk-review`, and `python scripts\verify_vol_targeted_growth_portfolio_risk_review.py`.
+- **Expected status:** `vol_targeted_growth_portfolio_risk_manual_review_required`; paper-live discussion remains not approved until broker comparison and portfolio risk policy are reviewed.
+- **Forbidden commands:** Broker reads, market refresh, order instructions, portfolio execution wiring, high-growth/crypto promotion, scheduling, or paper-live approval.
+- **Stop condition:** Stop if the task would approve paper-live candidacy or execution.
