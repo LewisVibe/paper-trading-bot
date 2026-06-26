@@ -223,6 +223,8 @@ Volatility-targeted growth formal seed-change proposal is saved-output-only: `py
 
 Volatility-targeted growth seed-change manual approval record is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-manual-approval-record` and `python bot.py --show-vol-targeted-growth-seed-change-manual-approval-record` record manual approval to design the implementation only. QQQ100 remains the active seed until a separate implementation checkpoint, and no action preview, order instruction, execution, repeat order, or scheduling is approved.
 
+Volatility-targeted growth seed-change implementation design is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-implementation-design` and `python bot.py --show-vol-targeted-growth-seed-change-implementation-design` describe the future code-change boundaries for switching the seed. The design does not change the active seed, displace QQQ100, add action preview, create order instructions, or approve execution.
+
 
 ## Architecture
 

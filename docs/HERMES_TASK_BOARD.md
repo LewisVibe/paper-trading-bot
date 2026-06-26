@@ -1374,3 +1374,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_seed_change_manual_approval_recorded_implementation_required`; QQQ100 remains the active seed until a separate implementation checkpoint.
 - **Forbidden commands:** Seed changes, QQQ100 displacement implementation, broker reads, Alpaca calls, market refresh, order creation, executable/account/secret fields, action preview implementation, portfolio execution wiring, scheduling, or paper-live execution approval.
 - **Stop condition:** Stop if the task would change the seed, approve execution, create order fields, call Alpaca, read positions, schedule anything, or connect the candidate to execution.
+
+### Task: Volatility-targeted growth seed-change implementation design
+- **Purpose:** Use `python bot.py --vol-targeted-growth-seed-change-implementation-design` to describe the future code-change boundaries for a possible seed switch.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-seed-change-implementation-design`, `python bot.py --show-vol-targeted-growth-seed-change-implementation-design`, and `python scripts\verify_vol_targeted_growth_seed_change_implementation_design.py`.
+- **Expected status:** `vol_targeted_growth_seed_change_implementation_design_created_manual_review_required`; QQQ100 remains the active seed until a separate implementation change.
+- **Forbidden commands:** Seed changes, QQQ100 displacement implementation, broker reads, Alpaca calls, market refresh, order creation, executable/account/secret fields, action preview implementation, portfolio execution wiring, scheduling, or paper-live execution approval.
+- **Stop condition:** Stop if the task would change the seed, approve execution, create order fields, call Alpaca, read positions, schedule anything, or connect the candidate to execution.
