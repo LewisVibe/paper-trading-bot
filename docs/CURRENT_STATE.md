@@ -890,6 +890,18 @@ The volatility-targeted growth seed-change drawdown/stress review comes from `py
 - Current expected status is `vol_targeted_growth_drawdown_stress_evidence_created_manual_review_required`.
 - Saved MaxDD favors the volatility 15/20 candidate over QQQ100, but the evidence is not a fresh apples-to-apples drawdown-window/stress regeneration. Stress-window evidence remains incomplete; QQQ100 remains the seed and no displacement, order instruction, execution, repeat order, or scheduling is approved.
 
+The volatility-targeted growth seed-change cost/turnover review comes from `python bot.py --vol-targeted-growth-seed-change-cost-turnover-review`, with saved display through `python bot.py --show-vol-targeted-growth-seed-change-cost-turnover-review`:
+
+- It writes `data/vol_targeted_growth_seed_change_cost_turnover_review.csv`, `data/vol_targeted_growth_seed_change_cost_turnover_summary.csv`, `data/vol_targeted_growth_seed_change_cost_turnover_evidence.csv`, and `data/vol_targeted_growth_seed_change_cost_turnover_blockers.csv`.
+- Current expected status is `vol_targeted_growth_cost_turnover_evidence_created_manual_review_required`.
+- Exact saved turnover and cost-stress metrics are still missing for a seed-change proposal, so this evidence item is present but remains a manual-review blocker. QQQ100 remains the seed and no displacement, order instruction, execution, repeat order, or scheduling is approved.
+
+The volatility-targeted growth seed-change split-stability review comes from `python bot.py --vol-targeted-growth-seed-change-split-stability-review`, with saved display through `python bot.py --show-vol-targeted-growth-seed-change-split-stability-review`:
+
+- It writes `data/vol_targeted_growth_seed_change_split_stability_review.csv`, `data/vol_targeted_growth_seed_change_split_stability_summary.csv`, `data/vol_targeted_growth_seed_change_split_stability_evidence.csv`, and `data/vol_targeted_growth_seed_change_split_stability_blockers.csv`.
+- Current expected status is `vol_targeted_growth_split_stability_evidence_created_manual_review_required`.
+- Saved split stability is supportive, but nearby-variant fragility and the remaining seed-change evidence items keep this manual-review only. QQQ100 remains the seed and no displacement, order instruction, execution, repeat order, or scheduling is approved.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

@@ -211,6 +211,8 @@ Volatility-targeted growth seed-change risk/reward comparison is saved-output-on
 
 Volatility-targeted growth seed-change drawdown/stress review is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-drawdown-stress-review` and `python bot.py --show-vol-targeted-growth-seed-change-drawdown-stress-review` compare saved QQQ100 and volatility candidate MaxDD evidence. The volatility candidate has the less severe saved drawdown, but this is not a fresh stress-window regeneration and QQQ100 is not displaced.
 
+Volatility-targeted growth seed-change cost/turnover and split-stability reviews are saved-output-only: `python bot.py --vol-targeted-growth-seed-change-cost-turnover-review`, `python bot.py --show-vol-targeted-growth-seed-change-cost-turnover-review`, `python bot.py --vol-targeted-growth-seed-change-split-stability-review`, and `python bot.py --show-vol-targeted-growth-seed-change-split-stability-review`. Cost/turnover remains a manual-review gap because exact saved cost stress is missing; split stability is supportive but still not a seed-change approval.
+
 
 ## Architecture
 

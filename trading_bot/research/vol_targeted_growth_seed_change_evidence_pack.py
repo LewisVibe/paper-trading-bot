@@ -36,6 +36,8 @@ INPUT_FILES = {
     "broker_comparison_summary": Path("data/vol_targeted_growth_broker_position_comparison_summary.csv"),
     "risk_reward_summary": Path("data/vol_targeted_growth_seed_change_risk_reward_summary.csv"),
     "drawdown_stress_summary": Path("data/vol_targeted_growth_seed_change_drawdown_stress_summary.csv"),
+    "cost_turnover_summary": Path("data/vol_targeted_growth_seed_change_cost_turnover_summary.csv"),
+    "split_stability_summary": Path("data/vol_targeted_growth_seed_change_split_stability_summary.csv"),
     "qqq100_followup_policy_summary": Path("data/qqq100_followup_policy_summary.csv"),
     "paper_live_monitoring_summary": Path("data/paper_live_monitoring_status_summary.csv"),
 }
@@ -248,6 +250,8 @@ def source_status_map(inputs: dict[str, list[dict[str, str]]]) -> dict[str, str]
         "broker_exposure_context": summary_value(inputs["broker_comparison_summary"], "final_comparison_status") or "missing",
         "risk_reward_comparison": summary_value(inputs["risk_reward_summary"], "final_risk_reward_status") or "missing",
         "drawdown_stress_review": summary_value(inputs["drawdown_stress_summary"], "final_drawdown_stress_status") or "missing",
+        "cost_turnover_review": summary_value(inputs["cost_turnover_summary"], "final_cost_turnover_status") or "missing",
+        "split_stability_review": summary_value(inputs["split_stability_summary"], "final_split_stability_status") or "missing",
     }
 
 
@@ -263,6 +267,10 @@ def resolve_evidence_status(item: str, default_status: str, source_statuses: dic
     if item == "risk_reward_comparison" and source_statuses.get(item, "missing") == "vol_targeted_growth_risk_reward_evidence_created_manual_review_required":
         return "present_manual_review_required"
     if item == "drawdown_stress_review" and source_statuses.get(item, "missing") == "vol_targeted_growth_drawdown_stress_evidence_created_manual_review_required":
+        return "present_manual_review_required"
+    if item == "cost_turnover_review" and source_statuses.get(item, "missing") == "vol_targeted_growth_cost_turnover_evidence_created_manual_review_required":
+        return "present_manual_review_required"
+    if item == "split_stability_review" and source_statuses.get(item, "missing") == "vol_targeted_growth_split_stability_evidence_created_manual_review_required":
         return "present_manual_review_required"
     return default_status
 
