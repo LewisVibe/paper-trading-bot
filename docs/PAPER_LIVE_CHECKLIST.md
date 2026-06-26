@@ -52,6 +52,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - `python bot.py --vol-targeted-growth-preview-design` may document the future preview-only output shape for 15%/20-day, but it still does not create a preview signal, action preview, order instructions, paper execution, or scheduling approval.
 - `python bot.py --vol-targeted-growth-preview-signal` may write saved candidate identity, target sleeve weights, volatility settings, blockers, and safety flags for 15%/20-day, but it still does not create an action preview, order instructions, paper execution, or scheduling approval.
 - `python bot.py --vol-targeted-growth-action-preview-design` may document how a future action-preview checkpoint should behave, but it still does not create action rows, read broker positions, create order instructions, approve paper execution, or approve scheduling.
+- `python bot.py --vol-targeted-growth-action-preview` may create saved sleeve-level manual-review rows from the 15%/20-day preview signal, but current exposure remains not read and it still does not create order instructions, approve paper execution, or approve scheduling.
 - Keep crypto research-only.
 - Keep SMA/slow-SMA out of paper-live promotion.
 

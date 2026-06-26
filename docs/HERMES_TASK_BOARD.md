@@ -1174,3 +1174,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_action_preview_design_ready_manual_review_required`; it should remain design-only and require manual review before any saved action-preview implementation.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, actual action previews, order side/quantity/type/account fields, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
 - **Stop condition:** Stop if the task would create action rows, read broker positions, include executable order fields, approve execution/scheduling, or treat the design as paper-live approval.
+
+### Task: Volatility-targeted growth action preview
+- **Purpose:** Use `python bot.py --vol-targeted-growth-action-preview` to create saved sleeve-level manual-review rows from the 15/20 preview signal.
+- **Risk level:** Low/report-only when limited to saved preview-signal/design outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-action-preview`, `python bot.py --show-vol-targeted-growth-action-preview`, and `python scripts\verify_vol_targeted_growth_action_preview.py`.
+- **Expected status:** `vol_targeted_growth_action_preview_created_saved_output_only`; current exposure should remain `current_exposure_not_read` and broker comparison should remain false.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, live position reads, broker-position comparison, order side/quantity/type/account fields, portfolio execution implementation, high-growth/crypto promotion, or scheduling.
+- **Stop condition:** Stop if the task would read broker positions, include executable order fields, approve execution/scheduling, or treat the saved action preview as paper-live approval.

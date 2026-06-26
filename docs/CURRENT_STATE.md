@@ -778,6 +778,14 @@ The volatility-targeted growth action-preview design checkpoint comes from `pyth
 - It documents that any future action preview must use manual-review labels, treat unknown position state loudly, and avoid order side, order quantity, order type, account, order ID, API key, webhook, or secret fields.
 - It does not create actual action-preview rows, read broker positions, create orders, approve paper execution, approve live execution, or approve scheduling.
 
+The volatility-targeted growth action preview comes from `python bot.py --vol-targeted-growth-action-preview`, with saved display through `python bot.py --show-vol-targeted-growth-action-preview`:
+
+- It reads only the saved volatility-targeted preview signal and action-preview design outputs.
+- It writes `data/vol_targeted_growth_action_preview.csv`, `data/vol_targeted_growth_action_preview_summary.csv`, `data/vol_targeted_growth_action_preview_evidence.csv`, and `data/vol_targeted_growth_action_preview_blockers.csv`.
+- Current expected status is `vol_targeted_growth_action_preview_created_saved_output_only`.
+- It creates sleeve-level manual-review rows for the saved 15/20 target weights, while `current_exposure_status=current_exposure_not_read` and `broker_positions_compared=false`.
+- It does not read broker positions, create executable order instructions, include order side/quantity/type/account fields, approve paper execution, approve live execution, or approve scheduling.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
