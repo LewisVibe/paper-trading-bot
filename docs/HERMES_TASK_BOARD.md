@@ -1254,3 +1254,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_limited_manual_candidate_discussion_ready_gate_review_required`; paper-live candidacy is not approved.
 - **Forbidden commands:** Broker reads, order creation, order instructions, market refresh, portfolio execution wiring, high-growth/crypto promotion, scheduling, or paper-live approval.
 - **Stop condition:** Stop if the task would enforce the gate, approve paper-live candidacy, call Alpaca, read positions, create order fields, or connect the candidate to execution.
+
+### Task: Volatility-targeted growth candidate discussion
+- **Purpose:** Use `python bot.py --vol-targeted-growth-candidate-discussion` to compare QQQ100 and the volatility-targeted candidate in plain terms and decide whether the latter can be a non-executable proposal for manual review.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-candidate-discussion`, `python bot.py --show-vol-targeted-growth-candidate-discussion`, and `python scripts\verify_vol_targeted_growth_candidate_discussion.py`.
+- **Expected status:** `vol_targeted_growth_non_executable_candidate_proposal_ready_manual_review_required`; QQQ100 remains the incumbent paper-live seed.
+- **Forbidden commands:** Broker reads, order creation, order instructions, market refresh, preview/action implementation, portfolio execution wiring, high-growth/crypto promotion, scheduling, or paper-live approval.
+- **Stop condition:** Stop if the task would displace QQQ100, approve paper-live candidacy, call Alpaca, read positions, create order fields, implement the candidate, or connect it to execution.

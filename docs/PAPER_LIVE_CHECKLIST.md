@@ -62,6 +62,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - `python bot.py --vol-targeted-growth-post-comparison-decision` may mark the chain ready to design a stricter manual paper-live discussion gate after saved confirmed comparison evidence, but it still does not approve the gate, paper-live candidacy, execution, or scheduling.
 - `python bot.py --vol-targeted-growth-stricter-paper-live-gate-design` defines hard blockers for any future discussion: QQQ100 remains the incumbent seed, allocation cap is separate, high-growth/crypto stay research-only, and the gate is not enforced or approved.
 - `python bot.py --vol-targeted-growth-gate-review` may mark the candidate ready for limited manual discussion only; it still does not approve paper-live candidacy, enforce the gate, create order instructions, execute, or schedule.
+- `python bot.py --vol-targeted-growth-candidate-discussion` may mark the volatility-targeted strategy as a non-executable paper-live candidate proposal for manual review only; QQQ100 remains the incumbent seed and no preview/action implementation, order instruction, execution, repeat order, or scheduling is approved.
 - Keep crypto research-only.
 - Keep SMA/slow-SMA out of paper-live promotion.
 

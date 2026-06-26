@@ -195,6 +195,8 @@ Volatility-targeted growth stricter paper-live gate design is saved-output-only:
 
 Volatility-targeted growth gate review is saved-output-only: `python bot.py --vol-targeted-growth-gate-review` and `python bot.py --show-vol-targeted-growth-gate-review` apply the stricter gate to saved evidence. It may mark the candidate ready for limited manual discussion only; it does not approve paper-live candidacy, enforce the gate, create order instructions, call Alpaca, or approve scheduling.
 
+Volatility-targeted growth candidate discussion is saved-output-only: `python bot.py --vol-targeted-growth-candidate-discussion` and `python bot.py --show-vol-targeted-growth-candidate-discussion` compare QQQ100 with the volatility-targeted candidate in plain terms. It may mark the volatility candidate as a non-executable paper-live candidate proposal for manual review, but QQQ100 remains the incumbent seed and no preview implementation, order instructions, Alpaca calls, execution, or scheduling are approved.
+
 
 ## Architecture
 
