@@ -219,6 +219,8 @@ Volatility-targeted growth seed-change broker-exposure review is saved-output-on
 
 Volatility-targeted growth seed-change manual-review checkpoint is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-manual-review-checkpoint` and `python bot.py --show-vol-targeted-growth-seed-change-manual-review-checkpoint` review the completed evidence pack. It may mark the chain ready for human formal-proposal review, but it does not create a formal proposal, displace QQQ100, add action preview implementation, or approve execution.
 
+Volatility-targeted growth formal seed-change proposal is saved-output-only: `python bot.py --vol-targeted-growth-formal-seed-change-proposal` and `python bot.py --show-vol-targeted-growth-formal-seed-change-proposal` create the human-review proposal document for replacing QQQ100 with the volatility candidate. The proposal requests review only; it does not record manual approval, change the seed, add action preview implementation, create order instructions, or approve execution.
+
 
 ## Architecture
 
