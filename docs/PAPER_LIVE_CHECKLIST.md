@@ -57,6 +57,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - `python bot.py --vol-targeted-growth-portfolio-risk-review` keeps the 15%/20-day candidate research-only until broker comparison and portfolio risk policy are reviewed; it does not approve paper-live candidacy.
 - `python bot.py --vol-targeted-growth-portfolio-risk-policy-design` may propose guardrails for allocation, crypto cap, high-growth review, drawdown review, and broker-position review, but it does not enforce policy or approve paper-live candidacy.
 - `python bot.py --vol-targeted-growth-paper-live-decision` may mark the 15%/20-day candidate ready for manual discussion of a future read-only broker-position comparison, but it keeps the candidate research-only and does not approve paper-live candidacy, execution, or scheduling.
+- `python bot.py --vol-targeted-growth-broker-comparison-run-readiness` may mark the saved chain ready to request explicit manual approval for a future read-only broker-position comparison, but it still does not grant approval, call Alpaca, read positions, approve paper-live candidacy, execution, or scheduling.
 - Keep crypto research-only.
 - Keep SMA/slow-SMA out of paper-live promotion.
 

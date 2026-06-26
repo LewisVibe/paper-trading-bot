@@ -1214,3 +1214,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_research_only_broker_comparison_discussion_ready_manual_review_required`; the candidate remains research-only and no broker comparison is run.
 - **Forbidden commands:** Broker reads, market refresh, order instructions, portfolio execution wiring, high-growth/crypto promotion, scheduling, or paper-live approval.
 - **Stop condition:** Stop if the task would approve paper-live candidacy, read broker positions, create order instructions, or connect the candidate to execution.
+
+### Task: Volatility-targeted growth broker-comparison run-readiness checkpoint
+- **Purpose:** Use `python bot.py --vol-targeted-growth-broker-comparison-run-readiness` to check whether the saved chain is ready to request explicit manual approval for a future read-only broker-position comparison.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-broker-comparison-run-readiness`, `python bot.py --show-vol-targeted-growth-broker-comparison-run-readiness`, and `python scripts\verify_vol_targeted_growth_broker_comparison_run_readiness.py`.
+- **Expected status:** `vol_targeted_growth_readonly_broker_comparison_ready_for_explicit_manual_approval_required`; no broker comparison is approved or run.
+- **Forbidden commands:** Broker reads, market refresh, order instructions, portfolio execution wiring, high-growth/crypto promotion, scheduling, or paper-live approval.
+- **Stop condition:** Stop if the task would grant broker-read approval, call Alpaca, read broker positions, approve paper-live candidacy, create order instructions, or connect the candidate to execution.

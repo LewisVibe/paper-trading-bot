@@ -811,6 +811,12 @@ The volatility-targeted growth paper-live decision checkpoint comes from `python
 - Current expected status is `vol_targeted_growth_research_only_broker_comparison_discussion_ready_manual_review_required`.
 - The 15/20 candidate remains research-only; the checkpoint only says a future read-only broker-position comparison may be discussed manually. It does not call Alpaca, read positions, create orders, approve paper-live candidacy, approve execution, or approve scheduling.
 
+The volatility-targeted growth broker-comparison run-readiness checkpoint comes from `python bot.py --vol-targeted-growth-broker-comparison-run-readiness`, with saved display through `python bot.py --show-vol-targeted-growth-broker-comparison-run-readiness`:
+
+- It writes `data/vol_targeted_growth_broker_comparison_run_readiness.csv`, `data/vol_targeted_growth_broker_comparison_run_readiness_summary.csv`, `data/vol_targeted_growth_broker_comparison_run_readiness_evidence.csv`, and `data/vol_targeted_growth_broker_comparison_run_readiness_blockers.csv`.
+- Current expected status is `vol_targeted_growth_readonly_broker_comparison_ready_for_explicit_manual_approval_required`.
+- This checkpoint only says the project is ready to ask for explicit manual approval before a future read-only broker-position comparison. It does not grant approval, call Alpaca, read positions, approve paper-live candidacy, create orders, approve execution, or approve scheduling.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

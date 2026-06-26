@@ -185,6 +185,8 @@ Volatility-targeted growth portfolio-risk policy design is saved-output-only: `p
 
 Volatility-targeted growth paper-live decision is saved-output-only: `python bot.py --vol-targeted-growth-paper-live-decision` and `python bot.py --show-vol-targeted-growth-paper-live-decision` keeps the 15/20 candidate research-only while marking it ready for manual discussion of a future read-only broker-position comparison. It does not call Alpaca, read positions, create order instructions, approve paper-live candidacy, or approve scheduling.
 
+Volatility-targeted growth broker-comparison run-readiness is saved-output-only: `python bot.py --vol-targeted-growth-broker-comparison-run-readiness` and `python bot.py --show-vol-targeted-growth-broker-comparison-run-readiness` checks whether the project is ready to request explicit manual approval for a future read-only broker-position comparison. It does not grant that approval, call Alpaca, read positions, approve paper-live candidacy, create order instructions, or approve scheduling.
+
 
 ## Architecture
 
