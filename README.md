@@ -181,6 +181,8 @@ Volatility-targeted growth broker-position comparison design is report-only: `py
 
 Volatility-targeted growth portfolio-risk review is saved-output-only: `python bot.py --vol-targeted-growth-portfolio-risk-review` and `python bot.py --show-vol-targeted-growth-portfolio-risk-review` keeps the 15/20 candidate research-only until broker comparison and portfolio risk policy are reviewed. It does not approve paper-live candidacy, execution, or scheduling.
 
+Volatility-targeted growth portfolio-risk policy design is saved-output-only: `python bot.py --vol-targeted-growth-portfolio-risk-policy-design` and `python bot.py --show-vol-targeted-growth-portfolio-risk-policy-design` proposes guardrails for the 15/20 candidate, including zero allocation until approval, crypto capped at 5%, high-growth remaining research-only, drawdown review, and broker-position review. It does not enforce policy or approve paper-live candidacy.
+
 
 ## Architecture
 

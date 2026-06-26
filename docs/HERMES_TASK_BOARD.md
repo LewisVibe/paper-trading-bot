@@ -1198,3 +1198,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_portfolio_risk_manual_review_required`; paper-live discussion remains not approved until broker comparison and portfolio risk policy are reviewed.
 - **Forbidden commands:** Broker reads, market refresh, order instructions, portfolio execution wiring, high-growth/crypto promotion, scheduling, or paper-live approval.
 - **Stop condition:** Stop if the task would approve paper-live candidacy or execution.
+
+### Task: Volatility-targeted growth portfolio-risk policy design
+- **Purpose:** Use `python bot.py --vol-targeted-growth-portfolio-risk-policy-design` to document guardrails before any future paper-live discussion for the 15/20 candidate.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-portfolio-risk-policy-design`, `python bot.py --show-vol-targeted-growth-portfolio-risk-policy-design`, and `python scripts\verify_vol_targeted_growth_portfolio_risk_policy_design.py`.
+- **Expected status:** `vol_targeted_growth_portfolio_risk_policy_design_ready_manual_review_required`; policy is not enforced and paper-live discussion remains unapproved.
+- **Forbidden commands:** Broker reads, market refresh, policy enforcement, order instructions, portfolio execution wiring, high-growth/crypto promotion, scheduling, or paper-live approval.
+- **Stop condition:** Stop if the task would enforce policy, approve paper-live candidacy, or connect the candidate to execution.

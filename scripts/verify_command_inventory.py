@@ -215,6 +215,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-broker-position-comparison-design",
     "--vol-targeted-growth-portfolio-risk-review",
     "--show-vol-targeted-growth-portfolio-risk-review",
+    "--vol-targeted-growth-portfolio-risk-policy-design",
+    "--show-vol-targeted-growth-portfolio-risk-policy-design",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",
