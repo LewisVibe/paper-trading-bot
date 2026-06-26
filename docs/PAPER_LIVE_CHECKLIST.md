@@ -257,7 +257,7 @@ Saved display: `python bot.py --show-paper-live-checklist-status`.
 
 Outputs: `data/paper_live_checklist_status.csv`, `data/paper_live_checklist_status_summary.csv`, `data/paper_live_checklist_status_blockers.csv`, and `data/paper_live_checklist_status_evidence.csv`.
 
-Current expected closeout status is `paper_live_checklist_current_qqq100_monitoring_phase_closed_out`: Steps 1-11 are complete or complete-for-current-QQQ100-monitoring-phase, QQQ100 is aligned long one share, no further QQQ order is needed now, repeat/follow-up orders remain blocked, and scheduling remains monitoring-only.
+Current expected closeout status is `paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review`: Steps 1-11 are complete or complete-for-current-status-only-seed-phase, the volatility-targeted candidate is the active report/status seed, QQQ100 remains aligned long one share as previous-seed context, no further QQQ order is needed now, repeat/follow-up orders remain blocked, and scheduling remains monitoring-only.
 
 Implemented F6/F7 audit checkpoint: `python bot.py --paper-live-f6-f7-audit`.
 
@@ -285,7 +285,7 @@ Saved display: `python bot.py --show-paper-live-promotion-ladder-status`.
 
 Outputs: `data/paper_live_promotion_ladder_status.csv`, `data/paper_live_promotion_ladder_status_summary.csv`, `data/paper_live_promotion_ladder_status_blockers.csv`, and `data/paper_live_promotion_ladder_status_evidence.csv`.
 
-Current expected status is `paper_live_promotion_ladder_status_report_only`: QQQ100 is the only current seed with `monitor_only_aligned_long_one`; high-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests are not promotion evidence. F7 accounting proof is accepted for the accounting checkpoint, but it does not approve promotion, execution, or scheduling.
+Current expected status is `paper_live_promotion_ladder_status_report_only`: the volatility-targeted growth candidate is the current report/status seed, QQQ100 remains previous-seed context with `previous_seed_monitor_only_aligned_long_one`, high-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests are not promotion evidence. F7 accounting proof is accepted for the accounting checkpoint, but it does not approve promotion, execution, or scheduling.
 
 Implemented F7 accounting proof checkpoint: `python bot.py --paper-live-f7-accounting-proof`.
 
@@ -341,7 +341,7 @@ Saved display: `python bot.py --show-paper-live-multi-sleeve-roadmap`.
 
 Outputs: `data/paper_live_multi_sleeve_roadmap.csv`, `data/paper_live_multi_sleeve_roadmap_summary.csv`, `data/paper_live_multi_sleeve_roadmap_blockers.csv`, and `data/paper_live_multi_sleeve_roadmap_evidence.csv`.
 
-Current expected roadmap status is `paper_live_multi_sleeve_roadmap_report_only`: QQQ100 core remains the current monitor-only base and only current seed, defensive sleeve is future review only, high-growth remains research-only until concentration/drawdown/attribution review is complete, crypto remains research-only/capped/future-only with no crypto execution approved, and the allocator has no portfolio execution wiring, no order instructions, and no scheduled execution.
+Current expected roadmap status is `paper_live_multi_sleeve_roadmap_report_only`: the volatility-targeted growth candidate is now the current report/status seed, QQQ100 core remains previous-seed context, defensive sleeve is future review only, high-growth remains research-only until concentration/drawdown/attribution review is complete, crypto remains research-only/capped/future-only with no crypto execution approved, and the allocator has no portfolio execution wiring, no order instructions, and no scheduled execution.
 
 Implemented next-phase backlog checkpoint: `python bot.py --paper-live-next-phase-backlog`.
 

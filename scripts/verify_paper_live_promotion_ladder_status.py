@@ -34,7 +34,10 @@ OUTPUTS = [
 
 REQUIRED_MODULE_TOKENS = [
     "paper_live_promotion_ladder_status_report_only",
-    "qqq100_seed_monitor_only_no_action",
+    "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x",
+    "MULTI_SLEEVE",
+    "active_seed_status_only_no_execution",
+    "previous_qqq100_seed_monitor_only_no_action",
     "monitor_only_aligned_long_one",
     "blocked_research_only",
     "future_review_only",
@@ -108,7 +111,7 @@ def main() -> int:
         return 1
 
     print("Paper-live promotion ladder status verification passed.")
-    print("Verified report-only ladder status scaffold, QQQ100-only seed, blocked non-QQQ branches, false approvals, ignored outputs, and no broker/order/config/scheduling calls.")
+    print("Verified report-only ladder status scaffold, volatility status seed, previous QQQ100 context, blocked non-QQQ branches, false approvals, ignored outputs, and no broker/order/config/scheduling calls.")
     return 0
 
 
@@ -166,7 +169,7 @@ def verify_docs(docs_source: str, failures: list[str]) -> None:
             failures.append(f"missing docs for output: {output}")
     for phrase in [
         "promotion ladder status",
-        "QQQ100 is the only current seed",
+        "Volatility-targeted growth is the current report/status seed",
         "high-growth and crypto remain research-only",
         "portfolio backtests",
         "not promotion evidence",
@@ -194,8 +197,8 @@ def verify_fixture_output(failures: list[str]) -> None:
     output = "\n".join(result.summary_lines + lines)
     for phrase in [
         "paper_live_promotion_ladder_status_report_only",
-        "current_seed=qqq_100_trend_gate:QQQ",
-        "qqq100_ladder_status=monitor_only_aligned_long_one",
+        "current_seed=higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x:MULTI_SLEEVE",
+        "qqq100_ladder_status=previous_seed_monitor_only_aligned_long_one",
         "qqq100_daily_decision_status=qqq100_daily_decision_hold_no_action_aligned_long",
         "qqq100_flatten_status=flatten_not_needed_currently",
         "qqq100_flatten_runbook_status=manual_flatten_runbook_not_needed_currently",
@@ -217,10 +220,11 @@ def verify_fixture_output(failures: list[str]) -> None:
             failures.append(f"fixture output missing phrase: {phrase}")
 
     expected_items = {
-        "qqq100_research_candidate",
-        "qqq100_preview_candidate",
-        "qqq100_paper_live_candidate",
-        "qqq100_manually_executable_candidate",
+        "vol_targeted_growth_active_seed",
+        "previous_qqq100_research_candidate",
+        "previous_qqq100_preview_candidate",
+        "previous_qqq100_paper_live_candidate",
+        "previous_qqq100_manually_executable_candidate",
         "high_growth_branch",
         "crypto_branch",
         "defensive_sleeve_branch",
@@ -247,8 +251,10 @@ def create_fixture(root: Path) -> None:
         data / "paper_live_monitoring_status.csv",
         ["summary_name", "summary_value"],
         [
-            ["active_strategy", "qqq_100_trend_gate"],
-            ["active_ticker", "QQQ"],
+            ["active_strategy", "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x"],
+            ["active_ticker", "MULTI_SLEEVE"],
+            ["previous_seed_strategy", "qqq_100_trend_gate"],
+            ["previous_seed_ticker", "QQQ"],
             ["saved_position_quantity", "1"],
             ["alignment_state", "aligned_long"],
             ["recommended_next_step", "hold_no_action_and_monitor_only"],

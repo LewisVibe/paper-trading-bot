@@ -23,6 +23,8 @@ OUTPUTS = [
 REQUIRED_MODULE_TOKENS = [
     "active_strategy",
     "active_ticker",
+    "previous_seed_strategy",
+    "previous_seed_ticker",
     "saved_position_state",
     "saved_position_quantity",
     "alignment_state",
@@ -33,6 +35,8 @@ REQUIRED_MODULE_TOKENS = [
     "missing_saved_evidence",
     "qqq_100_trend_gate",
     "QQQ",
+    "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x",
+    "MULTI_SLEEVE",
     '"execution_approved": False',
     '"paper_execution_approved": False',
     '"scheduling_approved": False',

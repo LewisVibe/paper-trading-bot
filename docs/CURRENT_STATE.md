@@ -314,7 +314,7 @@ The paper-live monitoring status comes from `python bot.py --paper-live-monitori
 The paper-live checklist status closeout comes from `python bot.py --paper-live-checklist-status`, with saved display through `python bot.py --show-paper-live-checklist-status`:
 
 - It writes `data/paper_live_checklist_status.csv`, `data/paper_live_checklist_status_summary.csv`, `data/paper_live_checklist_status_blockers.csv`, and `data/paper_live_checklist_status_evidence.csv`.
-- It reads saved paper-live monitoring status only and records `paper_live_checklist_current_qqq100_monitoring_phase_closed_out` when QQQ100 is aligned long one share, no action is required, and `recommended_next_step=hold_no_action_and_monitor_only`.
+- It reads saved paper-live monitoring status only and records `paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review` when the volatility-targeted seed is the active status seed, QQQ100 remains aligned long one share as previous-seed context, no action is required, and `recommended_next_step=hold_no_action_and_monitor_only`.
 - PAPER_LIVE_CHECKLIST Steps 1-11 are complete or complete-for-current-QQQ100-monitoring-phase; Step 12 remains future-only for a later generic promotion ladder, starting QQQ100 only.
 - It does not approve execution, paper execution, repeat/follow-up orders, scheduling, live trading, or executable order instructions.
 
@@ -341,7 +341,7 @@ The paper-live promotion ladder status scaffold comes from `python bot.py --pape
 
 - It writes `data/paper_live_promotion_ladder_status.csv`, `data/paper_live_promotion_ladder_status_summary.csv`, `data/paper_live_promotion_ladder_status_blockers.csv`, and `data/paper_live_promotion_ladder_status_evidence.csv`.
 - It reads saved ladder design, paper-live monitoring, daily decision, and QQQ100 flatten readiness/runbook summaries only.
-- QQQ100 is the only current seed; current expected status is `paper_live_promotion_ladder_status_report_only` with QQQ100 `monitor_only_aligned_long_one`.
+- The volatility-targeted growth candidate is the current report/status seed; QQQ100 remains previous-seed context. Current expected status is `paper_live_promotion_ladder_status_report_only` with QQQ100 `previous_seed_monitor_only_aligned_long_one`.
 - High-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests remain not promotion evidence. F7 accounting proof is accepted as a static accounting checkpoint, but it does not approve promotion.
 - This scaffold does not promote strategies, create order instructions, call Alpaca, read positions, approve execution, approve scheduling, or implement generic promotion logic.
 
@@ -943,6 +943,8 @@ The volatility-targeted growth seed-change dry-run diff comes from `python bot.p
 - It writes `data/vol_targeted_growth_seed_change_dry_run_diff.csv`, `data/vol_targeted_growth_seed_change_dry_run_diff_summary.csv`, `data/vol_targeted_growth_seed_change_dry_run_diff_evidence.csv`, and `data/vol_targeted_growth_seed_change_dry_run_diff_blockers.csv`.
 - Current expected status is `vol_targeted_growth_seed_change_dry_run_diff_created_manual_review_required`.
 - This lists the future files/areas that would need review for a seed switch. It does not modify those files, change the active seed, displace QQQ100, add action-preview implementation, create order instructions, approve paper execution, approve live execution, approve repeat orders, or approve scheduling.
+
+Volatility-targeted growth is the current report/status seed after the status-only switch; QQQ100 remains previous-seed context and no execution or scheduling is approved.
 
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 

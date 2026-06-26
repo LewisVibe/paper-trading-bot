@@ -1,4 +1,4 @@
-"""Saved-output closeout checkpoint for the current QQQ100 paper-live phase.
+"""Saved-output closeout checkpoint for the current paper-live seed phase.
 
 This report reads saved paper-live monitoring evidence only. It does not call
 Alpaca, read live positions, refresh market data, write SQLite, send alerts,
@@ -13,8 +13,10 @@ from pathlib import Path
 from typing import Any
 
 
-STRATEGY_NAME = "qqq_100_trend_gate"
-TICKER = "QQQ"
+ACTIVE_STRATEGY_NAME = "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x"
+ACTIVE_TICKER = "MULTI_SLEEVE"
+PREVIOUS_STRATEGY_NAME = "qqq_100_trend_gate"
+PREVIOUS_TICKER = "QQQ"
 PAPER_LIVE_MONITORING_SUMMARY = Path("data/paper_live_monitoring_status.csv")
 DEFENSIVE_MANUAL_REVIEW_SUMMARY = Path("data/paper_live_defensive_sleeve_manual_review_summary.csv")
 DEFENSIVE_PREVIEW_READINESS_SUMMARY = Path("data/paper_live_defensive_sleeve_preview_readiness_summary.csv")
@@ -196,8 +198,10 @@ def show_paper_live_checklist_status(root_dir: Path | str = ".") -> tuple[int, l
 def build_checklist_snapshot(root: Path) -> PaperLiveChecklistSnapshot:
     rows = read_csv_rows(root / PAPER_LIVE_MONITORING_SUMMARY)
     values = {row.get("summary_name", ""): str(row.get("summary_value", "")).strip() for row in rows}
-    active_strategy = values.get("active_strategy") or STRATEGY_NAME
-    active_ticker = values.get("active_ticker") or TICKER
+    active_strategy = values.get("active_strategy") or ACTIVE_STRATEGY_NAME
+    active_ticker = values.get("active_ticker") or ACTIVE_TICKER
+    previous_seed_strategy = values.get("previous_seed_strategy") or PREVIOUS_STRATEGY_NAME
+    previous_seed_ticker = values.get("previous_seed_ticker") or PREVIOUS_TICKER
     saved_position_state = values.get("saved_position_state") or "missing_saved_evidence"
     saved_position_quantity = values.get("saved_position_quantity") or "missing_saved_evidence"
     alignment_state = values.get("alignment_state") or "missing_saved_evidence"
@@ -209,8 +213,10 @@ def build_checklist_snapshot(root: Path) -> PaperLiveChecklistSnapshot:
     defensive_preview_candidate = read_summary_value(root / DEFENSIVE_PREVIEW_READINESS_SUMMARY, "preview_candidate_status") or "defensive_preview_candidate_not_approved"
 
     evidence_complete = (
-        active_strategy == STRATEGY_NAME
-        and active_ticker == TICKER
+        active_strategy == ACTIVE_STRATEGY_NAME
+        and active_ticker == ACTIVE_TICKER
+        and previous_seed_strategy == PREVIOUS_STRATEGY_NAME
+        and previous_seed_ticker == PREVIOUS_TICKER
         and saved_position_state == "paper_position_long"
         and saved_position_quantity == "1"
         and alignment_state == "aligned_long"
@@ -219,8 +225,8 @@ def build_checklist_snapshot(root: Path) -> PaperLiveChecklistSnapshot:
         and recommended == "hold_no_action_and_monitor_only"
     )
     if evidence_complete:
-        paper_live_monitoring_status = "qqq100_aligned_long_one_monitor_only"
-        checklist_phase_status = "paper_live_checklist_current_qqq100_monitoring_phase_closed_out"
+        paper_live_monitoring_status = "vol_targeted_seed_active_previous_qqq100_aligned_long_one_monitor_only"
+        checklist_phase_status = "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review"
         if defensive_preview == "defensive_sleeve_preview_candidate_not_approved_manual_review_required":
             next_step = "manual_review_defensive_sleeve_before_any_preview_or_candidate_label_change"
         elif defensive_manual == "defensive_sleeve_manual_review_required":
@@ -254,15 +260,15 @@ def build_report_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, An
     steps = [
         ("1", "baseline_freeze", "complete", "Baseline, pytest foundation, and paper-only boundaries are established."),
         ("2", "test_foundation", "complete", "Pure/no-network pytest foundation exists and remains part of verification."),
-        ("3", "qqq100_candidate_scope", "complete", "First paper-live candidate remains qqq_100_trend_gate / QQQ only."),
+        ("3", "active_seed_status", "complete", "Active status seed is higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x / MULTI_SLEEVE; QQQ100 is retained as previous-seed context."),
         ("4", "paper_only_boundary", "complete", "Alpaca paper-only and no-live-trading boundaries remain documented."),
         ("5", "execution_gate_boundaries", "complete", "Order-capable commands remain separate and confirmation-gated."),
-        ("6", "qqq100_exact_alignment", "complete", "QQQ100 exact zero/one-share alignment is enforced by saved evidence checks."),
+        ("6", "previous_qqq100_exact_alignment", "complete", "Previous QQQ100 exact zero/one-share alignment is retained by saved evidence checks."),
         ("7", "saved_evidence_reconciliation", "complete", "Saved postcheck/evidence audit state reconciles aligned long one share."),
-        ("8", "manual_paper_execution_narrowness", "complete_for_current_qqq100_monitoring_phase", "No broad strategy-to-execution path was added."),
-        ("9", "post_execution_verification", "complete_for_current_qqq100_monitoring_phase", "Read-only postcheck evidence exists in saved state."),
+        ("8", "manual_paper_execution_narrowness", "complete_for_current_status_only_phase", "No broad strategy-to-execution path was added."),
+        ("9", "post_execution_verification", "complete_for_previous_qqq100_monitoring_context", "Read-only QQQ100 postcheck evidence exists in saved state."),
         ("10", "followup_no_action_policy", "complete", "Follow-up policy says no action required and do not repeat buy."),
-        ("11", "monitoring_only_scheduling_boundary", "complete", "VPS/Hermes daily monitoring includes saved QQQ100 status without cron changes."),
+        ("11", "monitoring_only_scheduling_boundary", "complete", "VPS/Hermes daily monitoring includes active volatility seed status and previous QQQ100 context without cron changes."),
         ("12", "generic_promotion_ladder", "future_only", "Generic promotion ladder is not built in this phase; start QQQ100 only later if separately approved."),
     ]
     return [
@@ -292,20 +298,22 @@ def build_report_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, An
 
 def build_summary_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, Any]]:
     rows = [
-        ("checklist_phase_status", snapshot.checklist_phase_status, "Closeout status for the current QQQ100 paper-live monitoring phase."),
-        ("active_strategy", snapshot.active_strategy, "Current paper-live monitoring strategy."),
-        ("active_ticker", snapshot.active_ticker, "Current paper-live monitoring ticker."),
-        ("saved_position_state", snapshot.saved_position_state, "Saved QQQ paper position state."),
-        ("saved_position_quantity", snapshot.saved_position_quantity, "Saved QQQ paper position quantity."),
-        ("alignment_state", snapshot.alignment_state, "Saved QQQ100 alignment state."),
-        ("followup_policy_status", snapshot.followup_policy_status, "Saved QQQ100 follow-up/no-action policy status."),
-        ("no_action_required", snapshot.no_action_required, "True when current saved state needs no QQQ paper action."),
+        ("checklist_phase_status", snapshot.checklist_phase_status, "Closeout status for the current report/status seed phase."),
+        ("active_strategy", snapshot.active_strategy, "Current paper-live monitoring seed strategy."),
+        ("active_ticker", snapshot.active_ticker, "Current paper-live monitoring seed instrument group."),
+        ("previous_seed_strategy", PREVIOUS_STRATEGY_NAME, "Previous QQQ100 seed retained as saved context."),
+        ("previous_seed_ticker", PREVIOUS_TICKER, "Previous QQQ100 seed ticker retained as saved context."),
+        ("saved_position_state", snapshot.saved_position_state, "Saved QQQ paper position state from previous seed context."),
+        ("saved_position_quantity", snapshot.saved_position_quantity, "Saved QQQ paper position quantity from previous seed context."),
+        ("alignment_state", snapshot.alignment_state, "Saved QQQ100 previous-seed alignment state."),
+        ("followup_policy_status", snapshot.followup_policy_status, "Saved QQQ100 previous-seed follow-up/no-action policy status."),
+        ("no_action_required", snapshot.no_action_required, "True when current saved previous-seed state needs no QQQ paper action."),
         ("defensive_sleeve_manual_review_status", snapshot.defensive_sleeve_manual_review_status, "Saved defensive sleeve manual review status."),
         ("defensive_sleeve_preview_readiness_status", snapshot.defensive_sleeve_preview_readiness_status, "Saved defensive sleeve preview-readiness status."),
         ("defensive_sleeve_preview_candidate_status", snapshot.defensive_sleeve_preview_candidate_status, "Defensive sleeve preview candidate approval remains blocked."),
         ("paper_live_monitoring_status", snapshot.paper_live_monitoring_status, "Saved paper-live monitor interpretation."),
         ("current_monitoring_recommended_next_step", snapshot.recommended_next_step, "Saved paper-live monitoring recommendation."),
-        ("steps_1_to_11_status", "complete_for_current_qqq100_monitoring_phase", "Current phase is closed out through Step 11."),
+        ("steps_1_to_11_status", "complete_for_current_status_only_seed_phase", "Current report/status seed phase is closed out through Step 11."),
         ("step_12_status", "future_only", "Generic promotion ladder remains a separate future design."),
         ("next_safe_development_step", snapshot.next_safe_development_step, "Next safe development path; not an order instruction."),
         ("never_schedule_order_capable_commands", "True", "Order-capable commands must never be scheduled."),
@@ -328,7 +336,7 @@ def build_blocker_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, A
         ("generic_promotion_ladder_future_only", "future_only", "medium", "Step 12 is intentionally not implemented in this checkpoint.", "Design a promotion ladder later, starting QQQ100 only."),
         ("defensive_sleeve_preview_not_approved", "blocked", "critical", "Defensive sleeve review/checkpoints do not approve a preview candidate, promotion, or execution.", "manual review required before any defensive preview label change."),
     ]
-    if snapshot.checklist_phase_status != "paper_live_checklist_current_qqq100_monitoring_phase_closed_out":
+    if snapshot.checklist_phase_status != "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review":
         rows.insert(
             0,
             (
@@ -369,6 +377,8 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"Checklist phase status: {summary_value(summary_rows, 'checklist_phase_status')}",
         f"Active strategy: {summary_value(summary_rows, 'active_strategy')}",
         f"Active ticker: {summary_value(summary_rows, 'active_ticker')}",
+        f"Previous seed strategy: {summary_value(summary_rows, 'previous_seed_strategy')}",
+        f"Previous seed ticker: {summary_value(summary_rows, 'previous_seed_ticker')}",
         f"Saved position: {summary_value(summary_rows, 'saved_position_state')} quantity={summary_value(summary_rows, 'saved_position_quantity')}",
         f"Alignment state: {summary_value(summary_rows, 'alignment_state')}",
         f"Follow-up policy status: {summary_value(summary_rows, 'followup_policy_status')}",

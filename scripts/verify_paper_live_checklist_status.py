@@ -39,12 +39,14 @@ REQUIRED_MODULE_TOKENS = [
     "paper_live_monitoring_status",
     "checklist_phase_status",
     "next_safe_development_step",
-    "paper_live_checklist_current_qqq100_monitoring_phase_closed_out",
-    "complete_for_current_qqq100_monitoring_phase",
+    "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
+    "complete_for_current_status_only_seed_phase",
     "future_only",
     "generic_promotion_ladder",
     "qqq_100_trend_gate",
     "QQQ",
+    "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x",
+    "MULTI_SLEEVE",
     "paper_position_long",
     "aligned_long",
     "no_action_required_already_aligned",
@@ -166,7 +168,7 @@ def verify_docs(docs_source: str, failures: list[str]) -> None:
             failures.append(f"missing docs for output: {output}")
     for phrase in [
         "paper-live checklist status",
-        "paper_live_checklist_current_qqq100_monitoring_phase_closed_out",
+        "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
         "Step 12",
         "future-only",
         "does not approve execution",
@@ -197,7 +199,9 @@ def verify_report_output_from_fixture(failures: list[str]) -> None:
     if status_code != 0:
         failures.append("saved display should return 0 after report generation")
     for phrase in [
-        "paper_live_checklist_current_qqq100_monitoring_phase_closed_out",
+        "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
+        "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x",
+        "MULTI_SLEEVE",
         "qqq_100_trend_gate",
         "QQQ",
         "paper_position_long",
@@ -224,8 +228,10 @@ def verify_report_output_from_fixture(failures: list[str]) -> None:
 def write_monitoring_fixture(path: Path) -> None:
     path.write_text(
         "summary_name,summary_value,details,execution_approved,paper_execution_approved,scheduling_approved,live_trading_approved,followup_order_approved,repeat_execution_approved\n"
-        "active_strategy,qqq_100_trend_gate,Active paper-live monitoring strategy.,False,False,False,False,False,False\n"
-        "active_ticker,QQQ,Active paper-live monitoring ticker.,False,False,False,False,False,False\n"
+        "active_strategy,higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x,Active paper-live monitoring seed strategy.,False,False,False,False,False,False\n"
+        "active_ticker,MULTI_SLEEVE,Active paper-live monitoring seed group.,False,False,False,False,False,False\n"
+        "previous_seed_strategy,qqq_100_trend_gate,Previous paper-live seed.,False,False,False,False,False,False\n"
+        "previous_seed_ticker,QQQ,Previous paper-live seed ticker.,False,False,False,False,False,False\n"
         "saved_position_state,paper_position_long,Saved QQQ paper position state.,False,False,False,False,False,False\n"
         "saved_position_quantity,1,Saved QQQ paper position quantity.,False,False,False,False,False,False\n"
         "alignment_state,aligned_long,Saved QQQ alignment state.,False,False,False,False,False,False\n"

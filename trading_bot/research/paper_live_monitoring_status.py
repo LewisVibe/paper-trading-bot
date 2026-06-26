@@ -1,6 +1,6 @@
 """Saved-output paper-live monitoring status for VPS/Hermes reporting.
 
-This report reads saved QQQ100 evidence and policy outputs only. It does not
+This report reads saved paper-live evidence and QQQ100 prior-seed policy outputs only. It does not
 call Alpaca, read live positions, refresh market data, create executable order
 instructions, write SQLite, send alerts, schedule anything, or approve
 execution/follow-up orders.
@@ -16,8 +16,10 @@ from typing import Any
 from trading_bot.research.paper_live_evidence_audit import evaluate_paper_live_saved_evidence
 
 
-STRATEGY_NAME = "qqq_100_trend_gate"
-TICKER = "QQQ"
+ACTIVE_STRATEGY_NAME = "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x"
+ACTIVE_TICKER = "MULTI_SLEEVE"
+PREVIOUS_STRATEGY_NAME = "qqq_100_trend_gate"
+PREVIOUS_TICKER = "QQQ"
 FOLLOWUP_POLICY_SUMMARY = Path("data/qqq100_followup_policy_summary.csv")
 
 OUTPUT_FILES = {
@@ -96,6 +98,8 @@ BLOCKER_COLUMNS = [
 class PaperLiveMonitoringStatus:
     active_strategy: str
     active_ticker: str
+    previous_seed_strategy: str
+    previous_seed_ticker: str
     saved_position_state: str
     saved_position_quantity: str
     alignment_state: str
@@ -147,6 +151,8 @@ def show_paper_live_monitoring_status(root_dir: Path | str = ".") -> tuple[int, 
         "Paper-live monitoring status saved display. Monitoring/report only; no orders approved.",
         f"active_strategy: {summary_value(rows, 'active_strategy')}",
         f"active_ticker: {summary_value(rows, 'active_ticker')}",
+        f"previous_seed_strategy: {summary_value(rows, 'previous_seed_strategy')}",
+        f"previous_seed_ticker: {summary_value(rows, 'previous_seed_ticker')}",
         f"saved_position_state: {summary_value(rows, 'saved_position_state')}",
         f"saved_position_quantity: {summary_value(rows, 'saved_position_quantity')}",
         f"alignment_state: {summary_value(rows, 'alignment_state')}",
@@ -173,8 +179,10 @@ def build_monitoring_status(root: Path) -> PaperLiveMonitoringStatus:
     if recommended == "hold_no_action_and_do_not_repeat_buy":
         recommended = "hold_no_action_and_monitor_only"
     return PaperLiveMonitoringStatus(
-        active_strategy=STRATEGY_NAME,
-        active_ticker=TICKER,
+        active_strategy=ACTIVE_STRATEGY_NAME,
+        active_ticker=ACTIVE_TICKER,
+        previous_seed_strategy=PREVIOUS_STRATEGY_NAME,
+        previous_seed_ticker=PREVIOUS_TICKER,
         saved_position_state=snapshot.saved_current_position_state,
         saved_position_quantity=snapshot.saved_current_position_quantity,
         alignment_state=snapshot.current_alignment_state,
@@ -187,13 +195,15 @@ def build_monitoring_status(root: Path) -> PaperLiveMonitoringStatus:
 
 def build_summary_rows(status: PaperLiveMonitoringStatus) -> list[dict[str, Any]]:
     rows = [
-        ("active_strategy", status.active_strategy, "Active paper-live monitoring strategy."),
-        ("active_ticker", status.active_ticker, "Active paper-live monitoring ticker."),
-        ("saved_position_state", status.saved_position_state, "Saved QQQ paper position state."),
-        ("saved_position_quantity", status.saved_position_quantity, "Saved QQQ paper position quantity."),
-        ("alignment_state", status.alignment_state, "Saved QQQ alignment state."),
-        ("followup_policy_status", status.followup_policy_status, "Saved QQQ100 follow-up/no-action policy status."),
-        ("no_action_required", status.no_action_required, "True when saved state says no paper action is needed."),
+        ("active_strategy", status.active_strategy, "Active paper-live monitoring seed strategy."),
+        ("active_ticker", status.active_ticker, "Active paper-live monitoring seed instrument group."),
+        ("previous_seed_strategy", status.previous_seed_strategy, "Previous QQQ100 seed retained as saved context."),
+        ("previous_seed_ticker", status.previous_seed_ticker, "Previous QQQ100 seed ticker retained as saved context."),
+        ("saved_position_state", status.saved_position_state, "Saved QQQ paper position state from previous seed context."),
+        ("saved_position_quantity", status.saved_position_quantity, "Saved QQQ paper position quantity from previous seed context."),
+        ("alignment_state", status.alignment_state, "Saved QQQ alignment state from previous seed context."),
+        ("followup_policy_status", status.followup_policy_status, "Saved QQQ100 prior-seed follow-up/no-action policy status."),
+        ("no_action_required", status.no_action_required, "True when saved prior-seed state says no paper action is needed."),
         ("largest_blocker", status.largest_blocker, "Largest monitoring blocker or no-action marker."),
         ("recommended_next_step", status.recommended_next_step, "Monitoring recommendation; never an order instruction."),
         ("never_schedule_order_capable_commands", "True", "Order-capable commands must not be scheduled."),
@@ -209,8 +219,9 @@ def build_summary_rows(status: PaperLiveMonitoringStatus) -> list[dict[str, Any]
 
 def build_component_rows(status: PaperLiveMonitoringStatus) -> list[dict[str, Any]]:
     values = [
-        ("qqq100_position", status.alignment_state, f"{status.saved_position_state} quantity={status.saved_position_quantity}", "Saved position/alignment evidence."),
-        ("qqq100_followup_policy", status.followup_policy_status, status.no_action_required, "Saved follow-up/no-action policy evidence."),
+        ("active_seed", "vol_targeted_seed_status_only", f"{status.active_strategy}:{status.active_ticker}", "Active seed label changed for reports only."),
+        ("previous_seed_qqq100_position", status.alignment_state, f"{status.saved_position_state} quantity={status.saved_position_quantity}", "Saved QQQ100 previous-seed position/alignment evidence."),
+        ("previous_seed_qqq100_followup_policy", status.followup_policy_status, status.no_action_required, "Saved QQQ100 previous-seed follow-up/no-action policy evidence."),
         ("approval_flags", "pass", "all_false", "Execution, scheduling, follow-up, and repeat approvals remain false."),
         ("scheduling_boundary", "pass", "never_schedule_order_capable_commands=True", "Monitoring status must not create or alter schedules."),
     ]
@@ -230,7 +241,7 @@ def build_blocker_rows(status: PaperLiveMonitoringStatus) -> list[dict[str, Any]
     rows = [
         ("execution_not_approved", "blocked", "critical", "Execution remains unapproved.", "Monitor only; do not run execution commands."),
         ("followup_order_not_approved", "blocked", "critical", "Follow-up orders remain unapproved.", "Do not create order instructions."),
-        ("repeat_execution_not_approved", "blocked", "critical", "Repeat execution remains unapproved.", "Do not repeat QQQ100 paper execution."),
+        ("repeat_execution_not_approved", "blocked", "critical", "Repeat execution remains unapproved.", "Do not repeat QQQ100 or volatility paper execution."),
         ("scheduling_not_approved", "blocked", "critical", "Order-capable scheduling remains prohibited.", "Do not create, edit, trigger, or schedule Hermes/cron/Task Scheduler jobs."),
     ]
     if status.followup_policy_status == "missing_saved_evidence":
@@ -240,8 +251,8 @@ def build_blocker_rows(status: PaperLiveMonitoringStatus) -> list[dict[str, Any]
                 "missing_saved_evidence",
                 "manual_review_required",
                 "high",
-                "Saved QQQ100 follow-up policy summary is missing.",
-                "Regenerate saved report-only QQQ100 follow-up policy output.",
+                "Saved QQQ100 previous-seed follow-up policy summary is missing.",
+                "Regenerate saved report-only QQQ100 previous-seed follow-up policy output.",
             ),
         )
     return [
@@ -262,8 +273,9 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         "Paper-live monitoring status complete. Monitoring/report only; no orders approved.",
         f"Active strategy: {summary_value(summary_rows, 'active_strategy')}",
         f"Active ticker: {summary_value(summary_rows, 'active_ticker')}",
-        f"Saved position: {summary_value(summary_rows, 'saved_position_state')} quantity={summary_value(summary_rows, 'saved_position_quantity')}",
-        f"Alignment state: {summary_value(summary_rows, 'alignment_state')}",
+        f"Previous seed: {summary_value(summary_rows, 'previous_seed_strategy')}:{summary_value(summary_rows, 'previous_seed_ticker')}",
+        f"Previous-seed saved position: {summary_value(summary_rows, 'saved_position_state')} quantity={summary_value(summary_rows, 'saved_position_quantity')}",
+        f"Previous-seed alignment state: {summary_value(summary_rows, 'alignment_state')}",
         f"Follow-up policy status: {summary_value(summary_rows, 'followup_policy_status')}",
         f"No action required: {summary_value(summary_rows, 'no_action_required')}",
         f"Recommended next step: {summary_value(summary_rows, 'recommended_next_step')}",

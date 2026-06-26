@@ -43,8 +43,10 @@ QQQ100_MANUAL_FLATTEN_READINESS_SUMMARY_PATH = "data/qqq100_manual_flatten_readi
 QQQ100_MANUAL_FLATTEN_RUNBOOK_SUMMARY_PATH = "data/qqq100_manual_flatten_runbook_summary.csv"
 
 PAPER_LIVE_REQUIRED_SUMMARY_VALUES = {
-    "active_strategy": "qqq_100_trend_gate",
-    "active_ticker": "QQQ",
+    "active_strategy": "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x",
+    "active_ticker": "MULTI_SLEEVE",
+    "previous_seed_strategy": "qqq_100_trend_gate",
+    "previous_seed_ticker": "QQQ",
     "saved_position_state": "paper_position_long",
     "saved_position_quantity": "1",
     "alignment_state": "aligned_long",
@@ -287,6 +289,8 @@ def paper_live_monitoring_status_lines(root: Path) -> list[str]:
             [
                 f"- active_strategy: {values.get('active_strategy', 'missing')}",
                 f"- active_ticker: {values.get('active_ticker', 'missing')}",
+                f"- previous_seed_strategy: {values.get('previous_seed_strategy', 'missing')}",
+                f"- previous_seed_ticker: {values.get('previous_seed_ticker', 'missing')}",
                 f"- saved_position_state: {values.get('saved_position_state', 'missing')}",
                 f"- saved_position_quantity: {values.get('saved_position_quantity', 'missing')}",
                 f"- alignment_state: {values.get('alignment_state', 'missing')}",

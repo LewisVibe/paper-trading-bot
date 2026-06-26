@@ -361,7 +361,7 @@ def build_evidence_rows() -> list[dict[str, Any]]:
         (
             "qqq100_current_monitoring_state",
             "aligned_long_one_no_action_required",
-            "QQQ100 is the only current seed and remains monitor-only with no repeat/follow-up order approved.",
+            "QQQ100 remains previous-seed context, monitor-only, with no repeat/follow-up order approved.",
         ),
         (
             "qqq100_manual_flatten_checkpoints",

@@ -15,8 +15,10 @@ from pathlib import Path
 from typing import Any
 
 
-STRATEGY_NAME = "qqq_100_trend_gate"
-TICKER = "QQQ"
+ACTIVE_STRATEGY_NAME = "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x"
+ACTIVE_TICKER = "MULTI_SLEEVE"
+PREVIOUS_STRATEGY_NAME = "qqq_100_trend_gate"
+PREVIOUS_TICKER = "QQQ"
 
 INPUT_FILES = {
     "ladder_design_summary": Path("data/paper_live_promotion_ladder_design_summary.csv"),
@@ -185,8 +187,10 @@ def build_ladder_status_context(root: Path) -> LadderStatusContext:
 
     qqq100_state = summary_value(monitoring_rows, "recommended_next_step")
     monitoring_consistent = (
-        summary_value(monitoring_rows, "active_strategy") == STRATEGY_NAME
-        and summary_value(monitoring_rows, "active_ticker") == TICKER
+        summary_value(monitoring_rows, "active_strategy") == ACTIVE_STRATEGY_NAME
+        and summary_value(monitoring_rows, "active_ticker") == ACTIVE_TICKER
+        and summary_value(monitoring_rows, "previous_seed_strategy") == PREVIOUS_STRATEGY_NAME
+        and summary_value(monitoring_rows, "previous_seed_ticker") == PREVIOUS_TICKER
         and summary_value(monitoring_rows, "saved_position_quantity") == "1"
         and summary_value(monitoring_rows, "alignment_state") == "aligned_long"
         and summary_value(monitoring_rows, "recommended_next_step") == "hold_no_action_and_monitor_only"
@@ -216,47 +220,57 @@ def build_ladder_status_context(root: Path) -> LadderStatusContext:
 
 def build_status_rows(context: LadderStatusContext) -> list[dict[str, Any]]:
     qqq_status = (
-        "qqq100_seed_monitor_only_no_action"
+        "previous_qqq100_seed_monitor_only_no_action"
         if context.qqq100_monitoring_consistent
-        else "qqq100_seed_manual_review_required"
+        else "previous_qqq100_seed_manual_review_required"
     )
     qqq_blocker = "none_monitor_only" if context.qqq100_monitoring_consistent else "missing_or_inconsistent_saved_qqq100_monitoring"
     return [
         status_row(
-            "qqq100_research_candidate",
-            "research_candidate",
-            STRATEGY_NAME,
-            TICKER,
-            "passed_current_seed_only",
-            "seed_only_not_generic_promotion",
-            context.portfolio_backtest_evidence_status,
-            "keep QQQ100 as only seed; do not use portfolio backtests as promotion evidence without separate promotion review",
+            "vol_targeted_growth_active_seed",
+            "paper_live_seed",
+            ACTIVE_STRATEGY_NAME,
+            ACTIVE_TICKER,
+            "active_seed_status_only",
+            "seed_status_only_not_execution",
+            "execution_not_approved",
+            "monitor_only; do not create order instructions",
         ),
         status_row(
-            "qqq100_preview_candidate",
-            "preview_candidate",
-            STRATEGY_NAME,
-            TICKER,
+            "previous_qqq100_research_candidate",
+            "previous_seed_context",
+            PREVIOUS_STRATEGY_NAME,
+            PREVIOUS_TICKER,
+            "passed_previous_seed_context",
+            "retained_context_not_active_seed",
+            context.portfolio_backtest_evidence_status,
+            "retain QQQ100 saved context; do not use portfolio backtests as promotion evidence without separate promotion review",
+        ),
+        status_row(
+            "previous_qqq100_preview_candidate",
+            "previous_seed_preview_context",
+            PREVIOUS_STRATEGY_NAME,
+            PREVIOUS_TICKER,
             "manual_review_report_only",
             "preview_discussion_only_not_promotion",
             "unknown_positions_must_block_manual_review",
             "keep F6 unknown-position checks passing before preview implementation changes",
         ),
         status_row(
-            "qqq100_paper_live_candidate",
-            "paper_live_candidate",
-            STRATEGY_NAME,
-            TICKER,
+            "previous_qqq100_paper_live_candidate",
+            "previous_seed_paper_live_context",
+            PREVIOUS_STRATEGY_NAME,
+            PREVIOUS_TICKER,
             qqq_status,
             "monitor_only_aligned_long_one",
             qqq_blocker,
             "hold_no_action_and_monitor_only",
         ),
         status_row(
-            "qqq100_manually_executable_candidate",
-            "manually_executable_candidate",
-            STRATEGY_NAME,
-            TICKER,
+            "previous_qqq100_manually_executable_candidate",
+            "previous_seed_manual_execution_context",
+            PREVIOUS_STRATEGY_NAME,
+            PREVIOUS_TICKER,
             "blocked_not_implemented",
             "manual_execution_path_separate_and_not_repeat_approved",
             "manual_execution_not_approved_by_ladder_status",
@@ -336,8 +350,10 @@ def build_summary_rows(context: LadderStatusContext) -> list[dict[str, Any]]:
     )
     rows = [
         ("final_ladder_status", final_status, "Current saved-output promotion ladder status."),
-        ("current_seed", f"{STRATEGY_NAME}:{TICKER}", "QQQ100 is the only current seed."),
-        ("qqq100_ladder_status", "monitor_only_aligned_long_one" if context.qqq100_monitoring_consistent else "manual_review_required", "Current QQQ100 paper-live ladder status."),
+        ("current_seed", f"{ACTIVE_STRATEGY_NAME}:{ACTIVE_TICKER}", "Volatility-targeted growth is the current report/status seed."),
+        ("previous_seed", f"{PREVIOUS_STRATEGY_NAME}:{PREVIOUS_TICKER}", "QQQ100 is retained as previous seed context."),
+        ("vol_targeted_ladder_status", "active_seed_status_only_no_execution", "Current volatility-targeted paper-live ladder status."),
+        ("qqq100_ladder_status", "previous_seed_monitor_only_aligned_long_one" if context.qqq100_monitoring_consistent else "manual_review_required", "Previous QQQ100 paper-live ladder status."),
         ("qqq100_daily_decision_status", context.daily_decision_status, "Saved QQQ100 daily decision status."),
         ("qqq100_flatten_status", context.flatten_status, "Saved QQQ100 manual flatten readiness status."),
         ("qqq100_flatten_runbook_status", context.flatten_runbook_status, "Saved QQQ100 manual flatten runbook status."),
@@ -373,7 +389,7 @@ def build_blocker_rows(context: LadderStatusContext) -> list[dict[str, Any]]:
     if not context.design_present:
         blockers.insert(0, ("missing_ladder_design", "manual_review_required", "high", "Saved ladder design summary is missing.", "Run the report-only ladder design command first."))
     if not context.monitoring_present or not context.qqq100_monitoring_consistent:
-        blockers.insert(0, ("missing_or_inconsistent_qqq100_monitoring", "manual_review_required", "high", "Saved QQQ100 monitoring status is missing or inconsistent.", "Refresh report-only paper-live monitoring status first."))
+        blockers.insert(0, ("missing_or_inconsistent_paper_live_monitoring", "manual_review_required", "high", "Saved active-seed and previous QQQ100 monitoring status is missing or inconsistent.", "Refresh report-only paper-live monitoring status first."))
     return [
         {"blocker_name": name, "status": status, "severity": severity, "details": details, "required_next_step": next_step, **SAFETY_FLAGS}
         for name, status, severity, details, next_step in blockers

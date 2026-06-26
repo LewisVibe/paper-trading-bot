@@ -971,7 +971,7 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Purpose:** Use `python bot.py --paper-live-checklist-status` to close out the current QQQ100 paper-live monitoring phase with saved evidence only.
 - **Risk level:** Low/report-only when it reads `data/paper_live_monitoring_status.csv` only.
 - **Allowed commands:** `python bot.py --paper-live-checklist-status`, `python bot.py --show-paper-live-checklist-status`.
-- **Expected status:** `paper_live_checklist_current_qqq100_monitoring_phase_closed_out` when QQQ100 is aligned long one share, no action is required, and Step 12 remains future-only.
+- **Expected status:** `paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review` when the volatility-targeted seed is active for status/reporting, QQQ100 is aligned long one share as previous-seed context, no action is required, and Step 12 remains future-only.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, QQQ100 paper execution, QQQ100 postcheck unless separately approved, paper-order tests, normal bot execution, scheduler changes.
 - **Stop condition:** Stop if the task would build the generic promotion ladder, approve another QQQ order, change the Hermes cron sequence, or touch execution/config/secrets.
 
@@ -979,7 +979,7 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Purpose:** Use `python bot.py --paper-live-promotion-ladder-status` to summarize the current report-only promotion ladder state from saved outputs.
 - **Risk level:** Low/report-only when it reads saved ladder design and QQQ100 monitoring outputs only.
 - **Allowed commands:** `python bot.py --paper-live-promotion-ladder-status`, `python bot.py --show-paper-live-promotion-ladder-status`.
-- **Expected status:** `paper_live_promotion_ladder_status_report_only` with QQQ100 as the only current seed, `monitor_only_aligned_long_one`, and F7 accounting proof accepted while portfolio backtests remain not promotion evidence.
+- **Expected status:** `paper_live_promotion_ladder_status_report_only` with the volatility-targeted growth candidate as the current report/status seed, QQQ100 retained as previous-seed context with `previous_seed_monitor_only_aligned_long_one`, and F7 accounting proof accepted while portfolio backtests remain not promotion evidence.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, generic promotion implementation, QQQ100 paper execution, paper-order tests, normal bot execution, scheduler changes.
 - **Stop condition:** Stop if the task would promote high-growth/crypto/defensive/SMA/slow-SMA, treat portfolio backtests as promotion evidence before accounting proof, create order instructions, or touch execution/config/secrets.
 
@@ -1027,7 +1027,7 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Purpose:** Use `python bot.py --paper-live-promotion-ladder-design` to create report-only design scaffolding for a future generic ladder.
 - **Risk level:** Low/report-only when limited to saved output files and no broker reads.
 - **Allowed commands:** `python bot.py --paper-live-promotion-ladder-design`, `python bot.py --show-paper-live-promotion-ladder-design`.
-- **Expected status:** `paper_live_promotion_ladder_design_report_only`; QQQ100 is the only current seed and remains monitor-only/aligned long one share with no repeat/follow-up order approved.
+- **Expected status:** `paper_live_promotion_ladder_design_report_only`; the volatility-targeted growth candidate is the current report/status seed, and QQQ100 remains previous-seed context monitor-only/aligned long one share with no repeat/follow-up order approved.
 - **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, order-capable commands, normal bot execution, market-data refresh, Alpaca reads, scheduler changes, real promotion implementation.
 - **Stop condition:** Stop if the task would implement generic promotion logic, treat portfolio backtests as promotion evidence, assume unknown positions are flat, approve execution/scheduling, or promote multi-sleeve, high-growth, defensive, crypto, SMA, or slow-SMA paths.
 

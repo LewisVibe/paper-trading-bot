@@ -1963,7 +1963,7 @@ data/paper_live_checklist_status_blockers.csv
 data/paper_live_checklist_status_evidence.csv
 ```
 
-Expected closeout label is `paper_live_checklist_current_qqq100_monitoring_phase_closed_out` when saved monitoring status confirms `qqq_100_trend_gate` / `QQQ` is aligned long one share, no action is required, and `recommended_next_step=hold_no_action_and_monitor_only`. The generic promotion ladder remains Step 12 future-only.
+Expected closeout label is `paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review` when saved monitoring status confirms the volatility-targeted candidate is the active report/status seed, `qqq_100_trend_gate` / `QQQ` remains aligned long one share as previous-seed context, no action is required, and `recommended_next_step=hold_no_action_and_monitor_only`. The generic promotion ladder remains Step 12 future-only.
 
 Paper-live F6/F7 audit mode is the saved-output/report-only checkpoint for remaining external-review items before any future generic promotion ladder or multi-sleeve paper-live work. F6 checks whether preview/action/report paths keep unknown positions loud (`position_unknown`, `position_unavailable`, `manual_review_required`) and never silently assume flat. F7 checks whether portfolio backtest starting-cash/accounting consistency still needs review before backtest results are used as promotion evidence. This audit is static/source-review oriented; it does not rerun market-data backtests, refresh yfinance, call Alpaca, read positions, approve execution, or build the generic promotion ladder.
 
@@ -2015,7 +2015,7 @@ data/paper_live_promotion_ladder_design_blockers.csv
 data/paper_live_promotion_ladder_design_evidence.csv
 ```
 
-Paper-live promotion ladder status mode is the saved-output/report-only scaffold that reads the ladder design, current QQQ100 saved monitoring evidence, and the saved F7 accounting proof status. QQQ100 is the only current seed, with expected status `monitor_only_aligned_long_one`. High-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests remain not promotion evidence. The accepted F7 accounting proof confirms the static accounting checkpoint only; it does not promote strategies, create order instructions, call Alpaca, read positions, approve execution, approve scheduling, or implement generic promotion logic.
+Paper-live promotion ladder status mode is the saved-output/report-only scaffold that reads the ladder design, current volatility seed status, previous QQQ100 saved monitoring evidence, and the saved F7 accounting proof status. The volatility-targeted growth candidate is the current report/status seed, while QQQ100 remains previous-seed context with expected status `previous_seed_monitor_only_aligned_long_one`. High-growth and crypto remain research-only, defensive sleeves remain future-review-only, SMA and slow-SMA remain excluded, and portfolio backtests remain not promotion evidence. The accepted F7 accounting proof confirms the static accounting checkpoint only; it does not promote strategies, create order instructions, call Alpaca, read positions, approve execution, approve scheduling, or implement generic promotion logic.
 
 Command:
 
