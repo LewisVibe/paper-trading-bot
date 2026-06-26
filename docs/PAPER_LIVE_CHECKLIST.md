@@ -69,6 +69,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - `python bot.py --vol-targeted-growth-seed-change-review` may allow manual consideration of the volatility proposal to continue, but QQQ100 remains the seed and no displacement, seed change, action, execution, repeat order, or scheduling is approved.
 - `python bot.py --vol-targeted-growth-seed-change-evidence-pack` may list missing evidence required before QQQ100 displacement could even be proposed; it does not create a seed-change proposal, change the seed, read positions, create order fields, execute, repeat orders, or schedule.
 - `python bot.py --vol-targeted-growth-seed-change-risk-reward-comparison` may fill the risk/reward evidence item from saved metrics only; source mismatch/manual review remains a blocker and no QQQ100 displacement, seed change, action, execution, repeat order, or scheduling is approved.
+- `python bot.py --vol-targeted-growth-seed-change-drawdown-stress-review` may fill the drawdown/stress evidence item from saved MaxDD metrics only; stress-window evidence remains incomplete and no QQQ100 displacement, seed change, action, execution, repeat order, or scheduling is approved.
 - Keep crypto research-only.
 - Keep SMA/slow-SMA out of paper-live promotion.
 

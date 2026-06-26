@@ -35,6 +35,7 @@ INPUT_FILES = {
     "candidate_discussion_summary": Path("data/vol_targeted_growth_candidate_discussion_summary.csv"),
     "broker_comparison_summary": Path("data/vol_targeted_growth_broker_position_comparison_summary.csv"),
     "risk_reward_summary": Path("data/vol_targeted_growth_seed_change_risk_reward_summary.csv"),
+    "drawdown_stress_summary": Path("data/vol_targeted_growth_seed_change_drawdown_stress_summary.csv"),
     "qqq100_followup_policy_summary": Path("data/qqq100_followup_policy_summary.csv"),
     "paper_live_monitoring_summary": Path("data/paper_live_monitoring_status_summary.csv"),
 }
@@ -246,6 +247,7 @@ def source_status_map(inputs: dict[str, list[dict[str, str]]]) -> dict[str, str]
         "volatility_proposal_preview": summary_value(inputs["proposal_preview_summary"], "final_proposal_preview_status") or "missing",
         "broker_exposure_context": summary_value(inputs["broker_comparison_summary"], "final_comparison_status") or "missing",
         "risk_reward_comparison": summary_value(inputs["risk_reward_summary"], "final_risk_reward_status") or "missing",
+        "drawdown_stress_review": summary_value(inputs["drawdown_stress_summary"], "final_drawdown_stress_status") or "missing",
     }
 
 
@@ -259,6 +261,8 @@ def resolve_evidence_status(item: str, default_status: str, source_statuses: dic
     if item == "broker_exposure_context" and source_statuses.get(item, "missing") != "missing":
         return "manual_review_required"
     if item == "risk_reward_comparison" and source_statuses.get(item, "missing") == "vol_targeted_growth_risk_reward_evidence_created_manual_review_required":
+        return "present_manual_review_required"
+    if item == "drawdown_stress_review" and source_statuses.get(item, "missing") == "vol_targeted_growth_drawdown_stress_evidence_created_manual_review_required":
         return "present_manual_review_required"
     return default_status
 

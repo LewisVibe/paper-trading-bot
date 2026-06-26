@@ -884,6 +884,12 @@ The volatility-targeted growth seed-change risk/reward comparison comes from `py
 - Current expected status is `vol_targeted_growth_risk_reward_evidence_created_manual_review_required`.
 - Saved metrics show the volatility 15/20 candidate leading QQQ100 on CAGR, Sharpe, MaxDD, and Calmar, but the comparison is not a fresh apples-to-apples regeneration. Source mismatch, component, stress, cost, split, exposure, and formal proposal evidence remain blockers; QQQ100 remains the seed and no displacement, order instruction, execution, repeat order, or scheduling is approved.
 
+The volatility-targeted growth seed-change drawdown/stress review comes from `python bot.py --vol-targeted-growth-seed-change-drawdown-stress-review`, with saved display through `python bot.py --show-vol-targeted-growth-seed-change-drawdown-stress-review`:
+
+- It writes `data/vol_targeted_growth_seed_change_drawdown_stress_review.csv`, `data/vol_targeted_growth_seed_change_drawdown_stress_summary.csv`, `data/vol_targeted_growth_seed_change_drawdown_stress_evidence.csv`, and `data/vol_targeted_growth_seed_change_drawdown_stress_blockers.csv`.
+- Current expected status is `vol_targeted_growth_drawdown_stress_evidence_created_manual_review_required`.
+- Saved MaxDD favors the volatility 15/20 candidate over QQQ100, but the evidence is not a fresh apples-to-apples drawdown-window/stress regeneration. Stress-window evidence remains incomplete; QQQ100 remains the seed and no displacement, order instruction, execution, repeat order, or scheduling is approved.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

@@ -209,6 +209,8 @@ Volatility-targeted growth seed-change evidence pack is saved-output-only: `pyth
 
 Volatility-targeted growth seed-change risk/reward comparison is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-risk-reward-comparison` and `python bot.py --show-vol-targeted-growth-seed-change-risk-reward-comparison` compare saved QQQ100 benchmark metrics with the saved volatility 15/20 candidate. The volatility candidate leads the saved metrics, but source mismatch/manual review remains a blocker and QQQ100 is not displaced.
 
+Volatility-targeted growth seed-change drawdown/stress review is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-drawdown-stress-review` and `python bot.py --show-vol-targeted-growth-seed-change-drawdown-stress-review` compare saved QQQ100 and volatility candidate MaxDD evidence. The volatility candidate has the less severe saved drawdown, but this is not a fresh stress-window regeneration and QQQ100 is not displaced.
+
 
 ## Architecture
 
