@@ -201,6 +201,8 @@ Volatility-targeted growth proposal implementation design is saved-output-only: 
 
 Volatility-targeted growth proposal preview schema is saved-output-only: `python bot.py --vol-targeted-growth-proposal-preview-schema` and `python bot.py --show-vol-targeted-growth-proposal-preview-schema` define the allowed and forbidden fields for a future non-executable proposal preview. It explicitly forbids order side, quantity, order type, account, API key, webhook, token, and order ID fields; QQQ100 remains the incumbent seed.
 
+Volatility-targeted growth proposal preview is saved-output-only: `python bot.py --vol-targeted-growth-proposal-preview` and `python bot.py --show-vol-targeted-growth-proposal-preview` create sleeve-level review rows using the approved schema. It does not read broker positions, create order fields, displace QQQ100, or approve action, execution, repeat orders, or scheduling.
+
 
 ## Architecture
 

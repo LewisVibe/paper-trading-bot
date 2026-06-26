@@ -1278,3 +1278,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_proposal_preview_schema_ready_manual_review_required`; preview implementation remains unadded and unapproved.
 - **Forbidden commands:** Broker reads, order creation, order side/quantity/type fields, account/API/webhook/token/order ID fields, market refresh, preview implementation, portfolio execution wiring, high-growth/crypto promotion, scheduling, or paper-live approval.
 - **Stop condition:** Stop if the task would add preview implementation, create executable/account/secret fields, displace QQQ100, call Alpaca, read positions, or connect the candidate to execution.
+
+### Task: Volatility-targeted growth proposal preview
+- **Purpose:** Use `python bot.py --vol-targeted-growth-proposal-preview` to create saved sleeve-level proposal rows from the approved schema for manual review only.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-proposal-preview`, `python bot.py --show-vol-targeted-growth-proposal-preview`, and `python scripts\verify_vol_targeted_growth_proposal_preview.py`.
+- **Expected status:** `vol_targeted_growth_proposal_preview_created_saved_output_only`; action, seed change, and execution remain unapproved.
+- **Forbidden commands:** Broker reads, order creation, executable/account/secret fields, market refresh, action preview implementation, portfolio execution wiring, high-growth/crypto promotion, scheduling, or paper-live approval.
+- **Stop condition:** Stop if the task would read positions, create order fields, implement an action preview, displace QQQ100, call Alpaca, or connect the candidate to execution.
