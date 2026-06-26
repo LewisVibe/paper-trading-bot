@@ -227,6 +227,8 @@ Volatility-targeted growth seed-change implementation design is saved-output-onl
 
 Volatility-targeted growth seed-change dry-run diff is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-dry-run-diff` and `python bot.py --show-vol-targeted-growth-seed-change-dry-run-diff` list the future files/areas that would need review for a seed switch. It does not modify those files, change the active seed, add action preview, create order instructions, or approve execution.
 
+Volatility-targeted growth active-seed readiness is saved-output-only: `python bot.py --vol-targeted-growth-active-seed-readiness` and `python bot.py --show-vol-targeted-growth-active-seed-readiness` check whether saved monitoring/status reports and supporting evidence consistently point at `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE` as the active report/status seed, with QQQ100 retained as previous-seed context. It does not call Alpaca, refresh market data, create action preview, create order instructions, approve execution, or approve scheduling.
+
 
 ## Architecture
 

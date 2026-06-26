@@ -2059,6 +2059,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-active-seed-readiness"]:
+        from trading_bot.research.vol_targeted_growth_active_seed_readiness import (
+            generate_vol_targeted_growth_active_seed_readiness,
+        )
+
+        result = generate_vol_targeted_growth_active_seed_readiness()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-active-seed-readiness"]:
+        from trading_bot.research.vol_targeted_growth_active_seed_readiness import (
+            show_vol_targeted_growth_active_seed_readiness,
+        )
+
+        code, lines = show_vol_targeted_growth_active_seed_readiness()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:

@@ -946,6 +946,13 @@ The volatility-targeted growth seed-change dry-run diff comes from `python bot.p
 
 Volatility-targeted growth is the current report/status seed after the status-only switch; QQQ100 remains previous-seed context and no execution or scheduling is approved.
 
+The volatility-targeted growth active-seed readiness report comes from `python bot.py --vol-targeted-growth-active-seed-readiness`, with saved display through `python bot.py --show-vol-targeted-growth-active-seed-readiness`:
+
+- It writes `data/vol_targeted_growth_active_seed_readiness.csv`, `data/vol_targeted_growth_active_seed_readiness_summary.csv`, `data/vol_targeted_growth_active_seed_readiness_evidence.csv`, and `data/vol_targeted_growth_active_seed_readiness_blockers.csv`.
+- Expected ready status is `vol_targeted_growth_active_seed_monitoring_ready_manual_review_required` when saved monitoring/status reports and supporting evidence consistently point at `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`.
+- If saved evidence is missing or stale, expected status is `vol_targeted_growth_active_seed_monitoring_incomplete_manual_review_required`.
+- This is monitoring/readiness only. It does not call Alpaca, refresh yfinance data, create action preview, create order instructions, approve execution, approve follow-up/repeat orders, or approve scheduling.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

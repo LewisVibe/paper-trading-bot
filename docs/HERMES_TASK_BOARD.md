@@ -1390,3 +1390,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** `vol_targeted_growth_seed_change_dry_run_diff_created_manual_review_required`; QQQ100 remains active and no target files are modified.
 - **Forbidden commands:** Seed changes, target-file mutation outside the dry-run report, QQQ100 displacement implementation, broker reads, Alpaca calls, market refresh, order creation, executable/account/secret fields, action preview implementation, portfolio execution wiring, scheduling, or paper-live execution approval.
 - **Stop condition:** Stop if the task would modify the actual seed-switch targets, change the seed, approve execution, create order fields, call Alpaca, read positions, schedule anything, or connect the candidate to execution.
+
+### Task: Volatility-targeted growth active-seed readiness
+- **Purpose:** Use `python bot.py --vol-targeted-growth-active-seed-readiness` to check saved monitoring/status consistency for the active volatility-targeted report/status seed.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-active-seed-readiness`, `python bot.py --show-vol-targeted-growth-active-seed-readiness`, and `python scripts\verify_vol_targeted_growth_active_seed_readiness.py`.
+- **Expected status:** `vol_targeted_growth_active_seed_monitoring_ready_manual_review_required` when saved reports consistently point at `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`; otherwise `vol_targeted_growth_active_seed_monitoring_incomplete_manual_review_required`.
+- **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable/account/secret fields, action preview implementation, portfolio execution wiring, scheduling, or paper-live execution approval.
+- **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create order fields, approve execution, schedule anything, or connect the candidate to execution.
