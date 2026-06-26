@@ -824,6 +824,12 @@ The volatility-targeted growth broker-position comparison comes from `python bot
 - Confirmed read-only mode requires `--confirm-readonly-alpaca-check` in a separately approved run. Even then, it compares saved target sleeves with paper-position context only and does not create order instructions, approve paper-live candidacy, approve execution, or approve scheduling.
 - Strategy explanation: the candidate is a research-only multi-sleeve growth portfolio with 70% QQQ100 core trend, 20% high-growth research, 5% crypto research, and 5% defensive buffer. It targets 15% volatility over a 20-day window with a 1x cap, so it tries to keep growth exposure while reducing exposure when recent volatility rises.
 
+The volatility-targeted growth post-comparison decision comes from `python bot.py --vol-targeted-growth-post-comparison-decision`, with saved display through `python bot.py --show-vol-targeted-growth-post-comparison-decision`:
+
+- It writes `data/vol_targeted_growth_post_comparison_decision.csv`, `data/vol_targeted_growth_post_comparison_decision_summary.csv`, `data/vol_targeted_growth_post_comparison_decision_evidence.csv`, and `data/vol_targeted_growth_post_comparison_decision_blockers.csv`.
+- Current expected status after a confirmed saved comparison is `vol_targeted_growth_stricter_paper_live_discussion_gate_ready_manual_review_required`.
+- This means the next safe step is designing a stricter manual paper-live discussion gate. It does not approve that gate, paper-live candidacy, order instructions, execution, scheduling, or another broker read.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
