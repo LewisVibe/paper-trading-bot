@@ -183,6 +183,8 @@ Volatility-targeted growth portfolio-risk review is saved-output-only: `python b
 
 Volatility-targeted growth portfolio-risk policy design is saved-output-only: `python bot.py --vol-targeted-growth-portfolio-risk-policy-design` and `python bot.py --show-vol-targeted-growth-portfolio-risk-policy-design` proposes guardrails for the 15/20 candidate, including zero allocation until approval, crypto capped at 5%, high-growth remaining research-only, drawdown review, and broker-position review. It does not enforce policy or approve paper-live candidacy.
 
+Volatility-targeted growth paper-live decision is saved-output-only: `python bot.py --vol-targeted-growth-paper-live-decision` and `python bot.py --show-vol-targeted-growth-paper-live-decision` keeps the 15/20 candidate research-only while marking it ready for manual discussion of a future read-only broker-position comparison. It does not call Alpaca, read positions, create order instructions, approve paper-live candidacy, or approve scheduling.
+
 
 ## Architecture
 

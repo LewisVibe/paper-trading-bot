@@ -805,6 +805,12 @@ The volatility-targeted growth portfolio-risk policy design comes from `python b
 - It proposes manual-review guardrails: zero total allocation until approval, 70% QQQ100 sleeve context, 20% high-growth sleeve review, 5% crypto cap, 5% defensive buffer definition, drawdown guardrails, broker-position guardrails, and no execution boundary.
 - It does not enforce policy, approve paper-live candidacy, read broker positions, create orders, approve execution, or approve scheduling.
 
+The volatility-targeted growth paper-live decision checkpoint comes from `python bot.py --vol-targeted-growth-paper-live-decision`, with saved display through `python bot.py --show-vol-targeted-growth-paper-live-decision`:
+
+- It writes `data/vol_targeted_growth_paper_live_decision.csv`, `data/vol_targeted_growth_paper_live_decision_summary.csv`, `data/vol_targeted_growth_paper_live_decision_evidence.csv`, and `data/vol_targeted_growth_paper_live_decision_blockers.csv`.
+- Current expected status is `vol_targeted_growth_research_only_broker_comparison_discussion_ready_manual_review_required`.
+- The 15/20 candidate remains research-only; the checkpoint only says a future read-only broker-position comparison may be discussed manually. It does not call Alpaca, read positions, create orders, approve paper-live candidacy, approve execution, or approve scheduling.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
