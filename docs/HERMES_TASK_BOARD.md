@@ -1396,6 +1396,7 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
 - **Allowed commands:** `python bot.py --vol-targeted-growth-active-seed-readiness`, `python bot.py --show-vol-targeted-growth-active-seed-readiness`, and `python scripts\verify_vol_targeted_growth_active_seed_readiness.py`.
 - **Expected status:** `vol_targeted_growth_active_seed_monitoring_ready_manual_review_required` when saved reports consistently point at `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`; otherwise `vol_targeted_growth_active_seed_monitoring_incomplete_manual_review_required`.
+- **Monitoring integration:** `python bot.py --vps-daily-monitoring-summary` includes the saved active-seed readiness section for Telegram/status review without adding action preview, broker reads, refresh commands, or scheduling approval.
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable/account/secret fields, action preview implementation, portfolio execution wiring, scheduling, or paper-live execution approval.
 - **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create order fields, approve execution, schedule anything, or connect the candidate to execution.
 

@@ -32,6 +32,7 @@ from trading_bot.research.vps_monitoring_status import (
 
 
 DEFENSIVE_REFRESH_SUMMARY_PATH = "data/defensive_research_refresh_summary.csv"
+VOL_ACTIVE_SEED_READINESS_SUMMARY_PATH = "data/vol_targeted_growth_active_seed_readiness_summary.csv"
 
 
 def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str]:
@@ -98,6 +99,13 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
     lines.extend(
         [
             "",
+            "Volatility active-seed readiness:",
+        ]
+    )
+    lines.extend(vol_active_seed_readiness_status_lines(root_path))
+    lines.extend(
+        [
+            "",
             "QQQ100 daily decision:",
         ]
     )
@@ -142,6 +150,41 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         ]
     )
     return lines
+
+
+def vol_active_seed_readiness_status_lines(root: Path) -> list[str]:
+    rows = read_csv_rows(root / VOL_ACTIVE_SEED_READINESS_SUMMARY_PATH)
+    if not rows:
+        return [
+            "- vol_active_seed_readiness_present: False",
+            f"- vol_active_seed_readiness_missing_saved_output: {VOL_ACTIVE_SEED_READINESS_SUMMARY_PATH}",
+            "- vol_active_seed_readiness_status: missing_saved_output",
+            "- vol_active_seed_readiness_warning: monitor only; missing saved readiness does not approve execution or scheduling.",
+        ]
+    return [
+        "- vol_active_seed_readiness_present: True",
+        f"- final_active_seed_readiness_status: {summary_value(rows, 'final_active_seed_readiness_status')}",
+        f"- active_seed: {summary_value(rows, 'active_seed')}",
+        f"- active_ticker: {summary_value(rows, 'active_ticker')}",
+        f"- previous_seed: {summary_value(rows, 'previous_seed')}",
+        f"- readiness_pass_count: {summary_value(rows, 'readiness_pass_count')}",
+        f"- readiness_warning_count: {summary_value(rows, 'readiness_warning_count')}",
+        f"- largest_blocker: {summary_value(rows, 'largest_blocker')}",
+        f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
+        f"- action_preview_added: {summary_value(rows, 'action_preview_added') or 'False'}",
+        f"- order_instructions_created: {summary_value(rows, 'order_instructions_created') or 'False'}",
+        f"- execution_approved: {summary_value(rows, 'execution_approved') or 'False'}",
+        f"- paper_execution_approved: {summary_value(rows, 'paper_execution_approved') or 'False'}",
+        f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
+        "- vol_active_seed_readiness_warning: monitor only; this is not action preview, order approval, execution approval, or scheduling approval.",
+    ]
+
+
+def summary_value(rows: list[dict[str, str]], key: str) -> str:
+    for row in rows:
+        if row.get("summary_name") == key:
+            return str(row.get("summary_value", "")).strip()
+    return ""
 
 
 def determine_final_status(
