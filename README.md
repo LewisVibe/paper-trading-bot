@@ -221,6 +221,8 @@ Volatility-targeted growth seed-change manual-review checkpoint is saved-output-
 
 Volatility-targeted growth formal seed-change proposal is saved-output-only: `python bot.py --vol-targeted-growth-formal-seed-change-proposal` and `python bot.py --show-vol-targeted-growth-formal-seed-change-proposal` create the human-review proposal document for replacing QQQ100 with the volatility candidate. The proposal requests review only; it does not record manual approval, change the seed, add action preview implementation, create order instructions, or approve execution.
 
+Volatility-targeted growth seed-change manual approval record is saved-output-only: `python bot.py --vol-targeted-growth-seed-change-manual-approval-record` and `python bot.py --show-vol-targeted-growth-seed-change-manual-approval-record` record manual approval to design the implementation only. QQQ100 remains the active seed until a separate implementation checkpoint, and no action preview, order instruction, execution, repeat order, or scheduling is approved.
+
 
 ## Architecture
 

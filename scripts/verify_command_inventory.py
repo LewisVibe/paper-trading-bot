@@ -261,6 +261,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-seed-change-manual-review-checkpoint",
     "--vol-targeted-growth-formal-seed-change-proposal",
     "--show-vol-targeted-growth-formal-seed-change-proposal",
+    "--vol-targeted-growth-seed-change-manual-approval-record",
+    "--show-vol-targeted-growth-seed-change-manual-approval-record",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",
