@@ -963,6 +963,7 @@ The volatility-targeted growth seed-change dry-run diff comes from `python bot.p
 - It writes `data/vol_targeted_growth_seed_change_dry_run_diff.csv`, `data/vol_targeted_growth_seed_change_dry_run_diff_summary.csv`, `data/vol_targeted_growth_seed_change_dry_run_diff_evidence.csv`, and `data/vol_targeted_growth_seed_change_dry_run_diff_blockers.csv`.
 - Current expected status is `vol_targeted_growth_seed_change_dry_run_diff_created_manual_review_required`.
 - This lists the future files/areas that would need review for a seed switch. It does not modify those files, change the active seed, displace QQQ100, add action-preview implementation, create order instructions, approve paper execution, approve live execution, approve repeat orders, or approve scheduling.
+- `python scripts\verify_vol_targeted_growth_seed_switch_status_only.py` verifies the implemented status-only report seed switch: volatility-targeted growth is the active report/status seed, QQQ100 remains previous-seed context, and order, execution, repeat-order, and scheduling approvals remain false.
 
 Volatility-targeted growth is the current report/status seed after the status-only switch; QQQ100 remains previous-seed context and no execution or scheduling is approved.
 
@@ -973,7 +974,7 @@ The volatility-targeted growth active-seed readiness report comes from `python b
 - If saved evidence is missing or stale, expected status is `vol_targeted_growth_active_seed_monitoring_incomplete_manual_review_required`.
 - This is monitoring/readiness only. It does not call Alpaca, refresh yfinance data, create action preview, create order instructions, approve execution, approve follow-up/repeat orders, or approve scheduling.
 - `python bot.py --vps-daily-monitoring-summary` now includes a saved-output-only "Volatility active-seed readiness" section, so Telegram/status output can show the active seed readiness state without adding a separate runtime cron command.
-- `python scripts\verify_vol_targeted_growth_seed_change_chain_checkpoint.py` verifies the saved seed-change review ladder through active-seed readiness remains complete and review-only while preserving false seed-switch, order, execution, repeat-order, and scheduling approvals.
+- `python scripts\verify_vol_targeted_growth_seed_change_chain_checkpoint.py` verifies the saved seed-change review ladder, the implemented status-only seed switch, and active-seed readiness while preserving false order, execution, repeat-order, and scheduling approvals.
 
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 

@@ -71,6 +71,7 @@ FOCUSED_VERIFIERS = [
     "scripts/verify_vol_targeted_growth_seed_change_manual_approval_record.py",
     "scripts/verify_vol_targeted_growth_seed_change_implementation_design.py",
     "scripts/verify_vol_targeted_growth_seed_change_dry_run_diff.py",
+    "scripts/verify_vol_targeted_growth_seed_switch_status_only.py",
     "scripts/verify_vol_targeted_growth_active_seed_readiness.py",
 ]
 
@@ -91,6 +92,8 @@ EXPECTED_STATUS_TOKENS = [
     "vol_targeted_growth_seed_change_implementation_design_created_manual_review_required",
     "vol_targeted_growth_seed_change_dry_run_diff_created_manual_review_required",
     "vol_targeted_growth_active_seed_monitoring_ready_manual_review_required",
+    "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x",
+    "MULTI_SLEEVE",
 ]
 
 REQUIRED_SAFETY_TOKENS = [
@@ -139,7 +142,7 @@ def main() -> int:
             print(f"- {failure}")
         return 1
     print("Volatility-targeted seed-change chain checkpoint passed.")
-    print("Verified saved-output seed-change review through active-seed readiness, with seed switch/order/execution/scheduling boundaries preserved.")
+    print("Verified saved-output seed-change review, status-only seed switch, and active-seed readiness, with order/execution/scheduling boundaries preserved.")
     return 0
 
 
