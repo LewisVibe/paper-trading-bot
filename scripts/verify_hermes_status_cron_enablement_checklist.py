@@ -10,12 +10,15 @@ CHECKLIST_PATH = ROOT / "docs" / "HERMES_STATUS_CRON_ENABLEMENT_CHECKLIST.md"
 REQUIRED_PHRASES = [
     "paused-vps-safe-paper-bot-status-check",
     "66c8a5bb438e",
-    "Current state: `paused`",
-    "Enabled: `false`",
-    "Stored future schedule: `*/30 14-20 * * 1-5`",
+    "Current state: `scheduled`",
+    "Enabled: `true`",
+    "Schedule: `*/30 14-20 * * 1-5`",
     "Intended timezone: UK local / Europe-London",
-    "Last scheduled run: `never`",
+    "Next run: `2026-06-29T14:00:00+01:00`",
+    "Last scheduled run: `null` / never run by cron",
+    "Delivery: current/origin Telegram chat",
     "Toolsets restricted to: `terminal`",
+    "Mode: script-only / no-agent",
     "Working directory: `C:\\dev\\paper-trading-bot`",
     ".venv\\Scripts\\python.exe scripts\\verify_repo_safety.py",
     ".venv\\Scripts\\python.exe scripts\\verify_hermes_cron_readiness.py",
@@ -23,23 +26,22 @@ REQUIRED_PHRASES = [
     ".venv\\Scripts\\python.exe bot.py --vps-daily-monitoring-summary",
     "hourly during the US regular market session",
     "every 30 minutes during the US regular market session",
-    "Stored future candidate: every 30 minutes during the broad UK-local",
+    "Current enabled cadence: every 30 minutes during the broad UK-local",
     "09:30-16:00 America/New_York",
     "14:30-21:00 UK local time",
     "DST mismatch weeks must be reviewed manually",
     "`execution_approved=False`",
     "`paper_execution_approved=False`",
-    "`scheduling_approved=False`",
+    "`scheduling_approved=False` for strategy execution, refresh jobs, and",
     "`live_trading_approved=False`",
     "`followup_order_approved=False`",
     "`repeat_execution_approved=False`",
-    "not create, edit, trigger, enable, or schedule any Hermes cron job",
-    "not approved by this document",
-    "This checklist is not the approval itself",
+    "does not approve execution, paper execution, refresh jobs",
+    "Stop and disable the job for manual review",
+    "This checklist documents the current status-only enablement",
 ]
 
 FORBIDDEN_APPROVAL_PHRASES = [
-    "Enabled: `true`",
     "Current state: `active`",
     "scheduling_approved=True",
     "execution_approved=True",
@@ -47,10 +49,9 @@ FORBIDDEN_APPROVAL_PHRASES = [
     "live_trading_approved=True",
     "followup_order_approved=True",
     "repeat_execution_approved=True",
-    "activation approved",
-    "scheduling approved",
-    "enable now",
-    "approved cadence",
+    "execution approved",
+    "order approved",
+    "paper execution approved",
 ]
 
 FORBIDDEN_SEQUENCE_TOKENS = [
@@ -87,7 +88,7 @@ def main() -> int:
             print(f"- {failure}")
         return 1
     print("Hermes status cron enablement checklist verification passed.")
-    print("Verified market-hours cadence planning, paused job boundary, and false approval flags.")
+    print("Verified enabled market-hours status cron boundary and false execution approval flags.")
     return 0
 
 

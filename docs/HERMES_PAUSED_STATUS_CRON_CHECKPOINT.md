@@ -1,27 +1,29 @@
-# Hermes Paused Status Cron Checkpoint
+# Hermes Status Cron Checkpoint
 
-This document records a paused Hermes cron job definition for future manual
-activation review. It is not enabled, has never run, and does not approve
-scheduling, refresh automation, execution, paper execution, live trading, repeat
-orders, or follow-up orders.
+This document records the enabled Hermes status cron job definition for
+market-hours monitoring. It has not yet run by cron and does not approve refresh
+automation, broker reads, strategy execution, paper execution, live trading,
+repeat orders, or follow-up orders.
 
-## Paused Job State
+## Current Job State
 
 - Job name: `paused-vps-safe-paper-bot-status-check`
 - Job ID: `66c8a5bb438e`
-- State: `paused`
-- Enabled: `false`
-- Stored future schedule: `*/30 14-20 * * 1-5`
+- State: `scheduled`
+- Enabled: `true`
+- Schedule: `*/30 14-20 * * 1-5`
 - Intended timezone: UK local / Europe-London
-- Last run: `never`
+- Next run: `2026-06-29T14:00:00+01:00`
+- Last run status: `null` / never run by cron
 - Delivery: current/origin Telegram chat
 - Toolsets restricted to: `terminal`
+- Mode: script-only / no-agent
+- Script: `vps_safe_paper_bot_status_check.py`
 - Working directory: `C:\dev\paper-trading-bot`
 
-## Intended Command Sequence
+## Command Sequence
 
-The paused job definition is status/report only. If it is ever reviewed for
-activation, the intended sequence is:
+The enabled job definition is status/report only. The command sequence is:
 
 ```powershell
 .venv\Scripts\python.exe scripts\verify_repo_safety.py
@@ -35,13 +37,16 @@ Telegram status summary only.
 
 ## Manual One-Off Test Result
 
-On `2026-06-27`, the paused job command sequence was run once manually as a
-status-only test. The job remained paused and disabled after the test, and the
+On `2026-06-27`, the status command sequence was run once manually as a
+status-only test. The job remained paused and disabled after that test, and the
 schedule placeholder remained `2099-01-01 00:00` at that time. A later manual
-metadata update changed the stored future schedule to `*/30 14-20 * * 1-5`
-while keeping the job paused, disabled, and never run by cron.
+metadata update changed the stored schedule to `*/30 14-20 * * 1-5` while
+keeping the job paused, disabled, and never run by cron. On `2026-06-27`, the
+existing job was then enabled without being manually triggered; Hermes reported
+state `scheduled`, enabled `true`, next run `2026-06-29T14:00:00+01:00`, and
+last run status `null` / never run by cron.
 
-Observed result:
+Observed manual-test result:
 
 - repo safety: passed;
 - Hermes cron readiness: `9` checks passed, `0` warnings, `0` errors;
@@ -61,11 +66,11 @@ After the missing saved active-seed readiness output was regenerated manually
 with the existing report-only command, the VPS daily monitoring summary check
 passed and the active-seed readiness section reported ready-for-monitoring
 review. This is evidence that the status/report shell works; it is not
-permission to enable scheduling.
+permission to add refresh, broker-read, or order-capable scheduling.
 
 ## Explicit Boundaries
 
-This paused job must not:
+This status cron job must not:
 
 - run normal `python bot.py`;
 - run paper-order tests;
@@ -91,20 +96,20 @@ This checkpoint preserves:
 
 - `execution_approved=False`
 - `paper_execution_approved=False`
-- `scheduling_approved=False`
+- `scheduling_approved=False` for strategy execution, refresh jobs, and
+  order-capable workflows
 - `live_trading_approved=False`
 - `followup_order_approved=False`
 - `repeat_execution_approved=False`
 
-The paused job definition is not scheduling approval. The stored future schedule
-is a reviewed candidate cadence only; activation still requires a separate
-manual approval step after the saved report chain remains healthy on the VPS.
-Activation requires a separate manual approval step.
+This enabled status cron is approval for this status/report monitoring job only.
+It is not approval for refresh automation, broker reads, order-capable commands,
+strategy execution, paper execution, live trading, repeat orders, or follow-up
+orders.
 
-## Manual Activation Checklist
+## Ongoing Monitoring Checklist
 
-Before the paused job may be enabled or rescheduled, a separate manual review
-must confirm:
+While the job is enabled, periodic manual review should confirm:
 
 - repo safety passes on the VPS;
 - Hermes cron readiness passes on the VPS;
@@ -114,4 +119,4 @@ must confirm:
 - the job remains script-only / no-agent where possible;
 - toolsets remain restricted to terminal;
 - no refresh, broker-read, market-refresh, or order-capable command is added;
-- all approval flags remain false.
+- all execution/order approval flags remain false.

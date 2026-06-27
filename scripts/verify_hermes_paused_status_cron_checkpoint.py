@@ -10,13 +10,16 @@ CHECKPOINT_PATH = ROOT / "docs" / "HERMES_PAUSED_STATUS_CRON_CHECKPOINT.md"
 REQUIRED_PHRASES = [
     "paused-vps-safe-paper-bot-status-check",
     "66c8a5bb438e",
-    "State: `paused`",
-    "Enabled: `false`",
-    "Stored future schedule: `*/30 14-20 * * 1-5`",
+    "State: `scheduled`",
+    "Enabled: `true`",
+    "Schedule: `*/30 14-20 * * 1-5`",
     "Intended timezone: UK local / Europe-London",
-    "Last run: `never`",
+    "Next run: `2026-06-29T14:00:00+01:00`",
+    "Last run status: `null` / never run by cron",
     "Delivery: current/origin Telegram chat",
     "Toolsets restricted to: `terminal`",
+    "Mode: script-only / no-agent",
+    "Script: `vps_safe_paper_bot_status_check.py`",
     "Working directory: `C:\\dev\\paper-trading-bot`",
     ".venv\\Scripts\\python.exe scripts\\verify_repo_safety.py",
     ".venv\\Scripts\\python.exe scripts\\verify_hermes_cron_readiness.py",
@@ -24,8 +27,9 @@ REQUIRED_PHRASES = [
     ".venv\\Scripts\\python.exe bot.py --vps-daily-monitoring-summary",
     "VPS daily monitoring summary includes the active volatility seed readiness section",
     "Manual One-Off Test Result",
-    "On `2026-06-27`, the paused job command sequence was run once manually as a",
-    "stored future schedule to `*/30 14-20 * * 1-5`",
+    "On `2026-06-27`, the status command sequence was run once manually as a",
+    "the existing job was then enabled without being manually triggered",
+    "state `scheduled`, enabled `true`, next run `2026-06-29T14:00:00+01:00`",
     "repo safety: passed",
     "Hermes cron readiness: `9` checks passed, `0` warnings, `0` errors",
     "VPS daily monitoring summary verifier: passed",
@@ -35,28 +39,26 @@ REQUIRED_PHRASES = [
     "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE",
     "previous seed context: `qqq_100_trend_gate` / `QQQ`",
     "no order-capable commands were run",
-    "not permission to enable scheduling",
-    "The stored future schedule is a reviewed candidate cadence only",
+    "not permission to add refresh, broker-read, or order-capable scheduling",
     "`execution_approved=False`",
     "`paper_execution_approved=False`",
-    "`scheduling_approved=False`",
+    "`scheduling_approved=False` for strategy execution, refresh jobs, and",
     "`live_trading_approved=False`",
     "`followup_order_approved=False`",
     "`repeat_execution_approved=False`",
-    "Activation requires a separate manual approval step",
+    "This enabled status cron is approval for this status/report monitoring job only",
 ]
 
 FORBIDDEN_APPROVAL_PHRASES = [
-    "Enabled: `true`",
-    "State: `active`",
     "scheduling_approved=True",
     "execution_approved=True",
     "paper_execution_approved=True",
     "live_trading_approved=True",
     "followup_order_approved=True",
     "repeat_execution_approved=True",
-    "activation approved",
-    "scheduling approved",
+    "execution approved",
+    "order approved",
+    "paper execution approved",
 ]
 
 FORBIDDEN_COMMANDS = [
@@ -92,12 +94,12 @@ def main() -> int:
     verify_checkpoint_doc(failures)
     verify_no_scheduler_artifacts(failures)
     if failures:
-        print("Hermes paused status cron checkpoint verification failed.")
+        print("Hermes status cron checkpoint verification failed.")
         for failure in failures:
             print(f"- {failure}")
         return 1
-    print("Hermes paused status cron checkpoint verification passed.")
-    print("Verified paused=false activation boundary, status-only command sequence, and false approval flags.")
+    print("Hermes status cron checkpoint verification passed.")
+    print("Verified enabled status-only cron boundary, command sequence, and false execution approval flags.")
     return 0
 
 
@@ -106,7 +108,7 @@ def verify_checkpoint_doc(failures: list[str]) -> None:
     normalized = normalize_text(text)
     lowered = normalized.lower()
     if not CHECKPOINT_PATH.exists() or not text:
-        failures.append("paused Hermes checkpoint doc is missing")
+        failures.append("Hermes status cron checkpoint doc is missing")
         return
     for phrase in REQUIRED_PHRASES:
         if normalize_text(phrase) not in normalized:
@@ -118,7 +120,7 @@ def verify_checkpoint_doc(failures: list[str]) -> None:
     sequence = command_sequence(text)
     for command in FORBIDDEN_COMMANDS:
         if command in sequence:
-            failures.append(f"forbidden command in intended sequence: {command}")
+            failures.append(f"forbidden command in status-only sequence: {command}")
 
 
 def verify_no_scheduler_artifacts(failures: list[str]) -> None:
