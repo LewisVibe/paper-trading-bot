@@ -237,6 +237,8 @@ Volatility-targeted growth allocation-cap and sleeve-mapping policy is saved-out
 
 Volatility-targeted growth non-executable target-position plan is saved-output/design-only: `python bot.py --vol-targeted-growth-non-executable-target-position-plan` and `python bot.py --show-vol-targeted-growth-non-executable-target-position-plan` document review context only. QQQ is review-only with no order quantity, high-growth and crypto remain blocked/research-only, defensive remains unmapped, and no side, quantity, order type, account, executable target position, paper execution, or scheduling is approved.
 
+Volatility-targeted growth order-ticket boundary design is saved-output/boundary-only: `python bot.py --vol-targeted-growth-order-ticket-boundary-design` and `python bot.py --show-vol-targeted-growth-order-ticket-boundary-design` document what must remain absent before any future executable ticket design. QQQ remains review-only with no side or quantity, research sleeves remain blocked/unmapped, and no executable order ticket, order instruction, paper execution, live trading, or scheduling is approved.
+
 
 ## Architecture
 

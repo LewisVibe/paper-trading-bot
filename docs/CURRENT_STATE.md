@@ -1002,6 +1002,12 @@ The volatility-targeted growth non-executable target-position plan comes from `p
 - It documents target context for manual review only: QQQ is review-only with no order quantity, high-growth and crypto stay blocked/research-only, and defensive remains unmapped.
 - `target_position_design_approved=False`, `executable_target_positions_created=False`, `order_instructions_created=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
+The volatility-targeted growth order-ticket boundary design comes from `python bot.py --vol-targeted-growth-order-ticket-boundary-design`, with saved display through `python bot.py --show-vol-targeted-growth-order-ticket-boundary-design`:
+
+- Current expected status is `vol_targeted_growth_order_ticket_boundary_design_created_manual_review_required`.
+- It documents forbidden ticket fields and keeps QQQ as review-only with no side or quantity; high-growth and crypto stay blocked, and defensive remains unmapped.
+- `order_ticket_design_approved=False`, `executable_order_ticket_created=False`, `order_instructions_created=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

@@ -20,6 +20,8 @@ from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (  #
     CANDIDATE_APPROVAL_STATUS,
     GATE_OUTPUT_FILES,
     GATE_STATUS,
+    ORDER_TICKET_BOUNDARY_OUTPUT_FILES,
+    ORDER_TICKET_BOUNDARY_STATUS,
     RECONCILIATION_OUTPUT_FILES,
     RECONCILIATION_STATUS,
     REPORT_COLUMNS,
@@ -29,12 +31,14 @@ from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (  #
     generate_vol_targeted_growth_allocation_cap_sleeve_mapping_policy,
     generate_vol_targeted_growth_broker_comparison_reconciliation,
     generate_vol_targeted_growth_non_executable_target_position_plan,
+    generate_vol_targeted_growth_order_ticket_boundary_design,
     generate_vol_targeted_growth_paper_live_action_preview_pack,
     generate_vol_targeted_growth_paper_live_candidate_approval_record,
     generate_vol_targeted_growth_paper_live_manual_approval_gate,
     show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy,
     show_vol_targeted_growth_broker_comparison_reconciliation,
     show_vol_targeted_growth_non_executable_target_position_plan,
+    show_vol_targeted_growth_order_ticket_boundary_design,
     show_vol_targeted_growth_paper_live_action_preview_pack,
     show_vol_targeted_growth_paper_live_candidate_approval_record,
     show_vol_targeted_growth_paper_live_manual_approval_gate,
@@ -54,6 +58,8 @@ COMMANDS = [
     "--show-vol-targeted-growth-allocation-cap-sleeve-mapping-policy",
     "--vol-targeted-growth-non-executable-target-position-plan",
     "--show-vol-targeted-growth-non-executable-target-position-plan",
+    "--vol-targeted-growth-order-ticket-boundary-design",
+    "--show-vol-targeted-growth-order-ticket-boundary-design",
 ]
 
 FALSE_FLAGS = [
@@ -78,6 +84,8 @@ FALSE_FLAGS = [
     "sleeve_mapping_approved",
     "target_position_design_approved",
     "manual_paper_live_approval_recorded",
+    "order_ticket_design_approved",
+    "executable_order_ticket_created",
     "action_preview_approved",
     "execution_approved",
     "paper_execution_approved",
@@ -178,6 +186,7 @@ def verify_outputs_ignored(failures: list[str]) -> None:
         CANDIDATE_APPROVAL_OUTPUT_FILES,
         ALLOCATION_POLICY_OUTPUT_FILES,
         TARGET_POSITION_PLAN_OUTPUT_FILES,
+        ORDER_TICKET_BOUNDARY_OUTPUT_FILES,
     ]:
         for path in mapping.values():
             normalized = str(path).replace("\\", "/")
@@ -194,16 +203,21 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         CANDIDATE_APPROVAL_STATUS,
         ALLOCATION_POLICY_STATUS,
         TARGET_POSITION_PLAN_STATUS,
+        ORDER_TICKET_BOUNDARY_STATUS,
         "manual_paper_live_approval_recorded",
         "paper_live_candidate_discussion_approved",
         "allocation_cap_approved",
         "sleeve_mapping_approved",
         "target_position_design_approved",
         "executable_target_positions_created",
+        "order_ticket_design_approved",
+        "executable_order_ticket_created",
         "default_total_paper_allocation_cap=0_until_separate_execution_design",
         "blocked_research_only_unmapped",
         "QQQ_review_only_no_order_quantity",
+        "QQQ_review_only_no_side_no_quantity",
         "order_ticket_design_not_approved",
+        "executable_order_ticket_design_not_approved",
         "broker_positions_read_now",
         "order_instructions_created",
         "execution_approved",
@@ -233,6 +247,7 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "show_vol_targeted_growth_paper_live_candidate_approval_record",
         "show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy",
         "show_vol_targeted_growth_non_executable_target_position_plan",
+        "show_vol_targeted_growth_order_ticket_boundary_design",
     ]:
         show_body = source_slice(module_source, f"def {show_name}", "\n\ndef ")
         if "write_rows" in show_body or "generate_vol_targeted" in show_body:
@@ -259,6 +274,7 @@ def verify_fixture_generation(failures: list[str]) -> None:
         approval = generate_vol_targeted_growth_paper_live_candidate_approval_record(root)
         allocation = generate_vol_targeted_growth_allocation_cap_sleeve_mapping_policy(root)
         target_plan = generate_vol_targeted_growth_non_executable_target_position_plan(root)
+        order_boundary = generate_vol_targeted_growth_order_ticket_boundary_design(root)
 
         if summary_value(gate.summary_rows, "final_manual_gate_status") != GATE_STATUS:
             failures.append("manual gate fixture did not produce expected status")
@@ -292,8 +308,20 @@ def verify_fixture_generation(failures: list[str]) -> None:
             failures.append("target-position plan must not create order instructions")
         if summary_value(target_plan.summary_rows, "qqq100_review_context") != "QQQ_review_only_no_order_quantity":
             failures.append("target-position plan must keep QQQ as review-only with no order quantity")
+        if summary_value(order_boundary.summary_rows, "final_order_ticket_boundary_status") != ORDER_TICKET_BOUNDARY_STATUS:
+            failures.append("order-ticket boundary fixture did not produce expected status")
+        if summary_value(order_boundary.summary_rows, "paper_live_candidate_discussion_approved") != "True":
+            failures.append("order-ticket boundary should preserve discussion-only approval")
+        if summary_value(order_boundary.summary_rows, "order_ticket_design_approved") != "False":
+            failures.append("order-ticket boundary must not approve order-ticket design")
+        if summary_value(order_boundary.summary_rows, "executable_order_ticket_created") != "False":
+            failures.append("order-ticket boundary must not create an executable order ticket")
+        if summary_value(order_boundary.summary_rows, "order_instructions_created") != "False":
+            failures.append("order-ticket boundary must not create order instructions")
+        if summary_value(order_boundary.summary_rows, "qqq100_order_ticket_context") != "QQQ_review_only_no_side_no_quantity":
+            failures.append("order-ticket boundary must keep QQQ as review-only with no side or quantity")
 
-        for result in [gate, action, reconciliation, approval, allocation, target_plan]:
+        for result in [gate, action, reconciliation, approval, allocation, target_plan, order_boundary]:
             for collection in [result.report_rows, result.summary_rows, result.evidence_rows, result.blocker_rows]:
                 for row in collection:
                     for flag in FALSE_FLAGS:
@@ -312,6 +340,7 @@ def verify_fixture_generation(failures: list[str]) -> None:
             show_vol_targeted_growth_paper_live_candidate_approval_record(root),
             show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy(root),
             show_vol_targeted_growth_non_executable_target_position_plan(root),
+            show_vol_targeted_growth_order_ticket_boundary_design(root),
         ]
         for code, lines in displays:
             display = "\n".join(lines)

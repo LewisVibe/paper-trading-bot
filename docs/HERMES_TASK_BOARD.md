@@ -1432,6 +1432,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable target positions, order side/quantity/type fields, account/secret fields, portfolio execution wiring, scheduling, paper-live execution approval, or treating review context as an order approval.
 - **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create order fields, approve target positions, approve execution, schedule anything, or connect the candidate to execution.
 
+### Task: Volatility-targeted growth order-ticket boundary design
+- **Purpose:** Use `python bot.py --vol-targeted-growth-order-ticket-boundary-design` to document which order-ticket fields and actions remain forbidden before any future executable design.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-order-ticket-boundary-design`, `python bot.py --show-vol-targeted-growth-order-ticket-boundary-design`, and `python scripts\verify_vol_targeted_growth_paper_live_checkpoints.py`.
+- **Expected status:** `vol_targeted_growth_order_ticket_boundary_design_created_manual_review_required`; QQQ is review-only with no side or quantity, high-growth and crypto remain research-only, defensive remains unmapped, and executable order tickets are not created.
+- **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable order tickets, side/quantity/order-type/time-in-force fields, account/secret fields, portfolio execution wiring, scheduling, paper-live execution approval, or treating the boundary design as order approval.
+- **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create ticket fields, approve execution, schedule anything, or connect the candidate to execution.
+
 ### Task: Hermes status cron checkpoint
 - **Purpose:** Document and verify the enabled status-only Hermes job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no additional Hermes job is created, edited, triggered, deleted, or scheduled and the existing job remains status-only.
