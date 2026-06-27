@@ -84,6 +84,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - `python bot.py --vol-targeted-growth-seed-change-implementation-design` may describe future seed-change code boundaries only; it does not displace QQQ100, change the seed, implement action preview, execute, repeat orders, or schedule.
 - `python bot.py --vol-targeted-growth-seed-change-dry-run-diff` may list future seed-switch target files/areas only; it does not modify those files, displace QQQ100, change the seed, implement action preview, execute, repeat orders, or schedule.
 - `python bot.py --vol-targeted-growth-active-seed-readiness` may check saved monitoring/status consistency for the current volatility-targeted report/status seed only; it does not implement action preview, execute, repeat orders, schedule, call Alpaca, or refresh market data.
+- `python scripts\verify_vol_targeted_growth_seed_change_chain_checkpoint.py` verifies the saved seed-change review ladder through active-seed readiness remains complete and review-only; it does not implement a seed switch, create order fields, execute, repeat orders, or schedule.
 - Keep crypto research-only.
 - Keep SMA/slow-SMA out of paper-live promotion.
 

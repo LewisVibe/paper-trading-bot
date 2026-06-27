@@ -973,6 +973,7 @@ The volatility-targeted growth active-seed readiness report comes from `python b
 - If saved evidence is missing or stale, expected status is `vol_targeted_growth_active_seed_monitoring_incomplete_manual_review_required`.
 - This is monitoring/readiness only. It does not call Alpaca, refresh yfinance data, create action preview, create order instructions, approve execution, approve follow-up/repeat orders, or approve scheduling.
 - `python bot.py --vps-daily-monitoring-summary` now includes a saved-output-only "Volatility active-seed readiness" section, so Telegram/status output can show the active seed readiness state without adding a separate runtime cron command.
+- `python scripts\verify_vol_targeted_growth_seed_change_chain_checkpoint.py` verifies the saved seed-change review ladder through active-seed readiness remains complete and review-only while preserving false seed-switch, order, execution, repeat-order, and scheduling approvals.
 
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
