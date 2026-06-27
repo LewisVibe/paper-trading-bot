@@ -1753,6 +1753,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-candidate-decision-record"]:
+        from trading_bot.research.vol_targeted_growth_candidate_decision_record import (
+            generate_vol_targeted_growth_candidate_decision_record,
+        )
+
+        result = generate_vol_targeted_growth_candidate_decision_record()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-candidate-decision-record"]:
+        from trading_bot.research.vol_targeted_growth_candidate_decision_record import (
+            show_vol_targeted_growth_candidate_decision_record,
+        )
+
+        code, lines = show_vol_targeted_growth_candidate_decision_record()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-candidate-discussion"]:
         from trading_bot.research.vol_targeted_growth_candidate_discussion import (
             generate_vol_targeted_growth_candidate_discussion,
@@ -2625,6 +2643,10 @@ from trading_bot.research.vol_targeted_growth_gate_review import (
 from trading_bot.research.vol_targeted_growth_candidate_discussion import (
     generate_vol_targeted_growth_candidate_discussion,
     show_vol_targeted_growth_candidate_discussion,
+)
+from trading_bot.research.vol_targeted_growth_candidate_decision_record import (
+    generate_vol_targeted_growth_candidate_decision_record,
+    show_vol_targeted_growth_candidate_decision_record,
 )
 from trading_bot.research.vol_targeted_growth_proposal_implementation_design import (
     generate_vol_targeted_growth_proposal_implementation_design,
@@ -7853,6 +7875,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved volatility-targeted growth candidate discussion blocker checklist.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-candidate-decision-record",
+        action="store_true",
+        help="Create a saved-output-only formal decision record for volatility-targeted manual candidate discussion.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-candidate-decision-record",
+        action="store_true",
+        help="Display the saved volatility-targeted growth candidate decision record.",
+    )
+    parser.add_argument(
         "--vol-targeted-growth-candidate-discussion",
         action="store_true",
         help="Create a saved-output-only limited manual candidate discussion report for the volatility-targeted growth strategy.",
@@ -10182,6 +10214,20 @@ def main() -> int:
         return 0
     if args.show_vol_targeted_growth_gate_review:
         status_code, lines = show_vol_targeted_growth_gate_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_candidate_decision_record:
+        try:
+            result = generate_vol_targeted_growth_candidate_decision_record()
+        except Exception as exc:
+            print(f"Volatility-targeted growth candidate decision record failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_candidate_decision_record:
+        status_code, lines = show_vol_targeted_growth_candidate_decision_record()
         for line in lines:
             print(line)
         return status_code

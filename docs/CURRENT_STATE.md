@@ -855,6 +855,12 @@ The volatility-targeted growth candidate discussion blocker checklist comes from
 - Current expected status is `vol_targeted_growth_candidate_discussion_blocker_checklist_manual_review_required`.
 - This checklist lists open blockers before any volatility-targeted implementation work: the stricter gate is not enforced, component sleeves remain research-only, unmapped sleeves cannot become order instructions, and implementation, paper-live candidacy, execution, repeat orders, and scheduling remain unapproved.
 
+The volatility-targeted growth candidate decision record comes from `python bot.py --vol-targeted-growth-candidate-decision-record`, with saved display through `python bot.py --show-vol-targeted-growth-candidate-decision-record`:
+
+- It writes `data/vol_targeted_growth_candidate_decision_record.csv`, `data/vol_targeted_growth_candidate_decision_record_summary.csv`, `data/vol_targeted_growth_candidate_decision_record_evidence.csv`, and `data/vol_targeted_growth_candidate_decision_record_blockers.csv`.
+- Current expected status is `vol_targeted_growth_candidate_decision_manual_discussion_only`.
+- This record freezes the current decision: manual candidate discussion may continue, QQQ100 remains the incumbent paper-live seed, and implementation, seed change, order instructions, execution, repeat orders, and scheduling remain unapproved.
+
 The volatility-targeted growth candidate discussion comes from `python bot.py --vol-targeted-growth-candidate-discussion`, with saved display through `python bot.py --show-vol-targeted-growth-candidate-discussion`:
 
 - It writes `data/vol_targeted_growth_candidate_discussion.csv`, `data/vol_targeted_growth_candidate_discussion_summary.csv`, `data/vol_targeted_growth_candidate_discussion_evidence.csv`, and `data/vol_targeted_growth_candidate_discussion_blockers.csv`.

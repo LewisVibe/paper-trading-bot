@@ -233,6 +233,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-gate-review",
     "--vol-targeted-growth-candidate-discussion-blocker-checklist",
     "--show-vol-targeted-growth-candidate-discussion-blocker-checklist",
+    "--vol-targeted-growth-candidate-decision-record",
+    "--show-vol-targeted-growth-candidate-decision-record",
     "--vol-targeted-growth-candidate-discussion",
     "--show-vol-targeted-growth-candidate-discussion",
     "--vol-targeted-growth-proposal-implementation-design",
