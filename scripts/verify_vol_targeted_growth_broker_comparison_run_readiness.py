@@ -103,6 +103,9 @@ def verify_source(source: str, failures: list[str]) -> None:
         FINAL_STATUS,
         "ready_to_request_manual_approval_not_run",
         "explicit_manual_approval_required_before_any_broker_read",
+        "vol_targeted_growth_action_preview_quality_gate_usable_manual_review_required",
+        "action_preview_quality_gate_status",
+        "run_vol_targeted_growth_action_preview_quality_gate_first",
         "readonly_broker_comparison_run_approved",
         "broker_positions_compared",
         "paper_live_discussion_not_approved_research_only",
@@ -174,6 +177,16 @@ def verify_fixture(failures: list[str]) -> None:
             [{"summary_name": "final_action_preview_status", "summary_value": "vol_targeted_growth_action_preview_created_saved_output_only"}],
         )
         write_csv(
+            data / "vol_targeted_growth_action_preview_quality_gate_summary.csv",
+            ["summary_name", "summary_value"],
+            [
+                {
+                    "summary_name": "final_quality_gate_status",
+                    "summary_value": "vol_targeted_growth_action_preview_quality_gate_usable_manual_review_required",
+                }
+            ],
+        )
+        write_csv(
             data / "vol_targeted_growth_portfolio_risk_policy_design_summary.csv",
             ["summary_name", "summary_value"],
             [
@@ -192,6 +205,11 @@ def verify_fixture(failures: list[str]) -> None:
             failures.append("manual approval must still be required")
         if summary_value(result.summary_rows, "broker_positions_compared") != "false":
             failures.append("broker positions must not be compared")
+        if (
+            summary_value(result.summary_rows, "action_preview_quality_gate_status")
+            != "vol_targeted_growth_action_preview_quality_gate_usable_manual_review_required"
+        ):
+            failures.append("run readiness must require the action-preview quality gate")
         for row in result.summary_rows + result.readiness_rows + result.evidence_rows + result.blocker_rows:
             for flag in FALSE_FLAGS:
                 if str(row.get(flag, "")).lower() != "false":

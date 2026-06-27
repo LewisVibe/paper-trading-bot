@@ -822,7 +822,7 @@ The volatility-targeted growth broker-comparison run-readiness checkpoint comes 
 
 - It writes `data/vol_targeted_growth_broker_comparison_run_readiness.csv`, `data/vol_targeted_growth_broker_comparison_run_readiness_summary.csv`, `data/vol_targeted_growth_broker_comparison_run_readiness_evidence.csv`, and `data/vol_targeted_growth_broker_comparison_run_readiness_blockers.csv`.
 - Current expected status is `vol_targeted_growth_readonly_broker_comparison_ready_for_explicit_manual_approval_required`.
-- This checkpoint only says the project is ready to ask for explicit manual approval before a future read-only broker-position comparison. It does not grant approval, call Alpaca, read positions, approve paper-live candidacy, create orders, approve execution, or approve scheduling.
+- This checkpoint now requires the saved action-preview quality gate to be usable for manual review before it says the project is ready to ask for explicit manual approval before a future read-only broker-position comparison. It does not grant approval, call Alpaca, read positions, approve paper-live candidacy, create orders, approve execution, or approve scheduling.
 
 The volatility-targeted growth broker-position comparison comes from `python bot.py --vol-targeted-growth-broker-position-comparison`, with saved display through `python bot.py --show-vol-targeted-growth-broker-position-comparison`:
 

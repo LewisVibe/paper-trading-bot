@@ -32,6 +32,7 @@ INPUT_FILES = {
     "paper_live_decision_blockers": Path("data/vol_targeted_growth_paper_live_decision_blockers.csv"),
     "broker_design_summary": Path("data/vol_targeted_growth_broker_position_comparison_design_summary.csv"),
     "action_preview_summary": Path("data/vol_targeted_growth_action_preview_summary.csv"),
+    "action_preview_quality_gate_summary": Path("data/vol_targeted_growth_action_preview_quality_gate_summary.csv"),
     "policy_design_summary": Path("data/vol_targeted_growth_portfolio_risk_policy_design_summary.csv"),
 }
 
@@ -139,7 +140,11 @@ def show_vol_targeted_growth_broker_comparison_run_readiness(root_dir: Path | st
 
 def determine_final_status(inputs: dict[str, list[dict[str, str]]]) -> str:
     decision_status = summary_value(inputs["paper_live_decision_summary"], "final_decision_status")
-    if decision_status == "vol_targeted_growth_research_only_broker_comparison_discussion_ready_manual_review_required":
+    quality_status = summary_value(inputs["action_preview_quality_gate_summary"], "final_quality_gate_status")
+    if (
+        decision_status == "vol_targeted_growth_research_only_broker_comparison_discussion_ready_manual_review_required"
+        and quality_status == "vol_targeted_growth_action_preview_quality_gate_usable_manual_review_required"
+    ):
         return FINAL_STATUS
     return BLOCKED_STATUS
 
@@ -148,6 +153,7 @@ def build_readiness_rows(created_at: str, inputs: dict[str, list[dict[str, str]]
     decision_status = summary_value(inputs["paper_live_decision_summary"], "final_decision_status")
     broker_design_status = summary_value(inputs["broker_design_summary"], "final_design_status")
     action_status = summary_value(inputs["action_preview_summary"], "final_action_preview_status")
+    quality_status = summary_value(inputs["action_preview_quality_gate_summary"], "final_quality_gate_status")
     policy_status = summary_value(inputs["policy_design_summary"], "final_policy_design_status")
     return [
         readiness_row(
@@ -176,6 +182,19 @@ def build_readiness_rows(created_at: str, inputs: dict[str, list[dict[str, str]]
             action_status or "missing_action_preview_status",
             "The future comparison must start from saved action-preview context only.",
             "verify_saved_action_preview_before_any_broker_read",
+        ),
+        readiness_row(
+            created_at,
+            "action_preview_quality_gate",
+            "quality_gate_passed_manual_review_required"
+            if quality_status == "vol_targeted_growth_action_preview_quality_gate_usable_manual_review_required"
+            else "blocked_missing_or_failed_quality_gate",
+            "critical",
+            quality_status or "missing_action_preview_quality_gate_status",
+            "Saved action-preview rows must pass the quality gate before requesting broker-position comparison approval.",
+            NEXT_STEP
+            if quality_status == "vol_targeted_growth_action_preview_quality_gate_usable_manual_review_required"
+            else "run_vol_targeted_growth_action_preview_quality_gate_first",
         ),
         readiness_row(
             created_at,
@@ -216,6 +235,7 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], readiness_rows: 
         ("paper_live_discussion_status", "paper_live_discussion_not_approved_research_only", "Paper-live discussion remains unapproved."),
         ("paper_live_decision_status", summary_value(inputs["paper_live_decision_summary"], "final_decision_status") or "missing_paper_live_decision_status", "Saved decision checkpoint status."),
         ("broker_design_status", summary_value(inputs["broker_design_summary"], "final_design_status") or "missing_broker_design_status", "Saved broker-position comparison design status."),
+        ("action_preview_quality_gate_status", summary_value(inputs["action_preview_quality_gate_summary"], "final_quality_gate_status") or "missing_action_preview_quality_gate_status", "Saved action-preview quality gate status."),
         ("broker_positions_compared", "false", "No broker positions were read or compared."),
         ("readiness_row_count", str(len(readiness_rows)), "Saved readiness row count."),
         ("largest_blocker", "explicit_manual_approval_not_granted_and_broker_comparison_not_run", "Manual approval is still required before any read-only broker comparison."),
