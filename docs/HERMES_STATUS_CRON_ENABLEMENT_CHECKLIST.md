@@ -107,6 +107,10 @@ Before any human edits this Hermes job again:
 - run repo safety on the VPS;
 - run Hermes cron readiness on the VPS;
 - run the VPS daily monitoring summary verifier on the VPS;
+- run the status-only volatility seed-switch verifier on the VPS:
+  `.venv\Scripts\python.exe scripts\verify_vol_targeted_growth_seed_switch_status_only.py`;
+- run the full volatility seed-change chain checkpoint on the VPS:
+  `.venv\Scripts\python.exe scripts\verify_vol_targeted_growth_seed_change_chain_checkpoint.py`;
 - run the current status-only sequence manually once if the change affects commands or cadence;
 - confirm the job state before editing it;
 - confirm the exact UK-local market-hours window and DST handling;

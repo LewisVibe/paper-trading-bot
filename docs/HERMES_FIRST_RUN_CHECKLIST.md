@@ -41,6 +41,12 @@ Treat the first scheduled run as healthy if the Telegram output shows:
 - repo safety passed;
 - Hermes cron readiness passed;
 - VPS daily monitoring summary verifier passed;
+- the latest manual VPS verification includes
+  `.venv\Scripts\python.exe scripts\verify_vol_targeted_growth_seed_switch_status_only.py`
+  passing;
+- the latest manual VPS verification includes
+  `.venv\Scripts\python.exe scripts\verify_vol_targeted_growth_seed_change_chain_checkpoint.py`
+  passing;
 - `python bot.py --vps-daily-monitoring-summary` completed;
 - final status is `healthy_monitoring_state`, or a clearly explained
   manual-review status caused only by stale/missing saved report inputs;

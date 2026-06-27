@@ -114,6 +114,10 @@ While the job is enabled, periodic manual review should confirm:
 - repo safety passes on the VPS;
 - Hermes cron readiness passes on the VPS;
 - VPS daily monitoring summary verifier passes on the VPS;
+- the status-only volatility seed-switch verifier passes on the VPS:
+  `.venv\Scripts\python.exe scripts\verify_vol_targeted_growth_seed_switch_status_only.py`;
+- the full volatility seed-change chain checkpoint passes on the VPS:
+  `.venv\Scripts\python.exe scripts\verify_vol_targeted_growth_seed_change_chain_checkpoint.py`;
 - VPS daily monitoring summary includes the active volatility seed readiness section, or clearly reports the saved active-seed readiness output as missing/manual-review required;
 - VPS daily monitoring summary remains status/report only;
 - the job remains script-only / no-agent where possible;

@@ -20,6 +20,8 @@ REQUIRED_PHRASES = [
     ".venv\\Scripts\\python.exe scripts\\verify_repo_safety.py",
     ".venv\\Scripts\\python.exe scripts\\verify_hermes_cron_readiness.py",
     ".venv\\Scripts\\python.exe scripts\\verify_vps_daily_monitoring_summary.py",
+    ".venv\\Scripts\\python.exe scripts\\verify_vol_targeted_growth_seed_switch_status_only.py",
+    ".venv\\Scripts\\python.exe scripts\\verify_vol_targeted_growth_seed_change_chain_checkpoint.py",
     ".venv\\Scripts\\python.exe bot.py --vps-daily-monitoring-summary",
     "The job should stop on verifier failure",
     "Healthy First-Run Result",

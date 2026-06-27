@@ -26,6 +26,8 @@ REQUIRED_PHRASES = [
     ".venv\\Scripts\\python.exe scripts\\verify_vps_daily_monitoring_summary.py",
     ".venv\\Scripts\\python.exe bot.py --vps-daily-monitoring-summary",
     "VPS daily monitoring summary includes the active volatility seed readiness section",
+    ".venv\\Scripts\\python.exe scripts\\verify_vol_targeted_growth_seed_switch_status_only.py",
+    ".venv\\Scripts\\python.exe scripts\\verify_vol_targeted_growth_seed_change_chain_checkpoint.py",
     "Manual One-Off Test Result",
     "On `2026-06-27`, the status command sequence was run once manually as a",
     "the existing job was then enabled without being manually triggered",
