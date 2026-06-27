@@ -245,6 +245,8 @@ Volatility-targeted growth paper-live execution blocker rollup is saved-output/s
 
 Paper-live go/no-go dashboard is saved-output/status-only: `python bot.py --paper-live-go-no-go-dashboard` and `python bot.py --show-paper-live-go-no-go-dashboard` summarize QQQ100 no-action state, the active volatility seed blocker rollup, paper-live checklist phase, and VPS monitoring assumptions in one view. The expected current decision is `NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY`; it does not call Alpaca, create order instructions, create executable tickets, approve execution, or approve scheduling.
 
+The VPS daily monitoring summary includes the saved paper-live go/no-go dashboard when `data/paper_live_go_no_go_dashboard_summary.csv` exists. If it is missing, the summary reports the missing saved output as a monitoring issue only; it does not create the dashboard, call Alpaca, create orders, or change the Hermes cron job.
+
 
 ## Architecture
 

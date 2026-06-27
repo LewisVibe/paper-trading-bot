@@ -1459,8 +1459,9 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 ### Task: Paper-live go/no-go dashboard
 - **Purpose:** Use `python bot.py --paper-live-go-no-go-dashboard` to summarize QQQ100 no-action state, volatility blocker state, checklist phase, and VPS monitoring assumptions in one saved-output view.
 - **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
-- **Allowed commands:** `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --show-paper-live-go-no-go-dashboard`, `python scripts\verify_paper_live_go_no_go_dashboard.py`, and related report-only verifiers.
+- **Allowed commands:** `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --show-paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, `python scripts\verify_paper_live_go_no_go_dashboard.py`, and related report-only verifiers.
 - **Expected status:** `paper_live_go_no_go_dashboard_execution_blocked_monitor_only` with `final_go_no_go_decision=NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY`; no executable ticket exists and execution/scheduling approvals remain false.
+- **Monitoring integration:** `python bot.py --vps-daily-monitoring-summary` surfaces the saved dashboard status when `data/paper_live_go_no_go_dashboard_summary.csv` exists; if missing, it reports missing saved output only. No cron job is created or edited and no order-capable command is added.
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable tickets, order fields, account/secret fields, portfolio execution wiring, scheduling changes, paper-live execution approval, or treating dashboard output as approval.
 - **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create ticket fields, clear blockers, approve execution, schedule anything, or connect the candidate to execution.
 

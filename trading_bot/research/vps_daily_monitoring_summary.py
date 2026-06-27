@@ -35,6 +35,8 @@ DEFENSIVE_REFRESH_SUMMARY_PATH = "data/defensive_research_refresh_summary.csv"
 VOL_ACTIVE_SEED_READINESS_SUMMARY_PATH = "data/vol_targeted_growth_active_seed_readiness_summary.csv"
 VOL_CANDIDATE_DECISION_RECORD_SUMMARY_PATH = "data/vol_targeted_growth_candidate_decision_record_summary.csv"
 VOL_EXECUTION_BLOCKER_ROLLUP_SUMMARY_PATH = "data/vol_targeted_growth_paper_live_execution_blocker_rollup_summary.csv"
+PAPER_LIVE_GO_NO_GO_DASHBOARD_SUMMARY_PATH = "data/paper_live_go_no_go_dashboard_summary.csv"
+PAPER_LIVE_GO_NO_GO_EXPECTED_DECISION = "NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY"
 
 
 def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str]:
@@ -140,6 +142,13 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         ]
     )
     lines.extend(qqq100_manual_flatten_runbook_status_lines(root_path))
+    lines.extend(
+        [
+            "",
+            "Paper-live go/no-go dashboard:",
+        ]
+    )
+    lines.extend(paper_live_go_no_go_dashboard_status_lines(root_path))
     lines.extend(
         [
             "",
@@ -251,6 +260,34 @@ def vol_execution_blocker_rollup_status_lines(root: Path) -> list[str]:
         f"- paper_execution_approved: {summary_value(rows, 'paper_execution_approved') or 'False'}",
         f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
         "- vol_execution_blocker_rollup_warning: monitor only; blocker rollup is not execution design, order approval, or scheduling approval.",
+    ]
+
+
+def paper_live_go_no_go_dashboard_status_lines(root: Path) -> list[str]:
+    rows = read_csv_rows(root / PAPER_LIVE_GO_NO_GO_DASHBOARD_SUMMARY_PATH)
+    if not rows:
+        return [
+            "- paper_live_go_no_go_dashboard_present: False",
+            f"- paper_live_go_no_go_dashboard_missing_saved_output: {PAPER_LIVE_GO_NO_GO_DASHBOARD_SUMMARY_PATH}",
+            "- paper_live_go_no_go_status: missing_saved_output",
+            "- paper_live_go_no_go_warning: monitor only; missing dashboard does not approve execution or scheduling.",
+        ]
+    return [
+        "- paper_live_go_no_go_dashboard_present: True",
+        f"- final_go_no_go_status: {summary_value(rows, 'final_go_no_go_status')}",
+        f"- final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
+        f"- active_seed: {summary_value(rows, 'active_seed')}",
+        f"- active_ticker: {summary_value(rows, 'active_ticker')}",
+        f"- previous_seed: {summary_value(rows, 'previous_seed')}",
+        f"- previous_ticker: {summary_value(rows, 'previous_ticker')}",
+        f"- qqq100_no_action_state: {summary_value(rows, 'qqq100_no_action_state')}",
+        f"- vol_largest_blocker: {summary_value(rows, 'vol_largest_blocker')}",
+        f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
+        f"- order_instructions_created: {summary_value(rows, 'order_instructions_created') or 'False'}",
+        f"- execution_approved: {summary_value(rows, 'execution_approved') or 'False'}",
+        f"- paper_execution_approved: {summary_value(rows, 'paper_execution_approved') or 'False'}",
+        f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
+        "- paper_live_go_no_go_warning: monitor only; dashboard is not order approval, execution approval, or scheduling approval.",
     ]
 
 

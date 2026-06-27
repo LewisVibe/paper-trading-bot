@@ -1027,6 +1027,7 @@ The paper-live go/no-go dashboard comes from `python bot.py --paper-live-go-no-g
 - Current expected status is `paper_live_go_no_go_dashboard_execution_blocked_monitor_only` with `final_go_no_go_decision=NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY`.
 - It summarizes QQQ100 no-action state, active volatility blocker state, paper-live checklist phase, and VPS monitoring assumptions in one saved-output view.
 - It does not call Alpaca, read positions, create executable tickets, create order instructions, approve execution, approve paper execution, or approve scheduling.
+- `python bot.py --vps-daily-monitoring-summary` now includes a saved-output-only "Paper-live go/no-go dashboard" section when the dashboard summary exists; if it is missing, the daily summary reports the missing saved output as a monitoring issue only.
 
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 

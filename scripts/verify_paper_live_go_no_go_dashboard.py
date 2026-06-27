@@ -62,6 +62,7 @@ def main() -> int:
     verify_module(module_source, failures)
     verify_outputs_ignored(failures)
     verify_fixture_output(failures)
+    verify_vps_daily_summary_integration(failures)
 
     if failures:
         print("Paper-live go/no-go dashboard verification failed.")
@@ -195,6 +196,19 @@ def verify_fixture_output(failures: list[str]) -> None:
     ]:
         if phrase not in output:
             failures.append(f"fixture output missing phrase: {phrase}")
+
+
+def verify_vps_daily_summary_integration(failures: list[str]) -> None:
+    source = read_text(ROOT / "trading_bot" / "research" / "vps_daily_monitoring_summary.py")
+    for phrase in [
+        "PAPER_LIVE_GO_NO_GO_DASHBOARD_SUMMARY_PATH",
+        "Paper-live go/no-go dashboard:",
+        "paper_live_go_no_go_dashboard_status_lines",
+        "NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY",
+        "paper_live_go_no_go_warning: monitor only;",
+    ]:
+        if phrase not in source:
+            failures.append(f"VPS daily summary missing go/no-go integration phrase: {phrase}")
 
 
 def write_summary(path: Path, values: dict[str, str]) -> None:

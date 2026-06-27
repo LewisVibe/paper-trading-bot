@@ -45,6 +45,9 @@ REQUIRED_OUTPUT_PHRASES = [
     "qqq100_manual_flatten_runbook_present: True",
     "runbook_status: manual_flatten_runbook_not_needed_currently",
     "manual_flatten_approved: False",
+    "Paper-live go/no-go dashboard:",
+    "paper_live_go_no_go_dashboard_present:",
+    "paper_live_go_no_go_warning: monitor only;",
     "alignment_state: aligned_long",
     "followup_policy_status: no_action_required_already_aligned",
     "recommended_next_step: hold_no_action_and_monitor_only",
@@ -84,6 +87,8 @@ REQUIRED_ACTION_STATES = [
     "vol_candidate_decision_status",
     "vol_execution_blocker_rollup_missing_saved_output",
     "vol_execution_blocker_rollup_status",
+    "paper_live_go_no_go_dashboard_missing_saved_output",
+    "paper_live_go_no_go_status",
 ]
 
 FORBIDDEN_CALLS = [
@@ -235,6 +240,28 @@ def verify_command_output(failures: list[str]) -> None:
                 failures.append(f"Daily summary missing-saved execution blocker rollup section missing phrase: {phrase}")
     else:
         failures.append("Daily summary must report whether execution blocker rollup is present")
+    if "paper_live_go_no_go_dashboard_present: True" in output:
+        for phrase in [
+            "final_go_no_go_status: paper_live_go_no_go_dashboard_execution_blocked_monitor_only",
+            "final_go_no_go_decision: NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY",
+            "qqq100_no_action_state: hold_no_action_aligned_long",
+            "vol_largest_blocker: executable_ticket_prerequisites_not_met",
+            "order_instructions_created: False",
+            "execution_approved: False",
+            "paper_execution_approved: False",
+            "scheduling_approved: False",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary go/no-go dashboard section missing phrase: {phrase}")
+    elif "paper_live_go_no_go_dashboard_present: False" in output:
+        for phrase in [
+            "paper_live_go_no_go_dashboard_missing_saved_output: data/paper_live_go_no_go_dashboard_summary.csv",
+            "paper_live_go_no_go_status: missing_saved_output",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary missing-saved go/no-go dashboard section missing phrase: {phrase}")
+    else:
+        failures.append("Daily summary must report whether paper-live go/no-go dashboard is present")
     if "ModuleNotFoundError: No module named 'alpaca'" in output:
         failures.append(f"{COMMAND} must not require top-level Alpaca import")
 
