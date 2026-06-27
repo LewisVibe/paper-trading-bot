@@ -884,6 +884,7 @@ The volatility-targeted growth proposal preview comes from `python bot.py --vol-
 - It writes `data/vol_targeted_growth_proposal_preview.csv`, `data/vol_targeted_growth_proposal_preview_summary.csv`, `data/vol_targeted_growth_proposal_preview_evidence.csv`, and `data/vol_targeted_growth_proposal_preview_blockers.csv`.
 - Current expected status is `vol_targeted_growth_proposal_preview_created_saved_output_only`.
 - This means sleeve-level proposal rows exist for manual review only. Current exposure is not read, QQQ100 remains the incumbent seed, and no action preview, order instruction, execution, repeat order, or scheduling is approved.
+- `python scripts\verify_vol_targeted_growth_preview_action_chain_checkpoint.py` verifies the existing volatility proposal/action-preview chain remains complete enough for non-executable review while preserving false implementation, seed-change, order, execution, repeat-order, and scheduling approvals.
 
 The volatility-targeted growth seed-change review comes from `python bot.py --vol-targeted-growth-seed-change-review`, with saved display through `python bot.py --show-vol-targeted-growth-seed-change-review`:
 
