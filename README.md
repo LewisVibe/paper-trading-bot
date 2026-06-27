@@ -233,6 +233,8 @@ Volatility-targeted growth paper-live checkpoints are saved-output/manual-review
 
 Volatility-targeted growth paper-live candidate approval record is saved-output/manual-review only: `python bot.py --vol-targeted-growth-paper-live-candidate-approval-record` and `python bot.py --show-vol-targeted-growth-paper-live-candidate-approval-record` record approval to discuss the active volatility seed as a paper-live candidate. This does not approve paper-live candidacy, allocation caps, sleeve mapping, order design, paper execution, live trading, repeat/follow-up orders, or scheduling.
 
+Volatility-targeted growth allocation-cap and sleeve-mapping policy is saved-output/design-only: `python bot.py --vol-targeted-growth-allocation-cap-sleeve-mapping-policy` and `python bot.py --show-vol-targeted-growth-allocation-cap-sleeve-mapping-policy` document that executable allocation remains zero until a separate execution design exists. QQQ may be reviewed as the only obvious single-symbol proxy, while high-growth, crypto, and defensive sleeves remain research-only/unmapped; no target-position design, order instruction, paper execution, or scheduling is approved.
+
 
 ## Architecture
 

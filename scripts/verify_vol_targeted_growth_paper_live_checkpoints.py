@@ -14,6 +14,8 @@ if str(ROOT) not in sys.path:
 from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (  # noqa: E402
     ACTION_PACK_OUTPUT_FILES,
     ACTION_PACK_STATUS,
+    ALLOCATION_POLICY_OUTPUT_FILES,
+    ALLOCATION_POLICY_STATUS,
     CANDIDATE_APPROVAL_OUTPUT_FILES,
     CANDIDATE_APPROVAL_STATUS,
     GATE_OUTPUT_FILES,
@@ -23,10 +25,12 @@ from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (  #
     REPORT_COLUMNS,
     SAFETY_FLAGS,
     generate_vol_targeted_growth_broker_comparison_reconciliation,
+    generate_vol_targeted_growth_allocation_cap_sleeve_mapping_policy,
     generate_vol_targeted_growth_paper_live_action_preview_pack,
     generate_vol_targeted_growth_paper_live_candidate_approval_record,
     generate_vol_targeted_growth_paper_live_manual_approval_gate,
     show_vol_targeted_growth_broker_comparison_reconciliation,
+    show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy,
     show_vol_targeted_growth_paper_live_action_preview_pack,
     show_vol_targeted_growth_paper_live_candidate_approval_record,
     show_vol_targeted_growth_paper_live_manual_approval_gate,
@@ -42,6 +46,8 @@ COMMANDS = [
     "--show-vol-targeted-growth-broker-comparison-reconciliation",
     "--vol-targeted-growth-paper-live-candidate-approval-record",
     "--show-vol-targeted-growth-paper-live-candidate-approval-record",
+    "--vol-targeted-growth-allocation-cap-sleeve-mapping-policy",
+    "--show-vol-targeted-growth-allocation-cap-sleeve-mapping-policy",
 ]
 
 FALSE_FLAGS = [
@@ -61,6 +67,9 @@ FALSE_FLAGS = [
     "discord_alert_sent",
     "telegram_alert_sent",
     "paper_live_candidate_approved",
+    "allocation_cap_approved",
+    "sleeve_mapping_approved",
+    "target_position_design_approved",
     "manual_paper_live_approval_recorded",
     "action_preview_approved",
     "execution_approved",
@@ -135,7 +144,7 @@ def main() -> int:
         return 1
 
     print("Volatility-targeted growth paper-live checkpoint verification passed.")
-    print("Verified manual gate, action-preview pack, saved broker reconciliation, and candidate-discussion approval remain report-only with false execution approvals.")
+    print("Verified paper-live checkpoints, candidate-discussion approval, and allocation/sleeve policy remain report-only with false execution approvals.")
     return 0
 
 
@@ -155,7 +164,13 @@ def verify_command_registration(bot_source: str, failures: list[str]) -> None:
 
 
 def verify_outputs_ignored(failures: list[str]) -> None:
-    for mapping in [GATE_OUTPUT_FILES, ACTION_PACK_OUTPUT_FILES, RECONCILIATION_OUTPUT_FILES, CANDIDATE_APPROVAL_OUTPUT_FILES]:
+    for mapping in [
+        GATE_OUTPUT_FILES,
+        ACTION_PACK_OUTPUT_FILES,
+        RECONCILIATION_OUTPUT_FILES,
+        CANDIDATE_APPROVAL_OUTPUT_FILES,
+        ALLOCATION_POLICY_OUTPUT_FILES,
+    ]:
         for path in mapping.values():
             normalized = str(path).replace("\\", "/")
             result = subprocess.run(["git", "check-ignore", normalized], cwd=ROOT, capture_output=True, text=True, check=False)
@@ -169,8 +184,14 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         ACTION_PACK_STATUS,
         RECONCILIATION_STATUS,
         CANDIDATE_APPROVAL_STATUS,
+        ALLOCATION_POLICY_STATUS,
         "manual_paper_live_approval_recorded",
         "paper_live_candidate_discussion_approved",
+        "allocation_cap_approved",
+        "sleeve_mapping_approved",
+        "target_position_design_approved",
+        "default_total_paper_allocation_cap=0_until_separate_execution_design",
+        "blocked_research_only_unmapped",
         "broker_positions_read_now",
         "order_instructions_created",
         "execution_approved",
@@ -198,6 +219,7 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "show_vol_targeted_growth_paper_live_action_preview_pack",
         "show_vol_targeted_growth_broker_comparison_reconciliation",
         "show_vol_targeted_growth_paper_live_candidate_approval_record",
+        "show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy",
     ]:
         show_body = source_slice(module_source, f"def {show_name}", "\n\ndef ")
         if "write_rows" in show_body or "generate_vol_targeted" in show_body:
@@ -222,6 +244,7 @@ def verify_fixture_generation(failures: list[str]) -> None:
         action = generate_vol_targeted_growth_paper_live_action_preview_pack(root)
         reconciliation = generate_vol_targeted_growth_broker_comparison_reconciliation(root)
         approval = generate_vol_targeted_growth_paper_live_candidate_approval_record(root)
+        allocation = generate_vol_targeted_growth_allocation_cap_sleeve_mapping_policy(root)
 
         if summary_value(gate.summary_rows, "final_manual_gate_status") != GATE_STATUS:
             failures.append("manual gate fixture did not produce expected status")
@@ -235,8 +258,16 @@ def verify_fixture_generation(failures: list[str]) -> None:
             failures.append("candidate approval should approve discussion only")
         if summary_value(approval.summary_rows, "paper_live_candidate_approved") != "False":
             failures.append("candidate approval must not approve paper-live candidacy")
+        if summary_value(allocation.summary_rows, "final_allocation_policy_status") != ALLOCATION_POLICY_STATUS:
+            failures.append("allocation policy fixture did not produce expected status")
+        if summary_value(allocation.summary_rows, "allocation_cap_approved") != "False":
+            failures.append("allocation policy must not approve allocation cap")
+        if summary_value(allocation.summary_rows, "sleeve_mapping_approved") != "False":
+            failures.append("allocation policy must not approve sleeve mapping")
+        if summary_value(allocation.summary_rows, "target_position_design_approved") != "False":
+            failures.append("allocation policy must not approve target-position design")
 
-        for result in [gate, action, reconciliation, approval]:
+        for result in [gate, action, reconciliation, approval, allocation]:
             for collection in [result.report_rows, result.summary_rows, result.evidence_rows, result.blocker_rows]:
                 for row in collection:
                     for flag in FALSE_FLAGS:
@@ -253,6 +284,7 @@ def verify_fixture_generation(failures: list[str]) -> None:
             show_vol_targeted_growth_paper_live_action_preview_pack(root),
             show_vol_targeted_growth_broker_comparison_reconciliation(root),
             show_vol_targeted_growth_paper_live_candidate_approval_record(root),
+            show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy(root),
         ]
         for code, lines in displays:
             display = "\n".join(lines)

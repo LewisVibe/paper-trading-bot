@@ -2203,6 +2203,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-allocation-cap-sleeve-mapping-policy"]:
+        from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
+            generate_vol_targeted_growth_allocation_cap_sleeve_mapping_policy,
+        )
+
+        result = generate_vol_targeted_growth_allocation_cap_sleeve_mapping_policy()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-allocation-cap-sleeve-mapping-policy"]:
+        from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
+            show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy,
+        )
+
+        code, lines = show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -8185,6 +8203,16 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-paper-live-candidate-approval-record",
         action="store_true",
         help="Display the saved volatility-targeted growth paper-live candidate approval record.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-allocation-cap-sleeve-mapping-policy",
+        action="store_true",
+        help="Create a saved-output-only allocation cap and sleeve mapping policy for the active volatility seed.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-allocation-cap-sleeve-mapping-policy",
+        action="store_true",
+        help="Display the saved volatility-targeted growth allocation cap and sleeve mapping policy.",
     )
     parser.add_argument(
         "--vol-managed-etf-backtest",

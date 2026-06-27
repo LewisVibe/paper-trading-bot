@@ -283,6 +283,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-broker-comparison-reconciliation",
     "--vol-targeted-growth-paper-live-candidate-approval-record",
     "--show-vol-targeted-growth-paper-live-candidate-approval-record",
+    "--vol-targeted-growth-allocation-cap-sleeve-mapping-policy",
+    "--show-vol-targeted-growth-allocation-cap-sleeve-mapping-policy",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",

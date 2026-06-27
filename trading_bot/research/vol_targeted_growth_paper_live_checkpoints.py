@@ -24,11 +24,13 @@ ACTION_PACK_STATUS = "vol_targeted_growth_paper_live_action_preview_pack_created
 RECONCILIATION_STATUS = "vol_targeted_growth_broker_comparison_reconciliation_created_manual_review_required"
 RECONCILIATION_INCOMPLETE_STATUS = "vol_targeted_growth_broker_comparison_reconciliation_incomplete_manual_review_required"
 CANDIDATE_APPROVAL_STATUS = "vol_targeted_growth_paper_live_candidate_discussion_approval_recorded"
+ALLOCATION_POLICY_STATUS = "vol_targeted_growth_allocation_cap_sleeve_mapping_policy_created_manual_review_required"
 
 GATE_NEXT_STEP = "manual_review_gate_before_any_vol_targeted_paper_live_action_discussion"
 ACTION_PACK_NEXT_STEP = "manual_review_action_preview_pack_before_any_broker_reconciliation_or_order_design"
 RECONCILIATION_NEXT_STEP = "manual_review_saved_broker_comparison_before_any_paper_live_candidate_discussion"
 CANDIDATE_APPROVAL_NEXT_STEP = "design_allocation_cap_and_sleeve_mapping_policy_before_any_order_design"
+ALLOCATION_POLICY_NEXT_STEP = "design_non_executable_target_position_plan_before_any_order_ticket_design"
 
 GATE_OUTPUT_FILES = {
     "report": Path("data/vol_targeted_growth_paper_live_manual_approval_gate.csv"),
@@ -58,6 +60,13 @@ CANDIDATE_APPROVAL_OUTPUT_FILES = {
     "blockers": Path("data/vol_targeted_growth_paper_live_candidate_approval_blockers.csv"),
 }
 
+ALLOCATION_POLICY_OUTPUT_FILES = {
+    "report": Path("data/vol_targeted_growth_allocation_cap_sleeve_mapping_policy.csv"),
+    "summary": Path("data/vol_targeted_growth_allocation_cap_sleeve_mapping_policy_summary.csv"),
+    "evidence": Path("data/vol_targeted_growth_allocation_cap_sleeve_mapping_policy_evidence.csv"),
+    "blockers": Path("data/vol_targeted_growth_allocation_cap_sleeve_mapping_policy_blockers.csv"),
+}
+
 INPUT_FILES = {
     "active_seed_readiness_summary": Path("data/vol_targeted_growth_active_seed_readiness_summary.csv"),
     "seed_switch_summary": Path("data/vol_targeted_growth_seed_switch_status_only_summary.csv"),
@@ -71,6 +80,7 @@ INPUT_FILES = {
     "manual_gate_summary": Path("data/vol_targeted_growth_paper_live_manual_approval_gate_summary.csv"),
     "paper_live_action_preview_pack_summary": Path("data/vol_targeted_growth_paper_live_action_preview_pack_summary.csv"),
     "broker_reconciliation_summary": Path("data/vol_targeted_growth_broker_comparison_reconciliation_summary.csv"),
+    "candidate_approval_summary": Path("data/vol_targeted_growth_paper_live_candidate_approval_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -100,6 +110,9 @@ SAFETY_FLAGS = {
     "telegram_alert_sent": False,
     "paper_live_candidate_approved": False,
     "paper_live_candidate_discussion_approved": False,
+    "allocation_cap_approved": False,
+    "sleeve_mapping_approved": False,
+    "target_position_design_approved": False,
     "manual_paper_live_approval_recorded": False,
     "action_preview_approved": False,
     "execution_approved": False,
@@ -205,7 +218,7 @@ def generate_vol_targeted_growth_broker_comparison_reconciliation(
     report_rows = reconciliation_report_rows(created_at, inputs)
     final_status = reconciliation_status(inputs)
     summary_rows = reconciliation_summary_rows(inputs, report_rows, final_status)
-    evidence_rows = evidence_rows_for(inputs, overrides={"paper_live_candidate_discussion_approved": True})
+    evidence_rows = evidence_rows_for(inputs)
     blocker_rows = reconciliation_blocker_rows(inputs, final_status)
     output_paths = write_checkpoint(root, RECONCILIATION_OUTPUT_FILES, report_rows, summary_rows, evidence_rows, blocker_rows)
     return VolTargetedGrowthCheckpointResult(
@@ -235,7 +248,7 @@ def generate_vol_targeted_growth_paper_live_candidate_approval_record(
     inputs = load_inputs(root)
     report_rows = candidate_approval_report_rows(created_at, inputs)
     summary_rows = candidate_approval_summary_rows(inputs, report_rows)
-    evidence_rows = evidence_rows_for(inputs)
+    evidence_rows = evidence_rows_for(inputs, overrides={"paper_live_candidate_discussion_approved": True})
     blocker_rows = candidate_approval_blocker_rows(inputs)
     output_paths = write_checkpoint(root, CANDIDATE_APPROVAL_OUTPUT_FILES, report_rows, summary_rows, evidence_rows, blocker_rows)
     return VolTargetedGrowthCheckpointResult(
@@ -254,6 +267,36 @@ def show_vol_targeted_growth_paper_live_candidate_approval_record(root_dir: Path
         "Volatility-targeted growth paper-live candidate approval record saved display. Discussion approval only; no execution approval.",
         "final_candidate_approval_status",
         "Run `python bot.py --vol-targeted-growth-paper-live-candidate-approval-record` first.",
+    )
+
+
+def generate_vol_targeted_growth_allocation_cap_sleeve_mapping_policy(
+    root_dir: Path | str = ".",
+) -> VolTargetedGrowthCheckpointResult:
+    root = Path(root_dir)
+    created_at = now_utc()
+    inputs = load_inputs(root)
+    report_rows = allocation_policy_report_rows(created_at, inputs)
+    summary_rows = allocation_policy_summary_rows(inputs, report_rows)
+    evidence_rows = evidence_rows_for(inputs, overrides={"paper_live_candidate_discussion_approved": True})
+    blocker_rows = allocation_policy_blocker_rows(inputs)
+    output_paths = write_checkpoint(root, ALLOCATION_POLICY_OUTPUT_FILES, report_rows, summary_rows, evidence_rows, blocker_rows)
+    return VolTargetedGrowthCheckpointResult(
+        output_paths=output_paths,
+        report_rows=report_rows,
+        summary_rows=summary_rows,
+        evidence_rows=evidence_rows,
+        blocker_rows=blocker_rows,
+        summary_lines=summary_lines("Volatility-targeted growth allocation cap and sleeve mapping policy", summary_rows, output_paths),
+    )
+
+
+def show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy(root_dir: Path | str = ".") -> tuple[int, list[str]]:
+    return show_summary(
+        Path(root_dir) / ALLOCATION_POLICY_OUTPUT_FILES["summary"],
+        "Volatility-targeted growth allocation cap and sleeve mapping policy saved display. Design only; no order approval.",
+        "final_allocation_policy_status",
+        "Run `python bot.py --vol-targeted-growth-allocation-cap-sleeve-mapping-policy` first.",
     )
 
 
@@ -503,6 +546,93 @@ def candidate_approval_summary_rows(inputs: dict[str, list[dict[str, str]]], row
     return [summary_row(*item, overrides={"paper_live_candidate_discussion_approved": True}) for item in data]
 
 
+def allocation_policy_report_rows(created_at: str, inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    approval_status = summary_value(inputs["candidate_approval_summary"], "final_candidate_approval_status")
+    rows = [
+        (
+            "candidate_discussion_prerequisite",
+            "manual_review_required" if approval_status else "missing_candidate_discussion_approval",
+            "critical",
+            approval_status or "missing_candidate_approval_status",
+            "Allocation policy design should follow candidate-discussion approval, but still does not approve trading.",
+            "refresh_candidate_approval_record_before_using_policy",
+        ),
+        (
+            "total_allocation_cap_policy",
+            "proposed_cap_manual_review_required",
+            "critical",
+            "default_total_paper_allocation_cap=0_until_separate_execution_design; discussion_cap_placeholder=manual_review_required",
+            "No multi-sleeve exposure should become active by implication.",
+            ALLOCATION_POLICY_NEXT_STEP,
+        ),
+        (
+            "qqq100_core_sleeve_mapping",
+            "single_symbol_mapping_allowed_for_future_design_only",
+            "high",
+            "sleeve=qqq100_core_trend_sleeve; proposed_symbol=QQQ; target_weight_context=0.70",
+            "QQQ is the only sleeve with an obvious single-symbol paper proxy, but this still is not an order.",
+            "review_saved_current_qqq_position_before_any_target_position_design",
+        ),
+        (
+            "high_growth_sleeve_mapping",
+            "blocked_research_only_unmapped",
+            "critical",
+            "sleeve=high_growth_stock_research_sleeve; target_weight_context=0.20; proposed_symbol=none",
+            "High-growth remains research-only and cannot piggyback into paper execution.",
+            "separate_high_growth_promotion_and_symbol_policy_required",
+        ),
+        (
+            "crypto_sleeve_mapping",
+            "blocked_research_only_unmapped",
+            "critical",
+            "sleeve=crypto_research_sleeve; target_weight_context=0.05; proposed_symbol=none",
+            "Crypto remains research-only and no crypto execution venue or custody policy is approved.",
+            "separate_crypto_execution_policy_required",
+        ),
+        (
+            "defensive_sleeve_mapping",
+            "manual_review_unmapped",
+            "high",
+            "sleeve=defensive_cash_or_bond_sleeve; target_weight_context=0.05; proposed_symbol=none",
+            "The defensive sleeve is a buffer concept until a cash/bond proxy is separately chosen.",
+            "separate_defensive_proxy_policy_required",
+        ),
+        (
+            "execution_boundary",
+            "execution_blocked",
+            "critical",
+            "no order side, quantity, order type, account, key, token, webhook, order id, or executable target position",
+            "This policy is a design checkpoint, not a trade ticket.",
+            "keep_all_execution_flags_false",
+        ),
+    ]
+    return [report_row(created_at, *item, overrides={"paper_live_candidate_discussion_approved": True}) for item in rows]
+
+
+def allocation_policy_summary_rows(inputs: dict[str, list[dict[str, str]]], rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    data = [
+        ("final_allocation_policy_status", ALLOCATION_POLICY_STATUS, "Allocation cap and sleeve mapping policy is documented for manual review only."),
+        ("active_seed", ACTIVE_SEED, "Current status/report seed."),
+        ("active_ticker", ACTIVE_TICKER, "Status ticker label for the multi-sleeve seed."),
+        ("previous_seed", PREVIOUS_SEED, "Previous QQQ100 seed context."),
+        ("candidate_approval_status", summary_value(inputs["candidate_approval_summary"], "final_candidate_approval_status") or "missing_candidate_approval_status", "Saved candidate-discussion approval status."),
+        ("paper_live_candidate_discussion_approved", "True", "Discussion may continue from the saved approval record."),
+        ("paper_live_candidate_approved", "False", "Policy design does not approve paper-live candidacy."),
+        ("allocation_cap_approved", "False", "The cap is a design boundary, not an approved executable allocation."),
+        ("sleeve_mapping_approved", "False", "Sleeve mappings require later review before any target-position design."),
+        ("target_position_design_approved", "False", "No target-position design is approved."),
+        ("proposed_default_total_allocation_cap", "0_until_separate_execution_design", "No active paper exposure is created by this policy."),
+        ("qqq100_core_mapping", "future_design_only:QQQ", "QQQ can be reviewed as a future single-symbol proxy only."),
+        ("high_growth_mapping", "blocked_research_only", "High-growth sleeve is not executable."),
+        ("crypto_mapping", "blocked_research_only", "Crypto sleeve is not executable."),
+        ("defensive_mapping", "manual_review_unmapped", "Defensive sleeve proxy is not selected."),
+        ("largest_blocker", "non_executable_target_position_plan_missing", "Next step is still non-executable target-position design."),
+        ("recommended_next_step", ALLOCATION_POLICY_NEXT_STEP, "Design non-executable target positions before any order-ticket design."),
+        ("checkpoint_row_count", str(len(rows)), "Saved checkpoint row count."),
+    ]
+    return [summary_row(*item, overrides={"paper_live_candidate_discussion_approved": True}) for item in data]
+
+
 def evidence_rows_for(inputs: dict[str, list[dict[str, str]]], *, overrides: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     rows = []
     for name, path in INPUT_FILES.items():
@@ -559,6 +689,20 @@ def candidate_approval_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> 
     return blocker_rows(rows, overrides={"paper_live_candidate_discussion_approved": True})
 
 
+def allocation_policy_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    rows = [
+        ("allocation_cap_not_executable", "blocked", "critical", "The default cap is zero until a separate execution design exists.", "design_non_executable_target_position_plan_first"),
+        ("high_growth_sleeve_blocked", "blocked", "critical", "High-growth sleeve remains research-only and unmapped.", "separate_high_growth_promotion_required"),
+        ("crypto_sleeve_blocked", "blocked", "critical", "Crypto sleeve remains research-only and unmapped.", "separate_crypto_execution_policy_required"),
+        ("defensive_sleeve_unmapped", "blocked", "high", "Defensive sleeve has no approved paper proxy.", "separate_defensive_proxy_review_required"),
+        ("order_instructions_forbidden", "blocked", "critical", "No order side, quantity, type, account, key, token, webhook, order ID, or executable target position is allowed.", "keep_policy_non_executable"),
+        ("execution_not_approved", "blocked", "critical", "No orders, paper execution, live trading, follow-up order, repeat order, or scheduling are approved.", "keep_all_approval_flags_false"),
+    ]
+    if not inputs["candidate_approval_summary"]:
+        rows.insert(0, ("missing_candidate_approval_record", "blocked", "high", "Saved candidate approval summary is missing.", "refresh_candidate_approval_record"))
+    return blocker_rows(rows, overrides={"paper_live_candidate_discussion_approved": True})
+
+
 def write_checkpoint(
     root: Path,
     paths: dict[str, Path],
@@ -598,6 +742,7 @@ def summary_lines(title: str, summary_rows: list[dict[str, Any]], output_paths: 
         or summary_value(summary_rows, "final_action_preview_pack_status")
         or summary_value(summary_rows, "final_reconciliation_status")
         or summary_value(summary_rows, "final_candidate_approval_status")
+        or summary_value(summary_rows, "final_allocation_policy_status")
     )
     return [
         f"{title} complete. Saved-output/manual-review only; no execution or scheduling approved.",
