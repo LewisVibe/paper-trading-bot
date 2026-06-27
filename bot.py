@@ -1735,6 +1735,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-candidate-discussion-blocker-checklist"]:
+        from trading_bot.research.vol_targeted_growth_candidate_discussion_blocker_checklist import (
+            generate_vol_targeted_growth_candidate_discussion_blocker_checklist,
+        )
+
+        result = generate_vol_targeted_growth_candidate_discussion_blocker_checklist()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-candidate-discussion-blocker-checklist"]:
+        from trading_bot.research.vol_targeted_growth_candidate_discussion_blocker_checklist import (
+            show_vol_targeted_growth_candidate_discussion_blocker_checklist,
+        )
+
+        code, lines = show_vol_targeted_growth_candidate_discussion_blocker_checklist()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-candidate-discussion"]:
         from trading_bot.research.vol_targeted_growth_candidate_discussion import (
             generate_vol_targeted_growth_candidate_discussion,
@@ -7823,6 +7841,16 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-gate-review",
         action="store_true",
         help="Display the saved volatility-targeted growth gate review.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-candidate-discussion-blocker-checklist",
+        action="store_true",
+        help="Create a saved-output-only final blocker checklist before volatility-targeted implementation work.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-candidate-discussion-blocker-checklist",
+        action="store_true",
+        help="Display the saved volatility-targeted growth candidate discussion blocker checklist.",
     )
     parser.add_argument(
         "--vol-targeted-growth-candidate-discussion",
