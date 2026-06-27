@@ -96,6 +96,8 @@ def verify_source(source: str, failures: list[str]) -> None:
         FINAL_STATUS,
         "qqq100_remains_incumbent_paper_live_seed",
         "high_growth_and_crypto_not_approved",
+        "unmapped_sleeves_block_order_instructions",
+        "unmapped_sleeves_not_actionable",
         "gate_not_enforced_design_only",
         "vol_targeted_paper_live_candidate_approved",
         "order_instructions_created",
@@ -150,8 +152,29 @@ def verify_fixture(failures: list[str]) -> None:
             failures.append("QQQ100 must remain incumbent paper-live seed")
         if summary_value(result.summary_rows, "gate_enforcement_status") != "gate_not_enforced_design_only":
             failures.append("gate must remain design-only")
-        if len(result.gate_rows) < 8:
+        if summary_value(result.summary_rows, "unmapped_sleeve_status") != "unmapped_sleeves_block_order_instructions":
+            failures.append("unmapped sleeves must block order instructions")
+        if len(result.gate_rows) < 9:
             failures.append("expected hard gate requirement rows")
+        gate_items = {row.get("gate_item") for row in result.gate_rows}
+        for required_item in [
+            "high_growth_sleeve_boundary",
+            "crypto_sleeve_boundary",
+            "unmapped_sleeve_boundary",
+            "order_instruction_boundary",
+            "execution_and_scheduling_boundary",
+        ]:
+            if required_item not in gate_items:
+                failures.append(f"missing gate requirement row: {required_item}")
+        blockers = {row.get("blocker_name") for row in result.blocker_rows}
+        for required_blocker in [
+            "high_growth_and_crypto_not_approved",
+            "unmapped_sleeves_not_actionable",
+            "order_instructions_not_allowed",
+            "execution_not_approved",
+        ]:
+            if required_blocker not in blockers:
+                failures.append(f"missing blocker row: {required_blocker}")
         for row in result.summary_rows + result.gate_rows + result.evidence_rows + result.blocker_rows:
             for flag in FALSE_FLAGS:
                 if str(row.get(flag, "")).lower() != "false":

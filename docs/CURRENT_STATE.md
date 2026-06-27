@@ -841,7 +841,7 @@ The volatility-targeted growth stricter paper-live gate design comes from `pytho
 
 - It writes `data/vol_targeted_growth_stricter_paper_live_gate_design.csv`, `data/vol_targeted_growth_stricter_paper_live_gate_design_summary.csv`, `data/vol_targeted_growth_stricter_paper_live_gate_design_evidence.csv`, and `data/vol_targeted_growth_stricter_paper_live_gate_design_blockers.csv`.
 - Current expected status is `vol_targeted_growth_stricter_paper_live_gate_design_ready_manual_review_required`.
-- The gate requires QQQ100 to remain the incumbent paper-live seed, a separate allocation cap, high-growth and crypto to remain research-only, drawdown/stress review, current read-only broker-position context, no executable order fields, and all execution/scheduling approvals false. It defines requirements only; it does not enforce or approve the gate.
+- The gate requires QQQ100 to remain the incumbent paper-live seed, a separate allocation cap, high-growth and crypto to remain research-only, unmapped sleeves to stay non-actionable, drawdown/stress review, current read-only broker-position context, no executable order fields, and all execution/scheduling approvals false. It defines requirements only; it does not enforce or approve the gate.
 
 The volatility-targeted growth gate review comes from `python bot.py --vol-targeted-growth-gate-review`, with saved display through `python bot.py --show-vol-targeted-growth-gate-review`:
 
