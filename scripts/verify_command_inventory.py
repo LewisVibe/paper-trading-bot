@@ -285,6 +285,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-paper-live-candidate-approval-record",
     "--vol-targeted-growth-allocation-cap-sleeve-mapping-policy",
     "--show-vol-targeted-growth-allocation-cap-sleeve-mapping-policy",
+    "--vol-targeted-growth-non-executable-target-position-plan",
+    "--show-vol-targeted-growth-non-executable-target-position-plan",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",

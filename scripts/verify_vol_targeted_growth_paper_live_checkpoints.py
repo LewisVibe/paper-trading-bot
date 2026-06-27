@@ -24,13 +24,17 @@ from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (  #
     RECONCILIATION_STATUS,
     REPORT_COLUMNS,
     SAFETY_FLAGS,
-    generate_vol_targeted_growth_broker_comparison_reconciliation,
+    TARGET_POSITION_PLAN_OUTPUT_FILES,
+    TARGET_POSITION_PLAN_STATUS,
     generate_vol_targeted_growth_allocation_cap_sleeve_mapping_policy,
+    generate_vol_targeted_growth_broker_comparison_reconciliation,
+    generate_vol_targeted_growth_non_executable_target_position_plan,
     generate_vol_targeted_growth_paper_live_action_preview_pack,
     generate_vol_targeted_growth_paper_live_candidate_approval_record,
     generate_vol_targeted_growth_paper_live_manual_approval_gate,
-    show_vol_targeted_growth_broker_comparison_reconciliation,
     show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy,
+    show_vol_targeted_growth_broker_comparison_reconciliation,
+    show_vol_targeted_growth_non_executable_target_position_plan,
     show_vol_targeted_growth_paper_live_action_preview_pack,
     show_vol_targeted_growth_paper_live_candidate_approval_record,
     show_vol_targeted_growth_paper_live_manual_approval_gate,
@@ -48,6 +52,8 @@ COMMANDS = [
     "--show-vol-targeted-growth-paper-live-candidate-approval-record",
     "--vol-targeted-growth-allocation-cap-sleeve-mapping-policy",
     "--show-vol-targeted-growth-allocation-cap-sleeve-mapping-policy",
+    "--vol-targeted-growth-non-executable-target-position-plan",
+    "--show-vol-targeted-growth-non-executable-target-position-plan",
 ]
 
 FALSE_FLAGS = [
@@ -62,6 +68,7 @@ FALSE_FLAGS = [
     "orders_cancelled",
     "orders_replaced",
     "order_instructions_created",
+    "executable_target_positions_created",
     "portfolio_execution_wired",
     "sqlite_trade_log_written",
     "discord_alert_sent",
@@ -170,6 +177,7 @@ def verify_outputs_ignored(failures: list[str]) -> None:
         RECONCILIATION_OUTPUT_FILES,
         CANDIDATE_APPROVAL_OUTPUT_FILES,
         ALLOCATION_POLICY_OUTPUT_FILES,
+        TARGET_POSITION_PLAN_OUTPUT_FILES,
     ]:
         for path in mapping.values():
             normalized = str(path).replace("\\", "/")
@@ -185,13 +193,17 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         RECONCILIATION_STATUS,
         CANDIDATE_APPROVAL_STATUS,
         ALLOCATION_POLICY_STATUS,
+        TARGET_POSITION_PLAN_STATUS,
         "manual_paper_live_approval_recorded",
         "paper_live_candidate_discussion_approved",
         "allocation_cap_approved",
         "sleeve_mapping_approved",
         "target_position_design_approved",
+        "executable_target_positions_created",
         "default_total_paper_allocation_cap=0_until_separate_execution_design",
         "blocked_research_only_unmapped",
+        "QQQ_review_only_no_order_quantity",
+        "order_ticket_design_not_approved",
         "broker_positions_read_now",
         "order_instructions_created",
         "execution_approved",
@@ -220,6 +232,7 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "show_vol_targeted_growth_broker_comparison_reconciliation",
         "show_vol_targeted_growth_paper_live_candidate_approval_record",
         "show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy",
+        "show_vol_targeted_growth_non_executable_target_position_plan",
     ]:
         show_body = source_slice(module_source, f"def {show_name}", "\n\ndef ")
         if "write_rows" in show_body or "generate_vol_targeted" in show_body:
@@ -245,6 +258,7 @@ def verify_fixture_generation(failures: list[str]) -> None:
         reconciliation = generate_vol_targeted_growth_broker_comparison_reconciliation(root)
         approval = generate_vol_targeted_growth_paper_live_candidate_approval_record(root)
         allocation = generate_vol_targeted_growth_allocation_cap_sleeve_mapping_policy(root)
+        target_plan = generate_vol_targeted_growth_non_executable_target_position_plan(root)
 
         if summary_value(gate.summary_rows, "final_manual_gate_status") != GATE_STATUS:
             failures.append("manual gate fixture did not produce expected status")
@@ -266,8 +280,20 @@ def verify_fixture_generation(failures: list[str]) -> None:
             failures.append("allocation policy must not approve sleeve mapping")
         if summary_value(allocation.summary_rows, "target_position_design_approved") != "False":
             failures.append("allocation policy must not approve target-position design")
+        if summary_value(target_plan.summary_rows, "final_target_position_plan_status") != TARGET_POSITION_PLAN_STATUS:
+            failures.append("target-position plan fixture did not produce expected status")
+        if summary_value(target_plan.summary_rows, "paper_live_candidate_discussion_approved") != "True":
+            failures.append("target-position plan should preserve discussion-only approval")
+        if summary_value(target_plan.summary_rows, "target_position_design_approved") != "False":
+            failures.append("target-position plan must not approve target-position design")
+        if summary_value(target_plan.summary_rows, "executable_target_positions_created") != "False":
+            failures.append("target-position plan must not create executable target positions")
+        if summary_value(target_plan.summary_rows, "order_instructions_created") != "False":
+            failures.append("target-position plan must not create order instructions")
+        if summary_value(target_plan.summary_rows, "qqq100_review_context") != "QQQ_review_only_no_order_quantity":
+            failures.append("target-position plan must keep QQQ as review-only with no order quantity")
 
-        for result in [gate, action, reconciliation, approval, allocation]:
+        for result in [gate, action, reconciliation, approval, allocation, target_plan]:
             for collection in [result.report_rows, result.summary_rows, result.evidence_rows, result.blocker_rows]:
                 for row in collection:
                     for flag in FALSE_FLAGS:
@@ -285,6 +311,7 @@ def verify_fixture_generation(failures: list[str]) -> None:
             show_vol_targeted_growth_broker_comparison_reconciliation(root),
             show_vol_targeted_growth_paper_live_candidate_approval_record(root),
             show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy(root),
+            show_vol_targeted_growth_non_executable_target_position_plan(root),
         ]
         for code, lines in displays:
             display = "\n".join(lines)

@@ -235,6 +235,8 @@ Volatility-targeted growth paper-live candidate approval record is saved-output/
 
 Volatility-targeted growth allocation-cap and sleeve-mapping policy is saved-output/design-only: `python bot.py --vol-targeted-growth-allocation-cap-sleeve-mapping-policy` and `python bot.py --show-vol-targeted-growth-allocation-cap-sleeve-mapping-policy` document that executable allocation remains zero until a separate execution design exists. QQQ may be reviewed as the only obvious single-symbol proxy, while high-growth, crypto, and defensive sleeves remain research-only/unmapped; no target-position design, order instruction, paper execution, or scheduling is approved.
 
+Volatility-targeted growth non-executable target-position plan is saved-output/design-only: `python bot.py --vol-targeted-growth-non-executable-target-position-plan` and `python bot.py --show-vol-targeted-growth-non-executable-target-position-plan` document review context only. QQQ is review-only with no order quantity, high-growth and crypto remain blocked/research-only, defensive remains unmapped, and no side, quantity, order type, account, executable target position, paper execution, or scheduling is approved.
+
 
 ## Architecture
 

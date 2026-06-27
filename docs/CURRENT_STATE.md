@@ -996,6 +996,12 @@ The volatility-targeted growth allocation-cap and sleeve-mapping policy comes fr
 - QQQ can be reviewed later as the only obvious single-symbol proxy; high-growth and crypto remain blocked/research-only, and defensive remains unmapped/manual-review.
 - `allocation_cap_approved=False`, `sleeve_mapping_approved=False`, `target_position_design_approved=False`, `order_instructions_created=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
+The volatility-targeted growth non-executable target-position plan comes from `python bot.py --vol-targeted-growth-non-executable-target-position-plan`, with saved display through `python bot.py --show-vol-targeted-growth-non-executable-target-position-plan`:
+
+- Current expected status is `vol_targeted_growth_non_executable_target_position_plan_created_manual_review_required`.
+- It documents target context for manual review only: QQQ is review-only with no order quantity, high-growth and crypto stay blocked/research-only, and defensive remains unmapped.
+- `target_position_design_approved=False`, `executable_target_positions_created=False`, `order_instructions_created=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

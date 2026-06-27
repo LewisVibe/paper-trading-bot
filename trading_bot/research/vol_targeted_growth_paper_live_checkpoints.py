@@ -25,12 +25,14 @@ RECONCILIATION_STATUS = "vol_targeted_growth_broker_comparison_reconciliation_cr
 RECONCILIATION_INCOMPLETE_STATUS = "vol_targeted_growth_broker_comparison_reconciliation_incomplete_manual_review_required"
 CANDIDATE_APPROVAL_STATUS = "vol_targeted_growth_paper_live_candidate_discussion_approval_recorded"
 ALLOCATION_POLICY_STATUS = "vol_targeted_growth_allocation_cap_sleeve_mapping_policy_created_manual_review_required"
+TARGET_POSITION_PLAN_STATUS = "vol_targeted_growth_non_executable_target_position_plan_created_manual_review_required"
 
 GATE_NEXT_STEP = "manual_review_gate_before_any_vol_targeted_paper_live_action_discussion"
 ACTION_PACK_NEXT_STEP = "manual_review_action_preview_pack_before_any_broker_reconciliation_or_order_design"
 RECONCILIATION_NEXT_STEP = "manual_review_saved_broker_comparison_before_any_paper_live_candidate_discussion"
 CANDIDATE_APPROVAL_NEXT_STEP = "design_allocation_cap_and_sleeve_mapping_policy_before_any_order_design"
 ALLOCATION_POLICY_NEXT_STEP = "design_non_executable_target_position_plan_before_any_order_ticket_design"
+TARGET_POSITION_PLAN_NEXT_STEP = "manual_review_target_position_plan_before_any_order_ticket_design"
 
 GATE_OUTPUT_FILES = {
     "report": Path("data/vol_targeted_growth_paper_live_manual_approval_gate.csv"),
@@ -67,6 +69,13 @@ ALLOCATION_POLICY_OUTPUT_FILES = {
     "blockers": Path("data/vol_targeted_growth_allocation_cap_sleeve_mapping_policy_blockers.csv"),
 }
 
+TARGET_POSITION_PLAN_OUTPUT_FILES = {
+    "report": Path("data/vol_targeted_growth_non_executable_target_position_plan.csv"),
+    "summary": Path("data/vol_targeted_growth_non_executable_target_position_plan_summary.csv"),
+    "evidence": Path("data/vol_targeted_growth_non_executable_target_position_plan_evidence.csv"),
+    "blockers": Path("data/vol_targeted_growth_non_executable_target_position_plan_blockers.csv"),
+}
+
 INPUT_FILES = {
     "active_seed_readiness_summary": Path("data/vol_targeted_growth_active_seed_readiness_summary.csv"),
     "seed_switch_summary": Path("data/vol_targeted_growth_seed_switch_status_only_summary.csv"),
@@ -81,6 +90,7 @@ INPUT_FILES = {
     "paper_live_action_preview_pack_summary": Path("data/vol_targeted_growth_paper_live_action_preview_pack_summary.csv"),
     "broker_reconciliation_summary": Path("data/vol_targeted_growth_broker_comparison_reconciliation_summary.csv"),
     "candidate_approval_summary": Path("data/vol_targeted_growth_paper_live_candidate_approval_summary.csv"),
+    "allocation_policy_summary": Path("data/vol_targeted_growth_allocation_cap_sleeve_mapping_policy_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -113,6 +123,7 @@ SAFETY_FLAGS = {
     "allocation_cap_approved": False,
     "sleeve_mapping_approved": False,
     "target_position_design_approved": False,
+    "executable_target_positions_created": False,
     "manual_paper_live_approval_recorded": False,
     "action_preview_approved": False,
     "execution_approved": False,
@@ -297,6 +308,36 @@ def show_vol_targeted_growth_allocation_cap_sleeve_mapping_policy(root_dir: Path
         "Volatility-targeted growth allocation cap and sleeve mapping policy saved display. Design only; no order approval.",
         "final_allocation_policy_status",
         "Run `python bot.py --vol-targeted-growth-allocation-cap-sleeve-mapping-policy` first.",
+    )
+
+
+def generate_vol_targeted_growth_non_executable_target_position_plan(
+    root_dir: Path | str = ".",
+) -> VolTargetedGrowthCheckpointResult:
+    root = Path(root_dir)
+    created_at = now_utc()
+    inputs = load_inputs(root)
+    report_rows = target_position_plan_report_rows(created_at, inputs)
+    summary_rows = target_position_plan_summary_rows(inputs, report_rows)
+    evidence_rows = evidence_rows_for(inputs, overrides={"paper_live_candidate_discussion_approved": True})
+    blocker_rows = target_position_plan_blocker_rows(inputs)
+    output_paths = write_checkpoint(root, TARGET_POSITION_PLAN_OUTPUT_FILES, report_rows, summary_rows, evidence_rows, blocker_rows)
+    return VolTargetedGrowthCheckpointResult(
+        output_paths=output_paths,
+        report_rows=report_rows,
+        summary_rows=summary_rows,
+        evidence_rows=evidence_rows,
+        blocker_rows=blocker_rows,
+        summary_lines=summary_lines("Volatility-targeted growth non-executable target-position plan", summary_rows, output_paths),
+    )
+
+
+def show_vol_targeted_growth_non_executable_target_position_plan(root_dir: Path | str = ".") -> tuple[int, list[str]]:
+    return show_summary(
+        Path(root_dir) / TARGET_POSITION_PLAN_OUTPUT_FILES["summary"],
+        "Volatility-targeted growth non-executable target-position plan saved display. Review only; no order ticket.",
+        "final_target_position_plan_status",
+        "Run `python bot.py --vol-targeted-growth-non-executable-target-position-plan` first.",
     )
 
 
@@ -633,6 +674,84 @@ def allocation_policy_summary_rows(inputs: dict[str, list[dict[str, str]]], rows
     return [summary_row(*item, overrides={"paper_live_candidate_discussion_approved": True}) for item in data]
 
 
+def target_position_plan_report_rows(created_at: str, inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    policy_status = summary_value(inputs["allocation_policy_summary"], "final_allocation_policy_status")
+    rows = [
+        (
+            "allocation_policy_prerequisite",
+            "manual_review_required" if policy_status else "missing_allocation_policy",
+            "critical",
+            policy_status or "missing_allocation_policy_status",
+            "Target-position planning should follow allocation policy, but still must not become an order ticket.",
+            "refresh_allocation_policy_before_using_target_plan",
+        ),
+        (
+            "qqq100_core_position_context",
+            "review_only_not_executable",
+            "high",
+            "sleeve=qqq100_core_trend_sleeve; symbol_context=QQQ; target_weight_context=0.70; proposed_action_label=review_only",
+            "QQQ can be reviewed as a future single-symbol target context, but no side or order quantity is created.",
+            TARGET_POSITION_PLAN_NEXT_STEP,
+        ),
+        (
+            "high_growth_position_context",
+            "blocked_research_only",
+            "critical",
+            "sleeve=high_growth_stock_research_sleeve; symbol_context=unmapped; target_weight_context=0.20; proposed_action_label=blocked",
+            "High-growth remains research-only and cannot become a target position.",
+            "separate_high_growth_promotion_required",
+        ),
+        (
+            "crypto_position_context",
+            "blocked_research_only",
+            "critical",
+            "sleeve=crypto_research_sleeve; symbol_context=unmapped; target_weight_context=0.05; proposed_action_label=blocked",
+            "Crypto remains research-only and has no approved paper execution venue or target position.",
+            "separate_crypto_execution_policy_required",
+        ),
+        (
+            "defensive_position_context",
+            "manual_review_unmapped",
+            "high",
+            "sleeve=defensive_cash_or_bond_sleeve; symbol_context=unmapped; target_weight_context=0.05; proposed_action_label=manual_review",
+            "Defensive sleeve has no approved proxy and cannot become a target position.",
+            "separate_defensive_proxy_review_required",
+        ),
+        (
+            "order_ticket_boundary",
+            "order_ticket_design_blocked",
+            "critical",
+            "no side; no quantity; no order_type; no account; no order_id; no executable target_position",
+            "This plan intentionally stops before order-ticket design.",
+            "keep_non_executable_until_separate_manual_execution_design",
+        ),
+    ]
+    return [report_row(created_at, *item, overrides={"paper_live_candidate_discussion_approved": True}) for item in rows]
+
+
+def target_position_plan_summary_rows(inputs: dict[str, list[dict[str, str]]], rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    data = [
+        ("final_target_position_plan_status", TARGET_POSITION_PLAN_STATUS, "Non-executable target-position context is documented for manual review only."),
+        ("active_seed", ACTIVE_SEED, "Current status/report seed."),
+        ("active_ticker", ACTIVE_TICKER, "Status ticker label for the multi-sleeve seed."),
+        ("previous_seed", PREVIOUS_SEED, "Previous QQQ100 seed context."),
+        ("allocation_policy_status", summary_value(inputs["allocation_policy_summary"], "final_allocation_policy_status") or "missing_allocation_policy_status", "Saved allocation policy status."),
+        ("paper_live_candidate_discussion_approved", "True", "Discussion may continue from the saved approval record."),
+        ("paper_live_candidate_approved", "False", "Target-position plan does not approve paper-live candidacy."),
+        ("target_position_design_approved", "False", "No executable target-position design is approved."),
+        ("executable_target_positions_created", "False", "The plan creates no executable target positions."),
+        ("order_instructions_created", "False", "No order side, quantity, order type, or account fields are created."),
+        ("qqq100_review_context", "QQQ_review_only_no_order_quantity", "QQQ is review context only."),
+        ("high_growth_review_context", "blocked_research_only", "High-growth stays blocked."),
+        ("crypto_review_context", "blocked_research_only", "Crypto stays blocked."),
+        ("defensive_review_context", "manual_review_unmapped", "Defensive sleeve stays unmapped."),
+        ("largest_blocker", "order_ticket_design_not_approved", "A later separate order-ticket design would be required before any execution discussion."),
+        ("recommended_next_step", TARGET_POSITION_PLAN_NEXT_STEP, "Manual review before any order-ticket design."),
+        ("checkpoint_row_count", str(len(rows)), "Saved checkpoint row count."),
+    ]
+    return [summary_row(*item, overrides={"paper_live_candidate_discussion_approved": True}) for item in data]
+
+
 def evidence_rows_for(inputs: dict[str, list[dict[str, str]]], *, overrides: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     rows = []
     for name, path in INPUT_FILES.items():
@@ -703,6 +822,20 @@ def allocation_policy_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> l
     return blocker_rows(rows, overrides={"paper_live_candidate_discussion_approved": True})
 
 
+def target_position_plan_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    rows = [
+        ("order_ticket_design_not_approved", "blocked", "critical", "No order ticket or executable target-position design is approved.", "separate_order_ticket_design_required"),
+        ("qqq_context_not_order", "blocked", "critical", "QQQ is review context only; no side or quantity is created.", "manual_review_before_order_ticket_design"),
+        ("high_growth_blocked", "blocked", "critical", "High-growth sleeve remains research-only.", "separate_high_growth_promotion_required"),
+        ("crypto_blocked", "blocked", "critical", "Crypto sleeve remains research-only.", "separate_crypto_execution_policy_required"),
+        ("defensive_unmapped", "blocked", "high", "Defensive sleeve has no approved paper proxy.", "separate_defensive_proxy_review_required"),
+        ("execution_not_approved", "blocked", "critical", "No orders, paper execution, live trading, follow-up order, repeat order, or scheduling are approved.", "keep_all_approval_flags_false"),
+    ]
+    if not inputs["allocation_policy_summary"]:
+        rows.insert(0, ("missing_allocation_policy", "blocked", "high", "Saved allocation policy summary is missing.", "refresh_allocation_policy"))
+    return blocker_rows(rows, overrides={"paper_live_candidate_discussion_approved": True})
+
+
 def write_checkpoint(
     root: Path,
     paths: dict[str, Path],
@@ -743,6 +876,7 @@ def summary_lines(title: str, summary_rows: list[dict[str, Any]], output_paths: 
         or summary_value(summary_rows, "final_reconciliation_status")
         or summary_value(summary_rows, "final_candidate_approval_status")
         or summary_value(summary_rows, "final_allocation_policy_status")
+        or summary_value(summary_rows, "final_target_position_plan_status")
     )
     return [
         f"{title} complete. Saved-output/manual-review only; no execution or scheduling approved.",
