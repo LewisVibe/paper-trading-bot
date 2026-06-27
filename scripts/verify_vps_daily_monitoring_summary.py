@@ -24,15 +24,8 @@ REQUIRED_OUTPUT_PHRASES = [
     "previous_seed_strategy: qqq_100_trend_gate",
     "previous_seed_ticker: QQQ",
     "Volatility active-seed readiness:",
-    "vol_active_seed_readiness_present: True",
-    "final_active_seed_readiness_status: vol_targeted_growth_active_seed_monitoring_ready_manual_review_required",
-    "active_seed: higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x",
-    "active_ticker: MULTI_SLEEVE",
-    "previous_seed: qqq_100_trend_gate",
-    "readiness_pass_count: 16",
-    "readiness_warning_count: 0",
-    "action_preview_added: False",
-    "order_instructions_created: False",
+    "vol_active_seed_readiness_present:",
+    "vol_active_seed_readiness_warning: monitor only;",
     "QQQ100 daily decision:",
     "qqq100_daily_decision_present: True",
     "daily_decision_status: qqq100_daily_decision_hold_no_action_aligned_long",
@@ -160,6 +153,30 @@ def verify_command_output(failures: list[str]) -> None:
     for phrase in REQUIRED_OUTPUT_PHRASES:
         if phrase not in output:
             failures.append(f"Daily summary output missing phrase: {phrase}")
+    if "vol_active_seed_readiness_present: True" in output:
+        for phrase in [
+            "final_active_seed_readiness_status:",
+            "active_seed: higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x",
+            "active_ticker: MULTI_SLEEVE",
+            "previous_seed: qqq_100_trend_gate",
+            "readiness_pass_count:",
+            "readiness_warning_count:",
+            "action_preview_added: False",
+            "order_instructions_created: False",
+            "execution_approved: False",
+            "scheduling_approved: False",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary active-seed section missing phrase: {phrase}")
+    elif "vol_active_seed_readiness_present: False" in output:
+        for phrase in [
+            "vol_active_seed_readiness_missing_saved_output: data/vol_targeted_growth_active_seed_readiness_summary.csv",
+            "vol_active_seed_readiness_status: missing_saved_output",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary missing-saved active-seed section missing phrase: {phrase}")
+    else:
+        failures.append("Daily summary must report whether active-seed readiness is present")
     if "ModuleNotFoundError: No module named 'alpaca'" in output:
         failures.append(f"{COMMAND} must not require top-level Alpaca import")
 

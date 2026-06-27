@@ -77,7 +77,7 @@ must confirm:
 - repo safety passes on the VPS;
 - Hermes cron readiness passes on the VPS;
 - VPS daily monitoring summary verifier passes on the VPS;
-- VPS daily monitoring summary includes the active volatility seed readiness section;
+- VPS daily monitoring summary includes the active volatility seed readiness section, or clearly reports the saved active-seed readiness output as missing/manual-review required;
 - VPS daily monitoring summary remains status/report only;
 - the job remains script-only / no-agent where possible;
 - toolsets remain restricted to terminal;
