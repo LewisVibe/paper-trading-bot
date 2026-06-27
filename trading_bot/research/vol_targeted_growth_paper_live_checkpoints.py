@@ -27,6 +27,7 @@ CANDIDATE_APPROVAL_STATUS = "vol_targeted_growth_paper_live_candidate_discussion
 ALLOCATION_POLICY_STATUS = "vol_targeted_growth_allocation_cap_sleeve_mapping_policy_created_manual_review_required"
 TARGET_POSITION_PLAN_STATUS = "vol_targeted_growth_non_executable_target_position_plan_created_manual_review_required"
 ORDER_TICKET_BOUNDARY_STATUS = "vol_targeted_growth_order_ticket_boundary_design_created_manual_review_required"
+ORDER_TICKET_PREREQUISITES_STATUS = "vol_targeted_growth_executable_ticket_prerequisites_review_created_manual_review_required"
 
 GATE_NEXT_STEP = "manual_review_gate_before_any_vol_targeted_paper_live_action_discussion"
 ACTION_PACK_NEXT_STEP = "manual_review_action_preview_pack_before_any_broker_reconciliation_or_order_design"
@@ -35,6 +36,7 @@ CANDIDATE_APPROVAL_NEXT_STEP = "design_allocation_cap_and_sleeve_mapping_policy_
 ALLOCATION_POLICY_NEXT_STEP = "design_non_executable_target_position_plan_before_any_order_ticket_design"
 TARGET_POSITION_PLAN_NEXT_STEP = "manual_review_target_position_plan_before_any_order_ticket_design"
 ORDER_TICKET_BOUNDARY_NEXT_STEP = "manual_review_order_ticket_boundary_before_any_executable_order_ticket_design"
+ORDER_TICKET_PREREQUISITES_NEXT_STEP = "manual_review_prerequisites_before_any_executable_ticket_design_or_order_command"
 
 GATE_OUTPUT_FILES = {
     "report": Path("data/vol_targeted_growth_paper_live_manual_approval_gate.csv"),
@@ -85,6 +87,13 @@ ORDER_TICKET_BOUNDARY_OUTPUT_FILES = {
     "blockers": Path("data/vol_targeted_growth_order_ticket_boundary_design_blockers.csv"),
 }
 
+ORDER_TICKET_PREREQUISITES_OUTPUT_FILES = {
+    "report": Path("data/vol_targeted_growth_executable_ticket_prerequisites_review.csv"),
+    "summary": Path("data/vol_targeted_growth_executable_ticket_prerequisites_review_summary.csv"),
+    "evidence": Path("data/vol_targeted_growth_executable_ticket_prerequisites_review_evidence.csv"),
+    "blockers": Path("data/vol_targeted_growth_executable_ticket_prerequisites_review_blockers.csv"),
+}
+
 INPUT_FILES = {
     "active_seed_readiness_summary": Path("data/vol_targeted_growth_active_seed_readiness_summary.csv"),
     "seed_switch_summary": Path("data/vol_targeted_growth_seed_switch_status_only_summary.csv"),
@@ -101,6 +110,7 @@ INPUT_FILES = {
     "candidate_approval_summary": Path("data/vol_targeted_growth_paper_live_candidate_approval_summary.csv"),
     "allocation_policy_summary": Path("data/vol_targeted_growth_allocation_cap_sleeve_mapping_policy_summary.csv"),
     "target_position_plan_summary": Path("data/vol_targeted_growth_non_executable_target_position_plan_summary.csv"),
+    "order_ticket_boundary_summary": Path("data/vol_targeted_growth_order_ticket_boundary_design_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -136,6 +146,8 @@ SAFETY_FLAGS = {
     "executable_target_positions_created": False,
     "order_ticket_design_approved": False,
     "executable_order_ticket_created": False,
+    "executable_ticket_prerequisites_met": False,
+    "executable_ticket_design_allowed": False,
     "manual_paper_live_approval_recorded": False,
     "action_preview_approved": False,
     "execution_approved": False,
@@ -380,6 +392,43 @@ def show_vol_targeted_growth_order_ticket_boundary_design(root_dir: Path | str =
         "Volatility-targeted growth order-ticket boundary design saved display. Boundary only; no executable order ticket.",
         "final_order_ticket_boundary_status",
         "Run `python bot.py --vol-targeted-growth-order-ticket-boundary-design` first.",
+    )
+
+
+def generate_vol_targeted_growth_executable_ticket_prerequisites_review(
+    root_dir: Path | str = ".",
+) -> VolTargetedGrowthCheckpointResult:
+    root = Path(root_dir)
+    created_at = now_utc()
+    inputs = load_inputs(root)
+    report_rows = order_ticket_prerequisites_report_rows(created_at, inputs)
+    summary_rows = order_ticket_prerequisites_summary_rows(inputs, report_rows)
+    evidence_rows = evidence_rows_for(inputs, overrides={"paper_live_candidate_discussion_approved": True})
+    blocker_rows = order_ticket_prerequisites_blocker_rows(inputs)
+    output_paths = write_checkpoint(
+        root,
+        ORDER_TICKET_PREREQUISITES_OUTPUT_FILES,
+        report_rows,
+        summary_rows,
+        evidence_rows,
+        blocker_rows,
+    )
+    return VolTargetedGrowthCheckpointResult(
+        output_paths=output_paths,
+        report_rows=report_rows,
+        summary_rows=summary_rows,
+        evidence_rows=evidence_rows,
+        blocker_rows=blocker_rows,
+        summary_lines=summary_lines("Volatility-targeted growth executable ticket prerequisites review", summary_rows, output_paths),
+    )
+
+
+def show_vol_targeted_growth_executable_ticket_prerequisites_review(root_dir: Path | str = ".") -> tuple[int, list[str]]:
+    return show_summary(
+        Path(root_dir) / ORDER_TICKET_PREREQUISITES_OUTPUT_FILES["summary"],
+        "Volatility-targeted growth executable ticket prerequisites saved display. Prerequisites only; no executable order ticket.",
+        "final_executable_ticket_prerequisites_status",
+        "Run `python bot.py --vol-targeted-growth-executable-ticket-prerequisites-review` first.",
     )
 
 
@@ -872,6 +921,84 @@ def order_ticket_boundary_summary_rows(inputs: dict[str, list[dict[str, str]]], 
     return [summary_row(*item, overrides={"paper_live_candidate_discussion_approved": True}) for item in data]
 
 
+def order_ticket_prerequisites_report_rows(created_at: str, inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    boundary_status = summary_value(inputs["order_ticket_boundary_summary"], "final_order_ticket_boundary_status")
+    rows = [
+        (
+            "order_ticket_boundary_prerequisite",
+            "manual_review_required" if boundary_status else "missing_order_ticket_boundary",
+            "critical",
+            boundary_status or "missing_order_ticket_boundary_status",
+            "Prerequisite review should follow the order-ticket boundary design.",
+            "refresh_order_ticket_boundary_before_using_prerequisite_review",
+        ),
+        (
+            "human_approval_prerequisite",
+            "missing_explicit_manual_execution_approval",
+            "critical",
+            "manual_paper_live_approval_recorded=false; paper_live_candidate_approved=false",
+            "No executable design can proceed until a separate explicit approval step exists.",
+            "record_separate_manual_execution_design_approval_if_ever_requested",
+        ),
+        (
+            "broker_state_prerequisite",
+            "fresh_readonly_broker_check_required_later",
+            "critical",
+            "broker_positions_read_now=false; saved broker context is not fresh broker state",
+            "Any future executable design would need a separately approved read-only broker check.",
+            "run_readonly_broker_check_only_with_explicit_approval",
+        ),
+        (
+            "risk_control_prerequisite",
+            "risk_controls_not_approved_for_ticket",
+            "critical",
+            "allocation_cap_approved=false; sleeve_mapping_approved=false; target_position_design_approved=false",
+            "Allocation, sleeve mapping, and target-position controls are still review-only.",
+            "approve_controls_separately_before_ticket_design",
+        ),
+        (
+            "component_sleeve_prerequisite",
+            "component_sleeves_block_execution",
+            "critical",
+            "high_growth=research_only; crypto=research_only; defensive=unmapped",
+            "The multi-sleeve seed cannot become executable while component sleeves remain blocked or unmapped.",
+            "separate_component_promotion_reviews_required",
+        ),
+        (
+            "ticket_creation_boundary",
+            "ticket_creation_blocked",
+            "critical",
+            "executable_ticket_prerequisites_met=false; executable_ticket_design_allowed=false; executable_order_ticket_created=false",
+            "This report is a checklist of missing approvals, not a design that can trade.",
+            ORDER_TICKET_PREREQUISITES_NEXT_STEP,
+        ),
+    ]
+    return [report_row(created_at, *item, overrides={"paper_live_candidate_discussion_approved": True}) for item in rows]
+
+
+def order_ticket_prerequisites_summary_rows(inputs: dict[str, list[dict[str, str]]], rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    data = [
+        ("final_executable_ticket_prerequisites_status", ORDER_TICKET_PREREQUISITES_STATUS, "Executable ticket prerequisites are documented for manual review only."),
+        ("active_seed", ACTIVE_SEED, "Current status/report seed."),
+        ("active_ticker", ACTIVE_TICKER, "Status ticker label for the multi-sleeve seed."),
+        ("previous_seed", PREVIOUS_SEED, "Previous QQQ100 seed context."),
+        ("order_ticket_boundary_status", summary_value(inputs["order_ticket_boundary_summary"], "final_order_ticket_boundary_status") or "missing_order_ticket_boundary_status", "Saved order-ticket boundary status."),
+        ("paper_live_candidate_discussion_approved", "True", "Discussion may continue from the saved approval record."),
+        ("paper_live_candidate_approved", "False", "Executable ticket prerequisites do not approve paper-live candidacy."),
+        ("manual_paper_live_approval_recorded", "False", "No execution-design approval is recorded."),
+        ("executable_ticket_prerequisites_met", "False", "Prerequisites remain incomplete."),
+        ("executable_ticket_design_allowed", "False", "No executable ticket design is allowed by this report."),
+        ("order_ticket_design_approved", "False", "No executable order-ticket design is approved."),
+        ("executable_order_ticket_created", "False", "No executable order ticket is created."),
+        ("order_instructions_created", "False", "No side, quantity, order type, time-in-force, or account fields are created."),
+        ("fresh_broker_check_required_before_ticket_design", "True", "Any future executable design would need a separate explicit read-only broker check."),
+        ("largest_blocker", "executable_ticket_prerequisites_not_met", "Manual approval, fresh broker state, and component controls remain missing."),
+        ("recommended_next_step", ORDER_TICKET_PREREQUISITES_NEXT_STEP, "Manual review prerequisites before any executable ticket design or order command."),
+        ("checkpoint_row_count", str(len(rows)), "Saved checkpoint row count."),
+    ]
+    return [summary_row(*item, overrides={"paper_live_candidate_discussion_approved": True}) for item in data]
+
+
 def evidence_rows_for(inputs: dict[str, list[dict[str, str]]], *, overrides: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     rows = []
     for name, path in INPUT_FILES.items():
@@ -969,6 +1096,20 @@ def order_ticket_boundary_blocker_rows(inputs: dict[str, list[dict[str, str]]]) 
     return blocker_rows(rows, overrides={"paper_live_candidate_discussion_approved": True})
 
 
+def order_ticket_prerequisites_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    rows = [
+        ("executable_ticket_prerequisites_not_met", "blocked", "critical", "Manual approval, fresh broker state, and component controls remain incomplete.", "manual_review_prerequisites"),
+        ("manual_execution_design_approval_missing", "blocked", "critical", "No separate manual approval exists for executable ticket design.", "record_approval_only_if_explicitly_requested_later"),
+        ("fresh_broker_state_missing", "blocked", "critical", "This report does not call Alpaca and cannot use stale saved broker context as execution evidence.", "run_readonly_broker_check_only_with_explicit_approval"),
+        ("component_sleeves_not_executable", "blocked", "critical", "High-growth and crypto remain research-only; defensive remains unmapped.", "separate_component_promotion_required"),
+        ("order_ticket_creation_blocked", "blocked", "critical", "No executable order ticket, side, quantity, order type, or account field is created.", "keep_prerequisites_review_non_executable"),
+        ("execution_not_approved", "blocked", "critical", "No orders, paper execution, live trading, follow-up order, repeat order, or scheduling are approved.", "keep_all_approval_flags_false"),
+    ]
+    if not inputs["order_ticket_boundary_summary"]:
+        rows.insert(0, ("missing_order_ticket_boundary", "blocked", "high", "Saved order-ticket boundary summary is missing.", "refresh_order_ticket_boundary"))
+    return blocker_rows(rows, overrides={"paper_live_candidate_discussion_approved": True})
+
+
 def write_checkpoint(
     root: Path,
     paths: dict[str, Path],
@@ -1011,6 +1152,7 @@ def summary_lines(title: str, summary_rows: list[dict[str, Any]], output_paths: 
         or summary_value(summary_rows, "final_allocation_policy_status")
         or summary_value(summary_rows, "final_target_position_plan_status")
         or summary_value(summary_rows, "final_order_ticket_boundary_status")
+        or summary_value(summary_rows, "final_executable_ticket_prerequisites_status")
     )
     return [
         f"{title} complete. Saved-output/manual-review only; no execution or scheduling approved.",

@@ -239,6 +239,8 @@ Volatility-targeted growth non-executable target-position plan is saved-output/d
 
 Volatility-targeted growth order-ticket boundary design is saved-output/boundary-only: `python bot.py --vol-targeted-growth-order-ticket-boundary-design` and `python bot.py --show-vol-targeted-growth-order-ticket-boundary-design` document what must remain absent before any future executable ticket design. QQQ remains review-only with no side or quantity, research sleeves remain blocked/unmapped, and no executable order ticket, order instruction, paper execution, live trading, or scheduling is approved.
 
+Volatility-targeted growth executable ticket prerequisites review is saved-output/prerequisite-only: `python bot.py --vol-targeted-growth-executable-ticket-prerequisites-review` and `python bot.py --show-vol-targeted-growth-executable-ticket-prerequisites-review` list the missing approvals and evidence before any future executable ticket design could even be discussed. Manual execution-design approval, fresh read-only broker state, and component sleeve controls remain missing; no executable ticket, order instruction, paper execution, live trading, or scheduling is approved.
+
 
 ## Architecture
 

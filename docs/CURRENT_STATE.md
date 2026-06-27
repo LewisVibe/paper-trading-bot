@@ -1008,6 +1008,12 @@ The volatility-targeted growth order-ticket boundary design comes from `python b
 - It documents forbidden ticket fields and keeps QQQ as review-only with no side or quantity; high-growth and crypto stay blocked, and defensive remains unmapped.
 - `order_ticket_design_approved=False`, `executable_order_ticket_created=False`, `order_instructions_created=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
+The volatility-targeted growth executable ticket prerequisites review comes from `python bot.py --vol-targeted-growth-executable-ticket-prerequisites-review`, with saved display through `python bot.py --show-vol-targeted-growth-executable-ticket-prerequisites-review`:
+
+- Current expected status is `vol_targeted_growth_executable_ticket_prerequisites_review_created_manual_review_required`.
+- It lists the missing approvals and evidence before any future executable ticket design could be discussed: explicit execution-design approval, fresh read-only broker state, allocation/control approval, and component sleeve promotion remain missing.
+- `executable_ticket_prerequisites_met=False`, `executable_ticket_design_allowed=False`, `executable_order_ticket_created=False`, `order_instructions_created=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

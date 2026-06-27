@@ -2257,6 +2257,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-executable-ticket-prerequisites-review"]:
+        from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
+            generate_vol_targeted_growth_executable_ticket_prerequisites_review,
+        )
+
+        result = generate_vol_targeted_growth_executable_ticket_prerequisites_review()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-executable-ticket-prerequisites-review"]:
+        from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
+            show_vol_targeted_growth_executable_ticket_prerequisites_review,
+        )
+
+        code, lines = show_vol_targeted_growth_executable_ticket_prerequisites_review()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -8269,6 +8287,16 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-order-ticket-boundary-design",
         action="store_true",
         help="Display the saved volatility-targeted growth order-ticket boundary design.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-executable-ticket-prerequisites-review",
+        action="store_true",
+        help="Create a saved-output-only executable ticket prerequisites review for the active volatility seed.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-executable-ticket-prerequisites-review",
+        action="store_true",
+        help="Display the saved volatility-targeted growth executable ticket prerequisites review.",
     )
     parser.add_argument(
         "--vol-managed-etf-backtest",

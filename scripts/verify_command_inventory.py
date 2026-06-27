@@ -289,6 +289,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-non-executable-target-position-plan",
     "--vol-targeted-growth-order-ticket-boundary-design",
     "--show-vol-targeted-growth-order-ticket-boundary-design",
+    "--vol-targeted-growth-executable-ticket-prerequisites-review",
+    "--show-vol-targeted-growth-executable-ticket-prerequisites-review",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",
