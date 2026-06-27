@@ -1400,6 +1400,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable/account/secret fields, action preview implementation, portfolio execution wiring, scheduling, or paper-live execution approval.
 - **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create order fields, approve execution, schedule anything, or connect the candidate to execution.
 
+### Task: Volatility-targeted growth paper-live checkpoint bundle
+- **Purpose:** Use `python bot.py --vol-targeted-growth-paper-live-manual-approval-gate`, `python bot.py --vol-targeted-growth-paper-live-action-preview-pack`, and `python bot.py --vol-targeted-growth-broker-comparison-reconciliation` to package active-seed paper-live review evidence without approving action.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** The three report commands above, their matching `--show-...` commands, and `python scripts\verify_vol_targeted_growth_paper_live_checkpoints.py`.
+- **Expected status:** Manual-review statuses only; the reports may package gate, action-preview, and saved broker-comparison evidence, but they must keep paper-live candidacy, execution, follow-up/repeat orders, and scheduling unapproved.
+- **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable/account/secret fields, action execution, portfolio execution wiring, scheduling, or paper-live execution approval.
+- **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create order fields, approve paper-live candidacy, approve execution, schedule anything, or connect the candidate to execution.
+
 ### Task: Hermes status cron checkpoint
 - **Purpose:** Document and verify the enabled status-only Hermes job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no additional Hermes job is created, edited, triggered, deleted, or scheduled and the existing job remains status-only.

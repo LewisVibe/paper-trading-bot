@@ -2131,6 +2131,60 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-paper-live-manual-approval-gate"]:
+        from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
+            generate_vol_targeted_growth_paper_live_manual_approval_gate,
+        )
+
+        result = generate_vol_targeted_growth_paper_live_manual_approval_gate()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-paper-live-manual-approval-gate"]:
+        from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
+            show_vol_targeted_growth_paper_live_manual_approval_gate,
+        )
+
+        code, lines = show_vol_targeted_growth_paper_live_manual_approval_gate()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-paper-live-action-preview-pack"]:
+        from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
+            generate_vol_targeted_growth_paper_live_action_preview_pack,
+        )
+
+        result = generate_vol_targeted_growth_paper_live_action_preview_pack()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-paper-live-action-preview-pack"]:
+        from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
+            show_vol_targeted_growth_paper_live_action_preview_pack,
+        )
+
+        code, lines = show_vol_targeted_growth_paper_live_action_preview_pack()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-broker-comparison-reconciliation"]:
+        from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
+            generate_vol_targeted_growth_broker_comparison_reconciliation,
+        )
+
+        result = generate_vol_targeted_growth_broker_comparison_reconciliation()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-broker-comparison-reconciliation"]:
+        from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
+            show_vol_targeted_growth_broker_comparison_reconciliation,
+        )
+
+        code, lines = show_vol_targeted_growth_broker_comparison_reconciliation()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
 
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
@@ -8073,6 +8127,36 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-seed-change-dry-run-diff",
         action="store_true",
         help="Display the saved volatility-targeted growth seed-change dry-run diff.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-paper-live-manual-approval-gate",
+        action="store_true",
+        help="Create a saved-output-only manual paper-live approval gate for the active volatility seed.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-paper-live-manual-approval-gate",
+        action="store_true",
+        help="Display the saved volatility-targeted growth paper-live manual approval gate.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-paper-live-action-preview-pack",
+        action="store_true",
+        help="Create a saved-output-only paper-live action-preview pack for the active volatility seed.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-paper-live-action-preview-pack",
+        action="store_true",
+        help="Display the saved volatility-targeted growth paper-live action-preview pack.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-broker-comparison-reconciliation",
+        action="store_true",
+        help="Create a saved-output-only broker-comparison reconciliation for the active volatility seed.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-broker-comparison-reconciliation",
+        action="store_true",
+        help="Display the saved volatility-targeted growth broker-comparison reconciliation.",
     )
     parser.add_argument(
         "--vol-managed-etf-backtest",

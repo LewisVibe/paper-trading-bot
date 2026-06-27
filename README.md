@@ -229,6 +229,8 @@ Volatility-targeted growth seed-change dry-run diff is saved-output-only: `pytho
 
 Volatility-targeted growth active-seed readiness is saved-output-only: `python bot.py --vol-targeted-growth-active-seed-readiness` and `python bot.py --show-vol-targeted-growth-active-seed-readiness` check whether saved monitoring/status reports and supporting evidence consistently point at `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE` as the active report/status seed, with QQQ100 retained as previous-seed context. It does not call Alpaca, refresh market data, create action preview, create order instructions, approve execution, or approve scheduling.
 
+Volatility-targeted growth paper-live checkpoints are saved-output/manual-review only: `python bot.py --vol-targeted-growth-paper-live-manual-approval-gate`, `python bot.py --vol-targeted-growth-paper-live-action-preview-pack`, and `python bot.py --vol-targeted-growth-broker-comparison-reconciliation` package the active seed gate, saved action-preview context, and saved broker-comparison evidence for review. They do not call Alpaca, read positions, refresh market data, create order instructions, approve paper-live candidacy, approve execution, or approve scheduling.
+
 
 ## Architecture
 

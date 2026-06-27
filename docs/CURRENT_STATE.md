@@ -976,6 +976,13 @@ The volatility-targeted growth active-seed readiness report comes from `python b
 - `python bot.py --vps-daily-monitoring-summary` now includes a saved-output-only "Volatility active-seed readiness" section, so Telegram/status output can show the active seed readiness state without adding a separate runtime cron command.
 - `python scripts\verify_vol_targeted_growth_seed_change_chain_checkpoint.py` verifies the saved seed-change review ladder, the implemented status-only seed switch, and active-seed readiness while preserving false order, execution, repeat-order, and scheduling approvals.
 
+The volatility-targeted growth paper-live review bundle comes from three saved-output/manual-review checkpoints:
+
+- `python bot.py --vol-targeted-growth-paper-live-manual-approval-gate`, with saved display through `python bot.py --show-vol-targeted-growth-paper-live-manual-approval-gate`.
+- `python bot.py --vol-targeted-growth-paper-live-action-preview-pack`, with saved display through `python bot.py --show-vol-targeted-growth-paper-live-action-preview-pack`.
+- `python bot.py --vol-targeted-growth-broker-comparison-reconciliation`, with saved display through `python bot.py --show-vol-targeted-growth-broker-comparison-reconciliation`.
+- These checkpoints package the active seed gate, saved action-preview context, and saved broker-comparison evidence for review only. They do not call Alpaca, read positions, refresh market data, create order instructions, approve paper-live candidacy, approve execution, approve repeat/follow-up orders, or approve scheduling.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline
