@@ -32,6 +32,34 @@ activation, the intended sequence is:
 The sequence is designed to stop on verifier failure and return a concise
 Telegram status summary only.
 
+## Manual One-Off Test Result
+
+On `2026-06-27`, the paused job command sequence was run once manually as a
+status-only test. The job remained paused and disabled after the test, and the
+schedule placeholder remained `2099-01-01 00:00`.
+
+Observed result:
+
+- repo safety: passed;
+- Hermes cron readiness: `9` checks passed, `0` warnings, `0` errors;
+- VPS daily monitoring summary verifier: passed;
+- VPS daily monitoring final status: `monitoring_stale_or_missing_inputs`;
+- VPS daily monitoring action required: `manual_review_required`;
+- active volatility seed readiness status:
+  `vol_targeted_growth_active_seed_monitoring_incomplete_manual_review_required`;
+- active seed/ticker:
+  `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`;
+- previous seed context: `qqq_100_trend_gate` / `QQQ`;
+- approval flags remained false for execution, paper execution, scheduling,
+  follow-up orders, and repeat execution;
+- no order-capable commands were run.
+
+After the missing saved active-seed readiness output was regenerated manually
+with the existing report-only command, the VPS daily monitoring summary check
+passed and the active-seed readiness section reported ready-for-monitoring
+review. This is evidence that the status/report shell works; it is not
+permission to enable scheduling.
+
 ## Explicit Boundaries
 
 This paused job must not:
