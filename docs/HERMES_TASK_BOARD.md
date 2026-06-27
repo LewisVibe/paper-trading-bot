@@ -1417,3 +1417,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** The checklist records `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e` as enabled/scheduled, preserves the four-command status-only sequence, and records `*/30 14-20 * * 1-5` weekday UK-local monitoring without approving refresh jobs or order-capable commands.
 - **Forbidden commands:** Creating, editing, triggering, enabling, deleting, or scheduling Hermes cron jobs; broker reads; Alpaca calls; market refresh; order creation; refresh commands; executable/account/secret fields; action preview implementation; portfolio execution wiring; or paper-live execution approval.
 - **Stop condition:** Stop if the task would change an actual Hermes job, approve a cadence, approve scheduling, approve execution, create order fields, call Alpaca, read positions, schedule anything, or connect the candidate to execution.
+
+### Task: Hermes first scheduled-run checklist
+- **Purpose:** Document and verify the review checklist for the first scheduled Telegram/status output from `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
+- **Risk level:** Low/docs-verifier-only when no Hermes job is created, edited, triggered, disabled, deleted, or scheduled and no runtime command is run.
+- **Allowed commands:** `python scripts\verify_hermes_first_run_checklist.py`, plus repo safety and static verification.
+- **Expected status:** The checklist records the expected first run `2026-06-29T14:00:00+01:00`, healthy/warning/failure interpretations, stop conditions, and a result-log template while preserving the four-command status-only sequence.
+- **Forbidden commands:** Creating, editing, triggering, disabling, deleting, or scheduling Hermes cron jobs; broker reads; Alpaca calls; market refresh; order creation; refresh commands; executable/account/secret fields; action preview implementation; portfolio execution wiring; or paper-live execution approval.
+- **Stop condition:** Stop if the task would change the Hermes job, run the cron manually, add commands, approve execution, create order fields, call Alpaca, read positions, schedule order-capable work, or connect the candidate to execution.
