@@ -1014,6 +1014,13 @@ The volatility-targeted growth executable ticket prerequisites review comes from
 - It lists the missing approvals and evidence before any future executable ticket design could be discussed: explicit execution-design approval, fresh read-only broker state, allocation/control approval, and component sleeve promotion remain missing.
 - `executable_ticket_prerequisites_met=False`, `executable_ticket_design_allowed=False`, `executable_order_ticket_created=False`, `order_instructions_created=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
+The volatility-targeted growth paper-live execution blocker rollup comes from `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, with saved display through `python bot.py --show-vol-targeted-growth-paper-live-execution-blocker-rollup`:
+
+- Current expected status is `vol_targeted_growth_paper_live_execution_blocker_rollup_created_manual_review_required`.
+- It summarizes the saved paper-live chain from manual gate through ticket prerequisites so monitoring can show the active blocker state in one place.
+- `execution_blocker_rollup_cleared=False`, `executable_ticket_prerequisites_met=False`, `executable_ticket_design_allowed=False`, `order_instructions_created=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
+- `python bot.py --vps-daily-monitoring-summary` now includes a saved-output-only "Volatility paper-live execution blocker rollup" section; it does not add a separate cron command or approve execution.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

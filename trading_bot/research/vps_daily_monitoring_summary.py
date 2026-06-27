@@ -34,6 +34,7 @@ from trading_bot.research.vps_monitoring_status import (
 DEFENSIVE_REFRESH_SUMMARY_PATH = "data/defensive_research_refresh_summary.csv"
 VOL_ACTIVE_SEED_READINESS_SUMMARY_PATH = "data/vol_targeted_growth_active_seed_readiness_summary.csv"
 VOL_CANDIDATE_DECISION_RECORD_SUMMARY_PATH = "data/vol_targeted_growth_candidate_decision_record_summary.csv"
+VOL_EXECUTION_BLOCKER_ROLLUP_SUMMARY_PATH = "data/vol_targeted_growth_paper_live_execution_blocker_rollup_summary.csv"
 
 
 def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str]:
@@ -111,6 +112,13 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         ]
     )
     lines.extend(vol_candidate_decision_record_status_lines(root_path))
+    lines.extend(
+        [
+            "",
+            "Volatility paper-live execution blocker rollup:",
+        ]
+    )
+    lines.extend(vol_execution_blocker_rollup_status_lines(root_path))
     lines.extend(
         [
             "",
@@ -214,6 +222,35 @@ def vol_candidate_decision_record_status_lines(root: Path) -> list[str]:
         "- paper_execution_approved: False",
         "- scheduling_approved: False",
         "- vol_candidate_decision_warning: manual discussion only; QQQ100 remains the incumbent seed and this is not implementation, execution, or scheduling approval.",
+    ]
+
+
+def vol_execution_blocker_rollup_status_lines(root: Path) -> list[str]:
+    rows = read_csv_rows(root / VOL_EXECUTION_BLOCKER_ROLLUP_SUMMARY_PATH)
+    if not rows:
+        return [
+            "- vol_execution_blocker_rollup_present: False",
+            f"- vol_execution_blocker_rollup_missing_saved_output: {VOL_EXECUTION_BLOCKER_ROLLUP_SUMMARY_PATH}",
+            "- vol_execution_blocker_rollup_status: missing_saved_output",
+            "- vol_execution_blocker_rollup_warning: monitor only; missing blocker rollup does not approve execution or scheduling.",
+        ]
+    return [
+        "- vol_execution_blocker_rollup_present: True",
+        f"- final_execution_blocker_rollup_status: {summary_value(rows, 'final_execution_blocker_rollup_status')}",
+        f"- active_seed: {summary_value(rows, 'active_seed')}",
+        f"- active_ticker: {summary_value(rows, 'active_ticker')}",
+        f"- previous_seed: {summary_value(rows, 'previous_seed')}",
+        f"- execution_blocker_count: {summary_value(rows, 'execution_blocker_count')}",
+        f"- missing_checkpoint_count: {summary_value(rows, 'missing_checkpoint_count')}",
+        f"- largest_blocker: {summary_value(rows, 'largest_blocker')}",
+        f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
+        f"- executable_ticket_prerequisites_met: {summary_value(rows, 'executable_ticket_prerequisites_met') or 'False'}",
+        f"- executable_ticket_design_allowed: {summary_value(rows, 'executable_ticket_design_allowed') or 'False'}",
+        f"- order_instructions_created: {summary_value(rows, 'order_instructions_created') or 'False'}",
+        f"- execution_approved: {summary_value(rows, 'execution_approved') or 'False'}",
+        f"- paper_execution_approved: {summary_value(rows, 'paper_execution_approved') or 'False'}",
+        f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
+        "- vol_execution_blocker_rollup_warning: monitor only; blocker rollup is not execution design, order approval, or scheduling approval.",
     ]
 
 

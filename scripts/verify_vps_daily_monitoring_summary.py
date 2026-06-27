@@ -29,6 +29,9 @@ REQUIRED_OUTPUT_PHRASES = [
     "Volatility candidate decision record:",
     "vol_candidate_decision_record_present:",
     "vol_candidate_decision_warning:",
+    "Volatility paper-live execution blocker rollup:",
+    "vol_execution_blocker_rollup_present:",
+    "vol_execution_blocker_rollup_warning: monitor only;",
     "QQQ100 daily decision:",
     "qqq100_daily_decision_present: True",
     "daily_decision_status: qqq100_daily_decision_hold_no_action_aligned_long",
@@ -79,6 +82,8 @@ REQUIRED_ACTION_STATES = [
     "vol_active_seed_readiness_status",
     "vol_candidate_decision_record_missing_saved_output",
     "vol_candidate_decision_status",
+    "vol_execution_blocker_rollup_missing_saved_output",
+    "vol_execution_blocker_rollup_status",
 ]
 
 FORBIDDEN_CALLS = [
@@ -208,6 +213,28 @@ def verify_command_output(failures: list[str]) -> None:
                 failures.append(f"Daily summary missing-saved candidate decision section missing phrase: {phrase}")
     else:
         failures.append("Daily summary must report whether candidate decision record is present")
+    if "vol_execution_blocker_rollup_present: True" in output:
+        for phrase in [
+            "final_execution_blocker_rollup_status: vol_targeted_growth_paper_live_execution_blocker_rollup_created_manual_review_required",
+            "execution_blocker_count:",
+            "executable_ticket_prerequisites_met: False",
+            "executable_ticket_design_allowed: False",
+            "order_instructions_created: False",
+            "execution_approved: False",
+            "paper_execution_approved: False",
+            "scheduling_approved: False",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary execution blocker rollup section missing phrase: {phrase}")
+    elif "vol_execution_blocker_rollup_present: False" in output:
+        for phrase in [
+            "vol_execution_blocker_rollup_missing_saved_output: data/vol_targeted_growth_paper_live_execution_blocker_rollup_summary.csv",
+            "vol_execution_blocker_rollup_status: missing_saved_output",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary missing-saved execution blocker rollup section missing phrase: {phrase}")
+    else:
+        failures.append("Daily summary must report whether execution blocker rollup is present")
     if "ModuleNotFoundError: No module named 'alpaca'" in output:
         failures.append(f"{COMMAND} must not require top-level Alpaca import")
 

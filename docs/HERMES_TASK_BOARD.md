@@ -1448,6 +1448,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable ticket design, side/quantity/order-type/time-in-force fields, account/secret fields, portfolio execution wiring, scheduling, paper-live execution approval, or treating prerequisite review as approval.
 - **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create ticket fields, approve prerequisites, approve execution, schedule anything, or connect the candidate to execution.
 
+### Task: Volatility-targeted growth paper-live execution blocker rollup
+- **Purpose:** Use `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup` to summarize the saved volatility paper-live blocker chain in one report and surface it in VPS daily monitoring.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, `python bot.py --show-vol-targeted-growth-paper-live-execution-blocker-rollup`, `python bot.py --vps-daily-monitoring-summary`, `python scripts\verify_vol_targeted_growth_paper_live_execution_blocker_chain.py`, and `python scripts\verify_vol_targeted_growth_paper_live_checkpoints.py`.
+- **Expected status:** `vol_targeted_growth_paper_live_execution_blocker_rollup_created_manual_review_required`; blockers remain uncleared, executable ticket prerequisites remain unmet, no order instructions are created, and execution/scheduling approvals remain false.
+- **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable ticket design, order fields, account/secret fields, portfolio execution wiring, scheduling changes, paper-live execution approval, or treating blocker rollup as approval.
+- **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create ticket fields, clear blockers, approve execution, schedule anything, or connect the candidate to execution.
+
 ### Task: Hermes status cron checkpoint
 - **Purpose:** Document and verify the enabled status-only Hermes job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no additional Hermes job is created, edited, triggered, deleted, or scheduled and the existing job remains status-only.

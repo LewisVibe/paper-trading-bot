@@ -18,6 +18,8 @@ from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (  #
     ALLOCATION_POLICY_STATUS,
     CANDIDATE_APPROVAL_OUTPUT_FILES,
     CANDIDATE_APPROVAL_STATUS,
+    EXECUTION_BLOCKER_ROLLUP_OUTPUT_FILES,
+    EXECUTION_BLOCKER_ROLLUP_STATUS,
     GATE_OUTPUT_FILES,
     GATE_STATUS,
     ORDER_TICKET_BOUNDARY_OUTPUT_FILES,
@@ -35,6 +37,7 @@ from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (  #
     generate_vol_targeted_growth_non_executable_target_position_plan,
     generate_vol_targeted_growth_executable_ticket_prerequisites_review,
     generate_vol_targeted_growth_order_ticket_boundary_design,
+    generate_vol_targeted_growth_paper_live_execution_blocker_rollup,
     generate_vol_targeted_growth_paper_live_action_preview_pack,
     generate_vol_targeted_growth_paper_live_candidate_approval_record,
     generate_vol_targeted_growth_paper_live_manual_approval_gate,
@@ -43,6 +46,7 @@ from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (  #
     show_vol_targeted_growth_non_executable_target_position_plan,
     show_vol_targeted_growth_executable_ticket_prerequisites_review,
     show_vol_targeted_growth_order_ticket_boundary_design,
+    show_vol_targeted_growth_paper_live_execution_blocker_rollup,
     show_vol_targeted_growth_paper_live_action_preview_pack,
     show_vol_targeted_growth_paper_live_candidate_approval_record,
     show_vol_targeted_growth_paper_live_manual_approval_gate,
@@ -66,6 +70,8 @@ COMMANDS = [
     "--show-vol-targeted-growth-order-ticket-boundary-design",
     "--vol-targeted-growth-executable-ticket-prerequisites-review",
     "--show-vol-targeted-growth-executable-ticket-prerequisites-review",
+    "--vol-targeted-growth-paper-live-execution-blocker-rollup",
+    "--show-vol-targeted-growth-paper-live-execution-blocker-rollup",
 ]
 
 FALSE_FLAGS = [
@@ -94,6 +100,7 @@ FALSE_FLAGS = [
     "executable_order_ticket_created",
     "executable_ticket_prerequisites_met",
     "executable_ticket_design_allowed",
+    "execution_blocker_rollup_cleared",
     "action_preview_approved",
     "execution_approved",
     "paper_execution_approved",
@@ -196,6 +203,7 @@ def verify_outputs_ignored(failures: list[str]) -> None:
         TARGET_POSITION_PLAN_OUTPUT_FILES,
         ORDER_TICKET_BOUNDARY_OUTPUT_FILES,
         ORDER_TICKET_PREREQUISITES_OUTPUT_FILES,
+        EXECUTION_BLOCKER_ROLLUP_OUTPUT_FILES,
     ]:
         for path in mapping.values():
             normalized = str(path).replace("\\", "/")
@@ -214,6 +222,7 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         TARGET_POSITION_PLAN_STATUS,
         ORDER_TICKET_BOUNDARY_STATUS,
         ORDER_TICKET_PREREQUISITES_STATUS,
+        EXECUTION_BLOCKER_ROLLUP_STATUS,
         "manual_paper_live_approval_recorded",
         "paper_live_candidate_discussion_approved",
         "allocation_cap_approved",
@@ -224,6 +233,7 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "executable_order_ticket_created",
         "executable_ticket_prerequisites_met",
         "executable_ticket_design_allowed",
+        "execution_blocker_rollup_cleared",
         "default_total_paper_allocation_cap=0_until_separate_execution_design",
         "blocked_research_only_unmapped",
         "QQQ_review_only_no_order_quantity",
@@ -231,6 +241,7 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "order_ticket_design_not_approved",
         "executable_order_ticket_design_not_approved",
         "executable_ticket_prerequisites_not_met",
+        "execution_blocker_rollup_not_cleared",
         "fresh_readonly_broker_check_required_later",
         "broker_positions_read_now",
         "order_instructions_created",
@@ -263,6 +274,7 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "show_vol_targeted_growth_non_executable_target_position_plan",
         "show_vol_targeted_growth_order_ticket_boundary_design",
         "show_vol_targeted_growth_executable_ticket_prerequisites_review",
+        "show_vol_targeted_growth_paper_live_execution_blocker_rollup",
     ]:
         show_body = source_slice(module_source, f"def {show_name}", "\n\ndef ")
         if "write_rows" in show_body or "generate_vol_targeted" in show_body:
@@ -291,6 +303,7 @@ def verify_fixture_generation(failures: list[str]) -> None:
         target_plan = generate_vol_targeted_growth_non_executable_target_position_plan(root)
         order_boundary = generate_vol_targeted_growth_order_ticket_boundary_design(root)
         prerequisites = generate_vol_targeted_growth_executable_ticket_prerequisites_review(root)
+        rollup = generate_vol_targeted_growth_paper_live_execution_blocker_rollup(root)
 
         if summary_value(gate.summary_rows, "final_manual_gate_status") != GATE_STATUS:
             failures.append("manual gate fixture did not produce expected status")
@@ -348,8 +361,16 @@ def verify_fixture_generation(failures: list[str]) -> None:
             failures.append("executable ticket prerequisites must not create an executable order ticket")
         if summary_value(prerequisites.summary_rows, "order_instructions_created") != "False":
             failures.append("executable ticket prerequisites must not create order instructions")
+        if summary_value(rollup.summary_rows, "final_execution_blocker_rollup_status") != EXECUTION_BLOCKER_ROLLUP_STATUS:
+            failures.append("execution blocker rollup fixture did not produce expected status")
+        if summary_value(rollup.summary_rows, "execution_blocker_rollup_cleared") != "False":
+            failures.append("execution blocker rollup must not clear blockers")
+        if summary_value(rollup.summary_rows, "executable_ticket_prerequisites_met") != "False":
+            failures.append("execution blocker rollup must keep executable prerequisites unmet")
+        if summary_value(rollup.summary_rows, "order_instructions_created") != "False":
+            failures.append("execution blocker rollup must not create order instructions")
 
-        for result in [gate, action, reconciliation, approval, allocation, target_plan, order_boundary, prerequisites]:
+        for result in [gate, action, reconciliation, approval, allocation, target_plan, order_boundary, prerequisites, rollup]:
             for collection in [result.report_rows, result.summary_rows, result.evidence_rows, result.blocker_rows]:
                 for row in collection:
                     for flag in FALSE_FLAGS:
@@ -370,6 +391,7 @@ def verify_fixture_generation(failures: list[str]) -> None:
             show_vol_targeted_growth_non_executable_target_position_plan(root),
             show_vol_targeted_growth_order_ticket_boundary_design(root),
             show_vol_targeted_growth_executable_ticket_prerequisites_review(root),
+            show_vol_targeted_growth_paper_live_execution_blocker_rollup(root),
         ]
         for code, lines in displays:
             display = "\n".join(lines)

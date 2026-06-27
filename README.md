@@ -241,6 +241,8 @@ Volatility-targeted growth order-ticket boundary design is saved-output/boundary
 
 Volatility-targeted growth executable ticket prerequisites review is saved-output/prerequisite-only: `python bot.py --vol-targeted-growth-executable-ticket-prerequisites-review` and `python bot.py --show-vol-targeted-growth-executable-ticket-prerequisites-review` list the missing approvals and evidence before any future executable ticket design could even be discussed. Manual execution-design approval, fresh read-only broker state, and component sleeve controls remain missing; no executable ticket, order instruction, paper execution, live trading, or scheduling is approved.
 
+Volatility-targeted growth paper-live execution blocker rollup is saved-output/status-only: `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup` and `python bot.py --show-vol-targeted-growth-paper-live-execution-blocker-rollup` summarize the whole volatility paper-live chain from manual gate through ticket prerequisites. The VPS daily monitoring summary now surfaces this blocker status, but it remains monitoring only: blockers are not cleared, no executable ticket exists, and execution/scheduling stay false.
+
 
 ## Architecture
 
