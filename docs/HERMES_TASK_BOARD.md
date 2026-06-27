@@ -1404,7 +1404,7 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Purpose:** Document and verify the paused future status job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no Hermes job is created, edited, triggered, enabled, deleted, or scheduled.
 - **Allowed commands:** `python scripts\verify_hermes_paused_status_cron_checkpoint.py`, plus repo safety and static verification.
-- **Expected status:** The doc records `enabled=false`, `state=paused`, placeholder schedule `2099-01-01 00:00`, last run `never`, terminal-only toolset, and false execution/scheduling flags.
+- **Expected status:** The doc records `enabled=false`, `state=paused`, stored future schedule `*/30 14-20 * * 1-5`, last run `never`, terminal-only toolset, and false execution/scheduling flags.
 - **Command sequence:** The paused job uses repo safety, Hermes cron readiness, `verify_vps_daily_monitoring_summary.py`, and `--vps-daily-monitoring-summary`; standalone active-seed/paper-live report commands are intentionally not included because the daily summary now includes the active-seed readiness section.
 - **Manual test note:** The `2026-06-27` one-off status test passed after missing saved active-seed readiness evidence was regenerated manually; the job stayed paused/disabled and no order-capable commands were run.
 - **Forbidden commands:** Creating, editing, triggering, enabling, deleting, or scheduling Hermes cron jobs; broker reads; Alpaca calls; market refresh; order creation; refresh commands; executable/account/secret fields; action preview implementation; portfolio execution wiring; or paper-live execution approval.
@@ -1414,6 +1414,6 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Purpose:** Document and verify a future manual-review checklist for enabling the paused status job on a market-hours cadence instead of once daily.
 - **Risk level:** Low/docs-verifier-only when no Hermes job is created, edited, triggered, enabled, deleted, or scheduled.
 - **Allowed commands:** `python scripts\verify_hermes_status_cron_enablement_checklist.py`, plus repo safety and static verification.
-- **Expected status:** The checklist keeps `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e` paused and disabled, preserves the four-command status-only sequence, records hourly US-market-hours checks as the conservative first candidate, and leaves 30-minute checks as a later stability review.
+- **Expected status:** The checklist keeps `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e` paused and disabled, preserves the four-command status-only sequence, and records the stored future `*/30 14-20 * * 1-5` weekday UK-local status cadence without approving activation.
 - **Forbidden commands:** Creating, editing, triggering, enabling, deleting, or scheduling Hermes cron jobs; broker reads; Alpaca calls; market refresh; order creation; refresh commands; executable/account/secret fields; action preview implementation; portfolio execution wiring; or paper-live execution approval.
 - **Stop condition:** Stop if the task would change an actual Hermes job, approve a cadence, approve scheduling, approve execution, create order fields, call Alpaca, read positions, schedule anything, or connect the candidate to execution.

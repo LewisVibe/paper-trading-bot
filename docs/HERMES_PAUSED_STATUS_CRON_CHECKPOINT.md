@@ -11,7 +11,8 @@ orders, or follow-up orders.
 - Job ID: `66c8a5bb438e`
 - State: `paused`
 - Enabled: `false`
-- Schedule placeholder: once at `2099-01-01 00:00`
+- Stored future schedule: `*/30 14-20 * * 1-5`
+- Intended timezone: UK local / Europe-London
 - Last run: `never`
 - Delivery: current/origin Telegram chat
 - Toolsets restricted to: `terminal`
@@ -36,7 +37,9 @@ Telegram status summary only.
 
 On `2026-06-27`, the paused job command sequence was run once manually as a
 status-only test. The job remained paused and disabled after the test, and the
-schedule placeholder remained `2099-01-01 00:00`.
+schedule placeholder remained `2099-01-01 00:00` at that time. A later manual
+metadata update changed the stored future schedule to `*/30 14-20 * * 1-5`
+while keeping the job paused, disabled, and never run by cron.
 
 Observed result:
 
@@ -93,9 +96,10 @@ This checkpoint preserves:
 - `followup_order_approved=False`
 - `repeat_execution_approved=False`
 
-The paused job definition is not scheduling approval. Activation requires a
-separate manual approval step after the saved report chain remains healthy on
-the VPS.
+The paused job definition is not scheduling approval. The stored future schedule
+is a reviewed candidate cadence only; activation still requires a separate
+manual approval step after the saved report chain remains healthy on the VPS.
+Activation requires a separate manual approval step.
 
 ## Manual Activation Checklist
 

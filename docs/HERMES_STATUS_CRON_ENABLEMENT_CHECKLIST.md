@@ -11,7 +11,8 @@ live trading.
 - Job ID: `66c8a5bb438e`
 - Current state: `paused`
 - Enabled: `false`
-- Placeholder schedule: once at `2099-01-01 00:00`
+- Stored future schedule: `*/30 14-20 * * 1-5`
+- Intended timezone: UK local / Europe-London
 - Last scheduled run: `never`
 - Delivery: current/origin Telegram chat
 - Toolsets restricted to: `terminal`
@@ -34,15 +35,18 @@ summary when repo safety, Hermes readiness, or daily-summary verification fails.
 
 ## Market-Hours Cadence Options
 
-The user preference is not a once-daily status cron. The preferred future review
-direction is at least hourly while US markets are open, but cadence is not
-approved by this document.
+The user preference is not a once-daily status cron. The paused job now stores a
+future `*/30 14-20 * * 1-5` cadence for weekday UK-local market-hours status
+checks, but cadence activation is not approved by this document.
 
 Candidate cadence options for a later manual scheduling review:
 
-- Conservative first option: hourly during the US regular market session.
-- Higher-frequency option after stability: every 30 minutes during the US
-  regular market session, only after several successful hourly runs.
+- Conservative alternative: hourly during the US regular market session.
+- Stored future candidate: every 30 minutes during the broad UK-local
+  `14:00-20:59` weekday monitoring window.
+- The stored future candidate is still every 30 minutes during the US regular
+  market session in intent, with a broad UK-local window used for practical
+  scheduling review.
 - Avoid very frequent status checks until the Telegram output, saved-output
   freshness, and verifier stability have been observed over real market days.
 

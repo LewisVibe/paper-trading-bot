@@ -144,15 +144,14 @@ during routine documentation or verifier work.
 The paused status-job checkpoint lives in
 `docs/HERMES_PAUSED_STATUS_CRON_CHECKPOINT.md`. Job
 `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e` is disabled, paused,
-scheduled only as a harmless `2099-01-01 00:00` placeholder, and has never run.
-It records a future status/report command sequence only; activation still
-requires separate manual approval. Verify it with
+stores the future `*/30 14-20 * * 1-5` weekday UK-local status cadence, and has
+never run by cron. It records a future status/report command sequence only;
+activation still requires separate manual approval. Verify it with
 `python scripts\verify_hermes_paused_status_cron_checkpoint.py`.
 The market-hours enablement planning checklist lives in
-`docs/HERMES_STATUS_CRON_ENABLEMENT_CHECKLIST.md`. It records the preference for
-at least hourly status checks during US regular market hours, with 30-minute
-checks only after stable hourly runs, while keeping the paused job disabled and
-all execution/scheduling approval flags false. Verify it with
+`docs/HERMES_STATUS_CRON_ENABLEMENT_CHECKLIST.md`. It records the stored
+30-minute weekday status cadence while keeping the paused job disabled and all
+execution/scheduling approval flags false. Verify it with
 `python scripts\verify_hermes_status_cron_enablement_checklist.py`.
 The older `docs/HERMES_PROMOTED_REVIEW_CRON_DESIGN.md` file is a legacy pointer
 only. Use `docs/HERMES_CRON_MONITORING_RUNBOOK.md` and
