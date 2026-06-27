@@ -33,6 +33,7 @@ from trading_bot.research.vps_monitoring_status import (
 
 DEFENSIVE_REFRESH_SUMMARY_PATH = "data/defensive_research_refresh_summary.csv"
 VOL_ACTIVE_SEED_READINESS_SUMMARY_PATH = "data/vol_targeted_growth_active_seed_readiness_summary.csv"
+VOL_CANDIDATE_DECISION_RECORD_SUMMARY_PATH = "data/vol_targeted_growth_candidate_decision_record_summary.csv"
 
 
 def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str]:
@@ -103,6 +104,13 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         ]
     )
     lines.extend(vol_active_seed_readiness_status_lines(root_path))
+    lines.extend(
+        [
+            "",
+            "Volatility candidate decision record:",
+        ]
+    )
+    lines.extend(vol_candidate_decision_record_status_lines(root_path))
     lines.extend(
         [
             "",
@@ -177,6 +185,35 @@ def vol_active_seed_readiness_status_lines(root: Path) -> list[str]:
         f"- paper_execution_approved: {summary_value(rows, 'paper_execution_approved') or 'False'}",
         f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
         "- vol_active_seed_readiness_warning: monitor only; this is not action preview, order approval, execution approval, or scheduling approval.",
+    ]
+
+
+def vol_candidate_decision_record_status_lines(root: Path) -> list[str]:
+    rows = read_csv_rows(root / VOL_CANDIDATE_DECISION_RECORD_SUMMARY_PATH)
+    if not rows:
+        return [
+            "- vol_candidate_decision_record_present: False",
+            f"- vol_candidate_decision_record_missing_saved_output: {VOL_CANDIDATE_DECISION_RECORD_SUMMARY_PATH}",
+            "- vol_candidate_decision_status: missing_saved_output",
+            "- vol_candidate_decision_warning: monitor only; missing saved decision record does not approve implementation, execution, or scheduling.",
+        ]
+    return [
+        "- vol_candidate_decision_record_present: True",
+        f"- final_candidate_decision_status: {summary_value(rows, 'final_candidate_decision_status')}",
+        f"- selected_candidate: {summary_value(rows, 'selected_candidate')}",
+        f"- incumbent_seed: {summary_value(rows, 'incumbent_seed')}",
+        f"- decision: {summary_value(rows, 'decision')}",
+        f"- open_blocker_count: {summary_value(rows, 'open_blocker_count')}",
+        f"- largest_blocker: {summary_value(rows, 'largest_blocker')}",
+        f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
+        "- implementation_approved: False",
+        "- paper_live_candidate_approved: False",
+        "- seed_change_approved: False",
+        "- order_instructions_created: False",
+        "- execution_approved: False",
+        "- paper_execution_approved: False",
+        "- scheduling_approved: False",
+        "- vol_candidate_decision_warning: manual discussion only; QQQ100 remains the incumbent seed and this is not implementation, execution, or scheduling approval.",
     ]
 
 

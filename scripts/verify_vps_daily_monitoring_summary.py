@@ -26,6 +26,9 @@ REQUIRED_OUTPUT_PHRASES = [
     "Volatility active-seed readiness:",
     "vol_active_seed_readiness_present:",
     "vol_active_seed_readiness_warning: monitor only;",
+    "Volatility candidate decision record:",
+    "vol_candidate_decision_record_present:",
+    "vol_candidate_decision_warning:",
     "QQQ100 daily decision:",
     "qqq100_daily_decision_present: True",
     "daily_decision_status: qqq100_daily_decision_hold_no_action_aligned_long",
@@ -74,6 +77,8 @@ REQUIRED_ACTION_STATES = [
     "qqq100_daily_decision_approval_flags_need_review",
     "vol_active_seed_readiness_missing_saved_output",
     "vol_active_seed_readiness_status",
+    "vol_candidate_decision_record_missing_saved_output",
+    "vol_candidate_decision_status",
 ]
 
 FORBIDDEN_CALLS = [
@@ -177,6 +182,32 @@ def verify_command_output(failures: list[str]) -> None:
                 failures.append(f"Daily summary missing-saved active-seed section missing phrase: {phrase}")
     else:
         failures.append("Daily summary must report whether active-seed readiness is present")
+    if "vol_candidate_decision_record_present: True" in output:
+        for phrase in [
+            "final_candidate_decision_status: vol_targeted_growth_candidate_decision_manual_discussion_only",
+            "selected_candidate: higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x",
+            "incumbent_seed: qqq_100_trend_gate/QQQ",
+            "decision: manual_discussion_only_no_implementation_approval",
+            "open_blocker_count:",
+            "implementation_approved: False",
+            "paper_live_candidate_approved: False",
+            "seed_change_approved: False",
+            "order_instructions_created: False",
+            "execution_approved: False",
+            "paper_execution_approved: False",
+            "scheduling_approved: False",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary candidate decision section missing phrase: {phrase}")
+    elif "vol_candidate_decision_record_present: False" in output:
+        for phrase in [
+            "vol_candidate_decision_record_missing_saved_output: data/vol_targeted_growth_candidate_decision_record_summary.csv",
+            "vol_candidate_decision_status: missing_saved_output",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary missing-saved candidate decision section missing phrase: {phrase}")
+    else:
+        failures.append("Daily summary must report whether candidate decision record is present")
     if "ModuleNotFoundError: No module named 'alpaca'" in output:
         failures.append(f"{COMMAND} must not require top-level Alpaca import")
 
