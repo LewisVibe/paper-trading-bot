@@ -786,6 +786,13 @@ The volatility-targeted growth action preview comes from `python bot.py --vol-ta
 - It creates sleeve-level manual-review rows for the saved 15/20 target weights, while `current_exposure_status=current_exposure_not_read` and `broker_positions_compared=false`.
 - It does not read broker positions, create executable order instructions, include order side/quantity/type/account fields, approve paper execution, approve live execution, or approve scheduling.
 
+The volatility-targeted growth action-preview quality gate comes from `python bot.py --vol-targeted-growth-action-preview-quality-gate`, with saved display through `python bot.py --show-vol-targeted-growth-action-preview-quality-gate`:
+
+- It reads only the saved volatility-targeted action-preview, action-preview summary/blocker, and active-seed readiness outputs.
+- It writes `data/vol_targeted_growth_action_preview_quality_gate.csv`, `data/vol_targeted_growth_action_preview_quality_gate_summary.csv`, `data/vol_targeted_growth_action_preview_quality_gate_evidence.csv`, and `data/vol_targeted_growth_action_preview_quality_gate_blockers.csv`.
+- Current expected status is `vol_targeted_growth_action_preview_quality_gate_usable_manual_review_required` when saved rows are present, forbidden order fields are absent, current exposure remains loudly not read, and all execution/scheduling flags remain false.
+- It still treats broker-position comparison as incomplete and does not read positions, call Alpaca, create order instructions, approve paper execution, approve live execution, or approve scheduling.
+
 The volatility-targeted growth broker-position comparison design comes from `python bot.py --vol-targeted-growth-broker-position-comparison-design`, with saved display through `python bot.py --show-vol-targeted-growth-broker-position-comparison-design`:
 
 - It writes `data/vol_targeted_growth_broker_position_comparison_design.csv`, `data/vol_targeted_growth_broker_position_comparison_design_summary.csv`, `data/vol_targeted_growth_broker_position_comparison_design_evidence.csv`, and `data/vol_targeted_growth_broker_position_comparison_design_blockers.csv`.

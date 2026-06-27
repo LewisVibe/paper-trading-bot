@@ -211,6 +211,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-action-preview-design",
     "--vol-targeted-growth-action-preview",
     "--show-vol-targeted-growth-action-preview",
+    "--vol-targeted-growth-action-preview-quality-gate",
+    "--show-vol-targeted-growth-action-preview-quality-gate",
     "--vol-targeted-growth-broker-position-comparison-design",
     "--show-vol-targeted-growth-broker-position-comparison-design",
     "--vol-targeted-growth-portfolio-risk-review",
