@@ -35,11 +35,12 @@ OUTPUTS = [
 REQUIRED_MODULE_TOKENS = [
     "next_ladder_candidate_scope_report_only",
     "recommended_next_scope",
+    "vol_targeted_multi_sleeve_action_preview_design",
     "defensive_sleeve",
     "multi_sleeve_allocator",
     "high_growth_branch",
     "crypto_branch",
-    "create_defensive_sleeve_ladder_scope_review_report_only",
+    "create_vol_targeted_non_executable_action_preview_design_report_only",
     "f7_accounting_proof_accepted_portfolio_backtests_still_not_promotion_evidence",
     "portfolio_backtest_promotion_evidence_approved",
     "order_instructions_created",
@@ -103,7 +104,7 @@ def main() -> int:
         return 1
 
     print("Paper-live next ladder candidate scope verification passed.")
-    print("Verified defensive sleeve is next report-only scope, allocator/high-growth remain blocked, false approvals, ignored outputs, and no broker/order/config/scheduling calls.")
+    print("Verified volatility action-preview design is next report-only scope, defensive/allocator/high-growth remain blocked, false approvals, ignored outputs, and no broker/order/config/scheduling calls.")
     return 0
 
 
@@ -193,11 +194,11 @@ def verify_fixture_output(failures: list[str]) -> None:
     output = "\n".join(result.summary_lines + lines)
     for phrase in [
         "next_ladder_candidate_scope_report_only",
-        "recommended_next_scope=defensive_sleeve",
-        "second_scope=multi_sleeve_allocator",
+        "recommended_next_scope=vol_targeted_multi_sleeve_action_preview_design",
+        "second_scope=defensive_sleeve",
         "blocked_scope=high_growth_branch",
         "portfolio_backtest_evidence_status=f7_accounting_proof_accepted_portfolio_backtests_still_not_promotion_evidence",
-        "recommended_next_step=create_defensive_sleeve_ladder_scope_review_report_only",
+        "recommended_next_step=create_vol_targeted_non_executable_action_preview_design_report_only",
         "execution_approved=false",
         "paper_execution_approved=false",
         "scheduling_approved=false",
@@ -209,15 +210,17 @@ def verify_fixture_output(failures: list[str]) -> None:
             failures.append(f"fixture output missing phrase: {phrase}")
 
     scopes = {row.get("candidate_scope"): row for row in report_rows}
-    if scopes.get("defensive_sleeve", {}).get("scope_rank") != "1":
-        failures.append("defensive_sleeve must be rank 1")
-    if scopes.get("multi_sleeve_allocator", {}).get("scope_rank") != "2":
-        failures.append("multi_sleeve_allocator must be rank 2")
+    if scopes.get("vol_targeted_multi_sleeve_action_preview_design", {}).get("scope_rank") != "1":
+        failures.append("vol_targeted_multi_sleeve_action_preview_design must be rank 1")
+    if scopes.get("defensive_sleeve", {}).get("scope_rank") != "2":
+        failures.append("defensive_sleeve must be rank 2")
+    if scopes.get("multi_sleeve_allocator", {}).get("scope_rank") != "3":
+        failures.append("multi_sleeve_allocator must be rank 3")
     if scopes.get("high_growth_branch", {}).get("scope_status") != "not_next_scope_research_only":
         failures.append("high_growth_branch must remain research-only and not next")
     summary = {row.get("summary_name"): row.get("summary_value") for row in summary_rows}
-    if summary.get("recommended_next_scope") != "defensive_sleeve":
-        failures.append("summary recommended_next_scope must be defensive_sleeve")
+    if summary.get("recommended_next_scope") != "vol_targeted_multi_sleeve_action_preview_design":
+        failures.append("summary recommended_next_scope must be vol_targeted_multi_sleeve_action_preview_design")
     for row in report_rows + summary_rows:
         assert_false_flags(row, failures)
 

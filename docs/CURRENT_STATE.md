@@ -331,9 +331,9 @@ The paper-live promotion ladder design checkpoint comes from `python bot.py --pa
 
 - It writes `data/paper_live_promotion_ladder_design.csv`, `data/paper_live_promotion_ladder_design_summary.csv`, `data/paper_live_promotion_ladder_design_blockers.csv`, and `data/paper_live_promotion_ladder_design_evidence.csv`.
 - It documents future stage labels only: `research_candidate`, `preview_candidate`, `paper_live_candidate`, and `manually_executable_candidate`.
-- QQQ100 is the only current ladder seed and remains monitor-only/aligned long one share; no repeat, follow-up, or flatten QQQ order is approved.
+- The current report/status seed is `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`; QQQ100 remains previous-seed context, monitor-only/aligned long one share, with no repeat, follow-up, or flatten QQQ order approved.
 - It includes the saved QQQ100 manual flatten readiness/runbook checkpoints: current expected labels are `flatten_not_needed_currently` and `manual_flatten_runbook_not_needed_currently`.
-- Multi-sleeve is future-only, high-growth and crypto remain research-only, defensive sleeves remain future review only, and no SMA or slow-SMA paper-live promotion is allowed.
+- Multi-sleeve remains report/status only with no portfolio execution wiring; high-growth and crypto remain research-only, defensive sleeves remain future review only, and no SMA or slow-SMA paper-live promotion is allowed.
 - Portfolio backtests are not promotion evidence until accounting consistency is proven; unknown positions block/manual-review rather than assume flat; no scheduled execution is allowed.
 - This checkpoint is report-only and does not implement generic promotion logic, execution, order instructions, broker reads, scheduling, or strategy-to-execution wiring.
 
@@ -360,7 +360,7 @@ The paper-live next-phase backlog checkpoint comes from `python bot.py --paper-l
 
 - It writes `data/paper_live_next_phase_backlog.csv`, `data/paper_live_next_phase_backlog_summary.csv`, `data/paper_live_next_phase_backlog_blockers.csv`, and `data/paper_live_next_phase_backlog_evidence.csv`.
 - It lists the required future work for QQQ100 core, generic promotion ladder, F6/F7, defensive sleeve, high-growth sleeve, crypto sleeve, multi-sleeve allocator, and Monitoring/Hermes.
-- QQQ100 remains the current monitor-only base, aligned long one share, with no action required and no repeat/follow-up order approved.
+- Volatility-targeted growth is the current report/status seed. QQQ100 remains previous-seed context, aligned long one share, with no action required and no repeat/follow-up order approved.
 - Generic promotion ladder implementation remains future-only with no execution wiring.
 - F6/F7 targeted checks exist, unknown positions must stay loud, and portfolio backtest accounting must be proven before portfolio metrics become promotion evidence.
 - Defensive, high-growth, crypto, and allocator work are blocked behind saved-output evidence reviews; no sleeve is promoted.

@@ -170,6 +170,7 @@ def verify_docs(docs_source: str, failures: list[str]) -> None:
     for phrase in [
         "promotion ladder status",
         "Volatility-targeted growth is the current report/status seed",
+        "QQQ100 remains previous-seed context",
         "high-growth and crypto remain research-only",
         "portfolio backtests",
         "not promotion evidence",

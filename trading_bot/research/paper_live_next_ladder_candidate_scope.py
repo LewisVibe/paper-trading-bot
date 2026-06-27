@@ -158,17 +158,26 @@ def show_paper_live_next_ladder_candidate_scope(root_dir: Path | str = ".") -> t
 def build_candidate_scopes() -> list[CandidateScope]:
     return [
         CandidateScope(
-            candidate_scope="defensive_sleeve",
+            candidate_scope="vol_targeted_multi_sleeve_action_preview_design",
             scope_rank="1",
-            scope_status="recommended_next_scope_report_only_review",
-            why_this_rank="Narrowest next review after QQQ100: defensive behaviour can be checked before allocator complexity or high-growth risk.",
+            scope_status="recommended_next_scope_report_only_design",
+            why_this_rank="Narrowest next step for the current report/status seed: design a non-executable preview without orders, broker reads, or scheduling.",
+            required_before_candidate_discussion="observe_enabled_status_cron;confirm_monitoring_clean;manual_review_non_executable_action_preview_design;no_order_instructions",
+            blocked_until="manual_review_vol_targeted_action_preview_design_only",
+            recommended_next_step="create_vol_targeted_non_executable_action_preview_design_report_only",
+        ),
+        CandidateScope(
+            candidate_scope="defensive_sleeve",
+            scope_rank="2",
+            scope_status="future_scope_report_only_review",
+            why_this_rank="Defensive behaviour can be checked after the current volatility seed monitoring/action-preview design is stable.",
             required_before_candidate_discussion="saved_defensive_sleeve_review_pack;F6_unknown_position_boundary;F7_accounting_checkpoint_accepted;no_order_instructions",
             blocked_until="manual_review_defensive_sleeve_saved_evidence",
             recommended_next_step="create_defensive_sleeve_ladder_scope_review_report_only",
         ),
         CandidateScope(
             candidate_scope="multi_sleeve_allocator",
-            scope_rank="2",
+            scope_rank="3",
             scope_status="future_scope_after_defensive_review",
             why_this_rank="Allocator depends on sleeve evidence, F7 accounting, conflicts, and allocation policy; it is broader than a defensive-sleeve review.",
             required_before_candidate_discussion="defensive_sleeve_review;allocation_policy_review;conflict_review;portfolio_backtests_not_promotion_evidence_without_separate_review",
@@ -212,15 +221,15 @@ def scope_to_row(scope: CandidateScope) -> dict[str, Any]:
 def build_summary_rows(scopes: list[CandidateScope]) -> list[dict[str, Any]]:
     recommended = scopes[0]
     second = scopes[1]
-    blocked = scopes[2]
+    blocked = scopes[3]
     items = [
         ("final_scope_status", "next_ladder_candidate_scope_report_only", "Scope decision only; no promotion or execution approval."),
-        ("recommended_next_scope", recommended.candidate_scope, "Defensive sleeve is the first report-only scope to review next."),
+        ("recommended_next_scope", recommended.candidate_scope, "The current volatility seed should get a non-executable action-preview design before other ladder work."),
         ("scope_reason", recommended.why_this_rank, "Reason for selecting the first scope."),
-        ("second_scope", second.candidate_scope, "Allocator remains second because it is broader and depends on sleeve evidence."),
+        ("second_scope", second.candidate_scope, "Defensive sleeve remains a future report-only review after the current seed track is stable."),
         ("blocked_scope", blocked.candidate_scope, "High-growth remains research-only and not the next ladder scope."),
         ("portfolio_backtest_evidence_status", "f7_accounting_proof_accepted_portfolio_backtests_still_not_promotion_evidence", "F7 is accepted, but portfolio metrics still require separate promotion review."),
-        ("recommended_next_step", recommended.recommended_next_step, "Next step is a defensive-sleeve ladder-scope review report only."),
+        ("recommended_next_step", recommended.recommended_next_step, "Next step is a volatility-seed action-preview design report only."),
         ("execution_approved", "False", "Execution approval remains false."),
         ("paper_execution_approved", "False", "Paper execution approval remains false."),
         ("scheduling_approved", "False", "Scheduling approval remains false."),
@@ -236,8 +245,9 @@ def build_blocker_rows() -> list[dict[str, Any]]:
     blockers = [
         ("promotion_not_approved", "blocked", "critical", "This scope checkpoint does not approve promotion.", "Do not promote any branch from this report."),
         ("execution_not_approved", "blocked", "critical", "Execution and paper execution remain unapproved.", "Do not run order-capable commands from this report."),
-        ("defensive_scope_needs_review_pack", "manual_review_required", "medium", "Defensive sleeve needs its own saved-output ladder-scope review before candidate discussion.", "Create defensive sleeve ladder-scope review report only."),
-        ("allocator_not_next", "blocked", "high", "Allocator review is broader and should wait until defensive scope review exists.", "Defer allocator scope."),
+        ("vol_targeted_action_preview_design_required", "manual_review_required", "medium", "The current volatility seed needs a non-executable action-preview design before any candidate discussion.", "Create volatility-seed action-preview design report only."),
+        ("defensive_scope_not_next", "blocked", "medium", "Defensive sleeve review is on hold until the current seed track is stable.", "Defer defensive scope."),
+        ("allocator_not_next", "blocked", "high", "Allocator review is broader and should wait until action-preview and defensive scope reviews exist.", "Defer allocator scope."),
         ("high_growth_not_next", "blocked", "high", "High-growth remains research-only due to concentration/outlier/drawdown risk.", "Keep high-growth out of the paper-live ladder."),
         ("scheduled_execution_forbidden", "blocked", "critical", "Order-capable commands must never be scheduled.", "Keep Hermes/VPS monitoring-only."),
     ]
@@ -249,9 +259,10 @@ def build_blocker_rows() -> list[dict[str, Any]]:
 
 def build_evidence_rows() -> list[dict[str, Any]]:
     rows = [
-        ("current_seed", "qqq_100_trend_gate:QQQ", "QQQ100 remains the only current seed."),
+        ("current_seed", "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x:MULTI_SLEEVE", "Volatility-targeted multi-sleeve is the current report/status seed only."),
+        ("previous_seed_context", "qqq_100_trend_gate:QQQ", "QQQ100 remains previous-seed context, aligned long one share with no action required."),
         ("f7_accounting_checkpoint", "accepted", "F7 accounting proof is accepted as a static accounting checkpoint."),
-        ("recommended_next_scope", "defensive_sleeve", "Defensive sleeve is the narrowest next report-only scope."),
+        ("recommended_next_scope", "vol_targeted_multi_sleeve_action_preview_design", "Non-executable action-preview design is the narrowest next report-only scope."),
         ("portfolio_backtest_evidence_status", "not_promotion_evidence_without_separate_review", "Portfolio metrics still require separate promotion review."),
         ("approval_flags", "all_false", "Execution, paper execution, scheduling, live trading, follow-up, repeat, promotion, and portfolio-evidence approvals remain false."),
     ]

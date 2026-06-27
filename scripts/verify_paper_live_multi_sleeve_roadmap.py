@@ -56,7 +56,7 @@ REQUIRED_REPORT_COLUMNS = [
 
 REQUIRED_MODULE_TOKENS = [
     "qqq100_core_sleeve",
-    "current_monitor_only_base_aligned_long_one_only_current_ladder_seed",
+    "previous_seed_context_aligned_long_one_monitor_only_no_action_required",
     "defensive_sleeve",
     "future_review_only",
     "high_growth_sleeve",
@@ -65,11 +65,12 @@ REQUIRED_MODULE_TOKENS = [
     "crypto_sleeve",
     "research_only_capped_future_only_no_crypto_execution_approved",
     "multi_sleeve_allocator",
-    "future_only_no_portfolio_execution_wiring_no_order_instructions_no_scheduling",
+    "current_report_status_seed_no_portfolio_execution_wiring_no_order_instructions_no_scheduling",
     "portfolio_execution_wiring_forbidden",
     "scheduled_execution_forbidden",
     "paper_live_multi_sleeve_roadmap_report_only",
-    "future_qqq_led_multi_sleeve_from_research",
+    "vol_targeted_multi_sleeve_report_status_seed_from_research",
+    "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x_report_status_seed",
     '"execution_approved": False',
     '"paper_execution_approved": False',
     '"scheduling_approved": False',
@@ -122,7 +123,7 @@ def main() -> int:
         return 1
 
     print("Paper-live multi-sleeve roadmap verification passed.")
-    print("Verified report-only QQQ-led roadmap, false approvals, ignored outputs, and no broker/order/config/scheduling calls.")
+    print("Verified report-only volatility multi-sleeve roadmap, false approvals, ignored outputs, and no broker/order/config/scheduling calls.")
     return 0
 
 
@@ -183,7 +184,7 @@ def verify_docs(docs_source: str, failures: list[str]) -> None:
         "QQQ100 core sleeve",
         "High-growth sleeve",
         "Crypto sleeve",
-        "No portfolio execution",
+        "no portfolio execution",
         "no scheduled execution",
     ]:
         if phrase not in docs_source:
@@ -208,13 +209,14 @@ def verify_report_output_from_fixture(failures: list[str]) -> None:
     output = "\n".join(result.summary_lines + lines)
     for phrase in [
         "paper_live_multi_sleeve_roadmap_report_only",
-        "future_qqq_led_multi_sleeve_from_research",
-        "current_monitor_only_base_aligned_long_one",
+        "vol_targeted_multi_sleeve_report_status_seed_from_research",
+        "previous_seed_context_aligned_long_one_monitor_only",
+        "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x_report_status_seed",
         "future_review_only_must_pass_ladder_separately",
         "research_only_concentration_drawdown_attribution_required",
         "research_only_capped_future_only_no_execution_approved",
-        "future_only_no_portfolio_execution_wiring",
-        "manual_review_qqq_led_multi_sleeve_roadmap_before_any_implementation",
+        "current_report_status_seed_no_portfolio_execution_wiring",
+        "observe_enabled_status_cron_then_review_non_executable_action_preview_design",
         "execution_approved=false",
         "paper_execution_approved=false",
         "scheduling_approved=false",
@@ -237,14 +239,14 @@ def verify_report_output_from_fixture(failures: list[str]) -> None:
         assert_false_flags(row, failures)
 
     by_sleeve = {row.get("sleeve_name"): row for row in report_rows}
-    if "aligned_long_one" not in by_sleeve.get("qqq100_core_sleeve", {}).get("current_status", ""):
-        failures.append("QQQ100 core sleeve must stay aligned long one / monitor-only")
+    if "previous_seed_context" not in by_sleeve.get("qqq100_core_sleeve", {}).get("current_status", ""):
+        failures.append("QQQ100 core sleeve must stay previous-seed context / monitor-only")
     if "research_only" not in by_sleeve.get("high_growth_sleeve", {}).get("current_status", ""):
         failures.append("high-growth sleeve must remain research-only")
     if "no_crypto_execution_approved" not in by_sleeve.get("crypto_sleeve", {}).get("current_status", ""):
         failures.append("crypto sleeve must preserve no crypto execution approved")
-    if "no_portfolio_execution_wiring" not in by_sleeve.get("multi_sleeve_allocator", {}).get("current_status", ""):
-        failures.append("allocator must preserve no portfolio execution wiring")
+    if "current_report_status_seed" not in by_sleeve.get("multi_sleeve_allocator", {}).get("current_status", ""):
+        failures.append("allocator must identify the volatility seed as report/status only")
 
 
 def assert_false_flags(row: dict[str, str], failures: list[str]) -> None:

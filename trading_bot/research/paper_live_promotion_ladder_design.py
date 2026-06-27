@@ -13,8 +13,10 @@ from pathlib import Path
 from typing import Any
 
 
-STRATEGY_NAME = "qqq_100_trend_gate"
-TICKER = "QQQ"
+STRATEGY_NAME = "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x"
+TICKER = "MULTI_SLEEVE"
+PREVIOUS_STRATEGY_NAME = "qqq_100_trend_gate"
+PREVIOUS_TICKER = "QQQ"
 
 OUTPUT_FILES = {
     "report": Path("data/paper_live_promotion_ladder_design.csv"),
@@ -155,8 +157,9 @@ def show_paper_live_promotion_ladder_design(root_dir: Path | str = ".") -> tuple
     return 0, [
         "Paper-live promotion ladder design saved display. Report only; no promotion or orders approved.",
         f"final_design_status: {summary_value(rows, 'final_design_status')}",
-        f"only_current_ladder_seed: {summary_value(rows, 'only_current_ladder_seed')}",
-        f"current_qqq100_state: {summary_value(rows, 'current_qqq100_state')}",
+        f"current_ladder_seed: {summary_value(rows, 'only_current_ladder_seed')}",
+        f"previous_seed_context: {summary_value(rows, 'previous_seed_context')}",
+        f"previous_qqq100_state: {summary_value(rows, 'current_qqq100_state')}",
         f"qqq100_manual_flatten_status: {summary_value(rows, 'qqq100_manual_flatten_status')}",
         f"qqq100_manual_flatten_runbook_status: {summary_value(rows, 'qqq100_manual_flatten_runbook_status')}",
         f"future_multi_sleeve_status: {summary_value(rows, 'future_multi_sleeve_status')}",
@@ -172,15 +175,15 @@ def build_ladder_stages() -> list[LadderStage]:
     return [
         LadderStage(
             "research_candidate",
-            "QQQ100 only as current seed; multi-sleeve, high-growth, crypto, defensive, SMA, and slow-SMA remain excluded.",
+            "Volatility-targeted multi-sleeve is the current report/status seed; QQQ100 is retained as previous-seed context; high-growth, crypto, defensive, SMA, and slow-SMA remain excluded.",
             "Saved research evidence plus F6/F7 targeted checks; portfolio backtests require accounting consistency before promotion-evidence use.",
-            "qqq100_research_seed_only",
+            "vol_targeted_growth_report_status_seed",
             "portfolio_backtests_not_promotion_evidence_until_accounting_review",
-            "keep QQQ100 as the only seed; add accounting verifier before future candidates use portfolio evidence",
+            "keep volatility seed report/status only; do not add order instructions or execution",
         ),
         LadderStage(
             "preview_candidate",
-            "QQQ100 saved preview/review only; no preview promotion is created by this design checkpoint.",
+            "Volatility-targeted saved preview/proposal context only; no executable preview promotion is created by this design checkpoint.",
             "Saved QQQ100 signal/review evidence, exact position-unknown handling, and explicit human review.",
             "design_only_no_preview_promotion",
             "unknown_position_must_block_manual_review_not_assume_flat",
@@ -188,15 +191,15 @@ def build_ladder_stages() -> list[LadderStage]:
         ),
         LadderStage(
             "paper_live_candidate",
-            "QQQ100 monitoring state only: aligned long 1, no action required, no repeat, follow-up, or flatten order approved.",
-            "Saved paper-live monitoring, follow-up policy, evidence audit, manual flatten readiness/runbook, and manual review before any action discussion.",
-            "qqq100_monitor_only_aligned_long_one",
+            "Volatility-targeted seed is status/report monitoring only; previous QQQ100 context remains aligned long 1 with no action required.",
+            "Saved paper-live monitoring, active-seed readiness, previous QQQ100 follow-up policy, evidence audit, manual flatten readiness/runbook, and manual review before any action discussion.",
+            "vol_targeted_status_only_previous_qqq100_aligned_long_one",
             "repeat_followup_flatten_order_not_approved",
             "hold_no_action_and_monitor_only; do not add candidates without separate review",
         ),
         LadderStage(
             "manually_executable_candidate",
-            "No generic manually executable candidates; QQQ100 remains separate, explicit, confirmation-gated, and not repeat-approved.",
+            "No generic manually executable candidates; volatility-targeted execution is not implemented, and previous QQQ100 remains separate, explicit, confirmation-gated, and not repeat-approved.",
             "Separate manual confirmation, broker/readiness gates, exact one-share/zero-share design, and human approval per action.",
             "generic_manual_execution_not_implemented",
             "scheduled_or_automatic_execution_forbidden",
@@ -227,11 +230,16 @@ def build_summary_rows(stages: list[LadderStage]) -> list[dict[str, Any]]:
         (
             "only_current_ladder_seed",
             f"{STRATEGY_NAME}:{TICKER}",
-            "QQQ100 is the only current ladder seed.",
+            "Volatility-targeted growth is the current report/status ladder seed.",
+        ),
+        (
+            "previous_seed_context",
+            f"{PREVIOUS_STRATEGY_NAME}:{PREVIOUS_TICKER}",
+            "QQQ100 is retained as previous-seed context.",
         ),
         (
             "current_qqq100_state",
-            "monitor_only_aligned_long_one_no_action_required",
+            "previous_seed_monitor_only_aligned_long_one_no_action_required",
             "Saved state remains QQQ100 aligned long one share with no repeat/follow-up order approved.",
         ),
         (
@@ -246,8 +254,8 @@ def build_summary_rows(stages: list[LadderStage]) -> list[dict[str, Any]]:
         ),
         (
             "future_multi_sleeve_status",
-            "future_only_not_promoted",
-            "Eventual paper-live direction may be QQQ-led multi-sleeve from research, but not in this checkpoint.",
+            "current_report_status_seed_not_execution",
+            "Volatility-targeted multi-sleeve is current report/status seed only, not executable implementation.",
         ),
         (
             "high_growth_status",
@@ -286,8 +294,8 @@ def build_summary_rows(stages: list[LadderStage]) -> list[dict[str, Any]]:
         ),
         (
             "next_safe_development_step",
-            "review_step12_design_with_f6_f7_and_flatten_boundaries_before_any_implementation",
-            "Review this report before any future ladder implementation; do not add execution or scheduling.",
+            "observe_enabled_status_cron_then_review_non_executable_action_preview_design",
+            "Observe the status-only cron and review any future non-executable action-preview design separately; do not add execution or scheduling.",
         ),
     ]
     return [summary_row(name, value, details) for name, value, details in items]
@@ -355,11 +363,16 @@ def build_evidence_rows() -> list[dict[str, Any]]:
     evidence = [
         (
             "current_pushed_checkpoints",
-            "5d4ea15;1fd1217;2d951f6",
-            "Checklist closeout, F6/F7 audit, and F6/F7 targeted checks are established checkpoints.",
+            "5d4ea15;1fd1217;2d951f6;7227627;b3735eb",
+            "Checklist closeout, F6/F7 checks, enabled status cron docs, and first-run checklist are established checkpoints.",
         ),
         (
-            "qqq100_current_monitoring_state",
+            "active_seed_monitoring_state",
+            f"{STRATEGY_NAME}:{TICKER}",
+            "Volatility-targeted growth is the current report/status seed only.",
+        ),
+        (
+            "previous_qqq100_monitoring_state",
             "aligned_long_one_no_action_required",
             "QQQ100 remains previous-seed context, monitor-only, with no repeat/follow-up order approved.",
         ),
@@ -415,8 +428,9 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
     return [
         "Paper-live promotion ladder design complete. Report only; no promotion, orders, or scheduling approved.",
         f"final_design_status={summary_value(summary_rows, 'final_design_status')}",
-        f"only_current_ladder_seed={summary_value(summary_rows, 'only_current_ladder_seed')}",
-        f"current_qqq100_state={summary_value(summary_rows, 'current_qqq100_state')}",
+        f"current_ladder_seed={summary_value(summary_rows, 'only_current_ladder_seed')}",
+        f"previous_seed_context={summary_value(summary_rows, 'previous_seed_context')}",
+        f"previous_qqq100_state={summary_value(summary_rows, 'current_qqq100_state')}",
         f"qqq100_manual_flatten_status={summary_value(summary_rows, 'qqq100_manual_flatten_status')}",
         f"qqq100_manual_flatten_runbook_status={summary_value(summary_rows, 'qqq100_manual_flatten_runbook_status')}",
         f"future_multi_sleeve_status={summary_value(summary_rows, 'future_multi_sleeve_status')}",

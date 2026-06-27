@@ -60,7 +60,7 @@ REQUIRED_REPORT_COLUMNS = [
 
 REQUIRED_MODULE_TOKENS = [
     "qqq100_core",
-    "current_monitor_only_base_aligned_long_one_no_action_required",
+    "previous_seed_context_aligned_long_one_no_action_required",
     "hold_no_action_and_monitor_only",
     "generic_promotion_ladder",
     "design_exists_implementation_future_only_no_execution_wiring",
@@ -74,11 +74,12 @@ REQUIRED_MODULE_TOKENS = [
     "crypto_execution_not_approved",
     "multi_sleeve_allocator",
     "allocator_execution_wiring_forbidden",
+    "current_report_status_seed_no_portfolio_execution_wiring_no_order_instructions_no_scheduling",
     "monitoring_hermes",
     "monitoring_only_status_exists_existing_cron_sequence_unchanged",
     "paper_live_next_phase_backlog_report_only",
-    "future_qqq_led_multi_sleeve_from_research",
-    "saved_output_reviews_and_verifiers_only",
+    "vol_targeted_multi_sleeve_seed_from_research_status_only",
+    "monitoring_observation_saved_output_reviews_and_verifiers_only",
     "no_execution_wiring_no_order_instructions_no_scheduling_no_sleeve_promotion",
     '"execution_approved": False',
     '"paper_execution_approved": False',
@@ -218,12 +219,12 @@ def verify_report_output_from_fixture(failures: list[str]) -> None:
     output = "\n".join(result.summary_lines + lines)
     for phrase in [
         "paper_live_next_phase_backlog_report_only",
-        "qqq100_monitor_only_aligned_long_one_no_action_required",
-        "future_qqq_led_multi_sleeve_from_research",
+        "vol_targeted_multi_sleeve_report_status_seed_qqq100_previous_aligned_long_one_no_action_required",
+        "vol_targeted_multi_sleeve_seed_from_research_status_only",
         "portfolio_execution_and_promotion_evidence_not_ready",
-        "saved_output_reviews_and_verifiers_only",
+        "monitoring_observation_saved_output_reviews_and_verifiers_only",
         "no_execution_wiring_no_order_instructions_no_scheduling_no_sleeve_promotion",
-        "choose_one_backlog_item_for_report_only_checkpoint",
+        "observe_enabled_status_cron_then_review_non_executable_action_preview_design",
         "execution_approved=false",
         "paper_execution_approved=false",
         "scheduling_approved=false",
@@ -246,8 +247,8 @@ def verify_report_output_from_fixture(failures: list[str]) -> None:
         assert_false_flags(row, failures)
 
     by_item = {row.get("backlog_item"): row for row in report_rows}
-    if "no_action_required" not in by_item.get("qqq100_core", {}).get("current_status", ""):
-        failures.append("QQQ100 core backlog item must keep no_action_required")
+    if "previous_seed_context" not in by_item.get("qqq100_core", {}).get("current_status", ""):
+        failures.append("QQQ100 core backlog item must stay previous-seed context")
     if "accounting" not in by_item.get("f6_f7", {}).get("required_before_next_stage", "").lower():
         failures.append("F6/F7 backlog item must require portfolio accounting proof")
     if "execution_not_approved" not in by_item.get("crypto_sleeve", {}).get("blocker", ""):

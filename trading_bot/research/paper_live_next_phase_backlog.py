@@ -168,9 +168,9 @@ def build_backlog_items() -> list[BacklogItem]:
     return [
         BacklogItem(
             "qqq100_core",
-            "current_monitor_only_base_aligned_long_one_no_action_required",
-            "Continue saved monitoring only; keep no repeat/follow-up order approved.",
-            "current_phase_is_monitor_only",
+            "previous_seed_context_aligned_long_one_no_action_required",
+            "Continue saved previous-seed monitoring only; keep no repeat/follow-up order approved.",
+            "previous_seed_no_repeat_followup_order_approved",
             "hold_no_action_and_monitor_only",
             "repeat_or_followup_qqq_order;change_current_qqq100_only_monitoring",
         ),
@@ -216,10 +216,10 @@ def build_backlog_items() -> list[BacklogItem]:
         ),
         BacklogItem(
             "multi_sleeve_allocator",
-            "future_only_no_portfolio_execution_wiring_no_order_instructions_no_scheduling",
+            "current_report_status_seed_no_portfolio_execution_wiring_no_order_instructions_no_scheduling",
             "Allocation policy, sleeve conflicts, portfolio accounting consistency, no order instructions, and no scheduling.",
             "allocator_execution_wiring_forbidden",
-            "design_saved_output_allocator_policy_and_conflict_review",
+            "observe_enabled_status_cron_then_review_non_executable_action_preview_design",
             "create_portfolio_order_instructions;wire_allocator_to_execution;schedule_allocator",
         ),
         BacklogItem(
@@ -254,13 +254,13 @@ def build_summary_rows(items: list[BacklogItem]) -> list[dict[str, Any]]:
         ),
         (
             "current_phase_status",
-            "qqq100_monitor_only_aligned_long_one_no_action_required",
-            "QQQ100 remains monitor-only with no repeat/follow-up order approved.",
+            "vol_targeted_multi_sleeve_report_status_seed_qqq100_previous_aligned_long_one_no_action_required",
+            "Volatility-targeted multi-sleeve is the current report/status seed; QQQ100 remains previous-seed context with no repeat/follow-up order approved.",
         ),
         (
             "next_phase_direction",
-            "future_qqq_led_multi_sleeve_from_research",
-            "Future preference is QQQ-led multi-sleeve, but current QQQ100-only monitoring is unchanged.",
+            "vol_targeted_multi_sleeve_seed_from_research_status_only",
+            "Next work should validate monitoring and review non-executable action-preview design, not approve execution.",
         ),
         (
             "required_backlog_item_count",
@@ -274,8 +274,8 @@ def build_summary_rows(items: list[BacklogItem]) -> list[dict[str, Any]]:
         ),
         (
             "allowed_next_action",
-            "saved_output_reviews_and_verifiers_only",
-            "Only report-only review packs, verifiers, and documentation updates are allowed next.",
+            "monitoring_observation_saved_output_reviews_and_verifiers_only",
+            "Only monitoring observation, report-only review packs, verifiers, and documentation updates are allowed next.",
         ),
         (
             "forbidden_action_summary",
@@ -284,8 +284,8 @@ def build_summary_rows(items: list[BacklogItem]) -> list[dict[str, Any]]:
         ),
         (
             "next_safe_development_step",
-            "choose_one_backlog_item_for_report_only_checkpoint",
-            "Work through the backlog one saved-output/report-only checkpoint at a time.",
+            "observe_enabled_status_cron_then_review_non_executable_action_preview_design",
+            "First observe the enabled status cron; then review a non-executable action-preview design separately.",
         ),
     ]
     return [summary_row(name, value, details) for name, value, details in summary_items]
@@ -336,14 +336,19 @@ def build_evidence_rows() -> list[dict[str, Any]]:
             "Checklist closeout, F6/F7 audit, targeted checks, ladder design, and multi-sleeve roadmap exist.",
         ),
         (
-            "current_qqq100_state",
-            "active_strategy=qqq_100_trend_gate;active_ticker=QQQ;aligned_long_one;no_action_required",
-            "QQQ100 remains the current monitor-only base.",
+            "active_seed_monitoring_state",
+            "active_strategy=higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x;active_ticker=MULTI_SLEEVE;report_status_only",
+            "Volatility-targeted multi-sleeve is the current report/status seed only.",
+        ),
+        (
+            "previous_qqq100_state",
+            "previous_strategy=qqq_100_trend_gate;previous_ticker=QQQ;aligned_long_one;no_action_required",
+            "QQQ100 remains previous-seed context, aligned long one share with no action required.",
         ),
         (
             "future_direction",
-            "qqq_led_multi_sleeve_from_research_future_only",
-            "Future direction is not current execution or scheduling approval.",
+            "vol_targeted_multi_sleeve_from_research_status_only",
+            "Current direction is report/status only and is not execution or scheduling approval.",
         ),
         (
             "approval_flags",

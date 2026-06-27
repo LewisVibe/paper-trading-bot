@@ -1,4 +1,4 @@
-"""Report-only roadmap for future QQQ-led multi-sleeve paper-live work.
+"""Report-only roadmap for volatility-targeted multi-sleeve paper-live work.
 
 This checkpoint documents a future direction only. It does not implement
 portfolio execution, call Alpaca, read positions, refresh market data, create
@@ -166,9 +166,9 @@ def build_roadmap_sleeves() -> list[RoadmapSleeve]:
     return [
         RoadmapSleeve(
             "qqq100_core_sleeve",
-            "current_monitor_only_base_aligned_long_one_only_current_ladder_seed",
-            "paper_live_candidate_monitor_only",
-            "Saved QQQ100 monitoring, follow-up policy, evidence audit, and promotion ladder design must remain clean.",
+            "previous_seed_context_aligned_long_one_monitor_only_no_action_required",
+            "previous_paper_live_candidate_monitor_only",
+            "Saved QQQ100 monitoring, follow-up policy, evidence audit, and promotion ladder design remain clean as previous-seed context.",
             "no_repeat_followup_order_approved_current_phase_is_monitor_only",
         ),
         RoadmapSleeve(
@@ -194,9 +194,9 @@ def build_roadmap_sleeves() -> list[RoadmapSleeve]:
         ),
         RoadmapSleeve(
             "multi_sleeve_allocator",
-            "future_only_no_portfolio_execution_wiring_no_order_instructions_no_scheduling",
-            "design_only_future_review",
-            "Accounting consistency, position unknown handling, allocation caps, manual approval policy, and no scheduled execution.",
+            "current_report_status_seed_no_portfolio_execution_wiring_no_order_instructions_no_scheduling",
+            "current_report_status_seed_manual_review_required",
+            "Accounting consistency, position unknown handling, allocation caps, manual approval policy, and no scheduled execution before any preview or paper-live implementation.",
             "portfolio_execution_wiring_forbidden_until_separate_manual_review_and_tests",
         ),
     ]
@@ -222,13 +222,18 @@ def build_summary_rows(sleeves: list[RoadmapSleeve]) -> list[dict[str, Any]]:
         ),
         (
             "roadmap_direction",
-            "future_qqq_led_multi_sleeve_from_research",
-            "Roadmap preference is QQQ-led multi-sleeve eventually, without changing current QQQ100-only monitoring.",
+            "vol_targeted_multi_sleeve_report_status_seed_from_research",
+            "Volatility-targeted multi-sleeve is the current report/status seed; QQQ100 remains previous-seed monitor-only context.",
         ),
         (
             "qqq100_core_status",
-            "current_monitor_only_base_aligned_long_one",
-            "QQQ100 is the only current ladder seed and remains monitor-only.",
+            "previous_seed_context_aligned_long_one_monitor_only",
+            "QQQ100 remains previous-seed context, aligned long one share, monitor-only, and no repeat/follow-up/flatten order is approved.",
+        ),
+        (
+            "active_seed_status",
+            "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x_report_status_seed",
+            "The volatility-targeted multi-sleeve seed is active for reporting/status only, not execution.",
         ),
         (
             "defensive_sleeve_status",
@@ -247,8 +252,8 @@ def build_summary_rows(sleeves: list[RoadmapSleeve]) -> list[dict[str, Any]]:
         ),
         (
             "allocator_status",
-            "future_only_no_portfolio_execution_wiring",
-            "Allocator has no order instructions, no portfolio execution wiring, and no scheduling.",
+            "current_report_status_seed_no_portfolio_execution_wiring",
+            "Allocator remains report/status only with no order instructions, no portfolio execution wiring, and no scheduling.",
         ),
         (
             "excluded_strategy_status",
@@ -262,8 +267,8 @@ def build_summary_rows(sleeves: list[RoadmapSleeve]) -> list[dict[str, Any]]:
         ),
         (
             "next_safe_development_step",
-            "manual_review_qqq_led_multi_sleeve_roadmap_before_any_implementation",
-            "Review this saved roadmap before any future multi-sleeve promotion or execution work.",
+            "observe_enabled_status_cron_then_review_non_executable_action_preview_design",
+            "Observe the enabled monitoring cron first, then review any non-executable action-preview design separately.",
         ),
     ]
     return [summary_row(name, value, details) for name, value, details in items]
@@ -272,11 +277,11 @@ def build_summary_rows(sleeves: list[RoadmapSleeve]) -> list[dict[str, Any]]:
 def build_blocker_rows() -> list[dict[str, Any]]:
     blockers = [
         (
-            "current_phase_qqq100_only_monitoring",
+            "current_phase_vol_targeted_status_only_monitoring",
             "blocked",
             "high",
-            "Current phase remains QQQ100-only monitoring; no multi-sleeve action is approved.",
-            "Keep QQQ100 hold/no-action monitoring until a separate roadmap implementation is approved.",
+            "Current phase is volatility-targeted multi-sleeve status/report monitoring only; no multi-sleeve action is approved.",
+            "Keep volatility seed monitoring report-only and QQQ100 previous-seed hold/no-action context until a separate implementation is approved.",
         ),
         (
             "portfolio_execution_wiring_forbidden",
@@ -321,9 +326,14 @@ def build_evidence_rows() -> list[dict[str, Any]]:
             "Paper-live promotion ladder design exists and remains report-only.",
         ),
         (
-            "current_qqq100_state",
+            "active_seed_monitoring_state",
+            "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x;MULTI_SLEEVE;report_status_only_no_execution",
+            "Volatility-targeted multi-sleeve is the current report/status seed only.",
+        ),
+        (
+            "previous_qqq100_state",
             "aligned_long_one_monitor_only_no_repeat_followup_order_approved",
-            "QQQ100 remains the only current seed and current monitoring base.",
+            "QQQ100 remains previous-seed context, aligned long one share with no action required.",
         ),
         (
             "roadmap_sleeves",
@@ -373,6 +383,7 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         "Paper-live multi-sleeve roadmap complete. Report only; no portfolio execution, orders, or scheduling approved.",
         f"final_roadmap_status={summary_value(summary_rows, 'final_roadmap_status')}",
         f"roadmap_direction={summary_value(summary_rows, 'roadmap_direction')}",
+        f"active_seed_status={summary_value(summary_rows, 'active_seed_status')}",
         f"qqq100_core_status={summary_value(summary_rows, 'qqq100_core_status')}",
         f"defensive_sleeve_status={summary_value(summary_rows, 'defensive_sleeve_status')}",
         f"high_growth_sleeve_status={summary_value(summary_rows, 'high_growth_sleeve_status')}",
