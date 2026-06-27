@@ -231,6 +231,8 @@ Volatility-targeted growth active-seed readiness is saved-output-only: `python b
 
 Volatility-targeted growth paper-live checkpoints are saved-output/manual-review only: `python bot.py --vol-targeted-growth-paper-live-manual-approval-gate`, `python bot.py --vol-targeted-growth-paper-live-action-preview-pack`, and `python bot.py --vol-targeted-growth-broker-comparison-reconciliation` package the active seed gate, saved action-preview context, and saved broker-comparison evidence for review. They do not call Alpaca, read positions, refresh market data, create order instructions, approve paper-live candidacy, approve execution, or approve scheduling.
 
+Volatility-targeted growth paper-live candidate approval record is saved-output/manual-review only: `python bot.py --vol-targeted-growth-paper-live-candidate-approval-record` and `python bot.py --show-vol-targeted-growth-paper-live-candidate-approval-record` record approval to discuss the active volatility seed as a paper-live candidate. This does not approve paper-live candidacy, allocation caps, sleeve mapping, order design, paper execution, live trading, repeat/follow-up orders, or scheduling.
+
 
 ## Architecture
 

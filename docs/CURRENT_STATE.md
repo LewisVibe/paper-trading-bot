@@ -983,6 +983,12 @@ The volatility-targeted growth paper-live review bundle comes from three saved-o
 - `python bot.py --vol-targeted-growth-broker-comparison-reconciliation`, with saved display through `python bot.py --show-vol-targeted-growth-broker-comparison-reconciliation`.
 - These checkpoints package the active seed gate, saved action-preview context, and saved broker-comparison evidence for review only. They do not call Alpaca, read positions, refresh market data, create order instructions, approve paper-live candidacy, approve execution, approve repeat/follow-up orders, or approve scheduling.
 
+The volatility-targeted growth paper-live candidate approval record comes from `python bot.py --vol-targeted-growth-paper-live-candidate-approval-record`, with saved display through `python bot.py --show-vol-targeted-growth-paper-live-candidate-approval-record`:
+
+- It records approval for paper-live candidate discussion only.
+- `paper_live_candidate_discussion_approved=True`, but `paper_live_candidate_approved=False`, `execution_approved=False`, `paper_execution_approved=False`, `followup_order_approved=False`, `repeat_execution_approved=False`, and `scheduling_approved=False`.
+- The required next step is allocation-cap and sleeve-mapping policy design before any order-design discussion.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

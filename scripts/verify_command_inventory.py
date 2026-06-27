@@ -281,6 +281,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-paper-live-action-preview-pack",
     "--vol-targeted-growth-broker-comparison-reconciliation",
     "--show-vol-targeted-growth-broker-comparison-reconciliation",
+    "--vol-targeted-growth-paper-live-candidate-approval-record",
+    "--show-vol-targeted-growth-paper-live-candidate-approval-record",
     "--vol-managed-etf-backtest",
     "--vol-managed-etf-robustness",
     "--strategy-improvement-lab",

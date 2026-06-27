@@ -1408,6 +1408,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable/account/secret fields, action execution, portfolio execution wiring, scheduling, or paper-live execution approval.
 - **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create order fields, approve paper-live candidacy, approve execution, schedule anything, or connect the candidate to execution.
 
+### Task: Volatility-targeted growth paper-live candidate approval record
+- **Purpose:** Use `python bot.py --vol-targeted-growth-paper-live-candidate-approval-record` to record approval for paper-live candidate discussion only.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-paper-live-candidate-approval-record`, `python bot.py --show-vol-targeted-growth-paper-live-candidate-approval-record`, and `python scripts\verify_vol_targeted_growth_paper_live_checkpoints.py`.
+- **Expected status:** `vol_targeted_growth_paper_live_candidate_discussion_approval_recorded`; discussion can continue, but paper-live candidacy, allocation cap, sleeve mapping, order design, execution, follow-up/repeat orders, and scheduling remain unapproved.
+- **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable/account/secret fields, portfolio execution wiring, scheduling, paper-live execution approval, or treating the discussion approval as an order approval.
+- **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create order fields, approve execution, schedule anything, or connect the candidate to execution.
+
 ### Task: Hermes status cron checkpoint
 - **Purpose:** Document and verify the enabled status-only Hermes job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no additional Hermes job is created, edited, triggered, deleted, or scheduled and the existing job remains status-only.

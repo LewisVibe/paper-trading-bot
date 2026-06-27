@@ -23,10 +23,12 @@ GATE_STATUS = "vol_targeted_growth_paper_live_manual_gate_created_manual_review_
 ACTION_PACK_STATUS = "vol_targeted_growth_paper_live_action_preview_pack_created_manual_review_required"
 RECONCILIATION_STATUS = "vol_targeted_growth_broker_comparison_reconciliation_created_manual_review_required"
 RECONCILIATION_INCOMPLETE_STATUS = "vol_targeted_growth_broker_comparison_reconciliation_incomplete_manual_review_required"
+CANDIDATE_APPROVAL_STATUS = "vol_targeted_growth_paper_live_candidate_discussion_approval_recorded"
 
 GATE_NEXT_STEP = "manual_review_gate_before_any_vol_targeted_paper_live_action_discussion"
 ACTION_PACK_NEXT_STEP = "manual_review_action_preview_pack_before_any_broker_reconciliation_or_order_design"
 RECONCILIATION_NEXT_STEP = "manual_review_saved_broker_comparison_before_any_paper_live_candidate_discussion"
+CANDIDATE_APPROVAL_NEXT_STEP = "design_allocation_cap_and_sleeve_mapping_policy_before_any_order_design"
 
 GATE_OUTPUT_FILES = {
     "report": Path("data/vol_targeted_growth_paper_live_manual_approval_gate.csv"),
@@ -49,6 +51,13 @@ RECONCILIATION_OUTPUT_FILES = {
     "blockers": Path("data/vol_targeted_growth_broker_comparison_reconciliation_blockers.csv"),
 }
 
+CANDIDATE_APPROVAL_OUTPUT_FILES = {
+    "report": Path("data/vol_targeted_growth_paper_live_candidate_approval_record.csv"),
+    "summary": Path("data/vol_targeted_growth_paper_live_candidate_approval_summary.csv"),
+    "evidence": Path("data/vol_targeted_growth_paper_live_candidate_approval_evidence.csv"),
+    "blockers": Path("data/vol_targeted_growth_paper_live_candidate_approval_blockers.csv"),
+}
+
 INPUT_FILES = {
     "active_seed_readiness_summary": Path("data/vol_targeted_growth_active_seed_readiness_summary.csv"),
     "seed_switch_summary": Path("data/vol_targeted_growth_seed_switch_status_only_summary.csv"),
@@ -59,6 +68,9 @@ INPUT_FILES = {
     "broker_comparison": Path("data/vol_targeted_growth_broker_position_comparison.csv"),
     "post_comparison_decision_summary": Path("data/vol_targeted_growth_post_comparison_decision_summary.csv"),
     "paper_live_monitoring_status": Path("data/paper_live_monitoring_status.csv"),
+    "manual_gate_summary": Path("data/vol_targeted_growth_paper_live_manual_approval_gate_summary.csv"),
+    "paper_live_action_preview_pack_summary": Path("data/vol_targeted_growth_paper_live_action_preview_pack_summary.csv"),
+    "broker_reconciliation_summary": Path("data/vol_targeted_growth_broker_comparison_reconciliation_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -87,6 +99,7 @@ SAFETY_FLAGS = {
     "discord_alert_sent": False,
     "telegram_alert_sent": False,
     "paper_live_candidate_approved": False,
+    "paper_live_candidate_discussion_approved": False,
     "manual_paper_live_approval_recorded": False,
     "action_preview_approved": False,
     "execution_approved": False,
@@ -192,7 +205,7 @@ def generate_vol_targeted_growth_broker_comparison_reconciliation(
     report_rows = reconciliation_report_rows(created_at, inputs)
     final_status = reconciliation_status(inputs)
     summary_rows = reconciliation_summary_rows(inputs, report_rows, final_status)
-    evidence_rows = evidence_rows_for(inputs)
+    evidence_rows = evidence_rows_for(inputs, overrides={"paper_live_candidate_discussion_approved": True})
     blocker_rows = reconciliation_blocker_rows(inputs, final_status)
     output_paths = write_checkpoint(root, RECONCILIATION_OUTPUT_FILES, report_rows, summary_rows, evidence_rows, blocker_rows)
     return VolTargetedGrowthCheckpointResult(
@@ -211,6 +224,36 @@ def show_vol_targeted_growth_broker_comparison_reconciliation(root_dir: Path | s
         "Volatility-targeted growth broker-comparison reconciliation saved display. Saved broker output only; no Alpaca call.",
         "final_reconciliation_status",
         "Run `python bot.py --vol-targeted-growth-broker-comparison-reconciliation` first.",
+    )
+
+
+def generate_vol_targeted_growth_paper_live_candidate_approval_record(
+    root_dir: Path | str = ".",
+) -> VolTargetedGrowthCheckpointResult:
+    root = Path(root_dir)
+    created_at = now_utc()
+    inputs = load_inputs(root)
+    report_rows = candidate_approval_report_rows(created_at, inputs)
+    summary_rows = candidate_approval_summary_rows(inputs, report_rows)
+    evidence_rows = evidence_rows_for(inputs)
+    blocker_rows = candidate_approval_blocker_rows(inputs)
+    output_paths = write_checkpoint(root, CANDIDATE_APPROVAL_OUTPUT_FILES, report_rows, summary_rows, evidence_rows, blocker_rows)
+    return VolTargetedGrowthCheckpointResult(
+        output_paths=output_paths,
+        report_rows=report_rows,
+        summary_rows=summary_rows,
+        evidence_rows=evidence_rows,
+        blocker_rows=blocker_rows,
+        summary_lines=summary_lines("Volatility-targeted growth paper-live candidate approval record", summary_rows, output_paths),
+    )
+
+
+def show_vol_targeted_growth_paper_live_candidate_approval_record(root_dir: Path | str = ".") -> tuple[int, list[str]]:
+    return show_summary(
+        Path(root_dir) / CANDIDATE_APPROVAL_OUTPUT_FILES["summary"],
+        "Volatility-targeted growth paper-live candidate approval record saved display. Discussion approval only; no execution approval.",
+        "final_candidate_approval_status",
+        "Run `python bot.py --vol-targeted-growth-paper-live-candidate-approval-record` first.",
     )
 
 
@@ -392,12 +435,80 @@ def reconciliation_summary_rows(
     return [summary_row(*item) for item in data]
 
 
-def evidence_rows_for(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+def candidate_approval_report_rows(created_at: str, inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    gate_status = summary_value(inputs["manual_gate_summary"], "final_manual_gate_status")
+    action_status = summary_value(inputs["paper_live_action_preview_pack_summary"], "final_action_preview_pack_status")
+    reconciliation_status_value = summary_value(inputs["broker_reconciliation_summary"], "final_reconciliation_status")
+    rows = [
+        (
+            "candidate_discussion_scope",
+            "candidate_discussion_approved_not_execution",
+            "critical",
+            CANDIDATE_APPROVAL_STATUS,
+            "Manual approval is recorded only for discussing the volatility seed as a paper-live candidate.",
+            CANDIDATE_APPROVAL_NEXT_STEP,
+        ),
+        (
+            "manual_gate_evidence",
+            "manual_review_required" if gate_status else "missing_saved_manual_gate",
+            "high",
+            gate_status or "missing_manual_gate_status",
+            "The manual gate should exist before candidate discussion approval is useful.",
+            "refresh_manual_gate_before_using_approval_record",
+        ),
+        (
+            "action_preview_pack_evidence",
+            "manual_review_required" if action_status else "missing_saved_action_preview_pack",
+            "high",
+            action_status or "missing_action_preview_pack_status",
+            "Saved action-preview context remains non-executable.",
+            "refresh_action_preview_pack_before_order_design",
+        ),
+        (
+            "broker_reconciliation_evidence",
+            "manual_review_required" if reconciliation_status_value else "missing_saved_broker_reconciliation",
+            "critical",
+            reconciliation_status_value or "missing_broker_reconciliation_status",
+            "Saved broker context can inform review but cannot become an order instruction.",
+            "refresh_broker_reconciliation_before_order_design",
+        ),
+        (
+            "execution_boundary",
+            "execution_blocked",
+            "critical",
+            "execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
+            "This approval record does not approve an order, follow-up order, repeat order, or schedule.",
+            "keep_all_execution_flags_false",
+        ),
+    ]
+    return [report_row(created_at, *item, overrides={"paper_live_candidate_discussion_approved": True}) for item in rows]
+
+
+def candidate_approval_summary_rows(inputs: dict[str, list[dict[str, str]]], rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    data = [
+        ("final_candidate_approval_status", CANDIDATE_APPROVAL_STATUS, "Candidate discussion approval is recorded; execution remains blocked."),
+        ("active_seed", ACTIVE_SEED, "Current status/report seed."),
+        ("active_ticker", ACTIVE_TICKER, "Status ticker label for the multi-sleeve seed."),
+        ("previous_seed", PREVIOUS_SEED, "Previous QQQ100 seed context."),
+        ("manual_gate_status", summary_value(inputs["manual_gate_summary"], "final_manual_gate_status") or "missing_manual_gate_status", "Saved manual gate status."),
+        ("action_preview_pack_status", summary_value(inputs["paper_live_action_preview_pack_summary"], "final_action_preview_pack_status") or "missing_action_preview_pack_status", "Saved paper-live action-preview pack status."),
+        ("broker_reconciliation_status", summary_value(inputs["broker_reconciliation_summary"], "final_reconciliation_status") or "missing_broker_reconciliation_status", "Saved broker reconciliation status."),
+        ("paper_live_candidate_discussion_approved", "True", "Human approval is recorded only for candidate discussion."),
+        ("paper_live_candidate_approved", "False", "Paper-live candidacy still requires later allocation/sleeve policy and action design."),
+        ("execution_approved", "False", "No execution is approved."),
+        ("largest_blocker", "allocation_cap_and_sleeve_mapping_policy_missing", "Next review must define allocation cap and sleeve mapping boundaries."),
+        ("recommended_next_step", CANDIDATE_APPROVAL_NEXT_STEP, "Design policy before any order-design discussion."),
+        ("checkpoint_row_count", str(len(rows)), "Saved checkpoint row count."),
+    ]
+    return [summary_row(*item, overrides={"paper_live_candidate_discussion_approved": True}) for item in data]
+
+
+def evidence_rows_for(inputs: dict[str, list[dict[str, str]]], *, overrides: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     rows = []
     for name, path in INPUT_FILES.items():
         rows.append((f"{name}_input", f"{path}; rows={len(inputs[name])}", "Saved input row count."))
     rows.append(("runtime_boundary", "saved_output_only_no_broker_or_market_refresh", "No Alpaca, yfinance, config, positions, order, alert, SQLite, or scheduling path is used."))
-    return [evidence_row(*item) for item in rows]
+    return [evidence_row(*item, overrides=overrides) for item in rows]
 
 
 def gate_blocker_rows() -> list[dict[str, Any]]:
@@ -432,6 +543,20 @@ def reconciliation_blocker_rows(inputs: dict[str, list[dict[str, str]]], final_s
     if not inputs["post_comparison_decision_summary"]:
         rows.insert(1, ("missing_post_comparison_decision", "blocked", "high", "Saved post-comparison decision is missing.", "refresh_post_comparison_decision"))
     return blocker_rows(rows)
+
+
+def candidate_approval_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    rows = [
+        ("paper_live_candidate_not_fully_approved", "blocked", "critical", "Approval is for candidate discussion only, not paper-live deployment.", CANDIDATE_APPROVAL_NEXT_STEP),
+        ("allocation_cap_missing", "blocked", "critical", "No allocation cap or sleeve mapping policy is approved yet.", "design_allocation_cap_and_sleeve_mapping_policy"),
+        ("order_instructions_forbidden", "blocked", "critical", "No order side, quantity, type, account, key, token, webhook, or order ID fields are allowed.", "keep_record_non_executable"),
+        ("execution_not_approved", "blocked", "critical", "No orders, paper execution, live trading, follow-up order, repeat order, or scheduling are approved.", "keep_all_approval_flags_false"),
+    ]
+    if not inputs["manual_gate_summary"]:
+        rows.insert(0, ("missing_manual_gate", "blocked", "high", "Saved manual gate summary is missing.", "refresh_manual_gate"))
+    if not inputs["broker_reconciliation_summary"]:
+        rows.insert(1, ("missing_broker_reconciliation", "blocked", "high", "Saved broker reconciliation summary is missing.", "refresh_broker_reconciliation"))
+    return blocker_rows(rows, overrides={"paper_live_candidate_discussion_approved": True})
 
 
 def write_checkpoint(
@@ -472,6 +597,7 @@ def summary_lines(title: str, summary_rows: list[dict[str, Any]], output_paths: 
         summary_value(summary_rows, "final_manual_gate_status")
         or summary_value(summary_rows, "final_action_preview_pack_status")
         or summary_value(summary_rows, "final_reconciliation_status")
+        or summary_value(summary_rows, "final_candidate_approval_status")
     )
     return [
         f"{title} complete. Saved-output/manual-review only; no execution or scheduling approved.",
@@ -488,7 +614,17 @@ def load_inputs(root: Path) -> dict[str, list[dict[str, str]]]:
     return {name: read_csv_rows(root / path) for name, path in INPUT_FILES.items()}
 
 
-def report_row(created_at: str, name: str, status: str, risk: str, evidence: str, interpretation: str, next_step: str) -> dict[str, Any]:
+def report_row(
+    created_at: str,
+    name: str,
+    status: str,
+    risk: str,
+    evidence: str,
+    interpretation: str,
+    next_step: str,
+    *,
+    overrides: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     return {
         "created_at": created_at,
         "checkpoint_name": name,
@@ -497,23 +633,30 @@ def report_row(created_at: str, name: str, status: str, risk: str, evidence: str
         "evidence": evidence,
         "interpretation": interpretation,
         "required_next_step": next_step,
-        **SAFETY_FLAGS,
+        **flag_values(overrides),
     }
 
 
-def summary_row(name: str, value: str, details: str) -> dict[str, Any]:
-    return {"summary_name": name, "summary_value": value, "details": details, **SAFETY_FLAGS}
+def summary_row(name: str, value: str, details: str, *, overrides: dict[str, Any] | None = None) -> dict[str, Any]:
+    return {"summary_name": name, "summary_value": value, "details": details, **flag_values(overrides)}
 
 
-def evidence_row(name: str, value: str, details: str) -> dict[str, Any]:
-    return {"evidence_name": name, "evidence_value": value, "details": details, **SAFETY_FLAGS}
+def evidence_row(name: str, value: str, details: str, *, overrides: dict[str, Any] | None = None) -> dict[str, Any]:
+    return {"evidence_name": name, "evidence_value": value, "details": details, **flag_values(overrides)}
 
 
-def blocker_rows(rows: list[tuple[str, str, str, str, str]]) -> list[dict[str, Any]]:
+def blocker_rows(rows: list[tuple[str, str, str, str, str]], *, overrides: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     return [
-        {"blocker_name": name, "status": status, "severity": severity, "details": details, "required_next_step": next_step, **SAFETY_FLAGS}
+        {"blocker_name": name, "status": status, "severity": severity, "details": details, "required_next_step": next_step, **flag_values(overrides)}
         for name, status, severity, details, next_step in rows
     ]
+
+
+def flag_values(overrides: dict[str, Any] | None = None) -> dict[str, Any]:
+    values = dict(SAFETY_FLAGS)
+    if overrides:
+        values.update(overrides)
+    return values
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:

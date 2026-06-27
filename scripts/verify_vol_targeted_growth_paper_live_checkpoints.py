@@ -14,6 +14,8 @@ if str(ROOT) not in sys.path:
 from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (  # noqa: E402
     ACTION_PACK_OUTPUT_FILES,
     ACTION_PACK_STATUS,
+    CANDIDATE_APPROVAL_OUTPUT_FILES,
+    CANDIDATE_APPROVAL_STATUS,
     GATE_OUTPUT_FILES,
     GATE_STATUS,
     RECONCILIATION_OUTPUT_FILES,
@@ -22,9 +24,11 @@ from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (  #
     SAFETY_FLAGS,
     generate_vol_targeted_growth_broker_comparison_reconciliation,
     generate_vol_targeted_growth_paper_live_action_preview_pack,
+    generate_vol_targeted_growth_paper_live_candidate_approval_record,
     generate_vol_targeted_growth_paper_live_manual_approval_gate,
     show_vol_targeted_growth_broker_comparison_reconciliation,
     show_vol_targeted_growth_paper_live_action_preview_pack,
+    show_vol_targeted_growth_paper_live_candidate_approval_record,
     show_vol_targeted_growth_paper_live_manual_approval_gate,
 )
 
@@ -36,6 +40,8 @@ COMMANDS = [
     "--show-vol-targeted-growth-paper-live-action-preview-pack",
     "--vol-targeted-growth-broker-comparison-reconciliation",
     "--show-vol-targeted-growth-broker-comparison-reconciliation",
+    "--vol-targeted-growth-paper-live-candidate-approval-record",
+    "--show-vol-targeted-growth-paper-live-candidate-approval-record",
 ]
 
 FALSE_FLAGS = [
@@ -129,7 +135,7 @@ def main() -> int:
         return 1
 
     print("Volatility-targeted growth paper-live checkpoint verification passed.")
-    print("Verified manual gate, action-preview pack, and saved broker reconciliation remain report-only with false approvals.")
+    print("Verified manual gate, action-preview pack, saved broker reconciliation, and candidate-discussion approval remain report-only with false execution approvals.")
     return 0
 
 
@@ -149,7 +155,7 @@ def verify_command_registration(bot_source: str, failures: list[str]) -> None:
 
 
 def verify_outputs_ignored(failures: list[str]) -> None:
-    for mapping in [GATE_OUTPUT_FILES, ACTION_PACK_OUTPUT_FILES, RECONCILIATION_OUTPUT_FILES]:
+    for mapping in [GATE_OUTPUT_FILES, ACTION_PACK_OUTPUT_FILES, RECONCILIATION_OUTPUT_FILES, CANDIDATE_APPROVAL_OUTPUT_FILES]:
         for path in mapping.values():
             normalized = str(path).replace("\\", "/")
             result = subprocess.run(["git", "check-ignore", normalized], cwd=ROOT, capture_output=True, text=True, check=False)
@@ -162,7 +168,9 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         GATE_STATUS,
         ACTION_PACK_STATUS,
         RECONCILIATION_STATUS,
+        CANDIDATE_APPROVAL_STATUS,
         "manual_paper_live_approval_recorded",
+        "paper_live_candidate_discussion_approved",
         "broker_positions_read_now",
         "order_instructions_created",
         "execution_approved",
@@ -189,6 +197,7 @@ def verify_source_boundaries(module_source: str, failures: list[str]) -> None:
         "show_vol_targeted_growth_paper_live_manual_approval_gate",
         "show_vol_targeted_growth_paper_live_action_preview_pack",
         "show_vol_targeted_growth_broker_comparison_reconciliation",
+        "show_vol_targeted_growth_paper_live_candidate_approval_record",
     ]:
         show_body = source_slice(module_source, f"def {show_name}", "\n\ndef ")
         if "write_rows" in show_body or "generate_vol_targeted" in show_body:
@@ -212,6 +221,7 @@ def verify_fixture_generation(failures: list[str]) -> None:
         gate = generate_vol_targeted_growth_paper_live_manual_approval_gate(root)
         action = generate_vol_targeted_growth_paper_live_action_preview_pack(root)
         reconciliation = generate_vol_targeted_growth_broker_comparison_reconciliation(root)
+        approval = generate_vol_targeted_growth_paper_live_candidate_approval_record(root)
 
         if summary_value(gate.summary_rows, "final_manual_gate_status") != GATE_STATUS:
             failures.append("manual gate fixture did not produce expected status")
@@ -219,8 +229,14 @@ def verify_fixture_generation(failures: list[str]) -> None:
             failures.append("action-preview pack fixture did not produce expected status")
         if summary_value(reconciliation.summary_rows, "final_reconciliation_status") != RECONCILIATION_STATUS:
             failures.append("broker reconciliation fixture did not produce expected status")
+        if summary_value(approval.summary_rows, "final_candidate_approval_status") != CANDIDATE_APPROVAL_STATUS:
+            failures.append("candidate approval fixture did not produce expected status")
+        if summary_value(approval.summary_rows, "paper_live_candidate_discussion_approved") != "True":
+            failures.append("candidate approval should approve discussion only")
+        if summary_value(approval.summary_rows, "paper_live_candidate_approved") != "False":
+            failures.append("candidate approval must not approve paper-live candidacy")
 
-        for result in [gate, action, reconciliation]:
+        for result in [gate, action, reconciliation, approval]:
             for collection in [result.report_rows, result.summary_rows, result.evidence_rows, result.blocker_rows]:
                 for row in collection:
                     for flag in FALSE_FLAGS:
@@ -236,6 +252,7 @@ def verify_fixture_generation(failures: list[str]) -> None:
             show_vol_targeted_growth_paper_live_manual_approval_gate(root),
             show_vol_targeted_growth_paper_live_action_preview_pack(root),
             show_vol_targeted_growth_broker_comparison_reconciliation(root),
+            show_vol_targeted_growth_paper_live_candidate_approval_record(root),
         ]
         for code, lines in displays:
             display = "\n".join(lines)

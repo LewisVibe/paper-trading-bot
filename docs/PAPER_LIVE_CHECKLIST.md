@@ -88,6 +88,7 @@ This checklist is the planned path for operating the bot with Alpaca paper tradi
 - `python bot.py --vol-targeted-growth-paper-live-manual-approval-gate` may package the active volatility seed paper-live manual gate for review only; it does not record approval, create order instructions, execute, repeat orders, schedule, call Alpaca, or read positions.
 - `python bot.py --vol-targeted-growth-paper-live-action-preview-pack` may package saved action-preview rows and quality-gate context for manual review only; it does not read current broker exposure, create executable order fields, execute, repeat orders, or schedule.
 - `python bot.py --vol-targeted-growth-broker-comparison-reconciliation` may reconcile saved broker-comparison output only; it must not call Alpaca or read positions again, and it does not approve paper-live candidacy, execution, repeat orders, or scheduling.
+- `python bot.py --vol-targeted-growth-paper-live-candidate-approval-record` may record approval for paper-live candidate discussion only; it does not approve paper-live candidacy, allocation caps, sleeve mapping, order design, execution, repeat orders, or scheduling.
 - `python scripts\verify_vol_targeted_growth_seed_change_chain_checkpoint.py` verifies the saved seed-change review ladder through active-seed readiness remains complete and review-only; it does not implement a seed switch, create order fields, execute, repeat orders, or schedule.
 - Keep crypto research-only.
 - Keep SMA/slow-SMA out of paper-live promotion.
