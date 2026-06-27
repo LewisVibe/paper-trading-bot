@@ -506,6 +506,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--paper-live-go-no-go-dashboard"]:
+        from trading_bot.research.paper_live_go_no_go_dashboard import (
+            generate_paper_live_go_no_go_dashboard,
+        )
+
+        result = generate_paper_live_go_no_go_dashboard()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-paper-live-go-no-go-dashboard"]:
+        from trading_bot.research.paper_live_go_no_go_dashboard import (
+            show_paper_live_go_no_go_dashboard,
+        )
+
+        code, lines = show_paper_live_go_no_go_dashboard()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-live-f6-f7-audit"]:
         from trading_bot.research.paper_live_f6_f7_audit import generate_paper_live_f6_f7_audit
 
@@ -2517,6 +2535,10 @@ from trading_bot.research.paper_live_monitoring_status import (
 from trading_bot.research.paper_live_checklist_status import (
     generate_paper_live_checklist_status,
     show_paper_live_checklist_status,
+)
+from trading_bot.research.paper_live_go_no_go_dashboard import (
+    generate_paper_live_go_no_go_dashboard,
+    show_paper_live_go_no_go_dashboard,
 )
 from trading_bot.research.paper_live_f6_f7_audit import (
     generate_paper_live_f6_f7_audit,
@@ -7287,6 +7309,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved paper-live checklist status without broker reads or scheduling changes.",
     )
     parser.add_argument(
+        "--paper-live-go-no-go-dashboard",
+        action="store_true",
+        help="Create a saved-output paper-live go/no-go dashboard without broker reads or execution approval.",
+    )
+    parser.add_argument(
+        "--show-paper-live-go-no-go-dashboard",
+        action="store_true",
+        help="Display the saved paper-live go/no-go dashboard without broker reads or execution approval.",
+    )
+    parser.add_argument(
         "--paper-live-f6-f7-audit",
         action="store_true",
         help="Create a saved-output F6/F7 audit for paper-live promotion readiness without broker reads.",
@@ -9496,6 +9528,20 @@ def main() -> int:
         return 0
     if args.show_paper_live_checklist_status:
         status_code, lines = show_paper_live_checklist_status()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.paper_live_go_no_go_dashboard:
+        try:
+            result = generate_paper_live_go_no_go_dashboard()
+        except Exception as exc:
+            print(f"Paper-live go/no-go dashboard failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_paper_live_go_no_go_dashboard:
+        status_code, lines = show_paper_live_go_no_go_dashboard()
         for line in lines:
             print(line)
         return status_code

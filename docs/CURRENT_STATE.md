@@ -1021,6 +1021,13 @@ The volatility-targeted growth paper-live execution blocker rollup comes from `p
 - `execution_blocker_rollup_cleared=False`, `executable_ticket_prerequisites_met=False`, `executable_ticket_design_allowed=False`, `order_instructions_created=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 - `python bot.py --vps-daily-monitoring-summary` now includes a saved-output-only "Volatility paper-live execution blocker rollup" section; it does not add a separate cron command or approve execution.
 
+The paper-live go/no-go dashboard comes from `python bot.py --paper-live-go-no-go-dashboard`, with saved display through `python bot.py --show-paper-live-go-no-go-dashboard`:
+
+- It writes `data/paper_live_go_no_go_dashboard.csv`, `data/paper_live_go_no_go_dashboard_summary.csv`, `data/paper_live_go_no_go_dashboard_blockers.csv`, and `data/paper_live_go_no_go_dashboard_evidence.csv`.
+- Current expected status is `paper_live_go_no_go_dashboard_execution_blocked_monitor_only` with `final_go_no_go_decision=NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY`.
+- It summarizes QQQ100 no-action state, active volatility blocker state, paper-live checklist phase, and VPS monitoring assumptions in one saved-output view.
+- It does not call Alpaca, read positions, create executable tickets, create order instructions, approve execution, approve paper execution, or approve scheduling.
+
 Conclusion: short-selling and leverage remain research-only. Do not add short preview, short execution, margin, leverage execution, or crypto shorting. Only revisit these ideas through fixed research hypotheses with explicit borrow-fee, borrow-availability, recall, squeeze, financing, leverage-decay, and drawdown constraint modelling. `allow_shorting` must remain default false. No short execution, short preview, margin support, leverage support, or short crypto support is approved.
 
 ## Promoted Strategy Pipeline

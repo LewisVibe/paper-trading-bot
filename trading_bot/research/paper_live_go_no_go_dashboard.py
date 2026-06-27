@@ -1,0 +1,299 @@
+"""Saved-output paper-live go/no-go dashboard.
+
+This dashboard reads saved status outputs only. It does not call Alpaca, read
+positions, refresh market data, create order instructions, schedule anything,
+or approve execution.
+"""
+
+from __future__ import annotations
+
+import csv
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+
+OUTPUT_FILES = {
+    "report": Path("data/paper_live_go_no_go_dashboard.csv"),
+    "summary": Path("data/paper_live_go_no_go_dashboard_summary.csv"),
+    "blockers": Path("data/paper_live_go_no_go_dashboard_blockers.csv"),
+    "evidence": Path("data/paper_live_go_no_go_dashboard_evidence.csv"),
+}
+
+INPUT_FILES = {
+    "paper_live_monitoring": Path("data/paper_live_monitoring_status.csv"),
+    "qqq100_daily_decision": Path("data/qqq100_daily_decision_summary.csv"),
+    "vol_execution_blocker_rollup": Path("data/vol_targeted_growth_paper_live_execution_blocker_rollup_summary.csv"),
+    "paper_live_checklist": Path("data/paper_live_checklist_status_summary.csv"),
+}
+
+ACTIVE_SEED = "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x"
+ACTIVE_TICKER = "MULTI_SLEEVE"
+PREVIOUS_SEED = "qqq_100_trend_gate"
+PREVIOUS_TICKER = "QQQ"
+FINAL_STATUS = "paper_live_go_no_go_dashboard_execution_blocked_monitor_only"
+NEXT_STEP = "manual_review_go_no_go_dashboard_before_any_future_execution_design"
+
+SAFETY_FLAGS = {
+    "research_only": True,
+    "report_only": True,
+    "saved_output_only": True,
+    "monitoring_only": True,
+    "alpaca_called": False,
+    "broker_positions_read": False,
+    "market_data_refreshed": False,
+    "yfinance_called": False,
+    "orders_created": False,
+    "orders_submitted": False,
+    "orders_cancelled": False,
+    "orders_replaced": False,
+    "order_instructions_created": False,
+    "executable_ticket_created": False,
+    "sqlite_trade_log_written": False,
+    "discord_alert_sent": False,
+    "telegram_alert_sent": False,
+    "execution_approved": False,
+    "paper_execution_approved": False,
+    "scheduling_approved": False,
+    "live_trading_approved": False,
+    "followup_order_approved": False,
+    "repeat_execution_approved": False,
+    "never_schedule_order_capable_commands": True,
+}
+
+REPORT_COLUMNS = [
+    "check_name",
+    "status",
+    "risk_level",
+    "evidence",
+    "interpretation",
+    "required_next_step",
+    *SAFETY_FLAGS.keys(),
+]
+SUMMARY_COLUMNS = ["summary_name", "summary_value", "details", *SAFETY_FLAGS.keys()]
+BLOCKER_COLUMNS = ["blocker_name", "status", "severity", "details", "required_next_step", *SAFETY_FLAGS.keys()]
+EVIDENCE_COLUMNS = ["evidence_name", "evidence_value", "details", *SAFETY_FLAGS.keys()]
+
+
+@dataclass
+class PaperLiveGoNoGoDashboardResult:
+    output_paths: dict[str, Path]
+    report_rows: list[dict[str, Any]]
+    summary_rows: list[dict[str, Any]]
+    blocker_rows: list[dict[str, Any]]
+    evidence_rows: list[dict[str, Any]]
+    summary_lines: list[str]
+
+
+def generate_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> PaperLiveGoNoGoDashboardResult:
+    root = Path(root_dir)
+    inputs = load_inputs(root)
+    report_rows = build_report_rows(inputs)
+    summary_rows = build_summary_rows(inputs, report_rows)
+    blocker_rows = build_blocker_rows(inputs)
+    evidence_rows = build_evidence_rows(inputs)
+    output_paths = {name: root / path for name, path in OUTPUT_FILES.items()}
+    write_rows(output_paths["report"], REPORT_COLUMNS, report_rows)
+    write_rows(output_paths["summary"], SUMMARY_COLUMNS, summary_rows)
+    write_rows(output_paths["blockers"], BLOCKER_COLUMNS, blocker_rows)
+    write_rows(output_paths["evidence"], EVIDENCE_COLUMNS, evidence_rows)
+    return PaperLiveGoNoGoDashboardResult(
+        output_paths=output_paths,
+        report_rows=report_rows,
+        summary_rows=summary_rows,
+        blocker_rows=blocker_rows,
+        evidence_rows=evidence_rows,
+        summary_lines=build_summary_lines(summary_rows, output_paths),
+    )
+
+
+def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int, list[str]]:
+    summary_path = Path(root_dir) / OUTPUT_FILES["summary"]
+    if not summary_path.exists():
+        return 1, [
+            "Paper-live go/no-go dashboard is missing.",
+            "Run `python bot.py --paper-live-go-no-go-dashboard` first.",
+            "execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
+        ]
+    rows = read_csv_rows(summary_path)
+    return 0, [
+        "Paper-live go/no-go dashboard saved display. Report only; no execution approved.",
+        f"final_go_no_go_status: {summary_value(rows, 'final_go_no_go_status')}",
+        f"active_seed: {summary_value(rows, 'active_seed')}",
+        f"active_ticker: {summary_value(rows, 'active_ticker')}",
+        f"previous_seed: {summary_value(rows, 'previous_seed')}",
+        f"previous_ticker: {summary_value(rows, 'previous_ticker')}",
+        f"qqq100_daily_decision_status: {summary_value(rows, 'qqq100_daily_decision_status')}",
+        f"qqq100_no_action_state: {summary_value(rows, 'qqq100_no_action_state')}",
+        f"vol_execution_blocker_status: {summary_value(rows, 'vol_execution_blocker_status')}",
+        f"vol_largest_blocker: {summary_value(rows, 'vol_largest_blocker')}",
+        f"paper_live_checklist_phase_status: {summary_value(rows, 'paper_live_checklist_phase_status')}",
+        f"vps_monitoring_status_assumption: {summary_value(rows, 'vps_monitoring_status_assumption')}",
+        f"final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
+        f"recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
+        "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
+        "Warning: saved-output dashboard only; no Alpaca, broker read, order, live trading, or scheduling approval.",
+    ]
+
+
+def build_report_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    qqq_status = summary_value(inputs["qqq100_daily_decision"], "daily_decision_status") or "missing_qqq100_daily_decision"
+    vol_status = summary_value(inputs["vol_execution_blocker_rollup"], "final_execution_blocker_rollup_status") or "missing_vol_execution_blocker_rollup"
+    checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
+    monitoring_recommended = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
+    return [
+        report_row(
+            "qqq100_previous_seed_state",
+            "no_action_monitor_only" if qqq_status == "qqq100_daily_decision_hold_no_action_aligned_long" else "manual_review_required",
+            "high",
+            qqq_status,
+            "QQQ100 is previous-seed context and should not repeat orders.",
+            "hold_no_action_and_monitor_only",
+        ),
+        report_row(
+            "volatility_active_seed_execution_state",
+            "execution_blocked",
+            "critical",
+            vol_status,
+            "The active volatility seed remains blocked from executable ticket design.",
+            "review_vol_execution_blocker_rollup",
+        ),
+        report_row(
+            "paper_live_checklist_state",
+            "manual_review_required",
+            "high",
+            checklist_status,
+            "Checklist status is monitoring/readiness context only.",
+            "review_paper_live_checklist_status",
+        ),
+        report_row(
+            "vps_monitoring_status_assumption",
+            "status_only_monitoring",
+            "high",
+            "vps_daily_monitoring_summary_includes_rollup; existing_cron_status_not_changed_by_dashboard",
+            "The dashboard assumes VPS monitoring remains status-only and does not create or edit cron jobs.",
+            "keep_monitoring_cron_status_only",
+        ),
+        report_row(
+            "final_go_no_go",
+            "no_go_execution_blocked",
+            "critical",
+            f"{monitoring_recommended}; {vol_status}",
+            "Paper-live execution is not approved; monitoring only.",
+            NEXT_STEP,
+        ),
+    ]
+
+
+def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    qqq_status = summary_value(inputs["qqq100_daily_decision"], "daily_decision_status") or "missing_qqq100_daily_decision"
+    qqq_no_action = "hold_no_action_aligned_long" if qqq_status == "qqq100_daily_decision_hold_no_action_aligned_long" else "manual_review_required"
+    vol_status = summary_value(inputs["vol_execution_blocker_rollup"], "final_execution_blocker_rollup_status") or "missing_vol_execution_blocker_rollup"
+    vol_blocker = summary_value(inputs["vol_execution_blocker_rollup"], "largest_blocker") or "missing_vol_largest_blocker"
+    checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
+    monitoring_next = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
+    data = [
+        ("final_go_no_go_status", FINAL_STATUS, "Dashboard is report-only and blocks execution."),
+        ("active_seed", ACTIVE_SEED, "Current report/status seed."),
+        ("active_ticker", ACTIVE_TICKER, "Current report/status ticker label."),
+        ("previous_seed", PREVIOUS_SEED, "Previous QQQ100 seed context."),
+        ("previous_ticker", PREVIOUS_TICKER, "Previous QQQ100 ticker."),
+        ("qqq100_daily_decision_status", qqq_status, "Saved QQQ100 daily decision status."),
+        ("qqq100_no_action_state", qqq_no_action, "QQQ100 action state from saved daily decision."),
+        ("vol_execution_blocker_status", vol_status, "Saved volatility execution blocker rollup status."),
+        ("vol_largest_blocker", vol_blocker, "Largest saved volatility blocker."),
+        ("paper_live_checklist_phase_status", checklist_status, "Saved paper-live checklist phase status."),
+        ("paper_live_monitoring_recommended_next_step", monitoring_next, "Saved paper-live monitoring recommended next step."),
+        ("vps_monitoring_status_assumption", "status_only_monitoring_no_cron_change", "Dashboard assumes existing VPS monitoring remains status-only."),
+        ("final_go_no_go_decision", "NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY", "Execution remains blocked."),
+        ("largest_blocker", vol_blocker if vol_blocker != "none" else "execution_not_approved", "Primary go/no-go blocker."),
+        ("recommended_next_step", NEXT_STEP, "Manual review before any future execution design."),
+        ("dashboard_row_count", str(len(report_rows)), "Saved report row count."),
+    ]
+    return [summary_row(*item) for item in data]
+
+
+def build_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    rows = [
+        ("execution_not_approved", "blocked", "critical", "Go/no-go status is no-go for execution.", NEXT_STEP),
+        ("volatility_ticket_prerequisites_unmet", "blocked", "critical", "Volatility executable ticket prerequisites remain unmet.", "review_vol_execution_blocker_rollup"),
+        ("repeat_followup_orders_not_approved", "blocked", "critical", "QQQ100 follow-up and repeat orders remain unapproved.", "hold_no_action_and_monitor_only"),
+        ("scheduling_not_approved", "blocked", "critical", "No order-capable scheduling is approved.", "keep_monitoring_status_only"),
+    ]
+    for name, path in INPUT_FILES.items():
+        if not inputs[name]:
+            rows.insert(0, (f"missing_{name}", "blocked", "high", f"Saved input is missing: {path}", f"refresh_{name}_report_only"))
+    return [blocker_row(*item) for item in rows]
+
+
+def build_evidence_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    rows = [
+        (f"{name}_input", f"{path}; rows={len(inputs[name])}", "Saved input row count.")
+        for name, path in INPUT_FILES.items()
+    ]
+    rows.append(("runtime_boundary", "saved_output_only_no_broker_or_market_refresh", "No Alpaca, yfinance, config, order, alert, SQLite, or scheduling path is used."))
+    return [evidence_row(*item) for item in rows]
+
+
+def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[str, Path]) -> list[str]:
+    return [
+        "Paper-live go/no-go dashboard complete. Report only; no execution or scheduling approved.",
+        f"final_go_no_go_status={summary_value(summary_rows, 'final_go_no_go_status')}",
+        f"final_go_no_go_decision={summary_value(summary_rows, 'final_go_no_go_decision')}",
+        f"active_seed={summary_value(summary_rows, 'active_seed')}",
+        f"qqq100_no_action_state={summary_value(summary_rows, 'qqq100_no_action_state')}",
+        f"vol_largest_blocker={summary_value(summary_rows, 'vol_largest_blocker')}",
+        f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
+        f"saved_report={output_paths['report']}",
+        "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
+    ]
+
+
+def load_inputs(root: Path) -> dict[str, list[dict[str, str]]]:
+    return {name: read_csv_rows(root / path) for name, path in INPUT_FILES.items()}
+
+
+def report_row(name: str, status: str, risk: str, evidence: str, interpretation: str, next_step: str) -> dict[str, Any]:
+    return {
+        "check_name": name,
+        "status": status,
+        "risk_level": risk,
+        "evidence": evidence,
+        "interpretation": interpretation,
+        "required_next_step": next_step,
+        **SAFETY_FLAGS,
+    }
+
+
+def summary_row(name: str, value: str, details: str) -> dict[str, Any]:
+    return {"summary_name": name, "summary_value": value, "details": details, **SAFETY_FLAGS}
+
+
+def blocker_row(name: str, status: str, severity: str, details: str, next_step: str) -> dict[str, Any]:
+    return {"blocker_name": name, "status": status, "severity": severity, "details": details, "required_next_step": next_step, **SAFETY_FLAGS}
+
+
+def evidence_row(name: str, value: str, details: str) -> dict[str, Any]:
+    return {"evidence_name": name, "evidence_value": value, "details": details, **SAFETY_FLAGS}
+
+
+def write_rows(path: Path, fieldnames: list[str], rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def read_csv_rows(path: Path) -> list[dict[str, str]]:
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as handle:
+        return list(csv.DictReader(handle))
+
+
+def summary_value(rows: list[dict[str, Any]], key: str) -> str:
+    for row in rows:
+        if row.get("summary_name") == key:
+            return str(row.get("summary_value", "")).strip()
+    return ""

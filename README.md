@@ -243,6 +243,8 @@ Volatility-targeted growth executable ticket prerequisites review is saved-outpu
 
 Volatility-targeted growth paper-live execution blocker rollup is saved-output/status-only: `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup` and `python bot.py --show-vol-targeted-growth-paper-live-execution-blocker-rollup` summarize the whole volatility paper-live chain from manual gate through ticket prerequisites. The VPS daily monitoring summary now surfaces this blocker status, but it remains monitoring only: blockers are not cleared, no executable ticket exists, and execution/scheduling stay false.
 
+Paper-live go/no-go dashboard is saved-output/status-only: `python bot.py --paper-live-go-no-go-dashboard` and `python bot.py --show-paper-live-go-no-go-dashboard` summarize QQQ100 no-action state, the active volatility seed blocker rollup, paper-live checklist phase, and VPS monitoring assumptions in one view. The expected current decision is `NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY`; it does not call Alpaca, create order instructions, create executable tickets, approve execution, or approve scheduling.
+
 
 ## Architecture
 

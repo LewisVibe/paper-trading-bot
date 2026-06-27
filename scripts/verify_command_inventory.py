@@ -83,6 +83,8 @@ REQUIRED_COMMANDS = [
     "--show-paper-live-monitoring-status",
     "--paper-live-checklist-status",
     "--show-paper-live-checklist-status",
+    "--paper-live-go-no-go-dashboard",
+    "--show-paper-live-go-no-go-dashboard",
     "--paper-live-f6-f7-audit",
     "--show-paper-live-f6-f7-audit",
     "--paper-live-promotion-ladder-design",
