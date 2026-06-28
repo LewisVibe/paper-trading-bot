@@ -1014,6 +1014,12 @@ The volatility-targeted growth executable ticket prerequisites review comes from
 - It lists the missing approvals and evidence before any future executable ticket design could be discussed: explicit execution-design approval, fresh read-only broker state, allocation/control approval, and component sleeve promotion remain missing.
 - `executable_ticket_prerequisites_met=False`, `executable_ticket_design_allowed=False`, `executable_order_ticket_created=False`, `order_instructions_created=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
+The volatility-targeted growth executable ticket gap list comes from `python bot.py --vol-targeted-growth-executable-ticket-gap-list`, with saved display through `python bot.py --show-vol-targeted-growth-executable-ticket-gap-list`:
+
+- Current expected status is `vol_targeted_growth_executable_ticket_gap_list_execution_blocked_manual_review_required` with `final_ticket_design_decision=EXECUTABLE_TICKET_DESIGN_NOT_READY`.
+- It turns the saved prerequisite review, execution blocker rollup, and go/no-go dashboard into a concise list of remaining gaps before any executable ticket design discussion.
+- It does not call Alpaca, read positions, create order fields, create executable tickets, approve execution, approve paper execution, approve live trading, or approve scheduling.
+
 The volatility-targeted growth paper-live execution blocker rollup comes from `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, with saved display through `python bot.py --show-vol-targeted-growth-paper-live-execution-blocker-rollup`:
 
 - Current expected status is `vol_targeted_growth_paper_live_execution_blocker_rollup_created_manual_review_required`.

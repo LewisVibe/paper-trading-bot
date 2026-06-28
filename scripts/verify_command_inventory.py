@@ -293,6 +293,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-order-ticket-boundary-design",
     "--vol-targeted-growth-executable-ticket-prerequisites-review",
     "--show-vol-targeted-growth-executable-ticket-prerequisites-review",
+    "--vol-targeted-growth-executable-ticket-gap-list",
+    "--show-vol-targeted-growth-executable-ticket-gap-list",
     "--vol-targeted-growth-paper-live-execution-blocker-rollup",
     "--show-vol-targeted-growth-paper-live-execution-blocker-rollup",
     "--vol-managed-etf-backtest",
