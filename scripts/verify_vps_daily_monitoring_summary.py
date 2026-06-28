@@ -35,6 +35,9 @@ REQUIRED_OUTPUT_PHRASES = [
     "Volatility executable ticket gap list:",
     "vol_executable_ticket_gap_list_present:",
     "vol_executable_ticket_gap_list_warning: monitor only;",
+    "Volatility manual execution-design approval gate:",
+    "vol_manual_execution_design_approval_gate_present:",
+    "vol_manual_execution_design_approval_gate_warning: monitor only;",
     "QQQ100 daily decision:",
     "qqq100_daily_decision_present: True",
     "daily_decision_status: qqq100_daily_decision_hold_no_action_aligned_long",
@@ -92,6 +95,8 @@ REQUIRED_ACTION_STATES = [
     "vol_execution_blocker_rollup_status",
     "vol_executable_ticket_gap_list_missing_saved_output",
     "vol_executable_ticket_gap_list_status",
+    "vol_manual_execution_design_approval_gate_missing_saved_output",
+    "vol_manual_execution_design_approval_gate_status",
     "paper_live_go_no_go_dashboard_missing_saved_output",
     "paper_live_go_no_go_status",
 ]
@@ -270,6 +275,31 @@ def verify_command_output(failures: list[str]) -> None:
                 failures.append(f"Daily summary missing-saved executable ticket gap list section missing phrase: {phrase}")
     else:
         failures.append("Daily summary must report whether executable ticket gap list is present")
+    if "vol_manual_execution_design_approval_gate_present: True" in output:
+        for phrase in [
+            "final_approval_gate_status: vol_targeted_growth_manual_execution_design_approval_gate_not_approved",
+            "final_approval_gate_decision: MANUAL_EXECUTION_DESIGN_APPROVAL_NOT_RECORDED",
+            "explicit_future_prompt_required: True",
+            "largest_blocker: explicit_future_prompt_required",
+            "manual_execution_design_approved: False",
+            "manual_execution_design_approval_recorded: False",
+            "executable_ticket_design_allowed: False",
+            "order_instructions_created: False",
+            "execution_approved: False",
+            "paper_execution_approved: False",
+            "scheduling_approved: False",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary manual execution-design approval gate section missing phrase: {phrase}")
+    elif "vol_manual_execution_design_approval_gate_present: False" in output:
+        for phrase in [
+            "vol_manual_execution_design_approval_gate_missing_saved_output: data/vol_targeted_growth_manual_execution_design_approval_gate_summary.csv",
+            "vol_manual_execution_design_approval_gate_status: missing_saved_output",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary missing-saved manual execution-design approval gate section missing phrase: {phrase}")
+    else:
+        failures.append("Daily summary must report whether manual execution-design approval gate is present")
     if "paper_live_go_no_go_dashboard_present: True" in output:
         for phrase in [
             "final_go_no_go_status: paper_live_go_no_go_dashboard_execution_blocked_monitor_only",

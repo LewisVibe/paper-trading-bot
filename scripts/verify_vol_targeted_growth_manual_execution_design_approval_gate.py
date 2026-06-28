@@ -72,6 +72,7 @@ def main() -> int:
     verify_commands_registered(failures)
     verify_outputs_ignored(failures)
     verify_source_boundaries(failures)
+    verify_vps_daily_summary_integration(failures)
     verify_fixture_output(failures)
 
     if failures:
@@ -128,6 +129,19 @@ def verify_source_boundaries(failures: list[str]) -> None:
     ]:
         if phrase not in source:
             failures.append(f"approval gate source missing safety phrase: {phrase}")
+
+
+def verify_vps_daily_summary_integration(failures: list[str]) -> None:
+    source = read_text(ROOT / "trading_bot" / "research" / "vps_daily_monitoring_summary.py")
+    for phrase in [
+        "VOL_MANUAL_EXECUTION_DESIGN_APPROVAL_GATE_SUMMARY_PATH",
+        "Volatility manual execution-design approval gate:",
+        "vol_manual_execution_design_approval_gate_status_lines",
+        "MANUAL_EXECUTION_DESIGN_APPROVAL_NOT_RECORDED",
+        "vol_manual_execution_design_approval_gate_warning: monitor only;",
+    ]:
+        if phrase not in source:
+            failures.append(f"VPS daily summary missing manual execution-design approval gate phrase: {phrase}")
 
 
 def verify_fixture_output(failures: list[str]) -> None:
