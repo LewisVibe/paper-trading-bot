@@ -1021,6 +1021,12 @@ The volatility-targeted growth executable ticket gap list comes from `python bot
 - `python bot.py --vps-daily-monitoring-summary` now includes a saved-output-only "Volatility executable ticket gap list" section when the gap-list summary exists; if it is missing, the daily summary reports the missing saved output as a monitoring issue only.
 - It does not call Alpaca, read positions, create order fields, create executable tickets, approve execution, approve paper execution, approve live trading, or approve scheduling.
 
+The volatility-targeted growth manual execution-design approval gate comes from `python bot.py --vol-targeted-growth-manual-execution-design-approval-gate`, with saved display through `python bot.py --show-vol-targeted-growth-manual-execution-design-approval-gate`:
+
+- Current expected status is `vol_targeted_growth_manual_execution_design_approval_gate_not_approved` with `final_approval_gate_decision=MANUAL_EXECUTION_DESIGN_APPROVAL_NOT_RECORDED`.
+- It defines the wording and scope a future explicit approval prompt would need before non-submitting executable ticket design could be discussed.
+- It does not record approval, call Alpaca, read positions, create order fields, create executable tickets, approve execution, approve paper execution, approve live trading, or approve scheduling.
+
 The volatility-targeted growth paper-live execution blocker rollup comes from `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, with saved display through `python bot.py --show-vol-targeted-growth-paper-live-execution-blocker-rollup`:
 
 - Current expected status is `vol_targeted_growth_paper_live_execution_blocker_rollup_created_manual_review_required`.

@@ -2311,6 +2311,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-manual-execution-design-approval-gate"]:
+        from trading_bot.research.vol_targeted_growth_manual_execution_design_approval_gate import (
+            generate_vol_targeted_growth_manual_execution_design_approval_gate,
+        )
+
+        result = generate_vol_targeted_growth_manual_execution_design_approval_gate()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-manual-execution-design-approval-gate"]:
+        from trading_bot.research.vol_targeted_growth_manual_execution_design_approval_gate import (
+            show_vol_targeted_growth_manual_execution_design_approval_gate,
+        )
+
+        code, lines = show_vol_targeted_growth_manual_execution_design_approval_gate()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-paper-live-execution-blocker-rollup"]:
         from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
             generate_vol_targeted_growth_paper_live_execution_blocker_rollup,
@@ -8375,6 +8393,16 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-executable-ticket-gap-list",
         action="store_true",
         help="Display the saved volatility-targeted growth executable ticket gap list.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-manual-execution-design-approval-gate",
+        action="store_true",
+        help="Create a saved-output-only manual execution-design approval gate for the active volatility seed.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-manual-execution-design-approval-gate",
+        action="store_true",
+        help="Display the saved volatility-targeted growth manual execution-design approval gate.",
     )
     parser.add_argument(
         "--vol-targeted-growth-paper-live-execution-blocker-rollup",

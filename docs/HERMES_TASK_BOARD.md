@@ -1457,6 +1457,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable ticket design, side/quantity/order-type/time-in-force fields, account/secret fields, portfolio execution wiring, scheduling changes, paper-live execution approval, or treating the gap list as approval.
 - **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create ticket fields, clear blockers, approve execution, schedule anything, or connect the candidate to execution.
 
+### Task: Volatility-targeted growth manual execution-design approval gate
+- **Purpose:** Use `python bot.py --vol-targeted-growth-manual-execution-design-approval-gate` to define the exact future approval wording/scope required before non-submitting executable ticket design could be discussed.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-manual-execution-design-approval-gate`, `python bot.py --show-vol-targeted-growth-manual-execution-design-approval-gate`, and `python scripts\verify_vol_targeted_growth_manual_execution_design_approval_gate.py`.
+- **Expected status:** `vol_targeted_growth_manual_execution_design_approval_gate_not_approved` with `final_approval_gate_decision=MANUAL_EXECUTION_DESIGN_APPROVAL_NOT_RECORDED`; no approval, order fields, executable ticket, execution approval, or scheduling approval exists.
+- **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable ticket design, side/quantity/order-type/time-in-force fields, account/secret fields, portfolio execution wiring, scheduling changes, paper-live execution approval, or treating the gate as approval.
+- **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create ticket fields, record approval, approve execution, schedule anything, or connect the candidate to execution.
+
 ### Task: Volatility-targeted growth paper-live execution blocker rollup
 - **Purpose:** Use `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup` to summarize the saved volatility paper-live blocker chain in one report and surface it in VPS daily monitoring.
 - **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
