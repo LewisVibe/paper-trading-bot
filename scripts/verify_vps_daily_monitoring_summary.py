@@ -32,6 +32,9 @@ REQUIRED_OUTPUT_PHRASES = [
     "Volatility paper-live execution blocker rollup:",
     "vol_execution_blocker_rollup_present:",
     "vol_execution_blocker_rollup_warning: monitor only;",
+    "Volatility executable ticket gap list:",
+    "vol_executable_ticket_gap_list_present:",
+    "vol_executable_ticket_gap_list_warning: monitor only;",
     "QQQ100 daily decision:",
     "qqq100_daily_decision_present: True",
     "daily_decision_status: qqq100_daily_decision_hold_no_action_aligned_long",
@@ -87,6 +90,8 @@ REQUIRED_ACTION_STATES = [
     "vol_candidate_decision_status",
     "vol_execution_blocker_rollup_missing_saved_output",
     "vol_execution_blocker_rollup_status",
+    "vol_executable_ticket_gap_list_missing_saved_output",
+    "vol_executable_ticket_gap_list_status",
     "paper_live_go_no_go_dashboard_missing_saved_output",
     "paper_live_go_no_go_status",
 ]
@@ -240,6 +245,31 @@ def verify_command_output(failures: list[str]) -> None:
                 failures.append(f"Daily summary missing-saved execution blocker rollup section missing phrase: {phrase}")
     else:
         failures.append("Daily summary must report whether execution blocker rollup is present")
+    if "vol_executable_ticket_gap_list_present: True" in output:
+        for phrase in [
+            "final_gap_list_status: vol_targeted_growth_executable_ticket_gap_list_execution_blocked_manual_review_required",
+            "final_ticket_design_decision: EXECUTABLE_TICKET_DESIGN_NOT_READY",
+            "gap_count:",
+            "critical_gap_count:",
+            "largest_gap: manual_execution_design_approval_missing",
+            "order_fields_created: False",
+            "order_instructions_created: False",
+            "executable_ticket_created: False",
+            "execution_approved: False",
+            "paper_execution_approved: False",
+            "scheduling_approved: False",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary executable ticket gap list section missing phrase: {phrase}")
+    elif "vol_executable_ticket_gap_list_present: False" in output:
+        for phrase in [
+            "vol_executable_ticket_gap_list_missing_saved_output: data/vol_targeted_growth_executable_ticket_gap_list_summary.csv",
+            "vol_executable_ticket_gap_list_status: missing_saved_output",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary missing-saved executable ticket gap list section missing phrase: {phrase}")
+    else:
+        failures.append("Daily summary must report whether executable ticket gap list is present")
     if "paper_live_go_no_go_dashboard_present: True" in output:
         for phrase in [
             "final_go_no_go_status: paper_live_go_no_go_dashboard_execution_blocked_monitor_only",

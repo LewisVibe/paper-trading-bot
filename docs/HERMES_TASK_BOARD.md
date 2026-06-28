@@ -1451,8 +1451,9 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 ### Task: Volatility-targeted growth executable ticket gap list
 - **Purpose:** Use `python bot.py --vol-targeted-growth-executable-ticket-gap-list` to summarize the remaining saved-output gaps before any future executable ticket design discussion.
 - **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
-- **Allowed commands:** `python bot.py --vol-targeted-growth-executable-ticket-gap-list`, `python bot.py --show-vol-targeted-growth-executable-ticket-gap-list`, and `python scripts\verify_vol_targeted_growth_executable_ticket_gap_list.py`.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-executable-ticket-gap-list`, `python bot.py --show-vol-targeted-growth-executable-ticket-gap-list`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_executable_ticket_gap_list.py`.
 - **Expected status:** `vol_targeted_growth_executable_ticket_gap_list_execution_blocked_manual_review_required` with `final_ticket_design_decision=EXECUTABLE_TICKET_DESIGN_NOT_READY`; no order fields, executable ticket, execution approval, or scheduling approval exists.
+- **Monitoring integration:** `python bot.py --vps-daily-monitoring-summary` surfaces the saved gap-list status when `data/vol_targeted_growth_executable_ticket_gap_list_summary.csv` exists; if missing, it reports missing saved output only. No cron job is created or edited and no order-capable command is added.
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable ticket design, side/quantity/order-type/time-in-force fields, account/secret fields, portfolio execution wiring, scheduling changes, paper-live execution approval, or treating the gap list as approval.
 - **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create ticket fields, clear blockers, approve execution, schedule anything, or connect the candidate to execution.
 
