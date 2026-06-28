@@ -2329,6 +2329,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-non-submitting-ticket-schema-design"]:
+        from trading_bot.research.vol_targeted_growth_non_submitting_ticket_schema_design import (
+            generate_vol_targeted_growth_non_submitting_ticket_schema_design,
+        )
+
+        result = generate_vol_targeted_growth_non_submitting_ticket_schema_design()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-non-submitting-ticket-schema-design"]:
+        from trading_bot.research.vol_targeted_growth_non_submitting_ticket_schema_design import (
+            show_vol_targeted_growth_non_submitting_ticket_schema_design,
+        )
+
+        code, lines = show_vol_targeted_growth_non_submitting_ticket_schema_design()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-paper-live-execution-blocker-rollup"]:
         from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
             generate_vol_targeted_growth_paper_live_execution_blocker_rollup,
@@ -8403,6 +8421,16 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-manual-execution-design-approval-gate",
         action="store_true",
         help="Display the saved volatility-targeted growth manual execution-design approval gate.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-non-submitting-ticket-schema-design",
+        action="store_true",
+        help="Create a saved-output-only non-submitting ticket schema design for the active volatility seed.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-non-submitting-ticket-schema-design",
+        action="store_true",
+        help="Display the saved volatility-targeted growth non-submitting ticket schema design.",
     )
     parser.add_argument(
         "--vol-targeted-growth-paper-live-execution-blocker-rollup",

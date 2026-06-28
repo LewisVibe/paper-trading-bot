@@ -297,6 +297,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-executable-ticket-gap-list",
     "--vol-targeted-growth-manual-execution-design-approval-gate",
     "--show-vol-targeted-growth-manual-execution-design-approval-gate",
+    "--vol-targeted-growth-non-submitting-ticket-schema-design",
+    "--show-vol-targeted-growth-non-submitting-ticket-schema-design",
     "--vol-targeted-growth-paper-live-execution-blocker-rollup",
     "--show-vol-targeted-growth-paper-live-execution-blocker-rollup",
     "--vol-managed-etf-backtest",

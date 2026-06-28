@@ -1028,6 +1028,12 @@ The volatility-targeted growth manual execution-design approval gate comes from 
 - `python bot.py --vps-daily-monitoring-summary` now includes a saved-output-only "Volatility manual execution-design approval gate" section when the approval-gate summary exists; if it is missing, the daily summary reports the missing saved output as a monitoring issue only.
 - It does not record approval, call Alpaca, read positions, create order fields, create executable tickets, approve execution, approve paper execution, approve live trading, or approve scheduling.
 
+The volatility-targeted growth non-submitting ticket schema design comes from `python bot.py --vol-targeted-growth-non-submitting-ticket-schema-design`, with saved display through `python bot.py --show-vol-targeted-growth-non-submitting-ticket-schema-design`:
+
+- Current expected status is `vol_targeted_growth_non_submitting_ticket_schema_design_created_manual_review_required` with `final_schema_design_decision=NON_SUBMITTING_TICKET_SCHEMA_DESIGNED_NO_TICKET_CREATED`.
+- It defines future ticket schema fields for manual review after explicit user approval for design work, while keeping `ticket_instance_created=False` and `order_values_populated=False`.
+- It does not call Alpaca, read positions, create a ticket instance, populate side/quantity/order-type/time-in-force values, submit orders, approve execution, approve paper execution, approve live trading, or approve scheduling.
+
 The volatility-targeted growth paper-live execution blocker rollup comes from `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, with saved display through `python bot.py --show-vol-targeted-growth-paper-live-execution-blocker-rollup`:
 
 - Current expected status is `vol_targeted_growth_paper_live_execution_blocker_rollup_created_manual_review_required`.
