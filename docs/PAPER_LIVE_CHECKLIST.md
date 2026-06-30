@@ -9,7 +9,7 @@ Current status:
 - The active report/status seed is `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`.
 - The previous QQQ100 seed context remains `qqq_100_trend_gate` / `QQQ`, with saved evidence showing long exactly one share and no follow-up/repeat order needed.
 - The VPS/Hermes status job is monitoring-only and must remain status/report-only.
-- The volatility seed has a non-submitting ticket schema design, a non-submitting ticket-instance design, a fresh broker pre-ticket gate design, a run-readiness checkpoint, a manual ticket-value design, and executable-ticket closeout/readiness/criteria checkpoints, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
+- The volatility seed has a non-submitting ticket schema design, a non-submitting ticket-instance design, a fresh broker pre-ticket gate design, a run-readiness checkpoint, a manual ticket-value design, and executable-ticket closeout/readiness/criteria/resolution-plan checkpoints, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
 - High-growth, crypto, defensive, SMA, and slow-SMA remain excluded from paper-live execution.
 
 Remaining steps, in order:
@@ -92,6 +92,12 @@ Remaining steps, in order:
    - Saved display: `python bot.py --show-vol-targeted-growth-executable-ticket-approval-criteria`.
    - Current decision is `APPROVAL_CRITERIA_DEFINED_APPROVAL_NOT_REQUESTED`.
    - This defines the future manual questions around prerequisites, fresh broker context, ticket values, sleeve boundaries, and scheduling, but it does not request approval, record approval, create ticket values, create an executable ticket, or approve execution.
+
+6h. **Order the criteria blocker resolution plan without resolving blockers.**
+   - Implemented checkpoint: `python bot.py --vol-targeted-growth-executable-ticket-criteria-resolution-plan`.
+   - Saved display: `python bot.py --show-vol-targeted-growth-executable-ticket-criteria-resolution-plan`.
+   - Current decision is `CRITERIA_BLOCKER_RESOLUTION_PLAN_CREATED_APPROVAL_STILL_BLOCKED`.
+   - This orders the manual review work, but it does not resolve blockers, request approval, record approval, create ticket values, create an executable ticket, or approve execution.
 
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.

@@ -30,9 +30,11 @@ REQUIRED_TOKENS = [
     "vol_ticket_prereq_closeout_status",
     "vol_ticket_approval_readiness_status",
     "vol_ticket_approval_criteria_status",
+    "vol_ticket_criteria_resolution_status",
     "executable_ticket_prerequisites_not_closed",
     "executable_ticket_approval_not_ready",
     "executable_ticket_approval_criteria_review_required",
+    "executable_ticket_criteria_resolution_plan_open",
     "status_only_monitoring_no_cron_change",
     '"execution_approved": False',
     '"paper_execution_approved": False',
@@ -223,6 +225,15 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_executable_ticket_criteria_resolution_plan_summary.csv",
+            {
+                "final_resolution_plan_status": "vol_targeted_growth_executable_ticket_criteria_resolution_plan_created_manual_review_required",
+                "final_resolution_plan_decision": "CRITERIA_BLOCKER_RESOLUTION_PLAN_CREATED_APPROVAL_STILL_BLOCKED",
+                "approval_request_allowed_now": "False",
+                "largest_blocker": "criteria_blockers_not_resolved",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -258,6 +269,7 @@ def verify_fixture_output(failures: list[str]) -> None:
         "EXECUTABLE_TICKET_PREREQUISITES_NOT_CLOSED",
         "NOT_READY_TO_REQUEST_EXECUTABLE_TICKET_APPROVAL",
         "APPROVAL_CRITERIA_DEFINED_APPROVAL_NOT_REQUESTED",
+        "CRITERIA_BLOCKER_RESOLUTION_PLAN_CREATED_APPROVAL_STILL_BLOCKED",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",

@@ -29,6 +29,7 @@ INPUT_FILES = {
     "vol_ticket_prereq_closeout": Path("data/vol_targeted_growth_executable_ticket_prerequisites_closeout_summary.csv"),
     "vol_ticket_approval_readiness": Path("data/vol_targeted_growth_executable_ticket_approval_readiness_summary.csv"),
     "vol_ticket_approval_criteria": Path("data/vol_targeted_growth_executable_ticket_approval_criteria_summary.csv"),
+    "vol_ticket_criteria_resolution": Path("data/vol_targeted_growth_executable_ticket_criteria_resolution_plan_summary.csv"),
     "paper_live_checklist": Path("data/paper_live_checklist_status_summary.csv"),
 }
 
@@ -142,6 +143,7 @@ def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int,
         f"vol_ticket_prereq_closeout_decision: {summary_value(rows, 'vol_ticket_prereq_closeout_decision')}",
         f"vol_ticket_approval_readiness_decision: {summary_value(rows, 'vol_ticket_approval_readiness_decision')}",
         f"vol_ticket_approval_criteria_decision: {summary_value(rows, 'vol_ticket_approval_criteria_decision')}",
+        f"vol_ticket_criteria_resolution_decision: {summary_value(rows, 'vol_ticket_criteria_resolution_decision')}",
         f"paper_live_checklist_phase_status: {summary_value(rows, 'paper_live_checklist_phase_status')}",
         f"vps_monitoring_status_assumption: {summary_value(rows, 'vps_monitoring_status_assumption')}",
         f"final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
@@ -227,6 +229,8 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     approval_readiness_decision = summary_value(inputs["vol_ticket_approval_readiness"], "final_approval_readiness_decision") or "missing_vol_ticket_approval_readiness_decision"
     approval_criteria_status = summary_value(inputs["vol_ticket_approval_criteria"], "final_approval_criteria_status") or "missing_vol_ticket_approval_criteria"
     approval_criteria_decision = summary_value(inputs["vol_ticket_approval_criteria"], "final_approval_criteria_decision") or "missing_vol_ticket_approval_criteria_decision"
+    criteria_resolution_status = summary_value(inputs["vol_ticket_criteria_resolution"], "final_resolution_plan_status") or "missing_vol_ticket_criteria_resolution"
+    criteria_resolution_decision = summary_value(inputs["vol_ticket_criteria_resolution"], "final_resolution_plan_decision") or "missing_vol_ticket_criteria_resolution_decision"
     checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
     monitoring_next = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
     data = [
@@ -252,6 +256,8 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("vol_ticket_approval_readiness_decision", approval_readiness_decision, "Saved executable-ticket approval-readiness decision."),
         ("vol_ticket_approval_criteria_status", approval_criteria_status, "Saved executable-ticket approval criteria status."),
         ("vol_ticket_approval_criteria_decision", approval_criteria_decision, "Saved executable-ticket approval criteria decision."),
+        ("vol_ticket_criteria_resolution_status", criteria_resolution_status, "Saved executable-ticket criteria resolution plan status."),
+        ("vol_ticket_criteria_resolution_decision", criteria_resolution_decision, "Saved executable-ticket criteria resolution plan decision."),
         ("paper_live_checklist_phase_status", checklist_status, "Saved paper-live checklist phase status."),
         ("paper_live_monitoring_recommended_next_step", monitoring_next, "Saved paper-live monitoring recommended next step."),
         ("vps_monitoring_status_assumption", "status_only_monitoring_no_cron_change", "Dashboard assumes existing VPS monitoring remains status-only."),
@@ -272,6 +278,7 @@ def build_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str
         ("executable_ticket_prerequisites_not_closed", "blocked", "critical", "Executable ticket prerequisites closeout remains open.", "review_executable_ticket_prerequisites_closeout"),
         ("executable_ticket_approval_not_ready", "blocked", "critical", "Executable ticket approval readiness is not ready.", "do_not_request_executable_ticket_approval"),
         ("executable_ticket_approval_criteria_review_required", "blocked", "critical", "Executable ticket approval criteria require manual review.", "review_executable_ticket_approval_criteria"),
+        ("executable_ticket_criteria_resolution_plan_open", "blocked", "critical", "Executable ticket criteria resolution plan is open and does not resolve blockers.", "review_executable_ticket_criteria_resolution_plan"),
         ("repeat_followup_orders_not_approved", "blocked", "critical", "QQQ100 follow-up and repeat orders remain unapproved.", "hold_no_action_and_monitor_only"),
         ("scheduling_not_approved", "blocked", "critical", "No order-capable scheduling is approved.", "keep_monitoring_status_only"),
     ]
@@ -306,6 +313,7 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"vol_ticket_prereq_closeout_decision={summary_value(summary_rows, 'vol_ticket_prereq_closeout_decision')}",
         f"vol_ticket_approval_readiness_decision={summary_value(summary_rows, 'vol_ticket_approval_readiness_decision')}",
         f"vol_ticket_approval_criteria_decision={summary_value(summary_rows, 'vol_ticket_approval_criteria_decision')}",
+        f"vol_ticket_criteria_resolution_decision={summary_value(summary_rows, 'vol_ticket_criteria_resolution_decision')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

@@ -1556,6 +1556,15 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, approval requests, approval recording, order value population, order creation/submission/cancellation/replacement, executable ticket creation, strategy-to-execution wiring, cron edits, or treating criteria as approval.
 - **Stop condition:** Stop if the task would request or record approval, populate executable order values, create an executable ticket, submit/cancel/replace orders, approve paper execution, approve live trading, or schedule anything.
 
+### Task: Volatility-targeted growth executable-ticket criteria resolution plan
+- **Purpose:** Use `python bot.py --vol-targeted-growth-executable-ticket-criteria-resolution-plan` to order the manual blocker-resolution work before any approval-readiness change.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-executable-ticket-criteria-resolution-plan`, `python bot.py --show-vol-targeted-growth-executable-ticket-criteria-resolution-plan`, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_executable_ticket_criteria_resolution_plan.py`.
+- **Expected status:** `vol_targeted_growth_executable_ticket_criteria_resolution_plan_created_manual_review_required` with `final_resolution_plan_decision=CRITERIA_BLOCKER_RESOLUTION_PLAN_CREATED_APPROVAL_STILL_BLOCKED`; blockers are not resolved and approval remains blocked.
+- **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface the saved criteria-resolution decision when present.
+- **Forbidden commands:** Broker reads, Alpaca calls, market refresh, blocker auto-resolution, approval requests, approval recording, order value population, order creation/submission/cancellation/replacement, executable ticket creation, strategy-to-execution wiring, cron edits, or treating the plan as approval.
+- **Stop condition:** Stop if the task would resolve blockers automatically, request or record approval, populate executable order values, create an executable ticket, submit/cancel/replace orders, approve paper execution, approve live trading, or schedule anything.
+
 ### Task: Volatility-targeted growth paper-live execution blocker rollup
 - **Purpose:** Use `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup` to summarize the saved volatility paper-live blocker chain in one report and surface it in VPS daily monitoring.
 - **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
