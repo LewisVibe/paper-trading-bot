@@ -23,6 +23,8 @@ REQUIRED_TOKENS = [
     "paper_live_go_no_go_dashboard_execution_blocked_monitor_only",
     "NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY",
     "qqq100_daily_decision_hold_no_action_aligned_long",
+    "vol_post_gate_review_status",
+    "post_gate_ticket_values_not_approved",
     "status_only_monitoring_no_cron_change",
     '"execution_approved": False',
     '"paper_execution_approved": False',
@@ -162,6 +164,18 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_post_gate_review_summary.csv",
+            {
+                "final_post_gate_review_status": "vol_targeted_growth_post_gate_review_manual_review_required",
+                "final_post_gate_review_decision": "FRESH_BROKER_CONTEXT_SAVED_TICKET_VALUES_NOT_APPROVED",
+                "largest_blocker": "ticket_values_not_approved_after_readonly_context",
+                "saved_qqq_position_quantity_if_readonly": "1",
+                "execution_approved": "False",
+                "paper_execution_approved": "False",
+                "scheduling_approved": "False",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -187,6 +201,10 @@ def verify_fixture_output(failures: list[str]) -> None:
         "hold_no_action_aligned_long",
         "vol_targeted_growth_paper_live_execution_blocker_rollup_created_manual_review_required",
         "executable_ticket_prerequisites_not_met",
+        "vol_targeted_growth_post_gate_review_manual_review_required",
+        "FRESH_BROKER_CONTEXT_SAVED_TICKET_VALUES_NOT_APPROVED",
+        "ticket_values_not_approved_after_readonly_context",
+        "vol_post_gate_saved_qqq_quantity: 1",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",

@@ -524,6 +524,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-post-gate-review"]:
+        from trading_bot.research.vol_targeted_growth_post_gate_review import (
+            generate_vol_targeted_growth_post_gate_review,
+        )
+
+        result = generate_vol_targeted_growth_post_gate_review()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-post-gate-review"]:
+        from trading_bot.research.vol_targeted_growth_post_gate_review import (
+            show_vol_targeted_growth_post_gate_review,
+        )
+
+        code, lines = show_vol_targeted_growth_post_gate_review()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-live-f6-f7-audit"]:
         from trading_bot.research.paper_live_f6_f7_audit import generate_paper_live_f6_f7_audit
 
@@ -2674,6 +2692,10 @@ from trading_bot.research.paper_live_checklist_status import (
 from trading_bot.research.paper_live_go_no_go_dashboard import (
     generate_paper_live_go_no_go_dashboard,
     show_paper_live_go_no_go_dashboard,
+)
+from trading_bot.research.vol_targeted_growth_post_gate_review import (
+    generate_vol_targeted_growth_post_gate_review,
+    show_vol_targeted_growth_post_gate_review,
 )
 from trading_bot.research.paper_live_f6_f7_audit import (
     generate_paper_live_f6_f7_audit,
@@ -7454,6 +7476,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved paper-live go/no-go dashboard without broker reads or execution approval.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-post-gate-review",
+        action="store_true",
+        help="Create a saved-output post-gate review for the active volatility seed without broker reads or execution approval.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-post-gate-review",
+        action="store_true",
+        help="Display the saved volatility-targeted growth post-gate review.",
+    )
+    parser.add_argument(
         "--paper-live-f6-f7-audit",
         action="store_true",
         help="Create a saved-output F6/F7 audit for paper-live promotion readiness without broker reads.",
@@ -9747,6 +9779,20 @@ def main() -> int:
         return 0
     if args.show_paper_live_go_no_go_dashboard:
         status_code, lines = show_paper_live_go_no_go_dashboard()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_post_gate_review:
+        try:
+            result = generate_vol_targeted_growth_post_gate_review()
+        except Exception as exc:
+            print(f"Volatility-targeted post-gate review failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_post_gate_review:
+        status_code, lines = show_vol_targeted_growth_post_gate_review()
         for line in lines:
             print(line)
         return status_code

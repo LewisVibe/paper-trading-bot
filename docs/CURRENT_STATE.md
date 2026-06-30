@@ -1061,6 +1061,12 @@ The volatility-targeted growth fresh broker pre-ticket gate run comes from `pyth
 - The daily VPS monitoring summary now includes a saved-output-only "Volatility fresh broker pre-ticket gate run" section. Missing saved output is a monitoring issue only.
 - It keeps `ticket_instance_created=False`, `executable_ticket_created=False`, `order_values_populated=False`, `order_instructions_created=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
+The volatility-targeted growth post-gate review comes from `python bot.py --vol-targeted-growth-post-gate-review`, with saved display through `python bot.py --show-vol-targeted-growth-post-gate-review`:
+
+- It reads saved gate-run CSV output only. It does not call Alpaca again, read positions, refresh yfinance, create tickets, populate order values, submit orders, approve execution, or approve scheduling.
+- When saved broker context exists, the expected status is `vol_targeted_growth_post_gate_review_manual_review_required` with `final_post_gate_review_decision=FRESH_BROKER_CONTEXT_SAVED_TICKET_VALUES_NOT_APPROVED`.
+- The paper-live go/no-go dashboard now includes this post-gate status and still keeps `NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY`.
+
 The volatility-targeted growth paper-live execution blocker rollup comes from `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, with saved display through `python bot.py --show-vol-targeted-growth-paper-live-execution-blocker-rollup`:
 
 - Current expected status is `vol_targeted_growth_paper_live_execution_blocker_rollup_created_manual_review_required`.
