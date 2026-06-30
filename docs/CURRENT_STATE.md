@@ -1032,6 +1032,12 @@ The volatility-targeted growth non-submitting ticket schema design comes from `p
 
 - Current expected status is `vol_targeted_growth_non_submitting_ticket_schema_design_created_manual_review_required` with `final_schema_design_decision=NON_SUBMITTING_TICKET_SCHEMA_DESIGNED_NO_TICKET_CREATED`.
 - `python bot.py --vps-daily-monitoring-summary` now includes a saved-output-only "Volatility non-submitting ticket schema design" section when the schema-design summary exists; if it is missing, the daily summary reports the missing saved output as a monitoring issue only.
+
+The volatility-targeted growth non-submitting ticket-instance design comes from `python bot.py --vol-targeted-growth-non-submitting-ticket-instance-design`, with saved display through `python bot.py --show-vol-targeted-growth-non-submitting-ticket-instance-design`:
+
+- Current expected status is `vol_targeted_growth_non_submitting_ticket_instance_design_created_manual_review_required` with `final_ticket_instance_design_decision=NON_SUBMITTING_TICKET_INSTANCE_DESIGNED_NO_ORDER_VALUES`.
+- The design creates a draft ticket shape only. It keeps side, quantity, order type, time-in-force, account reference, and broker order id blank, and keeps `ticket_instance_created=False`, `executable_ticket_created=False`, `order_values_populated=False`, `execution_approved=False`, and `scheduling_approved=False`.
+- `python bot.py --vps-daily-monitoring-summary` includes a saved-output-only "Volatility non-submitting ticket-instance design" section when the summary exists; if it is missing, the daily summary reports the missing saved output as a monitoring issue only.
 - It defines future ticket schema fields for manual review after explicit user approval for design work, while keeping `ticket_instance_created=False` and `order_values_populated=False`.
 - It does not call Alpaca, read positions, create a ticket instance, populate side/quantity/order-type/time-in-force values, submit orders, approve execution, approve paper execution, approve live trading, or approve scheduling.
 
