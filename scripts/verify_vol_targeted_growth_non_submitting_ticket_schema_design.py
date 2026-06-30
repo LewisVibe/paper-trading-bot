@@ -66,6 +66,7 @@ def main() -> int:
     verify_commands_registered(failures)
     verify_outputs_ignored(failures)
     verify_source_boundaries(failures)
+    verify_vps_daily_summary_integration(failures)
     verify_fixture_output(failures)
 
     if failures:
@@ -122,6 +123,19 @@ def verify_source_boundaries(failures: list[str]) -> None:
     ]:
         if phrase not in source:
             failures.append(f"schema design source missing safety phrase: {phrase}")
+
+
+def verify_vps_daily_summary_integration(failures: list[str]) -> None:
+    source = read_text(ROOT / "trading_bot" / "research" / "vps_daily_monitoring_summary.py")
+    for phrase in [
+        "VOL_NON_SUBMITTING_TICKET_SCHEMA_DESIGN_SUMMARY_PATH",
+        "Volatility non-submitting ticket schema design:",
+        "vol_non_submitting_ticket_schema_design_status_lines",
+        "NON_SUBMITTING_TICKET_SCHEMA_DESIGNED_NO_TICKET_CREATED",
+        "vol_non_submitting_ticket_schema_design_warning: monitor only;",
+    ]:
+        if phrase not in source:
+            failures.append(f"VPS daily summary missing non-submitting ticket schema phrase: {phrase}")
 
 
 def verify_fixture_output(failures: list[str]) -> None:

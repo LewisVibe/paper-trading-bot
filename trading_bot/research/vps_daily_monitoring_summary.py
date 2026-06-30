@@ -37,10 +37,12 @@ VOL_CANDIDATE_DECISION_RECORD_SUMMARY_PATH = "data/vol_targeted_growth_candidate
 VOL_EXECUTION_BLOCKER_ROLLUP_SUMMARY_PATH = "data/vol_targeted_growth_paper_live_execution_blocker_rollup_summary.csv"
 VOL_EXECUTABLE_TICKET_GAP_LIST_SUMMARY_PATH = "data/vol_targeted_growth_executable_ticket_gap_list_summary.csv"
 VOL_MANUAL_EXECUTION_DESIGN_APPROVAL_GATE_SUMMARY_PATH = "data/vol_targeted_growth_manual_execution_design_approval_gate_summary.csv"
+VOL_NON_SUBMITTING_TICKET_SCHEMA_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_non_submitting_ticket_schema_design_summary.csv"
 PAPER_LIVE_GO_NO_GO_DASHBOARD_SUMMARY_PATH = "data/paper_live_go_no_go_dashboard_summary.csv"
 PAPER_LIVE_GO_NO_GO_EXPECTED_DECISION = "NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY"
 VOL_EXECUTABLE_TICKET_GAP_LIST_EXPECTED_DECISION = "EXECUTABLE_TICKET_DESIGN_NOT_READY"
 VOL_MANUAL_EXECUTION_DESIGN_APPROVAL_GATE_EXPECTED_DECISION = "MANUAL_EXECUTION_DESIGN_APPROVAL_NOT_RECORDED"
+VOL_NON_SUBMITTING_TICKET_SCHEMA_DESIGN_EXPECTED_DECISION = "NON_SUBMITTING_TICKET_SCHEMA_DESIGNED_NO_TICKET_CREATED"
 
 
 def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str]:
@@ -139,6 +141,13 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         ]
     )
     lines.extend(vol_manual_execution_design_approval_gate_status_lines(root_path))
+    lines.extend(
+        [
+            "",
+            "Volatility non-submitting ticket schema design:",
+        ]
+    )
+    lines.extend(vol_non_submitting_ticket_schema_design_status_lines(root_path))
     lines.extend(
         [
             "",
@@ -340,6 +349,37 @@ def vol_manual_execution_design_approval_gate_status_lines(root: Path) -> list[s
         f"- paper_execution_approved: {summary_value(rows, 'paper_execution_approved') or 'False'}",
         f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
         "- vol_manual_execution_design_approval_gate_warning: monitor only; gate is not approval, ticket design, order approval, execution approval, or scheduling approval.",
+    ]
+
+
+def vol_non_submitting_ticket_schema_design_status_lines(root: Path) -> list[str]:
+    rows = read_csv_rows(root / VOL_NON_SUBMITTING_TICKET_SCHEMA_DESIGN_SUMMARY_PATH)
+    if not rows:
+        return [
+            "- vol_non_submitting_ticket_schema_design_present: False",
+            f"- vol_non_submitting_ticket_schema_design_missing_saved_output: {VOL_NON_SUBMITTING_TICKET_SCHEMA_DESIGN_SUMMARY_PATH}",
+            "- vol_non_submitting_ticket_schema_design_status: missing_saved_output",
+            "- vol_non_submitting_ticket_schema_design_warning: monitor only; missing schema design does not approve ticket instances, order values, execution, or scheduling.",
+        ]
+    return [
+        "- vol_non_submitting_ticket_schema_design_present: True",
+        f"- final_schema_design_status: {summary_value(rows, 'final_schema_design_status')}",
+        f"- final_schema_design_decision: {summary_value(rows, 'final_schema_design_decision')}",
+        f"- active_seed: {summary_value(rows, 'active_seed')}",
+        f"- active_ticker: {summary_value(rows, 'active_ticker')}",
+        f"- previous_seed: {summary_value(rows, 'previous_seed')}",
+        f"- previous_ticker: {summary_value(rows, 'previous_ticker')}",
+        f"- schema_field_count: {summary_value(rows, 'schema_field_count')}",
+        f"- ticket_instance_created: {summary_value(rows, 'ticket_instance_created') or 'False'}",
+        f"- order_values_populated: {summary_value(rows, 'order_values_populated') or 'False'}",
+        f"- largest_blocker: {summary_value(rows, 'largest_blocker')}",
+        f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
+        f"- executable_ticket_created: {summary_value(rows, 'executable_ticket_created') or 'False'}",
+        f"- order_instructions_created: {summary_value(rows, 'order_instructions_created') or 'False'}",
+        f"- execution_approved: {summary_value(rows, 'execution_approved') or 'False'}",
+        f"- paper_execution_approved: {summary_value(rows, 'paper_execution_approved') or 'False'}",
+        f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
+        "- vol_non_submitting_ticket_schema_design_warning: monitor only; schema design is not a ticket instance, order approval, execution approval, or scheduling approval.",
     ]
 
 
