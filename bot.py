@@ -632,6 +632,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-executable-ticket-criteria-source-review"]:
+        from trading_bot.research.vol_targeted_growth_executable_ticket_criteria_source_review import (
+            generate_vol_targeted_growth_executable_ticket_criteria_source_review,
+        )
+
+        result = generate_vol_targeted_growth_executable_ticket_criteria_source_review()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-executable-ticket-criteria-source-review"]:
+        from trading_bot.research.vol_targeted_growth_executable_ticket_criteria_source_review import (
+            show_vol_targeted_growth_executable_ticket_criteria_source_review,
+        )
+
+        code, lines = show_vol_targeted_growth_executable_ticket_criteria_source_review()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--paper-live-f6-f7-audit"]:
         from trading_bot.research.paper_live_f6_f7_audit import generate_paper_live_f6_f7_audit
 
@@ -2804,6 +2822,10 @@ from trading_bot.research.vol_targeted_growth_executable_ticket_approval_criteri
 from trading_bot.research.vol_targeted_growth_executable_ticket_criteria_resolution_plan import (
     generate_vol_targeted_growth_executable_ticket_criteria_resolution_plan,
     show_vol_targeted_growth_executable_ticket_criteria_resolution_plan,
+)
+from trading_bot.research.vol_targeted_growth_executable_ticket_criteria_source_review import (
+    generate_vol_targeted_growth_executable_ticket_criteria_source_review,
+    show_vol_targeted_growth_executable_ticket_criteria_source_review,
 )
 from trading_bot.research.paper_live_f6_f7_audit import (
     generate_paper_live_f6_f7_audit,
@@ -7644,6 +7666,16 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved executable-ticket criteria resolution plan.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-executable-ticket-criteria-source-review",
+        action="store_true",
+        help="Create a saved-output source review for executable-ticket approval criteria.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-executable-ticket-criteria-source-review",
+        action="store_true",
+        help="Display the saved executable-ticket criteria source review.",
+    )
+    parser.add_argument(
         "--paper-live-f6-f7-audit",
         action="store_true",
         help="Create a saved-output F6/F7 audit for paper-live promotion readiness without broker reads.",
@@ -10021,6 +10053,20 @@ def main() -> int:
         return 0
     if args.show_vol_targeted_growth_executable_ticket_criteria_resolution_plan:
         status_code, lines = show_vol_targeted_growth_executable_ticket_criteria_resolution_plan()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_executable_ticket_criteria_source_review:
+        try:
+            result = generate_vol_targeted_growth_executable_ticket_criteria_source_review()
+        except Exception as exc:
+            print(f"Volatility-targeted executable-ticket criteria source review failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_executable_ticket_criteria_source_review:
+        status_code, lines = show_vol_targeted_growth_executable_ticket_criteria_source_review()
         for line in lines:
             print(line)
         return status_code

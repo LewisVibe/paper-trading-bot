@@ -97,6 +97,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-executable-ticket-approval-criteria",
     "--vol-targeted-growth-executable-ticket-criteria-resolution-plan",
     "--show-vol-targeted-growth-executable-ticket-criteria-resolution-plan",
+    "--vol-targeted-growth-executable-ticket-criteria-source-review",
+    "--show-vol-targeted-growth-executable-ticket-criteria-source-review",
     "--paper-live-f6-f7-audit",
     "--show-paper-live-f6-f7-audit",
     "--paper-live-promotion-ladder-design",
