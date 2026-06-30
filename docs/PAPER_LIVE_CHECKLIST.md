@@ -9,7 +9,7 @@ Current status:
 - The active report/status seed is `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`.
 - The previous QQQ100 seed context remains `qqq_100_trend_gate` / `QQQ`, with saved evidence showing long exactly one share and no follow-up/repeat order needed.
 - The VPS/Hermes status job is monitoring-only and must remain status/report-only.
-- The volatility seed has a non-submitting ticket schema design, a non-submitting ticket-instance design, a fresh broker pre-ticket gate design, a run-readiness checkpoint, a manual ticket-value design, and executable-ticket closeout/readiness/criteria/resolution-plan/source-review checkpoints, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
+- The volatility seed has a non-submitting ticket schema design, a non-submitting ticket-instance design, a fresh broker pre-ticket gate design, a run-readiness checkpoint, a manual ticket-value design, and executable-ticket closeout/readiness/criteria/resolution-plan/source-review/blocker-closeout-review checkpoints, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
 - High-growth, crypto, defensive, SMA, and slow-SMA remain excluded from paper-live execution.
 
 Remaining steps, in order:
@@ -104,6 +104,12 @@ Remaining steps, in order:
    - Saved display: `python bot.py --show-vol-targeted-growth-executable-ticket-criteria-source-review`.
    - Current decision is `CRITERIA_SOURCE_REVIEWED_NO_BLOCKERS_CLOSED`.
    - This checks whether the saved criteria and resolution-plan wording are coherent for manual review, but it does not change criteria, resolve blockers, request approval, record approval, create ticket values, create an executable ticket, or approve execution.
+
+6j. **Review criteria blocker closeout status without closing blockers.**
+   - Implemented checkpoint: `python bot.py --vol-targeted-growth-executable-ticket-criteria-blocker-closeout-review`.
+   - Saved display: `python bot.py --show-vol-targeted-growth-executable-ticket-criteria-blocker-closeout-review`.
+   - Current decision is `CRITERIA_BLOCKERS_REVIEWED_NONE_CLOSED`.
+   - This classifies blockers for manual review, but it does not close blockers, change approval readiness, request approval, record approval, create ticket values, create an executable ticket, or approve execution.
 
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.

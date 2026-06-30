@@ -1081,7 +1081,8 @@ The volatility-targeted growth executable-ticket closeout checkpoints come from 
 - The approval-criteria checkpoint comes from `python bot.py --vol-targeted-growth-executable-ticket-approval-criteria` and records `APPROVAL_CRITERIA_DEFINED_APPROVAL_NOT_REQUESTED`.
 - The criteria resolution plan comes from `python bot.py --vol-targeted-growth-executable-ticket-criteria-resolution-plan` and records `CRITERIA_BLOCKER_RESOLUTION_PLAN_CREATED_APPROVAL_STILL_BLOCKED`.
 - The criteria source review comes from `python bot.py --vol-targeted-growth-executable-ticket-criteria-source-review` and records `CRITERIA_SOURCE_REVIEWED_NO_BLOCKERS_CLOSED`.
-- These checkpoints are saved-output/report-only and do not call Alpaca, read positions, refresh market data, populate order values, create executable tickets, resolve blockers, request approval, submit orders, approve execution, or approve scheduling.
+- The criteria blocker closeout review comes from `python bot.py --vol-targeted-growth-executable-ticket-criteria-blocker-closeout-review` and records `CRITERIA_BLOCKERS_REVIEWED_NONE_CLOSED`.
+- These checkpoints are saved-output/report-only and do not call Alpaca, read positions, refresh market data, populate order values, create executable tickets, resolve blockers, close blockers, request approval, submit orders, approve execution, or approve scheduling.
 - The paper-live go/no-go dashboard and VPS daily monitoring summary now surface these decisions as monitoring context only.
 
 The volatility-targeted growth paper-live execution blocker rollup comes from `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, with saved display through `python bot.py --show-vol-targeted-growth-paper-live-execution-blocker-rollup`:
@@ -1095,7 +1096,7 @@ The paper-live go/no-go dashboard comes from `python bot.py --paper-live-go-no-g
 
 - It writes `data/paper_live_go_no_go_dashboard.csv`, `data/paper_live_go_no_go_dashboard_summary.csv`, `data/paper_live_go_no_go_dashboard_blockers.csv`, and `data/paper_live_go_no_go_dashboard_evidence.csv`.
 - Current expected status is `paper_live_go_no_go_dashboard_execution_blocked_monitor_only` with `final_go_no_go_decision=NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY`.
-- It summarizes QQQ100 no-action state, active volatility blocker state, executable-ticket closeout/readiness/criteria/resolution/source-review chain, paper-live checklist phase, and VPS monitoring assumptions in one saved-output view.
+- It summarizes QQQ100 no-action state, active volatility blocker state, executable-ticket closeout/readiness/criteria/resolution/source-review/blocker-closeout-review chain, paper-live checklist phase, and VPS monitoring assumptions in one saved-output view.
 - It does not call Alpaca, read positions, create executable tickets, create order instructions, approve execution, approve paper execution, or approve scheduling.
 - `python bot.py --vps-daily-monitoring-summary` now includes a saved-output-only "Paper-live go/no-go dashboard" section when the dashboard summary exists; if it is missing, the daily summary reports the missing saved output as a monitoring issue only.
 
