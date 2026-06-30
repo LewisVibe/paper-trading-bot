@@ -27,6 +27,10 @@ REQUIRED_TOKENS = [
     "post_gate_ticket_values_not_approved",
     "vol_ticket_value_design_status",
     "manual_ticket_values_not_approved",
+    "vol_ticket_prereq_closeout_status",
+    "vol_ticket_approval_readiness_status",
+    "executable_ticket_prerequisites_not_closed",
+    "executable_ticket_approval_not_ready",
     "status_only_monitoring_no_cron_change",
     '"execution_approved": False',
     '"paper_execution_approved": False',
@@ -191,6 +195,23 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_executable_ticket_prerequisites_closeout_summary.csv",
+            {
+                "final_prerequisites_closeout_status": "vol_targeted_growth_executable_ticket_prerequisites_closeout_manual_review_required",
+                "final_prerequisites_closeout_decision": "EXECUTABLE_TICKET_PREREQUISITES_NOT_CLOSED",
+                "largest_blocker": "executable_ticket_values_and_approval_not_approved",
+            },
+        )
+        write_summary(
+            data / "vol_targeted_growth_executable_ticket_approval_readiness_summary.csv",
+            {
+                "final_approval_readiness_status": "vol_targeted_growth_executable_ticket_approval_readiness_not_ready",
+                "final_approval_readiness_decision": "NOT_READY_TO_REQUEST_EXECUTABLE_TICKET_APPROVAL",
+                "approval_prompt_allowed": "False",
+                "largest_blocker": "approval_request_not_ready_prerequisites_open",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -223,6 +244,8 @@ def verify_fixture_output(failures: list[str]) -> None:
         "vol_targeted_growth_manual_ticket_value_design_manual_review_required",
         "TICKET_VALUE_DESIGN_REVIEW_ONLY_VALUES_NOT_APPROVED",
         "ticket_values_not_approved",
+        "EXECUTABLE_TICKET_PREREQUISITES_NOT_CLOSED",
+        "NOT_READY_TO_REQUEST_EXECUTABLE_TICKET_APPROVAL",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",

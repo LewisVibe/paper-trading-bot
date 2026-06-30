@@ -69,6 +69,8 @@ REQUIRED_OUTPUT_PHRASES = [
     "Paper-live go/no-go dashboard:",
     "paper_live_go_no_go_dashboard_present:",
     "paper_live_go_no_go_warning: monitor only;",
+    "vol_ticket_prereq_closeout_decision:",
+    "vol_ticket_approval_readiness_decision:",
     "alignment_state: aligned_long",
     "followup_policy_status: no_action_required_already_aligned",
     "recommended_next_step: hold_no_action_and_monitor_only",

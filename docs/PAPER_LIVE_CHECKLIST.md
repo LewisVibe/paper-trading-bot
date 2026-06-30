@@ -9,7 +9,7 @@ Current status:
 - The active report/status seed is `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`.
 - The previous QQQ100 seed context remains `qqq_100_trend_gate` / `QQQ`, with saved evidence showing long exactly one share and no follow-up/repeat order needed.
 - The VPS/Hermes status job is monitoring-only and must remain status/report-only.
-- The volatility seed has a non-submitting ticket schema design, a non-submitting ticket-instance design, a fresh broker pre-ticket gate design, and a run-readiness checkpoint, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
+- The volatility seed has a non-submitting ticket schema design, a non-submitting ticket-instance design, a fresh broker pre-ticket gate design, a run-readiness checkpoint, a manual ticket-value design, and executable-ticket closeout/readiness checkpoints, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
 - High-growth, crypto, defensive, SMA, and slow-SMA remain excluded from paper-live execution.
 
 Remaining steps, in order:
@@ -74,6 +74,18 @@ Remaining steps, in order:
    - Saved display: `python bot.py --show-vol-targeted-growth-manual-ticket-value-design`.
    - It lists the fields that would need future manual values, but keeps side, quantity, order type, time-in-force, account reference, and broker order id blank/blocked.
    - It keeps `populated_ticket_value_count=0`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, and all execution/scheduling flags false.
+
+6e. **Close out executable-ticket prerequisites as still open.**
+   - Implemented checkpoint: `python bot.py --vol-targeted-growth-executable-ticket-prerequisites-closeout`.
+   - Saved display: `python bot.py --show-vol-targeted-growth-executable-ticket-prerequisites-closeout`.
+   - Current decision is `EXECUTABLE_TICKET_PREREQUISITES_NOT_CLOSED`.
+   - This records that the prerequisite chain is not complete; it does not populate order values, create an executable ticket, or approve execution.
+
+6f. **Check approval readiness without requesting approval.**
+   - Implemented checkpoint: `python bot.py --vol-targeted-growth-executable-ticket-approval-readiness`.
+   - Saved display: `python bot.py --show-vol-targeted-growth-executable-ticket-approval-readiness`.
+   - Current decision is `NOT_READY_TO_REQUEST_EXECUTABLE_TICKET_APPROVAL`.
+   - This does not request or record approval and keeps execution, paper execution, live trading, and scheduling approvals false.
 
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.

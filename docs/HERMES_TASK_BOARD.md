@@ -1529,6 +1529,24 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, side/quantity/order-type/time-in-force population, account/broker ID storage, order creation/submission/cancellation/replacement, strategy-to-execution wiring, cron edits, or treating design as execution approval.
 - **Stop condition:** Stop if the task would populate executable order values, create an executable ticket, submit/cancel/replace orders, approve paper execution, approve live trading, or schedule anything.
 
+### Task: Volatility-targeted growth executable-ticket prerequisites closeout
+- **Purpose:** Use `python bot.py --vol-targeted-growth-executable-ticket-prerequisites-closeout` to record that executable-ticket prerequisites are still not closed.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-executable-ticket-prerequisites-closeout`, `python bot.py --show-vol-targeted-growth-executable-ticket-prerequisites-closeout`, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_executable_ticket_closeout.py`.
+- **Expected status:** `vol_targeted_growth_executable_ticket_prerequisites_closeout_manual_review_required` with `final_prerequisites_closeout_decision=EXECUTABLE_TICKET_PREREQUISITES_NOT_CLOSED`; no executable ticket exists and execution/scheduling approvals remain false.
+- **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface the saved closeout decision when present.
+- **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order value population, order creation/submission/cancellation/replacement, executable ticket creation, strategy-to-execution wiring, cron edits, or treating closeout as approval.
+- **Stop condition:** Stop if the task would close blockers automatically, populate executable order values, create an executable ticket, submit/cancel/replace orders, approve paper execution, approve live trading, or schedule anything.
+
+### Task: Volatility-targeted growth executable-ticket approval readiness
+- **Purpose:** Use `python bot.py --vol-targeted-growth-executable-ticket-approval-readiness` to check whether the chain is ready to request explicit executable-ticket approval.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-executable-ticket-approval-readiness`, `python bot.py --show-vol-targeted-growth-executable-ticket-approval-readiness`, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_executable_ticket_closeout.py`.
+- **Expected status:** `vol_targeted_growth_executable_ticket_approval_readiness_not_ready` with `final_approval_readiness_decision=NOT_READY_TO_REQUEST_EXECUTABLE_TICKET_APPROVAL`; no approval prompt is allowed yet.
+- **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface the saved approval-readiness decision when present.
+- **Forbidden commands:** Broker reads, Alpaca calls, market refresh, approval recording, order value population, order creation/submission/cancellation/replacement, executable ticket creation, strategy-to-execution wiring, cron edits, or treating readiness as approval.
+- **Stop condition:** Stop if the task would request or record approval, populate executable order values, create an executable ticket, submit/cancel/replace orders, approve paper execution, approve live trading, or schedule anything.
+
 ### Task: Volatility-targeted growth paper-live execution blocker rollup
 - **Purpose:** Use `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup` to summarize the saved volatility paper-live blocker chain in one report and surface it in VPS daily monitoring.
 - **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
@@ -1538,7 +1556,7 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create ticket fields, clear blockers, approve execution, schedule anything, or connect the candidate to execution.
 
 ### Task: Paper-live go/no-go dashboard
-- **Purpose:** Use `python bot.py --paper-live-go-no-go-dashboard` to summarize QQQ100 no-action state, volatility blocker state, checklist phase, and VPS monitoring assumptions in one saved-output view.
+- **Purpose:** Use `python bot.py --paper-live-go-no-go-dashboard` to summarize QQQ100 no-action state, volatility blocker state, executable-ticket closeout/readiness, checklist phase, and VPS monitoring assumptions in one saved-output view.
 - **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
 - **Allowed commands:** `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --show-paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, `python scripts\verify_paper_live_go_no_go_dashboard.py`, and related report-only verifiers.
 - **Expected status:** `paper_live_go_no_go_dashboard_execution_blocked_monitor_only` with `final_go_no_go_decision=NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY`; no executable ticket exists and execution/scheduling approvals remain false.
