@@ -1044,6 +1044,12 @@ The volatility-targeted growth fresh broker pre-ticket gate design comes from `p
 - Current expected status is `vol_targeted_growth_fresh_broker_pre_ticket_gate_design_created_manual_review_required` with `final_pre_ticket_gate_design_decision=FRESH_BROKER_PRE_TICKET_GATE_DESIGNED_NOT_RUN`.
 - The design documents the future read-only broker gate, but it does not run the gate, call Alpaca, read positions, populate order values, create tickets, approve execution, or approve scheduling.
 - `python bot.py --vps-daily-monitoring-summary` includes a saved-output-only "Volatility fresh broker pre-ticket gate design" section when the summary exists; if it is missing, the daily summary reports the missing saved output as a monitoring issue only.
+
+The volatility-targeted growth fresh broker pre-ticket gate run-readiness checkpoint comes from `python bot.py --vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness`, with saved display through `python bot.py --show-vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness`:
+
+- Current expected ready status is `vol_targeted_growth_fresh_broker_pre_ticket_gate_run_readiness_ready_to_request_manual_readonly_approval` with `final_pre_ticket_gate_run_readiness_decision=READY_TO_REQUEST_EXPLICIT_READONLY_ALPACA_APPROVAL` when the saved design chain is complete.
+- Readiness to request approval is not approval to run. The checkpoint keeps `readonly_alpaca_run_approved=False`, `fresh_broker_pre_ticket_gate_run=False`, `broker_positions_read=False`, `order_values_populated=False`, `execution_approved=False`, and `scheduling_approved=False`.
+- `python bot.py --vps-daily-monitoring-summary` includes a saved-output-only "Volatility fresh broker pre-ticket gate run-readiness" section when the summary exists; if it is missing, the daily summary reports the missing saved output as a monitoring issue only.
 - It defines future ticket schema fields for manual review after explicit user approval for design work, while keeping `ticket_instance_created=False` and `order_values_populated=False`.
 - It does not call Alpaca, read positions, create a ticket instance, populate side/quantity/order-type/time-in-force values, submit orders, approve execution, approve paper execution, approve live trading, or approve scheduling.
 

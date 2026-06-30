@@ -2383,6 +2383,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness"]:
+        from trading_bot.research.vol_targeted_growth_fresh_broker_pre_ticket_gate_run_readiness import (
+            generate_vol_targeted_growth_fresh_broker_pre_ticket_gate_run_readiness,
+        )
+
+        result = generate_vol_targeted_growth_fresh_broker_pre_ticket_gate_run_readiness()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness"]:
+        from trading_bot.research.vol_targeted_growth_fresh_broker_pre_ticket_gate_run_readiness import (
+            show_vol_targeted_growth_fresh_broker_pre_ticket_gate_run_readiness,
+        )
+
+        code, lines = show_vol_targeted_growth_fresh_broker_pre_ticket_gate_run_readiness()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-paper-live-execution-blocker-rollup"]:
         from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
             generate_vol_targeted_growth_paper_live_execution_blocker_rollup,
@@ -8487,6 +8505,16 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-fresh-broker-pre-ticket-gate-design",
         action="store_true",
         help="Display the saved volatility-targeted growth fresh broker pre-ticket gate design.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness",
+        action="store_true",
+        help="Create a saved-output-only run-readiness checkpoint for the future fresh broker pre-ticket gate.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness",
+        action="store_true",
+        help="Display the saved volatility-targeted growth fresh broker pre-ticket gate run-readiness checkpoint.",
     )
     parser.add_argument(
         "--vol-targeted-growth-paper-live-execution-blocker-rollup",

@@ -47,6 +47,9 @@ REQUIRED_OUTPUT_PHRASES = [
     "Volatility fresh broker pre-ticket gate design:",
     "vol_fresh_broker_pre_ticket_gate_design_present:",
     "vol_fresh_broker_pre_ticket_gate_design_warning: monitor only;",
+    "Volatility fresh broker pre-ticket gate run-readiness:",
+    "vol_fresh_broker_pre_ticket_gate_run_readiness_present:",
+    "vol_fresh_broker_pre_ticket_gate_run_readiness_warning: monitor only;",
     "QQQ100 daily decision:",
     "qqq100_daily_decision_present: True",
     "daily_decision_status: qqq100_daily_decision_hold_no_action_aligned_long",
@@ -112,6 +115,8 @@ REQUIRED_ACTION_STATES = [
     "vol_non_submitting_ticket_instance_design_status",
     "vol_fresh_broker_pre_ticket_gate_design_missing_saved_output",
     "vol_fresh_broker_pre_ticket_gate_design_status",
+    "vol_fresh_broker_pre_ticket_gate_run_readiness_missing_saved_output",
+    "vol_fresh_broker_pre_ticket_gate_run_readiness_status",
     "paper_live_go_no_go_dashboard_missing_saved_output",
     "paper_live_go_no_go_status",
 ]
@@ -391,6 +396,33 @@ def verify_command_output(failures: list[str]) -> None:
                 failures.append(f"Daily summary missing-saved fresh broker pre-ticket gate design section missing phrase: {phrase}")
     else:
         failures.append("Daily summary must report whether fresh broker pre-ticket gate design is present")
+    if "vol_fresh_broker_pre_ticket_gate_run_readiness_present: True" in output:
+        for phrase in [
+            "final_pre_ticket_gate_run_readiness_status:",
+            "final_pre_ticket_gate_run_readiness_decision:",
+            "readiness_pass_count:",
+            "readiness_blocker_count:",
+            "ready_to_request_readonly_approval:",
+            "readonly_alpaca_run_approved: False",
+            "fresh_broker_pre_ticket_gate_run: False",
+            "broker_positions_read: False",
+            "order_values_populated: False",
+            "order_instructions_created: False",
+            "execution_approved: False",
+            "paper_execution_approved: False",
+            "scheduling_approved: False",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary fresh broker pre-ticket gate run-readiness section missing phrase: {phrase}")
+    elif "vol_fresh_broker_pre_ticket_gate_run_readiness_present: False" in output:
+        for phrase in [
+            "vol_fresh_broker_pre_ticket_gate_run_readiness_missing_saved_output: data/vol_targeted_growth_fresh_broker_pre_ticket_gate_run_readiness_summary.csv",
+            "vol_fresh_broker_pre_ticket_gate_run_readiness_status: missing_saved_output",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary missing-saved fresh broker pre-ticket gate run-readiness section missing phrase: {phrase}")
+    else:
+        failures.append("Daily summary must report whether fresh broker pre-ticket gate run-readiness is present")
     if "paper_live_go_no_go_dashboard_present: True" in output:
         for phrase in [
             "final_go_no_go_status: paper_live_go_no_go_dashboard_execution_blocked_monitor_only",
