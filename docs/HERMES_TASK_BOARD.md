@@ -1502,6 +1502,15 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation/submission/cancellation/replacement, populated side/quantity/order-type/time-in-force/account/broker-order-id values, account/secret fields, portfolio execution wiring, scheduling changes, or treating run-readiness as broker-read approval.
 - **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create an executable ticket, populate order values, approve execution, schedule anything, or connect the candidate to execution.
 
+### Task: Volatility-targeted growth fresh broker pre-ticket gate run
+- **Purpose:** Use `python bot.py --vol-targeted-growth-fresh-broker-pre-ticket-gate-run --confirm-readonly-alpaca-check` only after explicit user approval to save a fresh read-only Alpaca paper-position context before any future ticket-value discussion.
+- **Risk level:** Medium/read-only broker check. It may call Alpaca and read paper positions, but it must never create tickets, populate order values, submit/cancel/replace orders, write trade logs, send alerts, approve execution, or approve scheduling.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-fresh-broker-pre-ticket-gate-run --confirm-readonly-alpaca-check`, `python bot.py --show-vol-targeted-growth-fresh-broker-pre-ticket-gate-run`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_fresh_broker_pre_ticket_gate_run.py`.
+- **Expected successful status:** `vol_targeted_growth_fresh_broker_pre_ticket_gate_run_completed_readonly_manual_review_required`; the largest blocker should remain `ticket_values_not_approved_after_readonly_context`.
+- **Monitoring integration:** `python bot.py --vps-daily-monitoring-summary` surfaces the saved read-only gate-run status when `data/vol_targeted_growth_fresh_broker_pre_ticket_gate_run_summary.csv` exists; if missing, it reports missing saved output only.
+- **Forbidden commands:** Any order creation/submission/cancellation/replacement, populated side/quantity/order-type/time-in-force/account/broker-order-id values, secret/account ID printing, market refresh, strategy-to-execution wiring, cron edits, or treating the read-only gate as execution approval.
+- **Stop condition:** Stop if the task would create an executable ticket, populate order values, submit/cancel/replace orders, approve paper execution, approve live trading, schedule anything, or print secrets/account/order IDs.
+
 ### Task: Volatility-targeted growth paper-live execution blocker rollup
 - **Purpose:** Use `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup` to summarize the saved volatility paper-live blocker chain in one report and surface it in VPS daily monitoring.
 - **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.

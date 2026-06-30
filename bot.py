@@ -2401,6 +2401,33 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if "--vol-targeted-growth-fresh-broker-pre-ticket-gate-run" in sys.argv[1:]:
+        allowed_args = {
+            "--vol-targeted-growth-fresh-broker-pre-ticket-gate-run",
+            "--confirm-readonly-alpaca-check",
+        }
+        if any(arg not in allowed_args for arg in sys.argv[1:]):
+            print("--vol-targeted-growth-fresh-broker-pre-ticket-gate-run only accepts --confirm-readonly-alpaca-check.")
+            raise SystemExit(2)
+        from trading_bot.research.vol_targeted_growth_fresh_broker_pre_ticket_gate_run import (
+            generate_vol_targeted_growth_fresh_broker_pre_ticket_gate_run,
+        )
+
+        result = generate_vol_targeted_growth_fresh_broker_pre_ticket_gate_run(
+            confirm_readonly_alpaca_check="--confirm-readonly-alpaca-check" in sys.argv[1:]
+        )
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-fresh-broker-pre-ticket-gate-run"]:
+        from trading_bot.research.vol_targeted_growth_fresh_broker_pre_ticket_gate_run import (
+            show_vol_targeted_growth_fresh_broker_pre_ticket_gate_run,
+        )
+
+        code, lines = show_vol_targeted_growth_fresh_broker_pre_ticket_gate_run()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-paper-live-execution-blocker-rollup"]:
         from trading_bot.research.vol_targeted_growth_paper_live_checkpoints import (
             generate_vol_targeted_growth_paper_live_execution_blocker_rollup,
@@ -8515,6 +8542,16 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness",
         action="store_true",
         help="Display the saved volatility-targeted growth fresh broker pre-ticket gate run-readiness checkpoint.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-fresh-broker-pre-ticket-gate-run",
+        action="store_true",
+        help="Run the explicitly confirmed read-only fresh broker pre-ticket gate for the active volatility seed.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-fresh-broker-pre-ticket-gate-run",
+        action="store_true",
+        help="Display the saved volatility-targeted growth fresh broker pre-ticket gate run.",
     )
     parser.add_argument(
         "--vol-targeted-growth-paper-live-execution-blocker-rollup",

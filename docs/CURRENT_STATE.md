@@ -1053,6 +1053,14 @@ The volatility-targeted growth fresh broker pre-ticket gate run-readiness checkp
 - It defines future ticket schema fields for manual review after explicit user approval for design work, while keeping `ticket_instance_created=False` and `order_values_populated=False`.
 - It does not call Alpaca, read positions, create a ticket instance, populate side/quantity/order-type/time-in-force values, submit orders, approve execution, approve paper execution, approve live trading, or approve scheduling.
 
+The volatility-targeted growth fresh broker pre-ticket gate run comes from `python bot.py --vol-targeted-growth-fresh-broker-pre-ticket-gate-run --confirm-readonly-alpaca-check`, with saved display through `python bot.py --show-vol-targeted-growth-fresh-broker-pre-ticket-gate-run`:
+
+- It may run only with explicit read-only Alpaca confirmation. Without `--confirm-readonly-alpaca-check`, it records `readonly_confirmation_missing` and does not read broker positions.
+- With confirmation, it reads paper positions through the existing read-only broker-position helper and saves counts/context only for manual review.
+- The expected successful status is `vol_targeted_growth_fresh_broker_pre_ticket_gate_run_completed_readonly_manual_review_required`.
+- The daily VPS monitoring summary now includes a saved-output-only "Volatility fresh broker pre-ticket gate run" section. Missing saved output is a monitoring issue only.
+- It keeps `ticket_instance_created=False`, `executable_ticket_created=False`, `order_values_populated=False`, `order_instructions_created=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
+
 The volatility-targeted growth paper-live execution blocker rollup comes from `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, with saved display through `python bot.py --show-vol-targeted-growth-paper-live-execution-blocker-rollup`:
 
 - Current expected status is `vol_targeted_growth_paper_live_execution_blocker_rollup_created_manual_review_required`.

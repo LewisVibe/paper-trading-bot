@@ -305,6 +305,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-fresh-broker-pre-ticket-gate-design",
     "--vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness",
     "--show-vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness",
+    "--vol-targeted-growth-fresh-broker-pre-ticket-gate-run",
+    "--show-vol-targeted-growth-fresh-broker-pre-ticket-gate-run",
     "--vol-targeted-growth-paper-live-execution-blocker-rollup",
     "--show-vol-targeted-growth-paper-live-execution-blocker-rollup",
     "--vol-managed-etf-backtest",

@@ -41,6 +41,7 @@ VOL_NON_SUBMITTING_TICKET_SCHEMA_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth
 VOL_NON_SUBMITTING_TICKET_INSTANCE_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_non_submitting_ticket_instance_design_summary.csv"
 VOL_FRESH_BROKER_PRE_TICKET_GATE_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_design_summary.csv"
 VOL_FRESH_BROKER_PRE_TICKET_GATE_RUN_READINESS_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_run_readiness_summary.csv"
+VOL_FRESH_BROKER_PRE_TICKET_GATE_RUN_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_run_summary.csv"
 PAPER_LIVE_GO_NO_GO_DASHBOARD_SUMMARY_PATH = "data/paper_live_go_no_go_dashboard_summary.csv"
 PAPER_LIVE_GO_NO_GO_EXPECTED_DECISION = "NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY"
 VOL_EXECUTABLE_TICKET_GAP_LIST_EXPECTED_DECISION = "EXECUTABLE_TICKET_DESIGN_NOT_READY"
@@ -175,6 +176,13 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         ]
     )
     lines.extend(vol_fresh_broker_pre_ticket_gate_run_readiness_status_lines(root_path))
+    lines.extend(
+        [
+            "",
+            "Volatility fresh broker pre-ticket gate run:",
+        ]
+    )
+    lines.extend(vol_fresh_broker_pre_ticket_gate_run_status_lines(root_path))
     lines.extend(
         [
             "",
@@ -504,6 +512,40 @@ def vol_fresh_broker_pre_ticket_gate_run_readiness_status_lines(root: Path) -> l
         f"- paper_execution_approved: {summary_value(rows, 'paper_execution_approved') or 'False'}",
         f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
         "- vol_fresh_broker_pre_ticket_gate_run_readiness_warning: monitor only; readiness can support asking for future read-only approval but is not that approval.",
+    ]
+
+
+def vol_fresh_broker_pre_ticket_gate_run_status_lines(root: Path) -> list[str]:
+    rows = read_csv_rows(root / VOL_FRESH_BROKER_PRE_TICKET_GATE_RUN_SUMMARY_PATH)
+    if not rows:
+        return [
+            "- vol_fresh_broker_pre_ticket_gate_run_present: False",
+            f"- vol_fresh_broker_pre_ticket_gate_run_missing_saved_output: {VOL_FRESH_BROKER_PRE_TICKET_GATE_RUN_SUMMARY_PATH}",
+            "- vol_fresh_broker_pre_ticket_gate_run_status: missing_saved_output",
+            "- vol_fresh_broker_pre_ticket_gate_run_warning: monitor only; missing read-only gate output does not approve broker reads, ticket values, execution, or scheduling.",
+        ]
+    return [
+        "- vol_fresh_broker_pre_ticket_gate_run_present: True",
+        f"- final_pre_ticket_gate_run_status: {summary_value(rows, 'final_pre_ticket_gate_run_status')}",
+        f"- active_seed: {summary_value(rows, 'active_seed')}",
+        f"- active_ticker: {summary_value(rows, 'active_ticker')}",
+        f"- previous_seed: {summary_value(rows, 'previous_seed')}",
+        f"- previous_ticker: {summary_value(rows, 'previous_ticker')}",
+        f"- readonly_confirmation_status: {summary_value(rows, 'readonly_confirmation_status')}",
+        f"- broker_position_read_status: {summary_value(rows, 'broker_position_read_status')}",
+        f"- position_symbol_count_if_readonly: {summary_value(rows, 'position_symbol_count_if_readonly')}",
+        f"- qqq_position_quantity_if_readonly: {summary_value(rows, 'qqq_position_quantity_if_readonly')}",
+        f"- ticket_instance_created: {summary_value(rows, 'ticket_instance_created') or 'False'}",
+        f"- executable_ticket_created: {summary_value(rows, 'executable_ticket_created') or 'False'}",
+        f"- order_values_populated: {summary_value(rows, 'order_values_populated') or 'False'}",
+        f"- largest_blocker: {summary_value(rows, 'largest_blocker')}",
+        f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
+        f"- order_instructions_created: {summary_value(rows, 'order_instructions_created') or 'False'}",
+        f"- orders_submitted: {summary_value(rows, 'orders_submitted') or 'False'}",
+        f"- execution_approved: {summary_value(rows, 'execution_approved') or 'False'}",
+        f"- paper_execution_approved: {summary_value(rows, 'paper_execution_approved') or 'False'}",
+        f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
+        "- vol_fresh_broker_pre_ticket_gate_run_warning: monitor only; read-only gate context is not ticket value, order approval, execution approval, or scheduling approval.",
     ]
 
 
