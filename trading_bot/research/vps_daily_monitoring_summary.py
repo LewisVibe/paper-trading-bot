@@ -39,12 +39,14 @@ VOL_EXECUTABLE_TICKET_GAP_LIST_SUMMARY_PATH = "data/vol_targeted_growth_executab
 VOL_MANUAL_EXECUTION_DESIGN_APPROVAL_GATE_SUMMARY_PATH = "data/vol_targeted_growth_manual_execution_design_approval_gate_summary.csv"
 VOL_NON_SUBMITTING_TICKET_SCHEMA_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_non_submitting_ticket_schema_design_summary.csv"
 VOL_NON_SUBMITTING_TICKET_INSTANCE_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_non_submitting_ticket_instance_design_summary.csv"
+VOL_FRESH_BROKER_PRE_TICKET_GATE_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_design_summary.csv"
 PAPER_LIVE_GO_NO_GO_DASHBOARD_SUMMARY_PATH = "data/paper_live_go_no_go_dashboard_summary.csv"
 PAPER_LIVE_GO_NO_GO_EXPECTED_DECISION = "NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY"
 VOL_EXECUTABLE_TICKET_GAP_LIST_EXPECTED_DECISION = "EXECUTABLE_TICKET_DESIGN_NOT_READY"
 VOL_MANUAL_EXECUTION_DESIGN_APPROVAL_GATE_EXPECTED_DECISION = "MANUAL_EXECUTION_DESIGN_APPROVAL_NOT_RECORDED"
 VOL_NON_SUBMITTING_TICKET_SCHEMA_DESIGN_EXPECTED_DECISION = "NON_SUBMITTING_TICKET_SCHEMA_DESIGNED_NO_TICKET_CREATED"
 VOL_NON_SUBMITTING_TICKET_INSTANCE_DESIGN_EXPECTED_DECISION = "NON_SUBMITTING_TICKET_INSTANCE_DESIGNED_NO_ORDER_VALUES"
+VOL_FRESH_BROKER_PRE_TICKET_GATE_DESIGN_EXPECTED_DECISION = "FRESH_BROKER_PRE_TICKET_GATE_DESIGNED_NOT_RUN"
 
 
 def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str]:
@@ -157,6 +159,13 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         ]
     )
     lines.extend(vol_non_submitting_ticket_instance_design_status_lines(root_path))
+    lines.extend(
+        [
+            "",
+            "Volatility fresh broker pre-ticket gate design:",
+        ]
+    )
+    lines.extend(vol_fresh_broker_pre_ticket_gate_design_status_lines(root_path))
     lines.extend(
         [
             "",
@@ -420,6 +429,38 @@ def vol_non_submitting_ticket_instance_design_status_lines(root: Path) -> list[s
         f"- paper_execution_approved: {summary_value(rows, 'paper_execution_approved') or 'False'}",
         f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
         "- vol_non_submitting_ticket_instance_design_warning: monitor only; ticket-instance design is not order approval, execution approval, or scheduling approval.",
+    ]
+
+
+def vol_fresh_broker_pre_ticket_gate_design_status_lines(root: Path) -> list[str]:
+    rows = read_csv_rows(root / VOL_FRESH_BROKER_PRE_TICKET_GATE_DESIGN_SUMMARY_PATH)
+    if not rows:
+        return [
+            "- vol_fresh_broker_pre_ticket_gate_design_present: False",
+            f"- vol_fresh_broker_pre_ticket_gate_design_missing_saved_output: {VOL_FRESH_BROKER_PRE_TICKET_GATE_DESIGN_SUMMARY_PATH}",
+            "- vol_fresh_broker_pre_ticket_gate_design_status: missing_saved_output",
+            "- vol_fresh_broker_pre_ticket_gate_design_warning: monitor only; missing gate design does not approve broker reads, order values, execution, or scheduling.",
+        ]
+    return [
+        "- vol_fresh_broker_pre_ticket_gate_design_present: True",
+        f"- final_pre_ticket_gate_design_status: {summary_value(rows, 'final_pre_ticket_gate_design_status')}",
+        f"- final_pre_ticket_gate_design_decision: {summary_value(rows, 'final_pre_ticket_gate_design_decision')}",
+        f"- active_seed: {summary_value(rows, 'active_seed')}",
+        f"- active_ticker: {summary_value(rows, 'active_ticker')}",
+        f"- previous_seed: {summary_value(rows, 'previous_seed')}",
+        f"- previous_ticker: {summary_value(rows, 'previous_ticker')}",
+        f"- gate_check_count: {summary_value(rows, 'gate_check_count')}",
+        f"- fresh_broker_pre_ticket_gate_run: {summary_value(rows, 'fresh_broker_pre_ticket_gate_run') or 'False'}",
+        f"- readonly_alpaca_check_run: {summary_value(rows, 'readonly_alpaca_check_run') or 'False'}",
+        f"- broker_positions_read: {summary_value(rows, 'broker_positions_read') or 'False'}",
+        f"- order_values_populated: {summary_value(rows, 'order_values_populated') or 'False'}",
+        f"- largest_blocker: {summary_value(rows, 'largest_blocker')}",
+        f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
+        f"- order_instructions_created: {summary_value(rows, 'order_instructions_created') or 'False'}",
+        f"- execution_approved: {summary_value(rows, 'execution_approved') or 'False'}",
+        f"- paper_execution_approved: {summary_value(rows, 'paper_execution_approved') or 'False'}",
+        f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
+        "- vol_fresh_broker_pre_ticket_gate_design_warning: monitor only; gate design is not a broker read, order approval, execution approval, or scheduling approval.",
     ]
 
 

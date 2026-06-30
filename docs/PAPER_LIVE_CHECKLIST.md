@@ -9,7 +9,7 @@ Current status:
 - The active report/status seed is `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`.
 - The previous QQQ100 seed context remains `qqq_100_trend_gate` / `QQQ`, with saved evidence showing long exactly one share and no follow-up/repeat order needed.
 - The VPS/Hermes status job is monitoring-only and must remain status/report-only.
-- The volatility seed has a non-submitting ticket schema design and a non-submitting ticket-instance design, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
+- The volatility seed has a non-submitting ticket schema design, a non-submitting ticket-instance design, and a fresh broker pre-ticket gate design, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
 - High-growth, crypto, defensive, SMA, and slow-SMA remain excluded from paper-live execution.
 
 Remaining steps, in order:
@@ -43,9 +43,12 @@ Remaining steps, in order:
    - It does not call Alpaca, read positions, create orders, schedule anything, or approve execution.
 
 6. **Create a fresh-read broker pre-ticket gate.**
-   - This is market-hours useful and requires explicit read-only Alpaca approval.
-   - It should compare fresh broker state, saved target context, existing QQQ position, and multi-sleeve constraints immediately before any future ticket-instance discussion.
-   - If broker state is unavailable, stale, mismatched, or ambiguous, block/manual-review.
+   - Implemented design checkpoint: `python bot.py --vol-targeted-growth-fresh-broker-pre-ticket-gate-design`.
+   - Saved display: `python bot.py --show-vol-targeted-growth-fresh-broker-pre-ticket-gate-design`.
+   - The design is report-only and does not run Alpaca.
+   - The future run is market-hours useful and requires explicit read-only Alpaca approval.
+   - A future run should compare fresh broker state, saved target context, existing QQQ position, and multi-sleeve constraints immediately before any future ticket-instance discussion.
+   - If broker state is unavailable, stale, mismatched, or ambiguous, it must block/manual-review.
 
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.
@@ -80,7 +83,7 @@ Remaining steps, in order:
 
 Current next safe implementation step:
 
-- Design a fresh-read broker pre-ticket gate. This must be a separate read-only Alpaca approval checkpoint and must not create a ticket, populate order values, submit orders, or approve execution.
+- Add a readiness/verifier checkpoint for the future fresh-read broker pre-ticket gate run. It must verify the gate can only run after separate explicit read-only Alpaca approval and still must not create a ticket, populate order values, submit orders, or approve execution.
 
 Current next market-hours operational step, only after explicit approval:
 
@@ -182,6 +185,7 @@ Current next market-hours operational step, only after explicit approval:
 - `python bot.py --vol-targeted-growth-manual-execution-design-approval-gate` may define the wording/scope required for a future explicit approval prompt only; it does not record approval, create order fields, create executable tickets, call Alpaca, read positions, approve execution, or approve scheduling. The VPS daily monitoring summary may display this saved approval-gate status as monitoring context only.
 - `python bot.py --vol-targeted-growth-non-submitting-ticket-schema-design` may define future ticket schema fields for manual review only; it does not create a ticket instance, populate order values, call Alpaca, read positions, submit orders, approve execution, or approve scheduling. The VPS daily monitoring summary may display this saved schema-design status as monitoring context only.
 - `python bot.py --vol-targeted-growth-non-submitting-ticket-instance-design` may define a draft future ticket-instance shape for manual review only; it does not create an executable ticket, populate side, quantity, order type, time-in-force, account, or broker order id, call Alpaca, read positions, submit orders, approve execution, or approve scheduling. The VPS daily monitoring summary may display this saved ticket-instance design status as monitoring context only.
+- `python bot.py --vol-targeted-growth-fresh-broker-pre-ticket-gate-design` may define the future read-only broker gate for manual review only; it does not run the gate, call Alpaca, read positions, create tickets, populate order values, submit orders, approve execution, or approve scheduling. The VPS daily monitoring summary may display this saved gate-design status as monitoring context only.
 - `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup` may summarize the volatility paper-live blocker chain only; it does not clear blockers, create executable tickets, approve execution, or approve scheduling. The VPS daily monitoring summary may display this saved rollup status as monitoring context only.
 - `python bot.py --paper-live-go-no-go-dashboard` may summarize QQQ100 no-action state, volatility blocker state, checklist phase, and VPS monitoring assumptions in one saved-output view only; current expected decision is `NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY`, and it does not approve execution or scheduling.
 - `python bot.py --vps-daily-monitoring-summary` may display the saved paper-live go/no-go dashboard status when present; missing dashboard output is reported as monitoring-only missing saved evidence and does not create orders, broker reads, cron changes, execution approval, or scheduling approval.
@@ -508,4 +512,4 @@ Use this as the next implementation prompt:
 
 > Add the saved non-submitting ticket schema design status to `python bot.py --vps-daily-monitoring-summary`, preserving monitoring-only behaviour and all false approval flags.
 
-After that, the next market-hours step is to design a fresh-read broker pre-ticket gate for `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x`. Do not run any Alpaca check, broker read, paper order, ticket population, or execution command without explicit approval in the prompt.
+After that, the next market-hours step is a separate readiness checkpoint for a future fresh-read broker pre-ticket gate run for `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x`. Do not run any Alpaca check, broker read, paper order, ticket population, or execution command without explicit approval in the prompt.
