@@ -9,7 +9,7 @@ Current status:
 - The active report/status seed is `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`.
 - The previous QQQ100 seed context remains `qqq_100_trend_gate` / `QQQ`, with saved evidence showing long exactly one share and no follow-up/repeat order needed.
 - The VPS/Hermes status job is monitoring-only and must remain status/report-only.
-- The volatility seed has a non-submitting ticket schema design, a non-submitting ticket-instance design, a fresh broker pre-ticket gate design, a run-readiness checkpoint, a manual ticket-value design, and executable-ticket closeout/readiness/criteria/resolution-plan/source-review/blocker-closeout-review checkpoints, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
+- The volatility seed has a non-submitting ticket schema design, a non-submitting ticket-instance design, a fresh broker pre-ticket gate design, a run-readiness checkpoint, a manual ticket-value design, and executable-ticket closeout/readiness/criteria/resolution-plan/source-review/blocker-review checkpoints, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
 - High-growth, crypto, defensive, SMA, and slow-SMA remain excluded from paper-live execution.
 
 Remaining steps, in order:
@@ -110,6 +110,15 @@ Remaining steps, in order:
    - Saved display: `python bot.py --show-vol-targeted-growth-executable-ticket-criteria-blocker-closeout-review`.
    - Current decision is `CRITERIA_BLOCKERS_REVIEWED_NONE_CLOSED`.
    - This classifies blockers for manual review, but it does not close blockers, change approval readiness, request approval, record approval, create ticket values, create an executable ticket, or approve execution.
+
+6k. **Review the first blocker-specific checkpoints without closing blockers.**
+   - Implemented checkpoints:
+     `python bot.py --vol-targeted-growth-criteria-source-blocker-review`,
+     `python bot.py --vol-targeted-growth-criteria-resolution-plan-blocker-review`,
+     `python bot.py --vol-targeted-growth-approval-criteria-not-approval-blocker-review`,
+     and `python bot.py --vol-targeted-growth-criteria-blocker-specific-review-rollup`.
+   - Current rollup decision is `CRITERIA_BLOCKER_SPECIFIC_REVIEWS_CREATED_NONE_CLOSED`.
+   - These reports confirm source evidence, resolution-plan ordering, and approval-criteria boundaries for manual review only; they do not close blockers, request approval, record approval, populate ticket values, create an executable ticket, or approve execution.
 
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.

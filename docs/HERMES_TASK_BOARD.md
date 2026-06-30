@@ -1583,6 +1583,15 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, criteria edits, blocker closeout, approval-readiness changes, approval requests, approval recording, order value population, order creation/submission/cancellation/replacement, executable ticket creation, strategy-to-execution wiring, cron edits, or treating blocker review as approval.
 - **Stop condition:** Stop if the task would change criteria, close blockers, change approval readiness, request or record approval, populate executable order values, create an executable ticket, submit/cancel/replace orders, approve paper execution, approve live trading, or schedule anything.
 
+### Task: Volatility-targeted growth executable-ticket blocker-specific reviews
+- **Purpose:** Use the first blocker-specific review commands to review `criteria_source_reviewed`, `criteria_resolution_plan_open`, and `approval_criteria_not_approval`, then roll them up without closing blockers.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-criteria-source-blocker-review`, `python bot.py --vol-targeted-growth-criteria-resolution-plan-blocker-review`, `python bot.py --vol-targeted-growth-approval-criteria-not-approval-blocker-review`, `python bot.py --vol-targeted-growth-criteria-blocker-specific-review-rollup`, their matching `--show-...` commands, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_executable_ticket_blocker_specific_reviews.py`.
+- **Expected status:** The rollup records `vol_targeted_growth_criteria_blocker_specific_review_rollup_manual_review_required` with `final_review_decision=CRITERIA_BLOCKER_SPECIFIC_REVIEWS_CREATED_NONE_CLOSED`; blockers remain open.
+- **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface the saved blocker-specific review rollup decision when present.
+- **Forbidden commands:** Broker reads, Alpaca calls, market refresh, criteria edits, blocker closeout, approval-readiness changes, approval requests, approval recording, order value population, order creation/submission/cancellation/replacement, executable ticket creation, strategy-to-execution wiring, cron edits, or treating blocker-specific review as approval.
+- **Stop condition:** Stop if the task would change criteria, close blockers, change approval readiness, request or record approval, populate executable order values, create an executable ticket, submit/cancel/replace orders, approve paper execution, approve live trading, or schedule anything.
+
 ### Task: Volatility-targeted growth paper-live execution blocker rollup
 - **Purpose:** Use `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup` to summarize the saved volatility paper-live blocker chain in one report and surface it in VPS daily monitoring.
 - **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.

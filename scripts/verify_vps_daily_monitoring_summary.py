@@ -75,6 +75,7 @@ REQUIRED_OUTPUT_PHRASES = [
     "vol_ticket_criteria_resolution_decision:",
     "vol_ticket_criteria_source_review_decision:",
     "vol_ticket_criteria_blocker_closeout_review_decision:",
+    "vol_ticket_blocker_specific_review_rollup_decision:",
     "alignment_state: aligned_long",
     "followup_policy_status: no_action_required_already_aligned",
     "recommended_next_step: hold_no_action_and_monitor_only",

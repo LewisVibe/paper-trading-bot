@@ -668,6 +668,53 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    blocker_specific_routes = {
+        "--vol-targeted-growth-criteria-source-blocker-review": (
+            "generate_vol_targeted_growth_criteria_source_blocker_review",
+            "Executable-ticket criteria source blocker review",
+        ),
+        "--show-vol-targeted-growth-criteria-source-blocker-review": (
+            "show_vol_targeted_growth_criteria_source_blocker_review",
+            "Executable-ticket criteria source blocker review",
+        ),
+        "--vol-targeted-growth-criteria-resolution-plan-blocker-review": (
+            "generate_vol_targeted_growth_criteria_resolution_plan_blocker_review",
+            "Executable-ticket criteria resolution plan blocker review",
+        ),
+        "--show-vol-targeted-growth-criteria-resolution-plan-blocker-review": (
+            "show_vol_targeted_growth_criteria_resolution_plan_blocker_review",
+            "Executable-ticket criteria resolution plan blocker review",
+        ),
+        "--vol-targeted-growth-approval-criteria-not-approval-blocker-review": (
+            "generate_vol_targeted_growth_approval_criteria_not_approval_blocker_review",
+            "Executable-ticket approval criteria blocker review",
+        ),
+        "--show-vol-targeted-growth-approval-criteria-not-approval-blocker-review": (
+            "show_vol_targeted_growth_approval_criteria_not_approval_blocker_review",
+            "Executable-ticket approval criteria blocker review",
+        ),
+        "--vol-targeted-growth-criteria-blocker-specific-review-rollup": (
+            "generate_vol_targeted_growth_criteria_blocker_specific_review_rollup",
+            "Executable-ticket criteria blocker specific review rollup",
+        ),
+        "--show-vol-targeted-growth-criteria-blocker-specific-review-rollup": (
+            "show_vol_targeted_growth_criteria_blocker_specific_review_rollup",
+            "Executable-ticket criteria blocker specific review rollup",
+        ),
+    }
+    if sys.argv[1:] and sys.argv[1] in blocker_specific_routes and len(sys.argv[1:]) == 1:
+        from trading_bot.research import vol_targeted_growth_executable_ticket_blocker_specific_reviews as blocker_reviews
+
+        function_name, label = blocker_specific_routes[sys.argv[1]]
+        result = getattr(blocker_reviews, function_name)()
+        if isinstance(result, tuple):
+            code, lines = result
+            for line in lines:
+                print(line)
+            raise SystemExit(code)
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
     if sys.argv[1:] == ["--paper-live-f6-f7-audit"]:
         from trading_bot.research.paper_live_f6_f7_audit import generate_paper_live_f6_f7_audit
 
@@ -2848,6 +2895,16 @@ from trading_bot.research.vol_targeted_growth_executable_ticket_criteria_source_
 from trading_bot.research.vol_targeted_growth_executable_ticket_criteria_blocker_closeout_review import (
     generate_vol_targeted_growth_executable_ticket_criteria_blocker_closeout_review,
     show_vol_targeted_growth_executable_ticket_criteria_blocker_closeout_review,
+)
+from trading_bot.research.vol_targeted_growth_executable_ticket_blocker_specific_reviews import (
+    generate_vol_targeted_growth_approval_criteria_not_approval_blocker_review,
+    generate_vol_targeted_growth_criteria_blocker_specific_review_rollup,
+    generate_vol_targeted_growth_criteria_resolution_plan_blocker_review,
+    generate_vol_targeted_growth_criteria_source_blocker_review,
+    show_vol_targeted_growth_approval_criteria_not_approval_blocker_review,
+    show_vol_targeted_growth_criteria_blocker_specific_review_rollup,
+    show_vol_targeted_growth_criteria_resolution_plan_blocker_review,
+    show_vol_targeted_growth_criteria_source_blocker_review,
 )
 from trading_bot.research.paper_live_f6_f7_audit import (
     generate_paper_live_f6_f7_audit,
@@ -7708,6 +7765,46 @@ def parse_args() -> argparse.Namespace:
         help="Display the saved executable-ticket criteria blocker closeout review.",
     )
     parser.add_argument(
+        "--vol-targeted-growth-criteria-source-blocker-review",
+        action="store_true",
+        help="Create a saved-output criteria source blocker review without closing blockers.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-criteria-source-blocker-review",
+        action="store_true",
+        help="Display the saved criteria source blocker review.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-criteria-resolution-plan-blocker-review",
+        action="store_true",
+        help="Create a saved-output criteria resolution plan blocker review without closing blockers.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-criteria-resolution-plan-blocker-review",
+        action="store_true",
+        help="Display the saved criteria resolution plan blocker review.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-approval-criteria-not-approval-blocker-review",
+        action="store_true",
+        help="Create a saved-output approval criteria blocker review without requesting approval.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-approval-criteria-not-approval-blocker-review",
+        action="store_true",
+        help="Display the saved approval criteria blocker review.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-criteria-blocker-specific-review-rollup",
+        action="store_true",
+        help="Create a saved-output rollup of criteria blocker-specific reviews.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-criteria-blocker-specific-review-rollup",
+        action="store_true",
+        help="Display the saved criteria blocker-specific review rollup.",
+    )
+    parser.add_argument(
         "--paper-live-f6-f7-audit",
         action="store_true",
         help="Create a saved-output F6/F7 audit for paper-live promotion readiness without broker reads.",
@@ -10113,6 +10210,46 @@ def main() -> int:
         return 0
     if args.show_vol_targeted_growth_executable_ticket_criteria_blocker_closeout_review:
         status_code, lines = show_vol_targeted_growth_executable_ticket_criteria_blocker_closeout_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_criteria_source_blocker_review:
+        result = generate_vol_targeted_growth_criteria_source_blocker_review()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_criteria_source_blocker_review:
+        status_code, lines = show_vol_targeted_growth_criteria_source_blocker_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_criteria_resolution_plan_blocker_review:
+        result = generate_vol_targeted_growth_criteria_resolution_plan_blocker_review()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_criteria_resolution_plan_blocker_review:
+        status_code, lines = show_vol_targeted_growth_criteria_resolution_plan_blocker_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_approval_criteria_not_approval_blocker_review:
+        result = generate_vol_targeted_growth_approval_criteria_not_approval_blocker_review()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_approval_criteria_not_approval_blocker_review:
+        status_code, lines = show_vol_targeted_growth_approval_criteria_not_approval_blocker_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_criteria_blocker_specific_review_rollup:
+        result = generate_vol_targeted_growth_criteria_blocker_specific_review_rollup()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_criteria_blocker_specific_review_rollup:
+        status_code, lines = show_vol_targeted_growth_criteria_blocker_specific_review_rollup()
         for line in lines:
             print(line)
         return status_code

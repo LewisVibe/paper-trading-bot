@@ -581,6 +581,7 @@ def paper_live_go_no_go_dashboard_status_lines(root: Path) -> list[str]:
         f"- vol_ticket_criteria_resolution_decision: {summary_value(rows, 'vol_ticket_criteria_resolution_decision')}",
         f"- vol_ticket_criteria_source_review_decision: {summary_value(rows, 'vol_ticket_criteria_source_review_decision')}",
         f"- vol_ticket_criteria_blocker_closeout_review_decision: {summary_value(rows, 'vol_ticket_criteria_blocker_closeout_review_decision')}",
+        f"- vol_ticket_blocker_specific_review_rollup_decision: {summary_value(rows, 'vol_ticket_blocker_specific_review_rollup_decision')}",
         f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         f"- order_instructions_created: {summary_value(rows, 'order_instructions_created') or 'False'}",
         f"- execution_approved: {summary_value(rows, 'execution_approved') or 'False'}",
