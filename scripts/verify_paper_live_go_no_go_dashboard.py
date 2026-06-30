@@ -34,6 +34,7 @@ REQUIRED_TOKENS = [
     "vol_ticket_criteria_source_review_status",
     "vol_ticket_criteria_blocker_closeout_review_status",
     "vol_ticket_blocker_specific_review_rollup_status",
+    "vol_ticket_closeout_candidate_review_rollup_status",
     "executable_ticket_prerequisites_not_closed",
     "executable_ticket_approval_not_ready",
     "executable_ticket_approval_criteria_review_required",
@@ -41,6 +42,7 @@ REQUIRED_TOKENS = [
     "executable_ticket_criteria_source_review_does_not_close_blockers",
     "executable_ticket_criteria_blocker_closeout_review_does_not_close_blockers",
     "executable_ticket_blocker_specific_reviews_do_not_close_blockers",
+    "executable_ticket_closeout_candidate_reviews_do_not_close_blockers",
     "status_only_monitoring_no_cron_change",
     '"execution_approved": False',
     '"paper_execution_approved": False',
@@ -265,6 +267,14 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_executable_ticket_criteria_closeout_candidate_review_rollup_summary.csv",
+            {
+                "final_candidate_review_status": "vol_targeted_growth_criteria_closeout_candidate_review_rollup_manual_review_required",
+                "final_candidate_review_decision": "CRITERIA_CLOSEOUT_CANDIDATES_REVIEWED_NONE_CLOSED",
+                "largest_blocker": "closeout_candidates_reviewed_none_closed",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -304,6 +314,7 @@ def verify_fixture_output(failures: list[str]) -> None:
         "CRITERIA_SOURCE_REVIEWED_NO_BLOCKERS_CLOSED",
         "CRITERIA_BLOCKERS_REVIEWED_NONE_CLOSED",
         "CRITERIA_BLOCKER_SPECIFIC_REVIEWS_CREATED_NONE_CLOSED",
+        "CRITERIA_CLOSEOUT_CANDIDATES_REVIEWED_NONE_CLOSED",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",

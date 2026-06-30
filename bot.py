@@ -715,6 +715,28 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    closeout_candidate_routes = {
+        "--vol-targeted-growth-criteria-source-closeout-candidate-review": "generate_vol_targeted_growth_criteria_source_closeout_candidate_review",
+        "--show-vol-targeted-growth-criteria-source-closeout-candidate-review": "show_vol_targeted_growth_criteria_source_closeout_candidate_review",
+        "--vol-targeted-growth-criteria-resolution-plan-closeout-candidate-review": "generate_vol_targeted_growth_criteria_resolution_plan_closeout_candidate_review",
+        "--show-vol-targeted-growth-criteria-resolution-plan-closeout-candidate-review": "show_vol_targeted_growth_criteria_resolution_plan_closeout_candidate_review",
+        "--vol-targeted-growth-approval-criteria-not-approval-closeout-candidate-review": "generate_vol_targeted_growth_approval_criteria_not_approval_closeout_candidate_review",
+        "--show-vol-targeted-growth-approval-criteria-not-approval-closeout-candidate-review": "show_vol_targeted_growth_approval_criteria_not_approval_closeout_candidate_review",
+        "--vol-targeted-growth-criteria-closeout-candidate-review-rollup": "generate_vol_targeted_growth_criteria_closeout_candidate_review_rollup",
+        "--show-vol-targeted-growth-criteria-closeout-candidate-review-rollup": "show_vol_targeted_growth_criteria_closeout_candidate_review_rollup",
+    }
+    if sys.argv[1:] and sys.argv[1] in closeout_candidate_routes and len(sys.argv[1:]) == 1:
+        from trading_bot.research import vol_targeted_growth_executable_ticket_closeout_candidate_reviews as candidate_reviews
+
+        result = getattr(candidate_reviews, closeout_candidate_routes[sys.argv[1]])()
+        if isinstance(result, tuple):
+            code, lines = result
+            for line in lines:
+                print(line)
+            raise SystemExit(code)
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
     if sys.argv[1:] == ["--paper-live-f6-f7-audit"]:
         from trading_bot.research.paper_live_f6_f7_audit import generate_paper_live_f6_f7_audit
 
@@ -2905,6 +2927,16 @@ from trading_bot.research.vol_targeted_growth_executable_ticket_blocker_specific
     show_vol_targeted_growth_criteria_blocker_specific_review_rollup,
     show_vol_targeted_growth_criteria_resolution_plan_blocker_review,
     show_vol_targeted_growth_criteria_source_blocker_review,
+)
+from trading_bot.research.vol_targeted_growth_executable_ticket_closeout_candidate_reviews import (
+    generate_vol_targeted_growth_approval_criteria_not_approval_closeout_candidate_review,
+    generate_vol_targeted_growth_criteria_closeout_candidate_review_rollup,
+    generate_vol_targeted_growth_criteria_resolution_plan_closeout_candidate_review,
+    generate_vol_targeted_growth_criteria_source_closeout_candidate_review,
+    show_vol_targeted_growth_approval_criteria_not_approval_closeout_candidate_review,
+    show_vol_targeted_growth_criteria_closeout_candidate_review_rollup,
+    show_vol_targeted_growth_criteria_resolution_plan_closeout_candidate_review,
+    show_vol_targeted_growth_criteria_source_closeout_candidate_review,
 )
 from trading_bot.research.paper_live_f6_f7_audit import (
     generate_paper_live_f6_f7_audit,
@@ -7804,6 +7836,14 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Display the saved criteria blocker-specific review rollup.",
     )
+    parser.add_argument("--vol-targeted-growth-criteria-source-closeout-candidate-review", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-criteria-source-closeout-candidate-review", action="store_true")
+    parser.add_argument("--vol-targeted-growth-criteria-resolution-plan-closeout-candidate-review", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-criteria-resolution-plan-closeout-candidate-review", action="store_true")
+    parser.add_argument("--vol-targeted-growth-approval-criteria-not-approval-closeout-candidate-review", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-approval-criteria-not-approval-closeout-candidate-review", action="store_true")
+    parser.add_argument("--vol-targeted-growth-criteria-closeout-candidate-review-rollup", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-criteria-closeout-candidate-review-rollup", action="store_true")
     parser.add_argument(
         "--paper-live-f6-f7-audit",
         action="store_true",
@@ -10250,6 +10290,46 @@ def main() -> int:
         return 0
     if args.show_vol_targeted_growth_criteria_blocker_specific_review_rollup:
         status_code, lines = show_vol_targeted_growth_criteria_blocker_specific_review_rollup()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_criteria_source_closeout_candidate_review:
+        result = generate_vol_targeted_growth_criteria_source_closeout_candidate_review()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_criteria_source_closeout_candidate_review:
+        status_code, lines = show_vol_targeted_growth_criteria_source_closeout_candidate_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_criteria_resolution_plan_closeout_candidate_review:
+        result = generate_vol_targeted_growth_criteria_resolution_plan_closeout_candidate_review()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_criteria_resolution_plan_closeout_candidate_review:
+        status_code, lines = show_vol_targeted_growth_criteria_resolution_plan_closeout_candidate_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_approval_criteria_not_approval_closeout_candidate_review:
+        result = generate_vol_targeted_growth_approval_criteria_not_approval_closeout_candidate_review()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_approval_criteria_not_approval_closeout_candidate_review:
+        status_code, lines = show_vol_targeted_growth_approval_criteria_not_approval_closeout_candidate_review()
+        for line in lines:
+            print(line)
+        return status_code
+    if args.vol_targeted_growth_criteria_closeout_candidate_review_rollup:
+        result = generate_vol_targeted_growth_criteria_closeout_candidate_review_rollup()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+    if args.show_vol_targeted_growth_criteria_closeout_candidate_review_rollup:
+        status_code, lines = show_vol_targeted_growth_criteria_closeout_candidate_review_rollup()
         for line in lines:
             print(line)
         return status_code

@@ -120,6 +120,15 @@ Remaining steps, in order:
    - Current rollup decision is `CRITERIA_BLOCKER_SPECIFIC_REVIEWS_CREATED_NONE_CLOSED`.
    - These reports confirm source evidence, resolution-plan ordering, and approval-criteria boundaries for manual review only; they do not close blockers, request approval, record approval, populate ticket values, create an executable ticket, or approve execution.
 
+6l. **Prepare closeout-candidate reviews without closing blockers.**
+   - Implemented checkpoints:
+     `python bot.py --vol-targeted-growth-criteria-source-closeout-candidate-review`,
+     `python bot.py --vol-targeted-growth-criteria-resolution-plan-closeout-candidate-review`,
+     `python bot.py --vol-targeted-growth-approval-criteria-not-approval-closeout-candidate-review`,
+     and `python bot.py --vol-targeted-growth-criteria-closeout-candidate-review-rollup`.
+   - Current rollup decision is `CRITERIA_CLOSEOUT_CANDIDATES_REVIEWED_NONE_CLOSED`.
+   - These reports can mark `criteria_source_reviewed` as ready for human closeout consideration and keep the other two blockers not ready, but they do not close blockers, change approval readiness, request approval, record approval, populate ticket values, create an executable ticket, or approve execution.
+
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.
    - It must still be non-submitting and must not connect to the order gateway.
