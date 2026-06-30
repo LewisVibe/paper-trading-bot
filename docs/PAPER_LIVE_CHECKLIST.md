@@ -2,6 +2,90 @@
 
 This checklist is the planned path for operating the bot with Alpaca paper trading only. It does not approve live trading, automated order scheduling, or broad strategy-to-execution wiring. Work through it in separate prompts and keep each step narrow.
 
+## Current Position And Remaining Path To Paper-Live
+
+Current status:
+
+- The active report/status seed is `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`.
+- The previous QQQ100 seed context remains `qqq_100_trend_gate` / `QQQ`, with saved evidence showing long exactly one share and no follow-up/repeat order needed.
+- The VPS/Hermes status job is monitoring-only and must remain status/report-only.
+- The volatility seed has a non-submitting ticket schema design, but no ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
+- High-growth, crypto, defensive, SMA, and slow-SMA remain excluded from paper-live execution.
+
+Remaining steps, in order:
+
+1. **Refresh local/VPS safety baseline.**
+   - Run repo safety, command inventory, pytest, daily monitoring summary verifier, and the latest volatility ticket-schema verifier.
+   - Do not run normal `python bot.py`.
+   - Do not run any order-capable command.
+
+2. **Confirm the market-hours read-only broker state.**
+   - This requires a separate explicit approval prompt before running any Alpaca read-only command.
+   - Candidate command, only after explicit approval:
+     `.venv\Scripts\python.exe bot.py --vol-targeted-growth-broker-position-comparison --confirm-readonly-alpaca-check`
+   - Purpose: confirm current Alpaca paper positions against saved target-sleeve context.
+   - This must not create, submit, cancel, replace, or prepare orders.
+
+3. **Reconcile broker comparison into saved paper-live evidence.**
+   - Run saved-output reconciliation after the read-only broker comparison exists.
+   - No new Alpaca call should happen in this step.
+   - Confirm unknown/missing broker state remains loud and blocks.
+
+4. **Review the non-submitting ticket schema.**
+   - Confirm schema fields are acceptable for a future ticket instance.
+   - Confirm `ticket_instance_created=False`, `order_values_populated=False`, `order_instructions_created=False`, and all execution/scheduling flags remain false.
+   - Decide whether the schema needs changes before any ticket-instance design.
+
+5. **Create a ticket-instance design checkpoint, still non-submitting.**
+   - This needs a separate explicit approval prompt.
+   - It may define what a future ticket instance would look like, but must keep side, quantity, order type, time-in-force, account, and broker order ID unpopulated unless separately approved.
+   - It must not call Alpaca, read positions, create orders, or schedule anything.
+
+6. **Create a fresh-read broker pre-ticket gate.**
+   - This is market-hours useful and requires explicit read-only Alpaca approval.
+   - It should compare fresh broker state, saved target context, existing QQQ position, and multi-sleeve constraints immediately before any future ticket-instance discussion.
+   - If broker state is unavailable, stale, mismatched, or ambiguous, block/manual-review.
+
+7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
+   - This is not approved yet.
+   - It must still be non-submitting and must not connect to the order gateway.
+   - It must preserve `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
+
+8. **Add ticket-instance quality gates and tests.**
+   - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
+   - Verify no order can be submitted from a report-only ticket.
+   - Verify stale broker data, unknown positions, missing target weights, or component-sleeve blockers all block.
+
+9. **Manual review of whether paper execution should ever be allowed for this seed.**
+   - This is a human decision point, not an automatic result of previous reports.
+   - Required blockers to review: component sleeves, allocation cap, fresh broker state, QQQ existing exposure, high-growth research-only boundary, crypto research-only boundary, defensive sleeve mapping, drawdown risk, and scheduling prohibition.
+
+10. **If approved later, design a separate paper-order execution gate.**
+    - This is not approved yet.
+    - It must remain Alpaca paper-only.
+    - It must be a separate explicit command with confirmation.
+    - It must not alter normal `python bot.py`.
+    - It must not be scheduled by Hermes, cron, Task Scheduler, or any loop.
+
+11. **Only after all above, consider one manually confirmed paper order.**
+    - This is not approved by this checklist.
+    - It would require a fresh live preflight, fresh broker state, exact ticket review, duplicate-order protection, open-order checks, kill-switch checks, and explicit confirmation.
+    - Postcheck must be read-only and must reconcile broker order/position evidence after the manual order.
+
+12. **Keep monitoring-only automation after any manual paper action.**
+    - Hermes may continue to run status/report summaries only.
+    - No order-capable command may be scheduled.
+    - Daily summary must continue to show execution/paper execution/scheduling approvals as false unless a later, explicit, narrow paper execution design changes only the appropriate manual command path.
+
+Current next safe implementation step:
+
+- Update VPS daily monitoring summary to include the saved non-submitting ticket schema design status, so Telegram shows the full chain: no-go dashboard, executable ticket gap list, manual execution-design approval gate, and schema-designed/no-ticket-created state.
+
+Current next market-hours operational step, only after explicit approval:
+
+- Run the read-only volatility broker-position comparison during market hours:
+  `.venv\Scripts\python.exe bot.py --vol-targeted-growth-broker-position-comparison --confirm-readonly-alpaca-check`
+
 ## 1. Freeze The Current Baseline
 
 - Pull latest `main`.
@@ -420,6 +504,6 @@ Start with QQQ100 only. Do not generalize too early.
 
 Use this as the next implementation prompt:
 
-> Continue with F6/F7 audits after the exact QQQ100 one-share alignment verifier and tests pass. No order runs.
+> Add the saved non-submitting ticket schema design status to `python bot.py --vps-daily-monitoring-summary`, preserving monitoring-only behaviour and all false approval flags.
 
-That is the highest-priority gap before treating the QQQ100 paper-live path as credible.
+After that, the next market-hours step is a separately approved read-only Alpaca paper-position comparison for `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x`. Do not run it without explicit approval in the prompt.
