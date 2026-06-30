@@ -87,6 +87,8 @@ REQUIRED_COMMANDS = [
     "--show-paper-live-go-no-go-dashboard",
     "--vol-targeted-growth-post-gate-review",
     "--show-vol-targeted-growth-post-gate-review",
+    "--vol-targeted-growth-manual-ticket-value-design",
+    "--show-vol-targeted-growth-manual-ticket-value-design",
     "--paper-live-f6-f7-audit",
     "--show-paper-live-f6-f7-audit",
     "--paper-live-promotion-ladder-design",

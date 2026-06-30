@@ -69,6 +69,12 @@ Remaining steps, in order:
    - It reads saved gate-run outputs only and does not call Alpaca again.
    - It can confirm saved broker context exists, but it keeps ticket values, order instructions, paper execution, and scheduling blocked.
 
+6d. **Create a manual ticket-value design checkpoint without values.**
+   - Implemented checkpoint: `python bot.py --vol-targeted-growth-manual-ticket-value-design`.
+   - Saved display: `python bot.py --show-vol-targeted-growth-manual-ticket-value-design`.
+   - It lists the fields that would need future manual values, but keeps side, quantity, order type, time-in-force, account reference, and broker order id blank/blocked.
+   - It keeps `populated_ticket_value_count=0`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, and all execution/scheduling flags false.
+
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.
    - It must still be non-submitting and must not connect to the order gateway.
@@ -208,6 +214,7 @@ Current next market-hours operational step, only after explicit approval:
 - `python bot.py --vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness` may check whether the saved design chain is ready to request explicit read-only Alpaca approval; it does not approve or run Alpaca, read positions, create tickets, populate order values, submit orders, approve execution, or approve scheduling. The VPS daily monitoring summary may display this saved run-readiness status as monitoring context only.
 - `python bot.py --vol-targeted-growth-fresh-broker-pre-ticket-gate-run --confirm-readonly-alpaca-check` may perform the explicitly approved read-only Alpaca paper-position gate and save broker context for manual review only. It still does not create tickets, populate order values, submit orders, approve follow-up execution, or approve scheduling. Without the confirmation flag, it records missing confirmation and does not read the broker.
 - `python bot.py --vol-targeted-growth-post-gate-review` may interpret saved fresh broker context only; it does not call Alpaca, read positions, create tickets, populate order values, submit orders, approve execution, or approve scheduling. The go/no-go dashboard may display this saved post-gate status as context only.
+- `python bot.py --vol-targeted-growth-manual-ticket-value-design` may document future ticket-value fields only; it does not populate side, quantity, order type, time-in-force, account reference, broker order id, submit-ready state, create executable tickets, submit orders, approve execution, or approve scheduling. The go/no-go dashboard may display this saved ticket-value design status as context only.
 - `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup` may summarize the volatility paper-live blocker chain only; it does not clear blockers, create executable tickets, approve execution, or approve scheduling. The VPS daily monitoring summary may display this saved rollup status as monitoring context only.
 - `python bot.py --paper-live-go-no-go-dashboard` may summarize QQQ100 no-action state, volatility blocker state, checklist phase, and VPS monitoring assumptions in one saved-output view only; current expected decision is `NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY`, and it does not approve execution or scheduling.
 - `python bot.py --vps-daily-monitoring-summary` may display the saved paper-live go/no-go dashboard status when present; missing dashboard output is reported as monitoring-only missing saved evidence and does not create orders, broker reads, cron changes, execution approval, or scheduling approval.

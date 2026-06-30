@@ -1067,6 +1067,13 @@ The volatility-targeted growth post-gate review comes from `python bot.py --vol-
 - When saved broker context exists, the expected status is `vol_targeted_growth_post_gate_review_manual_review_required` with `final_post_gate_review_decision=FRESH_BROKER_CONTEXT_SAVED_TICKET_VALUES_NOT_APPROVED`.
 - The paper-live go/no-go dashboard now includes this post-gate status and still keeps `NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY`.
 
+The volatility-targeted growth manual ticket-value design comes from `python bot.py --vol-targeted-growth-manual-ticket-value-design`, with saved display through `python bot.py --show-vol-targeted-growth-manual-ticket-value-design`:
+
+- It is saved-output/design-only and does not call Alpaca, read positions, refresh market data, create executable tickets, submit orders, approve execution, or approve scheduling.
+- It documents the fields that would need future manual values, but keeps order side, order quantity, order type, time-in-force, account reference, and broker order id blank/blocked.
+- Expected status is `vol_targeted_growth_manual_ticket_value_design_manual_review_required` with `final_ticket_value_design_decision=TICKET_VALUE_DESIGN_REVIEW_ONLY_VALUES_NOT_APPROVED`.
+- The paper-live go/no-go dashboard now includes this ticket-value design status and still keeps `NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY`.
+
 The volatility-targeted growth paper-live execution blocker rollup comes from `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, with saved display through `python bot.py --show-vol-targeted-growth-paper-live-execution-blocker-rollup`:
 
 - Current expected status is `vol_targeted_growth_paper_live_execution_blocker_rollup_created_manual_review_required`.

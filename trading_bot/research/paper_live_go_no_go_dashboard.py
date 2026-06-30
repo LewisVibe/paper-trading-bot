@@ -25,6 +25,7 @@ INPUT_FILES = {
     "qqq100_daily_decision": Path("data/qqq100_daily_decision_summary.csv"),
     "vol_execution_blocker_rollup": Path("data/vol_targeted_growth_paper_live_execution_blocker_rollup_summary.csv"),
     "vol_post_gate_review": Path("data/vol_targeted_growth_post_gate_review_summary.csv"),
+    "vol_ticket_value_design": Path("data/vol_targeted_growth_manual_ticket_value_design_summary.csv"),
     "paper_live_checklist": Path("data/paper_live_checklist_status_summary.csv"),
 }
 
@@ -132,6 +133,9 @@ def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int,
         f"vol_post_gate_review_decision: {summary_value(rows, 'vol_post_gate_review_decision')}",
         f"vol_post_gate_largest_blocker: {summary_value(rows, 'vol_post_gate_largest_blocker')}",
         f"vol_post_gate_saved_qqq_quantity: {summary_value(rows, 'vol_post_gate_saved_qqq_quantity')}",
+        f"vol_ticket_value_design_status: {summary_value(rows, 'vol_ticket_value_design_status')}",
+        f"vol_ticket_value_design_decision: {summary_value(rows, 'vol_ticket_value_design_decision')}",
+        f"vol_ticket_value_largest_blocker: {summary_value(rows, 'vol_ticket_value_largest_blocker')}",
         f"paper_live_checklist_phase_status: {summary_value(rows, 'paper_live_checklist_phase_status')}",
         f"vps_monitoring_status_assumption: {summary_value(rows, 'vps_monitoring_status_assumption')}",
         f"final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
@@ -208,6 +212,9 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     post_gate_decision = summary_value(inputs["vol_post_gate_review"], "final_post_gate_review_decision") or "missing_vol_post_gate_review_decision"
     post_gate_blocker = summary_value(inputs["vol_post_gate_review"], "largest_blocker") or "missing_vol_post_gate_largest_blocker"
     post_gate_qqq_quantity = summary_value(inputs["vol_post_gate_review"], "saved_qqq_position_quantity_if_readonly") or "unavailable"
+    ticket_value_status = summary_value(inputs["vol_ticket_value_design"], "final_ticket_value_design_status") or "missing_vol_ticket_value_design"
+    ticket_value_decision = summary_value(inputs["vol_ticket_value_design"], "final_ticket_value_design_decision") or "missing_vol_ticket_value_design_decision"
+    ticket_value_blocker = summary_value(inputs["vol_ticket_value_design"], "largest_blocker") or "missing_vol_ticket_value_largest_blocker"
     checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
     monitoring_next = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
     data = [
@@ -224,6 +231,9 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("vol_post_gate_review_decision", post_gate_decision, "Saved post-gate review decision."),
         ("vol_post_gate_largest_blocker", post_gate_blocker, "Largest saved post-gate blocker."),
         ("vol_post_gate_saved_qqq_quantity", post_gate_qqq_quantity, "Saved QQQ quantity from post-gate review."),
+        ("vol_ticket_value_design_status", ticket_value_status, "Saved manual ticket-value design status."),
+        ("vol_ticket_value_design_decision", ticket_value_decision, "Saved manual ticket-value design decision."),
+        ("vol_ticket_value_largest_blocker", ticket_value_blocker, "Largest saved ticket-value design blocker."),
         ("paper_live_checklist_phase_status", checklist_status, "Saved paper-live checklist phase status."),
         ("paper_live_monitoring_recommended_next_step", monitoring_next, "Saved paper-live monitoring recommended next step."),
         ("vps_monitoring_status_assumption", "status_only_monitoring_no_cron_change", "Dashboard assumes existing VPS monitoring remains status-only."),
@@ -240,6 +250,7 @@ def build_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str
         ("execution_not_approved", "blocked", "critical", "Go/no-go status is no-go for execution.", NEXT_STEP),
         ("volatility_ticket_prerequisites_unmet", "blocked", "critical", "Volatility executable ticket prerequisites remain unmet.", "review_vol_execution_blocker_rollup"),
         ("post_gate_ticket_values_not_approved", "blocked", "critical", "Fresh broker context does not approve ticket values.", "review_vol_post_gate_context_before_ticket_values"),
+        ("manual_ticket_values_not_approved", "blocked", "critical", "Manual ticket-value design does not approve executable values.", "review_manual_ticket_value_design_before_executable_ticket"),
         ("repeat_followup_orders_not_approved", "blocked", "critical", "QQQ100 follow-up and repeat orders remain unapproved.", "hold_no_action_and_monitor_only"),
         ("scheduling_not_approved", "blocked", "critical", "No order-capable scheduling is approved.", "keep_monitoring_status_only"),
     ]
@@ -269,6 +280,8 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"vol_post_gate_review_status={summary_value(summary_rows, 'vol_post_gate_review_status')}",
         f"vol_post_gate_review_decision={summary_value(summary_rows, 'vol_post_gate_review_decision')}",
         f"vol_post_gate_largest_blocker={summary_value(summary_rows, 'vol_post_gate_largest_blocker')}",
+        f"vol_ticket_value_design_status={summary_value(summary_rows, 'vol_ticket_value_design_status')}",
+        f"vol_ticket_value_design_decision={summary_value(summary_rows, 'vol_ticket_value_design_decision')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

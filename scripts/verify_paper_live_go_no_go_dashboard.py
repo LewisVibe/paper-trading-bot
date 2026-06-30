@@ -25,6 +25,8 @@ REQUIRED_TOKENS = [
     "qqq100_daily_decision_hold_no_action_aligned_long",
     "vol_post_gate_review_status",
     "post_gate_ticket_values_not_approved",
+    "vol_ticket_value_design_status",
+    "manual_ticket_values_not_approved",
     "status_only_monitoring_no_cron_change",
     '"execution_approved": False',
     '"paper_execution_approved": False',
@@ -176,6 +178,19 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_manual_ticket_value_design_summary.csv",
+            {
+                "final_ticket_value_design_status": "vol_targeted_growth_manual_ticket_value_design_manual_review_required",
+                "final_ticket_value_design_decision": "TICKET_VALUE_DESIGN_REVIEW_ONLY_VALUES_NOT_APPROVED",
+                "largest_blocker": "ticket_values_not_approved",
+                "order_values_populated": "False",
+                "order_instructions_created": "False",
+                "execution_approved": "False",
+                "paper_execution_approved": "False",
+                "scheduling_approved": "False",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -205,6 +220,9 @@ def verify_fixture_output(failures: list[str]) -> None:
         "FRESH_BROKER_CONTEXT_SAVED_TICKET_VALUES_NOT_APPROVED",
         "ticket_values_not_approved_after_readonly_context",
         "vol_post_gate_saved_qqq_quantity: 1",
+        "vol_targeted_growth_manual_ticket_value_design_manual_review_required",
+        "TICKET_VALUE_DESIGN_REVIEW_ONLY_VALUES_NOT_APPROVED",
+        "ticket_values_not_approved",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",
