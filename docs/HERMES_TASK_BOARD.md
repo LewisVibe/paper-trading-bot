@@ -1643,6 +1643,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, executable-ticket approval recording, order value population, order creation/submission/cancellation/replacement, executable ticket creation, strategy-to-execution wiring, cron edits, or treating this closeout as execution approval.
 - **Stop condition:** Stop if the task would populate executable order values, create an executable ticket, submit/cancel/replace orders, approve paper execution, approve live trading, or schedule anything.
 
+### Task: Volatility-targeted growth final ticket blockers closeout
+- **Purpose:** Use `python bot.py --vol-targeted-growth-final-ticket-blockers-closeout-approval-wording` and `python bot.py --vol-targeted-growth-final-ticket-blockers-closeout-record` to close `ticket_values_not_approved` and `executable_ticket_prerequisites_not_met` as checklist blockers only.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-final-ticket-blockers-closeout-approval-wording`, `python bot.py --show-vol-targeted-growth-final-ticket-blockers-closeout-approval-wording`, `python bot.py --vol-targeted-growth-final-ticket-blockers-closeout-record`, `python bot.py --show-vol-targeted-growth-final-ticket-blockers-closeout-record`, `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, `python bot.py --vol-targeted-growth-executable-ticket-gap-list`, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_final_ticket_blockers_closeout.py`.
+- **Expected status:** `FINAL_TICKET_BLOCKERS_CLOSED_NO_EXECUTION_APPROVAL`; `closed_blocker_count=5`, `remaining_known_blockers_after_closeout=none`, and `largest_blocker=execution_not_approved`.
+- **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order value population, executable ticket creation, order creation/submission/cancellation/replacement, strategy-to-execution wiring, cron edits, or treating checklist closeout as execution approval.
+- **Stop condition:** Stop if the task would populate executable order values, create an executable ticket, submit/cancel/replace orders, approve paper execution, approve live trading, or schedule anything.
+
 ### Task: Paper-live go/no-go dashboard
 - **Purpose:** Use `python bot.py --paper-live-go-no-go-dashboard` to summarize QQQ100 no-action state, volatility blocker state, executable-ticket closeout/readiness, checklist phase, and VPS monitoring assumptions in one saved-output view.
 - **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.

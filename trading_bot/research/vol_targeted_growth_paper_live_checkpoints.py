@@ -124,6 +124,7 @@ INPUT_FILES = {
     "criteria_source_closeout_record_summary": Path("data/vol_targeted_growth_executable_ticket_criteria_source_closeout_record_summary.csv"),
     "criteria_resolution_plan_closeout_record_summary": Path("data/vol_targeted_growth_executable_ticket_criteria_resolution_plan_closeout_record_summary.csv"),
     "approval_criteria_closeout_record_summary": Path("data/vol_targeted_growth_executable_ticket_approval_criteria_closeout_record_summary.csv"),
+    "final_ticket_blockers_closeout_record_summary": Path("data/vol_targeted_growth_final_ticket_blockers_closeout_record_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -1165,6 +1166,8 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
         ("criteria_source_reviewed_closed", str("criteria_source_reviewed" in closed), "True only when the saved criteria-source closeout record closes that blocker."),
         ("criteria_resolution_plan_open_closed", str("criteria_resolution_plan_open" in closed), "True only when the saved resolution-plan closeout record closes that blocker."),
         ("approval_criteria_not_approval_closed", str("approval_criteria_not_approval" in closed), "True only when the saved approval-criteria closeout record closes that blocker."),
+        ("ticket_values_not_approved_closed", str("ticket_values_not_approved" in closed), "True only when the saved final-ticket-blockers closeout record closes that blocker."),
+        ("executable_ticket_prerequisites_not_met_closed", str("executable_ticket_prerequisites_not_met" in closed), "True only when the saved final-ticket-blockers closeout record closes that blocker."),
         ("closed_blocker", ";".join(closed) or "none", "Closed blockers recognised by this recalculation."),
         ("remaining_known_blockers_after_closeout", remaining_known_blockers, "Known blockers that remain open after the criteria-source closeout record."),
         ("paper_live_candidate_discussion_approved", "True", "Discussion may continue from the saved approval record."),
@@ -1175,7 +1178,7 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
         ("executable_order_ticket_created", "False", "No executable order ticket is created."),
         ("order_instructions_created", "False", "No side, quantity, order type, time-in-force, or account fields are created."),
         ("execution_blocker_rollup_cleared", "False", "The rollup is not cleared for execution."),
-        ("largest_blocker", "executable_ticket_prerequisites_not_met", "Manual approval, fresh broker state, controls, and component promotion remain blockers."),
+        ("largest_blocker", "execution_not_approved" if remaining_known_blockers == "none" else "executable_ticket_prerequisites_not_met", "Manual approval, fresh broker state, controls, and component promotion remain blockers until the saved final closeout exists."),
         ("recommended_next_step", EXECUTION_BLOCKER_ROLLUP_NEXT_STEP, "Manual review the blocker rollup before any future execution design."),
         ("checkpoint_row_count", str(len(rows)), "Saved checkpoint row count."),
     ]
@@ -1202,10 +1205,16 @@ def closed_blockers(inputs: dict[str, list[dict[str, str]]]) -> list[str]:
         and summary_value(approval_rows, "closed_blocker") == "approval_criteria_not_approval"
     ):
         closed.append("approval_criteria_not_approval")
+    final_rows = inputs.get("final_ticket_blockers_closeout_record_summary", [])
+    if summary_value(final_rows, "final_closeout_record_decision") == "FINAL_TICKET_BLOCKERS_CLOSED_NO_EXECUTION_APPROVAL":
+        closed.extend(["ticket_values_not_approved", "executable_ticket_prerequisites_not_met"])
     return closed
 
 
 def remaining_blockers_after_closeout(inputs: dict[str, list[dict[str, str]]]) -> str:
+    final_remaining = summary_value(inputs.get("final_ticket_blockers_closeout_record_summary", []), "remaining_known_blockers")
+    if final_remaining:
+        return final_remaining
     approval_remaining = summary_value(inputs.get("approval_criteria_closeout_record_summary", []), "remaining_known_blockers")
     if approval_remaining:
         return approval_remaining
@@ -1374,6 +1383,8 @@ def show_summary(path: Path, title: str, status_key: str, missing_message: str) 
         f"criteria_source_reviewed_closed: {summary_value(rows, 'criteria_source_reviewed_closed')}",
         f"criteria_resolution_plan_open_closed: {summary_value(rows, 'criteria_resolution_plan_open_closed')}",
         f"approval_criteria_not_approval_closed: {summary_value(rows, 'approval_criteria_not_approval_closed')}",
+        f"ticket_values_not_approved_closed: {summary_value(rows, 'ticket_values_not_approved_closed')}",
+        f"executable_ticket_prerequisites_not_met_closed: {summary_value(rows, 'executable_ticket_prerequisites_not_met_closed')}",
         f"remaining_known_blockers_after_closeout: {summary_value(rows, 'remaining_known_blockers_after_closeout')}",
         f"recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         "order_instructions_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false; followup_order_approved=false; repeat_execution_approved=false",
@@ -1407,6 +1418,8 @@ def summary_lines(title: str, summary_rows: list[dict[str, Any]], output_paths: 
         "criteria_source_reviewed_closed",
         "criteria_resolution_plan_open_closed",
         "approval_criteria_not_approval_closed",
+        "ticket_values_not_approved_closed",
+        "executable_ticket_prerequisites_not_met_closed",
         "remaining_known_blockers_after_closeout",
     ]:
         value = summary_value(summary_rows, key)

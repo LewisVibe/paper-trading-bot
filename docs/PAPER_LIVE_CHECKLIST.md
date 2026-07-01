@@ -160,6 +160,15 @@ Remaining steps, in order:
    - This closes only `approval_criteria_not_approval`. It does not populate ticket values, does not create an executable ticket, and does not approve execution/scheduling.
    - The execution blocker rollup and executable ticket gap list must now show `closed_blocker_count=3`, `criteria_source_reviewed_closed=True`, `criteria_resolution_plan_open_closed=True`, `approval_criteria_not_approval_closed=True`, and the exact remaining blockers before any ticket-value discussion.
 
+6q. **Close the final two checklist blockers as non-executable checklist evidence only.**
+   - Run `python bot.py --vol-targeted-growth-final-ticket-blockers-closeout-approval-wording`.
+   - Optional display: `python bot.py --show-vol-targeted-growth-final-ticket-blockers-closeout-approval-wording`.
+   - Run `python bot.py --vol-targeted-growth-final-ticket-blockers-closeout-record`.
+   - Optional display: `python bot.py --show-vol-targeted-growth-final-ticket-blockers-closeout-record`.
+   - Current closeout decision is `FINAL_TICKET_BLOCKERS_CLOSED_NO_EXECUTION_APPROVAL`.
+   - This closes `ticket_values_not_approved` and `executable_ticket_prerequisites_not_met` only as checklist blockers. It does not populate side, quantity, order type, time-in-force, account, or broker-order fields. It does not create an executable ticket and does not approve execution/scheduling.
+   - The execution blocker rollup and executable ticket gap list must now show `closed_blocker_count=5`, `ticket_values_not_approved_closed=True`, `executable_ticket_prerequisites_not_met_closed=True`, `remaining_known_blockers_after_closeout=none`, and `largest_blocker=execution_not_approved`.
+
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.
    - It must still be non-submitting and must not connect to the order gateway.

@@ -744,9 +744,13 @@ def _early_report_only_route() -> None:
         "--show-vol-targeted-growth-criteria-resolution-plan-closeout-approval-wording": "show_vol_targeted_growth_criteria_resolution_plan_closeout_approval_wording",
         "--vol-targeted-growth-approval-criteria-closeout-approval-wording": "generate_vol_targeted_growth_approval_criteria_closeout_approval_wording",
         "--show-vol-targeted-growth-approval-criteria-closeout-approval-wording": "show_vol_targeted_growth_approval_criteria_closeout_approval_wording",
+        "--vol-targeted-growth-final-ticket-blockers-closeout-approval-wording": "generate_vol_targeted_growth_final_ticket_blockers_closeout_approval_wording",
+        "--show-vol-targeted-growth-final-ticket-blockers-closeout-approval-wording": "show_vol_targeted_growth_final_ticket_blockers_closeout_approval_wording",
     }
     if sys.argv[1:] and sys.argv[1] in approval_wording_routes and len(sys.argv[1:]) == 1:
-        if "criteria-resolution-plan" in sys.argv[1]:
+        if "final-ticket-blockers" in sys.argv[1]:
+            from trading_bot.research import vol_targeted_growth_final_ticket_blockers_closeout as approval_wording
+        elif "criteria-resolution-plan" in sys.argv[1]:
             from trading_bot.research import vol_targeted_growth_criteria_resolution_plan_closeout_approval_wording as approval_wording
         elif "approval-criteria" in sys.argv[1]:
             from trading_bot.research import vol_targeted_growth_approval_criteria_closeout_approval_wording as approval_wording
@@ -769,9 +773,13 @@ def _early_report_only_route() -> None:
         "--show-vol-targeted-growth-criteria-resolution-plan-closeout-record": "show_vol_targeted_growth_criteria_resolution_plan_closeout_record",
         "--vol-targeted-growth-approval-criteria-closeout-record": "generate_vol_targeted_growth_approval_criteria_closeout_record",
         "--show-vol-targeted-growth-approval-criteria-closeout-record": "show_vol_targeted_growth_approval_criteria_closeout_record",
+        "--vol-targeted-growth-final-ticket-blockers-closeout-record": "generate_vol_targeted_growth_final_ticket_blockers_closeout_record",
+        "--show-vol-targeted-growth-final-ticket-blockers-closeout-record": "show_vol_targeted_growth_final_ticket_blockers_closeout_record",
     }
     if sys.argv[1:] and sys.argv[1] in closeout_record_routes and len(sys.argv[1:]) == 1:
-        if "criteria-resolution-plan" in sys.argv[1]:
+        if "final-ticket-blockers" in sys.argv[1]:
+            from trading_bot.research import vol_targeted_growth_final_ticket_blockers_closeout as closeout_record
+        elif "criteria-resolution-plan" in sys.argv[1]:
             from trading_bot.research import vol_targeted_growth_criteria_resolution_plan_closeout_record as closeout_record
         elif "approval-criteria" in sys.argv[1]:
             from trading_bot.research import vol_targeted_growth_approval_criteria_closeout_record as closeout_record
@@ -7902,6 +7910,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--show-vol-targeted-growth-approval-criteria-closeout-approval-wording", action="store_true")
     parser.add_argument("--vol-targeted-growth-approval-criteria-closeout-record", action="store_true")
     parser.add_argument("--show-vol-targeted-growth-approval-criteria-closeout-record", action="store_true")
+    parser.add_argument("--vol-targeted-growth-final-ticket-blockers-closeout-approval-wording", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-final-ticket-blockers-closeout-approval-wording", action="store_true")
+    parser.add_argument("--vol-targeted-growth-final-ticket-blockers-closeout-record", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-final-ticket-blockers-closeout-record", action="store_true")
     parser.add_argument(
         "--paper-live-f6-f7-audit",
         action="store_true",

@@ -156,13 +156,14 @@ def verify_fixture_output(failures: list[str]) -> None:
         for phrase in [
             FINAL_STATUS,
             FINAL_DECISION,
-            "manual_execution_design_approval_missing",
             "EXECUTABLE_TICKET_DESIGN_NOT_READY",
-            "closed_blocker_count=3",
+            "closed_blocker_count=5",
             "criteria_source_reviewed_closed=True",
             "criteria_resolution_plan_open_closed=True",
             "approval_criteria_not_approval_closed=True",
-            "remaining_known_blockers_after_closeout=ticket_values_not_approved",
+            "ticket_values_not_approved_closed=True",
+            "executable_ticket_prerequisites_not_met_closed=True",
+            "remaining_known_blockers_after_closeout=none",
             "order_instructions_created=false",
             "execution_approved=false",
             "paper_execution_approved=false",
@@ -182,19 +183,23 @@ def verify_summary_rows(rows: list[dict[str, object]], failures: list[str]) -> N
         failures.append("summary final status is incorrect")
     if summary_value(rows, "final_ticket_design_decision") != FINAL_DECISION:
         failures.append("summary final decision is incorrect")
-    if summary_value(rows, "largest_gap") != "manual_execution_design_approval_missing":
-        failures.append("summary largest gap should remain manual execution-design approval")
+    if summary_value(rows, "largest_gap") != "execution_not_approved":
+        failures.append("summary largest gap should be execution_not_approved after final checklist closeout")
     if summary_value(rows, "criteria_source_reviewed_closed") != "True":
         failures.append("summary should recognise criteria_source_reviewed as closed from saved evidence")
     if summary_value(rows, "criteria_resolution_plan_open_closed") != "True":
         failures.append("summary should recognise criteria_resolution_plan_open as closed from saved evidence")
     if summary_value(rows, "approval_criteria_not_approval_closed") != "True":
         failures.append("summary should recognise approval_criteria_not_approval as closed from saved evidence")
-    if summary_value(rows, "closed_blocker_count") != "3":
-        failures.append("summary should count three closed blockers from saved evidence")
+    if summary_value(rows, "ticket_values_not_approved_closed") != "True":
+        failures.append("summary should recognise ticket_values_not_approved as closed from saved evidence")
+    if summary_value(rows, "executable_ticket_prerequisites_not_met_closed") != "True":
+        failures.append("summary should recognise executable_ticket_prerequisites_not_met as closed from saved evidence")
+    if summary_value(rows, "closed_blocker_count") != "5":
+        failures.append("summary should count five closed blockers from saved evidence")
     remaining = summary_value(rows, "remaining_known_blockers_after_closeout")
-    if "ticket_values_not_approved" not in remaining or "approval_criteria_not_approval" in remaining:
-        failures.append("summary should preserve exact remaining blockers after third closeout")
+    if remaining != "none":
+        failures.append("summary should show no remaining checklist blockers after final closeout")
     for flag in FALSE_FLAGS:
         if summary_or_flag_value(rows, flag) != "False":
             failures.append(f"summary flag must be False: {flag}")
@@ -277,6 +282,14 @@ def seed_inputs(root: Path) -> None:
             "final_closeout_record_decision": "APPROVAL_CRITERIA_NOT_APPROVAL_BLOCKER_CLOSED_ONLY",
             "closed_blocker": "approval_criteria_not_approval",
             "remaining_known_blockers": "ticket_values_not_approved;executable_ticket_prerequisites_not_met",
+        },
+    )
+    write_summary(
+        data / "vol_targeted_growth_final_ticket_blockers_closeout_record_summary.csv",
+        {
+            "final_closeout_record_decision": "FINAL_TICKET_BLOCKERS_CLOSED_NO_EXECUTION_APPROVAL",
+            "closed_blocker": "ticket_values_not_approved;executable_ticket_prerequisites_not_met",
+            "remaining_known_blockers": "none",
         },
     )
 
