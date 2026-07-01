@@ -149,7 +149,16 @@ Remaining steps, in order:
    - Optional display: `python bot.py --show-vol-targeted-growth-criteria-resolution-plan-closeout-record`.
    - Current closeout decision is `CRITERIA_RESOLUTION_PLAN_OPEN_BLOCKER_CLOSED_ONLY`.
    - This closes only `criteria_resolution_plan_open`. It does not close `approval_criteria_not_approval`, does not populate ticket values, does not create an executable ticket, and does not approve execution/scheduling.
-   - The execution blocker rollup and executable ticket gap list must now show `closed_blocker_count=2`, `criteria_source_reviewed_closed=True`, `criteria_resolution_plan_open_closed=True`, and the exact remaining blockers before any further ticket-design work.
+   - The execution blocker rollup and executable ticket gap list must show `criteria_resolution_plan_open_closed=True` and the exact remaining blockers before any further ticket-design work.
+
+6p. **Close only the approval-criteria-not-approval blocker after explicit approval.**
+   - Run `python bot.py --vol-targeted-growth-approval-criteria-closeout-approval-wording`.
+   - Optional display: `python bot.py --show-vol-targeted-growth-approval-criteria-closeout-approval-wording`.
+   - Run `python bot.py --vol-targeted-growth-approval-criteria-closeout-record`.
+   - Optional display: `python bot.py --show-vol-targeted-growth-approval-criteria-closeout-record`.
+   - Current closeout decision is `APPROVAL_CRITERIA_NOT_APPROVAL_BLOCKER_CLOSED_ONLY`.
+   - This closes only `approval_criteria_not_approval`. It does not populate ticket values, does not create an executable ticket, and does not approve execution/scheduling.
+   - The execution blocker rollup and executable ticket gap list must now show `closed_blocker_count=3`, `criteria_source_reviewed_closed=True`, `criteria_resolution_plan_open_closed=True`, `approval_criteria_not_approval_closed=True`, and the exact remaining blockers before any ticket-value discussion.
 
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.

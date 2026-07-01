@@ -78,11 +78,13 @@ def verify_rollup(summary_rows: list[dict[str, object]], failures: list[str]) ->
         failures.append("rollup should recognise criteria_source_reviewed as closed from saved evidence")
     if summary_value(summary_rows, "criteria_resolution_plan_open_closed") != "True":
         failures.append("rollup should recognise criteria_resolution_plan_open as closed from saved evidence")
-    if summary_value(summary_rows, "closed_blocker_count") != "2":
-        failures.append("rollup should count two closed blockers from saved evidence")
+    if summary_value(summary_rows, "approval_criteria_not_approval_closed") != "True":
+        failures.append("rollup should recognise approval_criteria_not_approval as closed from saved evidence")
+    if summary_value(summary_rows, "closed_blocker_count") != "3":
+        failures.append("rollup should count three closed blockers from saved evidence")
     remaining = summary_value(summary_rows, "remaining_known_blockers_after_closeout")
-    if "approval_criteria_not_approval" not in remaining or "criteria_resolution_plan_open" in remaining:
-        failures.append("rollup should preserve exact remaining blockers after second closeout")
+    if "ticket_values_not_approved" not in remaining or "approval_criteria_not_approval" in remaining:
+        failures.append("rollup should preserve exact remaining blockers after third closeout")
     for flag in FALSE_SUMMARY_FLAGS:
         if summary_or_flag_value(summary_rows, flag) != "False":
             failures.append(f"rollup summary flag must be False: {flag}")
@@ -95,10 +97,11 @@ def verify_daily_summary(root: Path, failures: list[str]) -> None:
         "vol_execution_blocker_rollup_present: True",
         f"final_execution_blocker_rollup_status: {EXECUTION_BLOCKER_ROLLUP_STATUS}",
         "execution_blocker_count:",
-        "closed_blocker_count: 2",
+        "closed_blocker_count: 3",
         "criteria_source_reviewed_closed: True",
         "criteria_resolution_plan_open_closed: True",
-        "remaining_known_blockers_after_closeout: approval_criteria_not_approval",
+        "approval_criteria_not_approval_closed: True",
+        "remaining_known_blockers_after_closeout: ticket_values_not_approved",
         "largest_blocker: executable_ticket_prerequisites_not_met",
         "executable_ticket_prerequisites_met: False",
         "executable_ticket_design_allowed: False",
@@ -178,6 +181,15 @@ def seed_inputs(root: Path) -> None:
                 "summary_name": "remaining_known_blockers",
                 "summary_value": "approval_criteria_not_approval;ticket_values_not_approved;executable_ticket_prerequisites_not_met",
             },
+        ],
+    )
+    write_csv(
+        data / "vol_targeted_growth_executable_ticket_approval_criteria_closeout_record_summary.csv",
+        ["summary_name", "summary_value"],
+        [
+            {"summary_name": "final_closeout_record_decision", "summary_value": "APPROVAL_CRITERIA_NOT_APPROVAL_BLOCKER_CLOSED_ONLY"},
+            {"summary_name": "closed_blocker", "summary_value": "approval_criteria_not_approval"},
+            {"summary_name": "remaining_known_blockers", "summary_value": "ticket_values_not_approved;executable_ticket_prerequisites_not_met"},
         ],
     )
 

@@ -158,10 +158,11 @@ def verify_fixture_output(failures: list[str]) -> None:
             FINAL_DECISION,
             "manual_execution_design_approval_missing",
             "EXECUTABLE_TICKET_DESIGN_NOT_READY",
-            "closed_blocker_count=2",
+            "closed_blocker_count=3",
             "criteria_source_reviewed_closed=True",
             "criteria_resolution_plan_open_closed=True",
-            "remaining_known_blockers_after_closeout=approval_criteria_not_approval",
+            "approval_criteria_not_approval_closed=True",
+            "remaining_known_blockers_after_closeout=ticket_values_not_approved",
             "order_instructions_created=false",
             "execution_approved=false",
             "paper_execution_approved=false",
@@ -187,11 +188,13 @@ def verify_summary_rows(rows: list[dict[str, object]], failures: list[str]) -> N
         failures.append("summary should recognise criteria_source_reviewed as closed from saved evidence")
     if summary_value(rows, "criteria_resolution_plan_open_closed") != "True":
         failures.append("summary should recognise criteria_resolution_plan_open as closed from saved evidence")
-    if summary_value(rows, "closed_blocker_count") != "2":
-        failures.append("summary should count two closed blockers from saved evidence")
+    if summary_value(rows, "approval_criteria_not_approval_closed") != "True":
+        failures.append("summary should recognise approval_criteria_not_approval as closed from saved evidence")
+    if summary_value(rows, "closed_blocker_count") != "3":
+        failures.append("summary should count three closed blockers from saved evidence")
     remaining = summary_value(rows, "remaining_known_blockers_after_closeout")
-    if "approval_criteria_not_approval" not in remaining or "criteria_resolution_plan_open" in remaining:
-        failures.append("summary should preserve exact remaining blockers after second closeout")
+    if "ticket_values_not_approved" not in remaining or "approval_criteria_not_approval" in remaining:
+        failures.append("summary should preserve exact remaining blockers after third closeout")
     for flag in FALSE_FLAGS:
         if summary_or_flag_value(rows, flag) != "False":
             failures.append(f"summary flag must be False: {flag}")
@@ -266,6 +269,14 @@ def seed_inputs(root: Path) -> None:
             "final_closeout_record_decision": "CRITERIA_RESOLUTION_PLAN_OPEN_BLOCKER_CLOSED_ONLY",
             "closed_blocker": "criteria_resolution_plan_open",
             "remaining_known_blockers": "approval_criteria_not_approval;ticket_values_not_approved;executable_ticket_prerequisites_not_met",
+        },
+    )
+    write_summary(
+        data / "vol_targeted_growth_executable_ticket_approval_criteria_closeout_record_summary.csv",
+        {
+            "final_closeout_record_decision": "APPROVAL_CRITERIA_NOT_APPROVAL_BLOCKER_CLOSED_ONLY",
+            "closed_blocker": "approval_criteria_not_approval",
+            "remaining_known_blockers": "ticket_values_not_approved;executable_ticket_prerequisites_not_met",
         },
     )
 
