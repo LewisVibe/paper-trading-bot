@@ -38,6 +38,7 @@ INPUT_FILES = {
     "order_ticket_boundary": Path("data/vol_targeted_growth_order_ticket_boundary_design_summary.csv"),
     "broker_comparison": Path("data/vol_targeted_growth_broker_position_comparison_summary.csv"),
     "criteria_source_closeout_record": Path("data/vol_targeted_growth_executable_ticket_criteria_source_closeout_record_summary.csv"),
+    "criteria_resolution_plan_closeout_record": Path("data/vol_targeted_growth_executable_ticket_criteria_resolution_plan_closeout_record_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -143,6 +144,7 @@ def show_vol_targeted_growth_executable_ticket_gap_list(root_dir: Path | str = "
         f"largest_gap: {summary_value(rows, 'largest_gap')}",
         f"closed_blocker_count: {summary_value(rows, 'closed_blocker_count')}",
         f"criteria_source_reviewed_closed: {summary_value(rows, 'criteria_source_reviewed_closed')}",
+        f"criteria_resolution_plan_open_closed: {summary_value(rows, 'criteria_resolution_plan_open_closed')}",
         f"remaining_known_blockers_after_closeout: {summary_value(rows, 'remaining_known_blockers_after_closeout')}",
         f"recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
@@ -243,12 +245,9 @@ def build_report_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str,
 def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     critical_count = sum(1 for row in report_rows if row.get("severity") == "critical")
     missing_inputs = [name for name, rows in inputs.items() if not rows]
-    criteria_source_closed = criteria_source_reviewed_is_closed(inputs)
-    closed_blocker_count = 1 if criteria_source_closed else 0
-    remaining_known_blockers = (
-        summary_value(inputs["criteria_source_closeout_record"], "remaining_known_blockers")
-        or "criteria_source_closeout_record_missing"
-    )
+    closed = closed_blockers(inputs)
+    closed_blocker_count = len(closed)
+    remaining_known_blockers = remaining_blockers_after_closeout(inputs)
     data = [
         ("final_gap_list_status", FINAL_STATUS, "Executable ticket design remains blocked."),
         ("final_ticket_design_decision", FINAL_DECISION, "No executable ticket design is ready or approved."),
@@ -259,8 +258,9 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("gap_count", str(len(report_rows)), "Total gap rows."),
         ("critical_gap_count", str(critical_count), "Critical gap rows."),
         ("closed_blocker_count", str(closed_blocker_count), "Closed blockers recognised from saved closeout evidence."),
-        ("criteria_source_reviewed_closed", str(criteria_source_closed), "True only when the saved criteria-source closeout record closes that blocker."),
-        ("closed_blocker", "criteria_source_reviewed" if criteria_source_closed else "none", "Closed blocker recognised by this gap-list recalculation."),
+        ("criteria_source_reviewed_closed", str("criteria_source_reviewed" in closed), "True only when the saved criteria-source closeout record closes that blocker."),
+        ("criteria_resolution_plan_open_closed", str("criteria_resolution_plan_open" in closed), "True only when the saved resolution-plan closeout record closes that blocker."),
+        ("closed_blocker", ";".join(closed) or "none", "Closed blockers recognised by this gap-list recalculation."),
         ("remaining_known_blockers_after_closeout", remaining_known_blockers, "Known blockers that remain open after the criteria-source closeout record."),
         ("missing_saved_input_count", str(len(missing_inputs)), "Missing saved input summaries."),
         ("missing_saved_inputs", ";".join(missing_inputs) or "none", "Saved inputs missing from this gap list."),
@@ -273,12 +273,29 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     return [summary_row(*item) for item in data]
 
 
-def criteria_source_reviewed_is_closed(inputs: dict[str, list[dict[str, str]]]) -> bool:
-    rows = inputs.get("criteria_source_closeout_record", [])
-    return (
-        summary_value(rows, "final_closeout_record_decision") == "CRITERIA_SOURCE_REVIEWED_BLOCKER_CLOSED_ONLY"
-        and summary_value(rows, "closed_blocker") == "criteria_source_reviewed"
-    )
+def closed_blockers(inputs: dict[str, list[dict[str, str]]]) -> list[str]:
+    closed = []
+    source_rows = inputs.get("criteria_source_closeout_record", [])
+    if (
+        summary_value(source_rows, "final_closeout_record_decision") == "CRITERIA_SOURCE_REVIEWED_BLOCKER_CLOSED_ONLY"
+        and summary_value(source_rows, "closed_blocker") == "criteria_source_reviewed"
+    ):
+        closed.append("criteria_source_reviewed")
+    resolution_rows = inputs.get("criteria_resolution_plan_closeout_record", [])
+    if (
+        summary_value(resolution_rows, "final_closeout_record_decision") == "CRITERIA_RESOLUTION_PLAN_OPEN_BLOCKER_CLOSED_ONLY"
+        and summary_value(resolution_rows, "closed_blocker") == "criteria_resolution_plan_open"
+    ):
+        closed.append("criteria_resolution_plan_open")
+    return closed
+
+
+def remaining_blockers_after_closeout(inputs: dict[str, list[dict[str, str]]]) -> str:
+    resolution_remaining = summary_value(inputs.get("criteria_resolution_plan_closeout_record", []), "remaining_known_blockers")
+    if resolution_remaining:
+        return resolution_remaining
+    source_remaining = summary_value(inputs.get("criteria_source_closeout_record", []), "remaining_known_blockers")
+    return source_remaining or "criteria_closeout_records_missing"
 
 
 def build_evidence_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
@@ -330,6 +347,7 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"largest_gap={summary_value(summary_rows, 'largest_gap')}",
         f"closed_blocker_count={summary_value(summary_rows, 'closed_blocker_count')}",
         f"criteria_source_reviewed_closed={summary_value(summary_rows, 'criteria_source_reviewed_closed')}",
+        f"criteria_resolution_plan_open_closed={summary_value(summary_rows, 'criteria_resolution_plan_open_closed')}",
         f"remaining_known_blockers_after_closeout={summary_value(summary_rows, 'remaining_known_blockers_after_closeout')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",

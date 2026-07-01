@@ -36,6 +36,8 @@ INPUT_FILES = {
     "vol_ticket_closeout_candidate_review_rollup": Path("data/vol_targeted_growth_executable_ticket_criteria_closeout_candidate_review_rollup_summary.csv"),
     "vol_ticket_criteria_source_closeout_approval_wording": Path("data/vol_targeted_growth_executable_ticket_criteria_source_closeout_approval_wording_summary.csv"),
     "vol_ticket_criteria_source_closeout_record": Path("data/vol_targeted_growth_executable_ticket_criteria_source_closeout_record_summary.csv"),
+    "vol_ticket_criteria_resolution_plan_closeout_approval_wording": Path("data/vol_targeted_growth_executable_ticket_criteria_resolution_plan_closeout_approval_wording_summary.csv"),
+    "vol_ticket_criteria_resolution_plan_closeout_record": Path("data/vol_targeted_growth_executable_ticket_criteria_resolution_plan_closeout_record_summary.csv"),
     "paper_live_checklist": Path("data/paper_live_checklist_status_summary.csv"),
 }
 
@@ -159,6 +161,11 @@ def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int,
         f"vol_ticket_criteria_source_closeout_record_decision: {summary_value(rows, 'vol_ticket_criteria_source_closeout_record_decision')}",
         f"vol_ticket_criteria_source_closed_blocker: {summary_value(rows, 'vol_ticket_criteria_source_closed_blocker')}",
         f"vol_ticket_criteria_source_remaining_blockers: {summary_value(rows, 'vol_ticket_criteria_source_remaining_blockers')}",
+        f"vol_ticket_criteria_resolution_plan_closeout_approval_wording_decision: {summary_value(rows, 'vol_ticket_criteria_resolution_plan_closeout_approval_wording_decision')}",
+        f"vol_ticket_criteria_resolution_plan_closeout_future_phrase: {summary_value(rows, 'vol_ticket_criteria_resolution_plan_closeout_future_phrase')}",
+        f"vol_ticket_criteria_resolution_plan_closeout_record_decision: {summary_value(rows, 'vol_ticket_criteria_resolution_plan_closeout_record_decision')}",
+        f"vol_ticket_criteria_resolution_plan_closed_blocker: {summary_value(rows, 'vol_ticket_criteria_resolution_plan_closed_blocker')}",
+        f"vol_ticket_criteria_resolution_plan_remaining_blockers: {summary_value(rows, 'vol_ticket_criteria_resolution_plan_remaining_blockers')}",
         f"paper_live_checklist_phase_status: {summary_value(rows, 'paper_live_checklist_phase_status')}",
         f"vps_monitoring_status_assumption: {summary_value(rows, 'vps_monitoring_status_assumption')}",
         f"final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
@@ -261,6 +268,13 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     closeout_record_decision = summary_value(inputs["vol_ticket_criteria_source_closeout_record"], "final_closeout_record_decision") or "missing_vol_ticket_criteria_source_closeout_record_decision"
     closeout_record_blocker = summary_value(inputs["vol_ticket_criteria_source_closeout_record"], "closed_blocker") or "missing_vol_ticket_criteria_source_closed_blocker"
     closeout_record_remaining = summary_value(inputs["vol_ticket_criteria_source_closeout_record"], "remaining_known_blockers") or "missing_vol_ticket_criteria_source_remaining_blockers"
+    resolution_closeout_approval_wording_status = summary_value(inputs["vol_ticket_criteria_resolution_plan_closeout_approval_wording"], "final_approval_wording_status") or "missing_vol_ticket_criteria_resolution_plan_closeout_approval_wording"
+    resolution_closeout_approval_wording_decision = summary_value(inputs["vol_ticket_criteria_resolution_plan_closeout_approval_wording"], "final_approval_wording_decision") or "missing_vol_ticket_criteria_resolution_plan_closeout_approval_wording_decision"
+    resolution_closeout_approval_wording_phrase = summary_value(inputs["vol_ticket_criteria_resolution_plan_closeout_approval_wording"], "future_approval_phrase") or "missing_vol_ticket_criteria_resolution_plan_closeout_future_phrase"
+    resolution_closeout_record_status = summary_value(inputs["vol_ticket_criteria_resolution_plan_closeout_record"], "final_closeout_record_status") or "missing_vol_ticket_criteria_resolution_plan_closeout_record"
+    resolution_closeout_record_decision = summary_value(inputs["vol_ticket_criteria_resolution_plan_closeout_record"], "final_closeout_record_decision") or "missing_vol_ticket_criteria_resolution_plan_closeout_record_decision"
+    resolution_closeout_record_blocker = summary_value(inputs["vol_ticket_criteria_resolution_plan_closeout_record"], "closed_blocker") or "missing_vol_ticket_criteria_resolution_plan_closed_blocker"
+    resolution_closeout_record_remaining = summary_value(inputs["vol_ticket_criteria_resolution_plan_closeout_record"], "remaining_known_blockers") or "missing_vol_ticket_criteria_resolution_plan_remaining_blockers"
     checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
     monitoring_next = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
     data = [
@@ -303,6 +317,13 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("vol_ticket_criteria_source_closeout_record_decision", closeout_record_decision, "Saved criteria-source closeout record decision."),
         ("vol_ticket_criteria_source_closed_blocker", closeout_record_blocker, "Single closed blocker from saved closeout record."),
         ("vol_ticket_criteria_source_remaining_blockers", closeout_record_remaining, "Known remaining blockers after the single closeout."),
+        ("vol_ticket_criteria_resolution_plan_closeout_approval_wording_status", resolution_closeout_approval_wording_status, "Saved resolution-plan closeout approval wording status."),
+        ("vol_ticket_criteria_resolution_plan_closeout_approval_wording_decision", resolution_closeout_approval_wording_decision, "Saved resolution-plan closeout approval wording decision."),
+        ("vol_ticket_criteria_resolution_plan_closeout_future_phrase", resolution_closeout_approval_wording_phrase, "Simple future approval phrase; not approval yet."),
+        ("vol_ticket_criteria_resolution_plan_closeout_record_status", resolution_closeout_record_status, "Saved resolution-plan closeout record status."),
+        ("vol_ticket_criteria_resolution_plan_closeout_record_decision", resolution_closeout_record_decision, "Saved resolution-plan closeout record decision."),
+        ("vol_ticket_criteria_resolution_plan_closed_blocker", resolution_closeout_record_blocker, "Second closed blocker from saved closeout record."),
+        ("vol_ticket_criteria_resolution_plan_remaining_blockers", resolution_closeout_record_remaining, "Known remaining blockers after the second closeout."),
         ("paper_live_checklist_phase_status", checklist_status, "Saved paper-live checklist phase status."),
         ("paper_live_monitoring_recommended_next_step", monitoring_next, "Saved paper-live monitoring recommended next step."),
         ("vps_monitoring_status_assumption", "status_only_monitoring_no_cron_change", "Dashboard assumes existing VPS monitoring remains status-only."),
@@ -330,6 +351,7 @@ def build_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str
         ("executable_ticket_closeout_candidate_reviews_do_not_close_blockers", "blocked", "critical", "Executable ticket closeout-candidate reviews do not close blockers.", "review_executable_ticket_closeout_candidate_reviews"),
         ("executable_ticket_criteria_source_closeout_approval_wording_not_recorded", "blocked", "critical", "Criteria-source closeout wording is not recorded approval.", "wait_for_explicit_simple_criteria_source_closeout_approval"),
         ("remaining_execution_ticket_blockers_after_criteria_source_closeout", "blocked", "critical", "Only criteria_source_reviewed may be closed; ticket values and approval blockers remain open.", "refresh_execution_blocker_chain_after_single_criteria_source_closeout"),
+        ("remaining_execution_ticket_blockers_after_resolution_plan_closeout", "blocked", "critical", "Criteria source and resolution plan may be closed; approval criteria, ticket values, and prerequisites remain open.", "refresh_execution_blocker_chain_after_second_criteria_closeout"),
         ("repeat_followup_orders_not_approved", "blocked", "critical", "QQQ100 follow-up and repeat orders remain unapproved.", "hold_no_action_and_monitor_only"),
         ("scheduling_not_approved", "blocked", "critical", "No order-capable scheduling is approved.", "keep_monitoring_status_only"),
     ]
@@ -371,6 +393,9 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"vol_ticket_closeout_candidate_review_rollup_decision={summary_value(summary_rows, 'vol_ticket_closeout_candidate_review_rollup_decision')}",
         f"vol_ticket_criteria_source_closeout_approval_wording_decision={summary_value(summary_rows, 'vol_ticket_criteria_source_closeout_approval_wording_decision')}",
         f"vol_ticket_criteria_source_closeout_record_decision={summary_value(summary_rows, 'vol_ticket_criteria_source_closeout_record_decision')}",
+        f"vol_ticket_criteria_resolution_plan_closeout_approval_wording_decision={summary_value(summary_rows, 'vol_ticket_criteria_resolution_plan_closeout_approval_wording_decision')}",
+        f"vol_ticket_criteria_resolution_plan_closeout_future_phrase={summary_value(summary_rows, 'vol_ticket_criteria_resolution_plan_closeout_future_phrase')}",
+        f"vol_ticket_criteria_resolution_plan_closeout_record_decision={summary_value(summary_rows, 'vol_ticket_criteria_resolution_plan_closeout_record_decision')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

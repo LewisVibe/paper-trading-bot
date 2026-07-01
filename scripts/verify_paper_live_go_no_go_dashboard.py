@@ -37,6 +37,8 @@ REQUIRED_TOKENS = [
     "vol_ticket_closeout_candidate_review_rollup_status",
     "vol_ticket_criteria_source_closeout_approval_wording_status",
     "vol_ticket_criteria_source_closeout_record_status",
+    "vol_ticket_criteria_resolution_plan_closeout_approval_wording_status",
+    "vol_ticket_criteria_resolution_plan_closeout_record_status",
     "executable_ticket_prerequisites_not_closed",
     "executable_ticket_approval_not_ready",
     "executable_ticket_approval_criteria_review_required",
@@ -47,6 +49,7 @@ REQUIRED_TOKENS = [
     "executable_ticket_closeout_candidate_reviews_do_not_close_blockers",
     "executable_ticket_criteria_source_closeout_approval_wording_not_recorded",
     "remaining_execution_ticket_blockers_after_criteria_source_closeout",
+    "remaining_execution_ticket_blockers_after_resolution_plan_closeout",
     "status_only_monitoring_no_cron_change",
     '"execution_approved": False',
     '"paper_execution_approved": False',
@@ -293,7 +296,24 @@ def verify_fixture_output(failures: list[str]) -> None:
                 "final_closeout_record_status": "vol_targeted_growth_criteria_source_closeout_recorded_manual_review_required",
                 "final_closeout_record_decision": "CRITERIA_SOURCE_REVIEWED_BLOCKER_CLOSED_ONLY",
                 "closed_blocker": "criteria_source_reviewed",
-                "remaining_known_blockers": "criteria_resolution_plan_open;approval_criteria_not_approval;ticket_values_not_approved",
+                "remaining_known_blockers": "criteria_resolution_plan_open;approval_criteria_not_approval;ticket_values_not_approved;executable_ticket_prerequisites_not_met",
+            },
+        )
+        write_summary(
+            data / "vol_targeted_growth_executable_ticket_criteria_resolution_plan_closeout_approval_wording_summary.csv",
+            {
+                "final_approval_wording_status": "vol_targeted_growth_criteria_resolution_plan_closeout_approval_wording_manual_review_required",
+                "final_approval_wording_decision": "CRITERIA_RESOLUTION_PLAN_CLOSEOUT_APPROVAL_WORDING_DEFINED_NOT_APPROVED",
+                "future_approval_phrase": "I approve closing the criteria_resolution_plan_open blocker only.",
+            },
+        )
+        write_summary(
+            data / "vol_targeted_growth_executable_ticket_criteria_resolution_plan_closeout_record_summary.csv",
+            {
+                "final_closeout_record_status": "vol_targeted_growth_criteria_resolution_plan_closeout_recorded_manual_review_required",
+                "final_closeout_record_decision": "CRITERIA_RESOLUTION_PLAN_OPEN_BLOCKER_CLOSED_ONLY",
+                "closed_blocker": "criteria_resolution_plan_open",
+                "remaining_known_blockers": "approval_criteria_not_approval;ticket_values_not_approved;executable_ticket_prerequisites_not_met",
             },
         )
         write_summary(
@@ -341,7 +361,11 @@ def verify_fixture_output(failures: list[str]) -> None:
         "I approve closing the criteria_source_reviewed blocker only.",
         "CRITERIA_SOURCE_REVIEWED_BLOCKER_CLOSED_ONLY",
         "criteria_source_reviewed",
-        "criteria_resolution_plan_open;approval_criteria_not_approval;ticket_values_not_approved",
+        "CRITERIA_RESOLUTION_PLAN_CLOSEOUT_APPROVAL_WORDING_DEFINED_NOT_APPROVED",
+        "I approve closing the criteria_resolution_plan_open blocker only.",
+        "CRITERIA_RESOLUTION_PLAN_OPEN_BLOCKER_CLOSED_ONLY",
+        "criteria_resolution_plan_open",
+        "approval_criteria_not_approval;ticket_values_not_approved;executable_ticket_prerequisites_not_met",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",

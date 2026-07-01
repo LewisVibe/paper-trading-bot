@@ -740,9 +740,14 @@ def _early_report_only_route() -> None:
     approval_wording_routes = {
         "--vol-targeted-growth-criteria-source-closeout-approval-wording": "generate_vol_targeted_growth_criteria_source_closeout_approval_wording",
         "--show-vol-targeted-growth-criteria-source-closeout-approval-wording": "show_vol_targeted_growth_criteria_source_closeout_approval_wording",
+        "--vol-targeted-growth-criteria-resolution-plan-closeout-approval-wording": "generate_vol_targeted_growth_criteria_resolution_plan_closeout_approval_wording",
+        "--show-vol-targeted-growth-criteria-resolution-plan-closeout-approval-wording": "show_vol_targeted_growth_criteria_resolution_plan_closeout_approval_wording",
     }
     if sys.argv[1:] and sys.argv[1] in approval_wording_routes and len(sys.argv[1:]) == 1:
-        from trading_bot.research import vol_targeted_growth_criteria_source_closeout_approval_wording as approval_wording
+        if "criteria-resolution-plan" in sys.argv[1]:
+            from trading_bot.research import vol_targeted_growth_criteria_resolution_plan_closeout_approval_wording as approval_wording
+        else:
+            from trading_bot.research import vol_targeted_growth_criteria_source_closeout_approval_wording as approval_wording
 
         result = getattr(approval_wording, approval_wording_routes[sys.argv[1]])()
         if isinstance(result, tuple):
@@ -756,9 +761,14 @@ def _early_report_only_route() -> None:
     closeout_record_routes = {
         "--vol-targeted-growth-criteria-source-closeout-record": "generate_vol_targeted_growth_criteria_source_closeout_record",
         "--show-vol-targeted-growth-criteria-source-closeout-record": "show_vol_targeted_growth_criteria_source_closeout_record",
+        "--vol-targeted-growth-criteria-resolution-plan-closeout-record": "generate_vol_targeted_growth_criteria_resolution_plan_closeout_record",
+        "--show-vol-targeted-growth-criteria-resolution-plan-closeout-record": "show_vol_targeted_growth_criteria_resolution_plan_closeout_record",
     }
     if sys.argv[1:] and sys.argv[1] in closeout_record_routes and len(sys.argv[1:]) == 1:
-        from trading_bot.research import vol_targeted_growth_criteria_source_closeout_record as closeout_record
+        if "criteria-resolution-plan" in sys.argv[1]:
+            from trading_bot.research import vol_targeted_growth_criteria_resolution_plan_closeout_record as closeout_record
+        else:
+            from trading_bot.research import vol_targeted_growth_criteria_source_closeout_record as closeout_record
 
         result = getattr(closeout_record, closeout_record_routes[sys.argv[1]])()
         if isinstance(result, tuple):
@@ -7876,6 +7886,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--show-vol-targeted-growth-approval-criteria-not-approval-closeout-candidate-review", action="store_true")
     parser.add_argument("--vol-targeted-growth-criteria-closeout-candidate-review-rollup", action="store_true")
     parser.add_argument("--show-vol-targeted-growth-criteria-closeout-candidate-review-rollup", action="store_true")
+    parser.add_argument("--vol-targeted-growth-criteria-resolution-plan-closeout-approval-wording", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-criteria-resolution-plan-closeout-approval-wording", action="store_true")
+    parser.add_argument("--vol-targeted-growth-criteria-resolution-plan-closeout-record", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-criteria-resolution-plan-closeout-record", action="store_true")
     parser.add_argument(
         "--paper-live-f6-f7-audit",
         action="store_true",
