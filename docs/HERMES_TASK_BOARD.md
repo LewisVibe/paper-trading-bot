@@ -1620,10 +1620,10 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Stop condition:** Stop if the task would close additional blockers, populate executable order values, create an executable ticket, submit/cancel/replace orders, approve paper execution, approve live trading, or schedule anything.
 
 ### Task: Volatility-targeted growth paper-live execution blocker rollup
-- **Purpose:** Use `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup` to summarize the saved volatility paper-live blocker chain in one report and surface it in VPS daily monitoring.
+- **Purpose:** Use `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup` to summarize the saved volatility paper-live blocker chain in one report, recognise the saved `criteria_source_reviewed` closeout separately from remaining blockers, and surface it in VPS daily monitoring.
 - **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
 - **Allowed commands:** `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, `python bot.py --show-vol-targeted-growth-paper-live-execution-blocker-rollup`, `python bot.py --vps-daily-monitoring-summary`, `python scripts\verify_vol_targeted_growth_paper_live_execution_blocker_chain.py`, and `python scripts\verify_vol_targeted_growth_paper_live_checkpoints.py`.
-- **Expected status:** `vol_targeted_growth_paper_live_execution_blocker_rollup_created_manual_review_required`; blockers remain uncleared, executable ticket prerequisites remain unmet, no order instructions are created, and execution/scheduling approvals remain false.
+- **Expected status:** `vol_targeted_growth_paper_live_execution_blocker_rollup_created_manual_review_required`; `closed_blocker_count=1` for `criteria_source_reviewed` when the closeout record exists, remaining executable-ticket blockers stay explicit, executable ticket prerequisites remain unmet, no order instructions are created, and execution/scheduling approvals remain false.
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order creation, executable ticket design, order fields, account/secret fields, portfolio execution wiring, scheduling changes, paper-live execution approval, or treating blocker rollup as approval.
 - **Stop condition:** Stop if the task would call Alpaca, read positions, refresh yfinance data, create ticket fields, clear blockers, approve execution, schedule anything, or connect the candidate to execution.
 

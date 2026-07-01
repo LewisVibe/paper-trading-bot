@@ -37,6 +37,7 @@ INPUT_FILES = {
     "target_position_plan": Path("data/vol_targeted_growth_non_executable_target_position_plan_summary.csv"),
     "order_ticket_boundary": Path("data/vol_targeted_growth_order_ticket_boundary_design_summary.csv"),
     "broker_comparison": Path("data/vol_targeted_growth_broker_position_comparison_summary.csv"),
+    "criteria_source_closeout_record": Path("data/vol_targeted_growth_executable_ticket_criteria_source_closeout_record_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -140,6 +141,9 @@ def show_vol_targeted_growth_executable_ticket_gap_list(root_dir: Path | str = "
         f"gap_count: {summary_value(rows, 'gap_count')}",
         f"critical_gap_count: {summary_value(rows, 'critical_gap_count')}",
         f"largest_gap: {summary_value(rows, 'largest_gap')}",
+        f"closed_blocker_count: {summary_value(rows, 'closed_blocker_count')}",
+        f"criteria_source_reviewed_closed: {summary_value(rows, 'criteria_source_reviewed_closed')}",
+        f"remaining_known_blockers_after_closeout: {summary_value(rows, 'remaining_known_blockers_after_closeout')}",
         f"recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
         "Warning: saved-output gap list only; no Alpaca, broker read, order, ticket design, live trading, or scheduling approval.",
@@ -239,6 +243,12 @@ def build_report_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str,
 def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     critical_count = sum(1 for row in report_rows if row.get("severity") == "critical")
     missing_inputs = [name for name, rows in inputs.items() if not rows]
+    criteria_source_closed = criteria_source_reviewed_is_closed(inputs)
+    closed_blocker_count = 1 if criteria_source_closed else 0
+    remaining_known_blockers = (
+        summary_value(inputs["criteria_source_closeout_record"], "remaining_known_blockers")
+        or "criteria_source_closeout_record_missing"
+    )
     data = [
         ("final_gap_list_status", FINAL_STATUS, "Executable ticket design remains blocked."),
         ("final_ticket_design_decision", FINAL_DECISION, "No executable ticket design is ready or approved."),
@@ -248,6 +258,10 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("previous_ticker", PREVIOUS_TICKER, "Previous QQQ100 ticker context."),
         ("gap_count", str(len(report_rows)), "Total gap rows."),
         ("critical_gap_count", str(critical_count), "Critical gap rows."),
+        ("closed_blocker_count", str(closed_blocker_count), "Closed blockers recognised from saved closeout evidence."),
+        ("criteria_source_reviewed_closed", str(criteria_source_closed), "True only when the saved criteria-source closeout record closes that blocker."),
+        ("closed_blocker", "criteria_source_reviewed" if criteria_source_closed else "none", "Closed blocker recognised by this gap-list recalculation."),
+        ("remaining_known_blockers_after_closeout", remaining_known_blockers, "Known blockers that remain open after the criteria-source closeout record."),
         ("missing_saved_input_count", str(len(missing_inputs)), "Missing saved input summaries."),
         ("missing_saved_inputs", ";".join(missing_inputs) or "none", "Saved inputs missing from this gap list."),
         ("largest_gap", "manual_execution_design_approval_missing", "Primary blocker before any executable ticket design."),
@@ -257,6 +271,14 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("recommended_next_step", NEXT_STEP, "Manual review the gap list before any future executable ticket discussion."),
     ]
     return [summary_row(*item) for item in data]
+
+
+def criteria_source_reviewed_is_closed(inputs: dict[str, list[dict[str, str]]]) -> bool:
+    rows = inputs.get("criteria_source_closeout_record", [])
+    return (
+        summary_value(rows, "final_closeout_record_decision") == "CRITERIA_SOURCE_REVIEWED_BLOCKER_CLOSED_ONLY"
+        and summary_value(rows, "closed_blocker") == "criteria_source_reviewed"
+    )
 
 
 def build_evidence_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
@@ -306,6 +328,9 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"gap_count={summary_value(summary_rows, 'gap_count')}",
         f"critical_gap_count={summary_value(summary_rows, 'critical_gap_count')}",
         f"largest_gap={summary_value(summary_rows, 'largest_gap')}",
+        f"closed_blocker_count={summary_value(summary_rows, 'closed_blocker_count')}",
+        f"criteria_source_reviewed_closed={summary_value(summary_rows, 'criteria_source_reviewed_closed')}",
+        f"remaining_known_blockers_after_closeout={summary_value(summary_rows, 'remaining_known_blockers_after_closeout')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

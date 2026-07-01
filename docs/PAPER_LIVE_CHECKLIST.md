@@ -140,6 +140,7 @@ Remaining steps, in order:
    - Optional display: `python bot.py --show-vol-targeted-growth-criteria-source-closeout-record`.
    - Current closeout decision is `CRITERIA_SOURCE_REVIEWED_BLOCKER_CLOSED_ONLY`.
    - This closes only `criteria_source_reviewed`. It does not close `criteria_resolution_plan_open` or `approval_criteria_not_approval`, does not populate ticket values, does not create an executable ticket, and does not approve execution/scheduling.
+   - The execution blocker rollup and executable ticket gap list must now show `closed_blocker_count=1`, `criteria_source_reviewed_closed=True`, and the exact remaining blockers before any further ticket-design work.
 
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.

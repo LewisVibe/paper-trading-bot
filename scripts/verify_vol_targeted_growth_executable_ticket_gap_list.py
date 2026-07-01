@@ -158,6 +158,9 @@ def verify_fixture_output(failures: list[str]) -> None:
             FINAL_DECISION,
             "manual_execution_design_approval_missing",
             "EXECUTABLE_TICKET_DESIGN_NOT_READY",
+            "closed_blocker_count=1",
+            "criteria_source_reviewed_closed=True",
+            "remaining_known_blockers_after_closeout=criteria_resolution_plan_open",
             "order_instructions_created=false",
             "execution_approved=false",
             "paper_execution_approved=false",
@@ -179,6 +182,12 @@ def verify_summary_rows(rows: list[dict[str, object]], failures: list[str]) -> N
         failures.append("summary final decision is incorrect")
     if summary_value(rows, "largest_gap") != "manual_execution_design_approval_missing":
         failures.append("summary largest gap should remain manual execution-design approval")
+    if summary_value(rows, "criteria_source_reviewed_closed") != "True":
+        failures.append("summary should recognise criteria_source_reviewed as closed from saved evidence")
+    if summary_value(rows, "closed_blocker_count") != "1":
+        failures.append("summary should count one closed blocker from saved evidence")
+    if "criteria_resolution_plan_open" not in summary_value(rows, "remaining_known_blockers_after_closeout"):
+        failures.append("summary should preserve exact remaining blockers after criteria-source closeout")
     for flag in FALSE_FLAGS:
         if summary_or_flag_value(rows, flag) != "False":
             failures.append(f"summary flag must be False: {flag}")
@@ -239,6 +248,14 @@ def seed_inputs(root: Path) -> None:
     write_summary(data / "vol_targeted_growth_non_executable_target_position_plan_summary.csv", {"final_target_position_plan_status": "non_executable_plan"})
     write_summary(data / "vol_targeted_growth_order_ticket_boundary_design_summary.csv", {"final_order_ticket_boundary_status": "boundary_blocks_order_fields"})
     write_summary(data / "vol_targeted_growth_broker_position_comparison_summary.csv", {"final_comparison_status": "saved_readonly_manual_review_required"})
+    write_summary(
+        data / "vol_targeted_growth_executable_ticket_criteria_source_closeout_record_summary.csv",
+        {
+            "final_closeout_record_decision": "CRITERIA_SOURCE_REVIEWED_BLOCKER_CLOSED_ONLY",
+            "closed_blocker": "criteria_source_reviewed",
+            "remaining_known_blockers": "criteria_resolution_plan_open;approval_criteria_not_approval;ticket_values_not_approved;executable_ticket_prerequisites_not_met",
+        },
+    )
 
 
 def write_summary(path: Path, values: dict[str, str]) -> None:

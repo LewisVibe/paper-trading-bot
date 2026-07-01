@@ -121,6 +121,7 @@ INPUT_FILES = {
     "target_position_plan_summary": Path("data/vol_targeted_growth_non_executable_target_position_plan_summary.csv"),
     "order_ticket_boundary_summary": Path("data/vol_targeted_growth_order_ticket_boundary_design_summary.csv"),
     "ticket_prerequisites_summary": Path("data/vol_targeted_growth_executable_ticket_prerequisites_review_summary.csv"),
+    "criteria_source_closeout_record_summary": Path("data/vol_targeted_growth_executable_ticket_criteria_source_closeout_record_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -1048,6 +1049,7 @@ def order_ticket_prerequisites_summary_rows(inputs: dict[str, list[dict[str, str
 
 
 def execution_blocker_rollup_report_rows(created_at: str, inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    criteria_source_closed = criteria_source_reviewed_is_closed(inputs)
     checkpoints = [
         ("manual_gate", "manual_gate_summary", "final_manual_gate_status", "manual_paper_live_approval_not_recorded"),
         ("action_preview_pack", "paper_live_action_preview_pack_summary", "final_action_preview_pack_status", "current_exposure_not_reconciled"),
@@ -1069,6 +1071,17 @@ def execution_blocker_rollup_report_rows(created_at: str, inputs: dict[str, list
                 status_value or f"missing_{status_key}",
                 f"Saved {checkpoint_name} checkpoint remains review-only and cannot approve execution.",
                 blocker,
+            )
+        )
+    if criteria_source_closed:
+        rows.append(
+            (
+                "criteria_source_reviewed_closeout",
+                "closed_saved_evidence",
+                "info",
+                summary_value(inputs["criteria_source_closeout_record_summary"], "final_closeout_record_decision"),
+                "The criteria_source_reviewed blocker is closed by saved record only; this does not approve ticket values, execution, or scheduling.",
+                "continue_reviewing_remaining_execution_ticket_blockers",
             )
         )
     rows.extend(
@@ -1095,6 +1108,8 @@ def execution_blocker_rollup_report_rows(created_at: str, inputs: dict[str, list
 
 
 def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]], rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    criteria_source_closed = criteria_source_reviewed_is_closed(inputs)
+    closed_blocker_count = 1 if criteria_source_closed else 0
     missing = [
         name
         for name in [
@@ -1106,10 +1121,15 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
             "target_position_plan_summary",
             "order_ticket_boundary_summary",
             "ticket_prerequisites_summary",
+            "criteria_source_closeout_record_summary",
         ]
         if not inputs[name]
     ]
-    blocker_count = len(rows)
+    blocker_count = sum(1 for row in rows if row.get("status") != "closed_saved_evidence")
+    remaining_known_blockers = (
+        summary_value(inputs["criteria_source_closeout_record_summary"], "remaining_known_blockers")
+        or "criteria_source_closeout_record_missing"
+    )
     data = [
         ("final_execution_blocker_rollup_status", EXECUTION_BLOCKER_ROLLUP_STATUS, "Execution blockers are rolled up for manual review only."),
         ("active_seed", ACTIVE_SEED, "Current status/report seed."),
@@ -1117,7 +1137,11 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
         ("previous_seed", PREVIOUS_SEED, "Previous QQQ100 seed context."),
         ("missing_checkpoint_count", str(len(missing)), "Saved checkpoint summaries missing from the rollup."),
         ("missing_checkpoints", ";".join(missing) or "none", "Missing saved checkpoint names."),
-        ("execution_blocker_count", str(blocker_count), "Rollup row count; every row remains review/blocker context."),
+        ("execution_blocker_count", str(blocker_count), "Open blocker/manual-review rows after applying saved blocker closeout evidence."),
+        ("closed_blocker_count", str(closed_blocker_count), "Closed blockers recognised from saved closeout evidence."),
+        ("criteria_source_reviewed_closed", str(criteria_source_closed), "True only when the saved criteria-source closeout record closes that blocker."),
+        ("closed_blocker", "criteria_source_reviewed" if criteria_source_closed else "none", "Closed blocker recognised by this recalculation."),
+        ("remaining_known_blockers_after_closeout", remaining_known_blockers, "Known blockers that remain open after the criteria-source closeout record."),
         ("paper_live_candidate_discussion_approved", "True", "Discussion may continue from the saved approval record."),
         ("paper_live_candidate_approved", "False", "Rollup does not approve paper-live candidacy."),
         ("executable_ticket_prerequisites_met", "False", "Prerequisites remain incomplete."),
@@ -1131,6 +1155,14 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
         ("checkpoint_row_count", str(len(rows)), "Saved checkpoint row count."),
     ]
     return [summary_row(*item, overrides={"paper_live_candidate_discussion_approved": True}) for item in data]
+
+
+def criteria_source_reviewed_is_closed(inputs: dict[str, list[dict[str, str]]]) -> bool:
+    rows = inputs.get("criteria_source_closeout_record_summary", [])
+    return (
+        summary_value(rows, "final_closeout_record_decision") == "CRITERIA_SOURCE_REVIEWED_BLOCKER_CLOSED_ONLY"
+        and summary_value(rows, "closed_blocker") == "criteria_source_reviewed"
+    )
 
 
 def evidence_rows_for(inputs: dict[str, list[dict[str, str]]], *, overrides: dict[str, Any] | None = None) -> list[dict[str, Any]]:
@@ -1284,6 +1316,9 @@ def show_summary(path: Path, title: str, status_key: str, missing_message: str) 
         f"active_ticker: {summary_value(rows, 'active_ticker')}",
         f"previous_seed: {summary_value(rows, 'previous_seed') or PREVIOUS_SEED}",
         f"largest_blocker: {summary_value(rows, 'largest_blocker')}",
+        f"closed_blocker_count: {summary_value(rows, 'closed_blocker_count')}",
+        f"criteria_source_reviewed_closed: {summary_value(rows, 'criteria_source_reviewed_closed')}",
+        f"remaining_known_blockers_after_closeout: {summary_value(rows, 'remaining_known_blockers_after_closeout')}",
         f"recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         "order_instructions_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false; followup_order_approved=false; repeat_execution_approved=false",
         "Warning: this is saved-output/manual-review only, not broker refresh, paper-live approval, order approval, live trading, or scheduling approval.",
@@ -1311,6 +1346,15 @@ def summary_lines(title: str, summary_rows: list[dict[str, Any]], output_paths: 
         f"saved_report={output_paths['report']}",
         "alpaca_called=false; broker_positions_read_now=false; order_instructions_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
     ]
+    for key in [
+        "closed_blocker_count",
+        "criteria_source_reviewed_closed",
+        "remaining_known_blockers_after_closeout",
+    ]:
+        value = summary_value(summary_rows, key)
+        if value:
+            lines.insert(-1, f"{key}={value}")
+    return lines
 
 
 def load_inputs(root: Path) -> dict[str, list[dict[str, str]]]:
