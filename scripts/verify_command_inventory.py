@@ -117,6 +117,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-approval-criteria-not-approval-closeout-candidate-review",
     "--vol-targeted-growth-criteria-closeout-candidate-review-rollup",
     "--show-vol-targeted-growth-criteria-closeout-candidate-review-rollup",
+    "--vol-targeted-growth-criteria-source-closeout-approval-wording",
+    "--show-vol-targeted-growth-criteria-source-closeout-approval-wording",
     "--paper-live-f6-f7-audit",
     "--show-paper-live-f6-f7-audit",
     "--paper-live-promotion-ladder-design",

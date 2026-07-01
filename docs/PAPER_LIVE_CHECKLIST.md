@@ -129,6 +129,12 @@ Remaining steps, in order:
    - Current rollup decision is `CRITERIA_CLOSEOUT_CANDIDATES_REVIEWED_NONE_CLOSED`.
    - These reports can mark `criteria_source_reviewed` as ready for human closeout consideration and keep the other two blockers not ready, but they do not close blockers, change approval readiness, request approval, record approval, populate ticket values, create an executable ticket, or approve execution.
 
+6m. **Define simple wording for the one candidate-ready blocker, without recording approval.**
+   - Run `python bot.py --vol-targeted-growth-criteria-source-closeout-approval-wording`.
+   - Optional display: `python bot.py --show-vol-targeted-growth-criteria-source-closeout-approval-wording`.
+   - Future approval phrase, if Lewis chooses to use it later: `I approve closing the criteria_source_reviewed blocker only.`
+   - This defines wording only. It does not close the blocker, record approval, close any other blocker, populate ticket values, create an executable ticket, or approve execution/scheduling.
+
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.
    - It must still be non-submitting and must not connect to the order gateway.

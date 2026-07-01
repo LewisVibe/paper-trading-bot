@@ -737,6 +737,22 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    approval_wording_routes = {
+        "--vol-targeted-growth-criteria-source-closeout-approval-wording": "generate_vol_targeted_growth_criteria_source_closeout_approval_wording",
+        "--show-vol-targeted-growth-criteria-source-closeout-approval-wording": "show_vol_targeted_growth_criteria_source_closeout_approval_wording",
+    }
+    if sys.argv[1:] and sys.argv[1] in approval_wording_routes and len(sys.argv[1:]) == 1:
+        from trading_bot.research import vol_targeted_growth_criteria_source_closeout_approval_wording as approval_wording
+
+        result = getattr(approval_wording, approval_wording_routes[sys.argv[1]])()
+        if isinstance(result, tuple):
+            code, lines = result
+            for line in lines:
+                print(line)
+            raise SystemExit(code)
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
     if sys.argv[1:] == ["--paper-live-f6-f7-audit"]:
         from trading_bot.research.paper_live_f6_f7_audit import generate_paper_live_f6_f7_audit
 

@@ -35,6 +35,7 @@ REQUIRED_TOKENS = [
     "vol_ticket_criteria_blocker_closeout_review_status",
     "vol_ticket_blocker_specific_review_rollup_status",
     "vol_ticket_closeout_candidate_review_rollup_status",
+    "vol_ticket_criteria_source_closeout_approval_wording_status",
     "executable_ticket_prerequisites_not_closed",
     "executable_ticket_approval_not_ready",
     "executable_ticket_approval_criteria_review_required",
@@ -43,6 +44,7 @@ REQUIRED_TOKENS = [
     "executable_ticket_criteria_blocker_closeout_review_does_not_close_blockers",
     "executable_ticket_blocker_specific_reviews_do_not_close_blockers",
     "executable_ticket_closeout_candidate_reviews_do_not_close_blockers",
+    "executable_ticket_criteria_source_closeout_approval_wording_not_recorded",
     "status_only_monitoring_no_cron_change",
     '"execution_approved": False',
     '"paper_execution_approved": False',
@@ -275,6 +277,15 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_executable_ticket_criteria_source_closeout_approval_wording_summary.csv",
+            {
+                "final_approval_wording_status": "vol_targeted_growth_criteria_source_closeout_approval_wording_manual_review_required",
+                "final_approval_wording_decision": "CRITERIA_SOURCE_CLOSEOUT_APPROVAL_WORDING_DEFINED_NOT_APPROVED",
+                "future_approval_phrase": "I approve closing the criteria_source_reviewed blocker only.",
+                "largest_blocker": "approval_wording_defined_but_not_recorded",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -315,6 +326,8 @@ def verify_fixture_output(failures: list[str]) -> None:
         "CRITERIA_BLOCKERS_REVIEWED_NONE_CLOSED",
         "CRITERIA_BLOCKER_SPECIFIC_REVIEWS_CREATED_NONE_CLOSED",
         "CRITERIA_CLOSEOUT_CANDIDATES_REVIEWED_NONE_CLOSED",
+        "CRITERIA_SOURCE_CLOSEOUT_APPROVAL_WORDING_DEFINED_NOT_APPROVED",
+        "I approve closing the criteria_source_reviewed blocker only.",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",
