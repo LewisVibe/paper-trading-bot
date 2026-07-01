@@ -614,6 +614,42 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-execution-design-approval-wording"]:
+        from trading_bot.research.vol_targeted_growth_execution_design_approval import (
+            generate_vol_targeted_growth_execution_design_approval_wording,
+        )
+
+        result = generate_vol_targeted_growth_execution_design_approval_wording()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-execution-design-approval-wording"]:
+        from trading_bot.research.vol_targeted_growth_execution_design_approval import (
+            show_vol_targeted_growth_execution_design_approval_wording,
+        )
+
+        code, lines = show_vol_targeted_growth_execution_design_approval_wording()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-execution-design-approval-record"]:
+        from trading_bot.research.vol_targeted_growth_execution_design_approval import (
+            generate_vol_targeted_growth_execution_design_approval_record,
+        )
+
+        result = generate_vol_targeted_growth_execution_design_approval_record()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-execution-design-approval-record"]:
+        from trading_bot.research.vol_targeted_growth_execution_design_approval import (
+            show_vol_targeted_growth_execution_design_approval_record,
+        )
+
+        code, lines = show_vol_targeted_growth_execution_design_approval_record()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-executable-ticket-approval-criteria"]:
         from trading_bot.research.vol_targeted_growth_executable_ticket_approval_criteria import (
             generate_vol_targeted_growth_executable_ticket_approval_criteria,
@@ -7841,6 +7877,26 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-execution-approval-request-readiness",
         action="store_true",
         help="Display the saved execution approval request readiness checkpoint.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-execution-design-approval-wording",
+        action="store_true",
+        help="Create saved wording for execution-design-only approval without approving orders.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-execution-design-approval-wording",
+        action="store_true",
+        help="Display saved wording for execution-design-only approval.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-execution-design-approval-record",
+        action="store_true",
+        help="Create a saved execution-design-only approval record without approving orders.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-execution-design-approval-record",
+        action="store_true",
+        help="Display the saved execution-design-only approval record.",
     )
     parser.add_argument(
         "--vol-targeted-growth-executable-ticket-approval-criteria",

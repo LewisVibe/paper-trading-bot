@@ -43,6 +43,8 @@ INPUT_FILES = {
     "vol_ticket_final_blockers_closeout_approval_wording": Path("data/vol_targeted_growth_final_ticket_blockers_closeout_approval_wording_summary.csv"),
     "vol_ticket_final_blockers_closeout_record": Path("data/vol_targeted_growth_final_ticket_blockers_closeout_record_summary.csv"),
     "vol_execution_approval_request_readiness": Path("data/vol_targeted_growth_execution_approval_request_readiness_summary.csv"),
+    "vol_execution_design_approval_wording": Path("data/vol_targeted_growth_execution_design_approval_wording_summary.csv"),
+    "vol_execution_design_approval_record": Path("data/vol_targeted_growth_execution_design_approval_record_summary.csv"),
     "paper_live_checklist": Path("data/paper_live_checklist_status_summary.csv"),
 }
 
@@ -185,6 +187,10 @@ def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int,
         f"vol_execution_approval_request_ready: {summary_value(rows, 'vol_execution_approval_request_ready')}",
         f"vol_execution_approval_requested: {summary_value(rows, 'vol_execution_approval_requested')}",
         f"vol_execution_approval_recorded: {summary_value(rows, 'vol_execution_approval_recorded')}",
+        f"vol_execution_design_approval_wording_decision: {summary_value(rows, 'vol_execution_design_approval_wording_decision')}",
+        f"vol_execution_design_approval_phrase: {summary_value(rows, 'vol_execution_design_approval_phrase')}",
+        f"vol_execution_design_approval_record_decision: {summary_value(rows, 'vol_execution_design_approval_record_decision')}",
+        f"vol_execution_design_approved: {summary_value(rows, 'vol_execution_design_approved')}",
         f"paper_live_checklist_phase_status: {summary_value(rows, 'paper_live_checklist_phase_status')}",
         f"vps_monitoring_status_assumption: {summary_value(rows, 'vps_monitoring_status_assumption')}",
         f"final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
@@ -313,6 +319,13 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     execution_approval_request_ready = summary_value(inputs["vol_execution_approval_request_readiness"], "approval_request_ready") or "False"
     execution_approval_requested = summary_value(inputs["vol_execution_approval_request_readiness"], "approval_requested") or "False"
     execution_approval_recorded = summary_value(inputs["vol_execution_approval_request_readiness"], "approval_recorded") or "False"
+    execution_design_wording_status = summary_value(inputs["vol_execution_design_approval_wording"], "final_execution_design_wording_status") or "missing_vol_execution_design_approval_wording"
+    execution_design_wording_decision = summary_value(inputs["vol_execution_design_approval_wording"], "final_execution_design_wording_decision") or "missing_vol_execution_design_approval_wording_decision"
+    execution_design_phrase = summary_value(inputs["vol_execution_design_approval_wording"], "approval_phrase") or "missing_vol_execution_design_approval_phrase"
+    execution_design_record_status = summary_value(inputs["vol_execution_design_approval_record"], "final_execution_design_record_status") or "missing_vol_execution_design_approval_record"
+    execution_design_record_decision = summary_value(inputs["vol_execution_design_approval_record"], "final_execution_design_record_decision") or "missing_vol_execution_design_approval_record_decision"
+    execution_design_approved = summary_value(inputs["vol_execution_design_approval_record"], "execution_design_approved") or "False"
+    execution_design_approval_recorded = summary_value(inputs["vol_execution_design_approval_record"], "manual_execution_design_approval_recorded") or "False"
     checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
     monitoring_next = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
     data = [
@@ -381,6 +394,13 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("vol_execution_approval_request_ready", execution_approval_request_ready, "True means ready to ask, not approved to trade."),
         ("vol_execution_approval_requested", execution_approval_requested, "This remains false until a separate explicit approval process."),
         ("vol_execution_approval_recorded", execution_approval_recorded, "This remains false until a separate explicit approval record."),
+        ("vol_execution_design_approval_wording_status", execution_design_wording_status, "Saved execution-design-only wording status."),
+        ("vol_execution_design_approval_wording_decision", execution_design_wording_decision, "Saved execution-design-only wording decision."),
+        ("vol_execution_design_approval_phrase", execution_design_phrase, "Design-only approval wording; not order approval."),
+        ("vol_execution_design_approval_record_status", execution_design_record_status, "Saved execution-design-only approval record status."),
+        ("vol_execution_design_approval_record_decision", execution_design_record_decision, "Saved execution-design-only approval record decision."),
+        ("vol_execution_design_approved", execution_design_approved, "True means design may continue; it is not execution approval."),
+        ("vol_execution_design_approval_recorded", execution_design_approval_recorded, "True only when the design-only record exists."),
         ("paper_live_checklist_phase_status", checklist_status, "Saved paper-live checklist phase status."),
         ("paper_live_monitoring_recommended_next_step", monitoring_next, "Saved paper-live monitoring recommended next step."),
         ("vps_monitoring_status_assumption", "status_only_monitoring_no_cron_change", "Dashboard assumes existing VPS monitoring remains status-only."),
@@ -411,6 +431,7 @@ def build_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str
         ("remaining_execution_ticket_blockers_after_resolution_plan_closeout", "blocked", "critical", "Criteria source and resolution plan may be closed; approval criteria, ticket values, and prerequisites remain open.", "refresh_execution_blocker_chain_after_second_criteria_closeout"),
         ("remaining_execution_ticket_blockers_after_approval_criteria_closeout", "blocked", "critical", "Criteria blockers may be closed; ticket values and prerequisites remain open.", "refresh_execution_blocker_chain_after_third_criteria_closeout"),
         ("execution_still_not_approved_after_final_ticket_blockers_closeout", "blocked", "critical", "Final checklist blockers may be closed, but no executable ticket or execution approval exists.", "manual_review_before_any_separate_execution_approval_request"),
+        ("execution_design_approval_is_not_order_approval", "blocked", "critical", "Execution-design approval may be recorded, but order values, tickets, and execution remain unapproved.", "design_non_submitting_executable_ticket_values_without_order_approval"),
         ("repeat_followup_orders_not_approved", "blocked", "critical", "QQQ100 follow-up and repeat orders remain unapproved.", "hold_no_action_and_monitor_only"),
         ("scheduling_not_approved", "blocked", "critical", "No order-capable scheduling is approved.", "keep_monitoring_status_only"),
     ]
@@ -458,6 +479,12 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"vol_ticket_approval_criteria_closeout_approval_wording_decision={summary_value(summary_rows, 'vol_ticket_approval_criteria_closeout_approval_wording_decision')}",
         f"vol_ticket_approval_criteria_closeout_future_phrase={summary_value(summary_rows, 'vol_ticket_approval_criteria_closeout_future_phrase')}",
         f"vol_ticket_approval_criteria_closeout_record_decision={summary_value(summary_rows, 'vol_ticket_approval_criteria_closeout_record_decision')}",
+        f"vol_ticket_final_blockers_closeout_record_decision={summary_value(summary_rows, 'vol_ticket_final_blockers_closeout_record_decision')}",
+        f"vol_execution_approval_request_readiness_decision={summary_value(summary_rows, 'vol_execution_approval_request_readiness_decision')}",
+        f"vol_execution_design_approval_wording_decision={summary_value(summary_rows, 'vol_execution_design_approval_wording_decision')}",
+        f"vol_execution_design_approval_phrase={summary_value(summary_rows, 'vol_execution_design_approval_phrase')}",
+        f"vol_execution_design_approval_record_decision={summary_value(summary_rows, 'vol_execution_design_approval_record_decision')}",
+        f"vol_execution_design_approved={summary_value(summary_rows, 'vol_execution_design_approved')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

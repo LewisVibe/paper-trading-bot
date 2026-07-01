@@ -27,6 +27,14 @@ For the ordered paper-live implementation path, see `docs/PAPER_LIVE_CHECKLIST.m
 - VPS daily monitoring summary reported `final_status=healthy_monitoring_state`, `action_required=no_action_required`, all monitored saved outputs fresh, `execution_approved=False`, and `scheduling_approved=False`.
 - This checkpoint confirms monitoring/report health only. It does not approve execution, crypto execution, scheduling, paper orders, live trading, or strategy-to-execution wiring.
 
+## Volatility Execution-Design Checkpoint
+
+- `python bot.py --vol-targeted-growth-execution-approval-request-readiness` can report that the closed checklist blockers are ready for a separate human approval question, but does not request or record execution approval.
+- `python bot.py --vol-targeted-growth-execution-design-approval-wording` defines the narrow phrase for design-only approval.
+- `python bot.py --vol-targeted-growth-execution-design-approval-record` records approval to continue designing the next non-submitting execution-ticket layer only.
+- The design record does not populate order values, create an executable ticket, call Alpaca, submit orders, approve paper execution, approve live trading, or approve scheduling.
+- The go/no-go dashboard and VPS daily monitoring summary surface the execution-design approval record while keeping `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
+
 ## Paper-Live F7 Accounting Checkpoint
 
 - `python bot.py --paper-live-f7-accounting-proof` is a report-only static checkpoint for the F7 accounting boundary.

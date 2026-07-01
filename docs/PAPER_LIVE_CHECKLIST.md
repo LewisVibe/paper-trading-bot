@@ -175,8 +175,15 @@ Remaining steps, in order:
    - Expected decision is `READY_FOR_SEPARATE_EXECUTION_APPROVAL_REQUEST_NOT_APPROVED`.
    - This means the checklist is ready for a separate explicit human approval question only. It must keep `approval_requested=False`, `approval_recorded=False`, `order_values_populated=False`, `executable_ticket_created=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
+6s. **Record execution-design-only approval, without approving orders.**
+   - Run `python bot.py --vol-targeted-growth-execution-design-approval-wording`.
+   - Optional display: `python bot.py --show-vol-targeted-growth-execution-design-approval-wording`.
+   - Run `python bot.py --vol-targeted-growth-execution-design-approval-record` only after explicit approval to continue design.
+   - Optional display: `python bot.py --show-vol-targeted-growth-execution-design-approval-record`.
+   - This records approval to design the next non-submitting execution-ticket layer only. It does not populate side, quantity, order type, time-in-force, account, or broker-order fields. It does not create an executable ticket and does not approve execution/scheduling.
+
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
-   - This is not approved yet.
+   - Execution-design-only approval can allow this design work to continue, but it is still not order approval.
    - It must still be non-submitting and must not connect to the order gateway.
    - It must preserve `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
 

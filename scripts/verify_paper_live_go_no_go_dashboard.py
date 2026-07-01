@@ -44,6 +44,9 @@ REQUIRED_TOKENS = [
     "vol_ticket_final_blockers_closeout_approval_wording_status",
     "vol_ticket_final_blockers_closeout_record_status",
     "vol_execution_approval_request_readiness_status",
+    "vol_execution_design_approval_wording_status",
+    "vol_execution_design_approval_record_status",
+    "vol_execution_design_approved",
     "executable_ticket_prerequisites_not_closed",
     "executable_ticket_approval_not_ready",
     "executable_ticket_approval_criteria_review_required",
@@ -57,6 +60,7 @@ REQUIRED_TOKENS = [
     "remaining_execution_ticket_blockers_after_resolution_plan_closeout",
     "remaining_execution_ticket_blockers_after_approval_criteria_closeout",
     "execution_still_not_approved_after_final_ticket_blockers_closeout",
+    "execution_design_approval_is_not_order_approval",
     "status_only_monitoring_no_cron_change",
     '"execution_approved": False',
     '"paper_execution_approved": False',
@@ -368,6 +372,23 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_execution_design_approval_wording_summary.csv",
+            {
+                "final_execution_design_wording_status": "vol_targeted_growth_execution_design_approval_wording_manual_review_required",
+                "final_execution_design_wording_decision": "EXECUTION_DESIGN_APPROVAL_WORDING_DEFINED_NOT_APPROVED",
+                "approval_phrase": "I approve execution design only for the active volatility seed; do not create or submit orders.",
+            },
+        )
+        write_summary(
+            data / "vol_targeted_growth_execution_design_approval_record_summary.csv",
+            {
+                "final_execution_design_record_status": "vol_targeted_growth_execution_design_approval_recorded_manual_review_required",
+                "final_execution_design_record_decision": "EXECUTION_DESIGN_APPROVED_NO_ORDER_OR_EXECUTION_APPROVAL",
+                "execution_design_approved": "True",
+                "manual_execution_design_approval_recorded": "True",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -428,6 +449,10 @@ def verify_fixture_output(failures: list[str]) -> None:
         "vol_execution_approval_request_ready: True",
         "vol_execution_approval_requested: False",
         "vol_execution_approval_recorded: False",
+        "EXECUTION_DESIGN_APPROVAL_WORDING_DEFINED_NOT_APPROVED",
+        "I approve execution design only for the active volatility seed; do not create or submit orders.",
+        "EXECUTION_DESIGN_APPROVED_NO_ORDER_OR_EXECUTION_APPROVAL",
+        "vol_execution_design_approved: True",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",
