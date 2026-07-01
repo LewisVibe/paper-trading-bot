@@ -42,6 +42,7 @@ INPUT_FILES = {
     "vol_ticket_approval_criteria_closeout_record": Path("data/vol_targeted_growth_executable_ticket_approval_criteria_closeout_record_summary.csv"),
     "vol_ticket_final_blockers_closeout_approval_wording": Path("data/vol_targeted_growth_final_ticket_blockers_closeout_approval_wording_summary.csv"),
     "vol_ticket_final_blockers_closeout_record": Path("data/vol_targeted_growth_final_ticket_blockers_closeout_record_summary.csv"),
+    "vol_execution_approval_request_readiness": Path("data/vol_targeted_growth_execution_approval_request_readiness_summary.csv"),
     "paper_live_checklist": Path("data/paper_live_checklist_status_summary.csv"),
 }
 
@@ -180,6 +181,10 @@ def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int,
         f"vol_ticket_final_blockers_closeout_record_decision: {summary_value(rows, 'vol_ticket_final_blockers_closeout_record_decision')}",
         f"vol_ticket_final_blockers_closed_blocker: {summary_value(rows, 'vol_ticket_final_blockers_closed_blocker')}",
         f"vol_ticket_final_blockers_remaining_blockers: {summary_value(rows, 'vol_ticket_final_blockers_remaining_blockers')}",
+        f"vol_execution_approval_request_readiness_decision: {summary_value(rows, 'vol_execution_approval_request_readiness_decision')}",
+        f"vol_execution_approval_request_ready: {summary_value(rows, 'vol_execution_approval_request_ready')}",
+        f"vol_execution_approval_requested: {summary_value(rows, 'vol_execution_approval_requested')}",
+        f"vol_execution_approval_recorded: {summary_value(rows, 'vol_execution_approval_recorded')}",
         f"paper_live_checklist_phase_status: {summary_value(rows, 'paper_live_checklist_phase_status')}",
         f"vps_monitoring_status_assumption: {summary_value(rows, 'vps_monitoring_status_assumption')}",
         f"final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
@@ -303,6 +308,11 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     final_closeout_record_decision = summary_value(inputs["vol_ticket_final_blockers_closeout_record"], "final_closeout_record_decision") or "missing_vol_ticket_final_blockers_closeout_record_decision"
     final_closeout_record_blocker = summary_value(inputs["vol_ticket_final_blockers_closeout_record"], "closed_blocker") or "missing_vol_ticket_final_blockers_closed_blocker"
     final_closeout_record_remaining = summary_value(inputs["vol_ticket_final_blockers_closeout_record"], "remaining_known_blockers") or "missing_vol_ticket_final_blockers_remaining_blockers"
+    execution_approval_request_status = summary_value(inputs["vol_execution_approval_request_readiness"], "final_readiness_status") or "missing_vol_execution_approval_request_readiness"
+    execution_approval_request_decision = summary_value(inputs["vol_execution_approval_request_readiness"], "final_readiness_decision") or "missing_vol_execution_approval_request_readiness_decision"
+    execution_approval_request_ready = summary_value(inputs["vol_execution_approval_request_readiness"], "approval_request_ready") or "False"
+    execution_approval_requested = summary_value(inputs["vol_execution_approval_request_readiness"], "approval_requested") or "False"
+    execution_approval_recorded = summary_value(inputs["vol_execution_approval_request_readiness"], "approval_recorded") or "False"
     checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
     monitoring_next = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
     data = [
@@ -366,6 +376,11 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("vol_ticket_final_blockers_closeout_record_decision", final_closeout_record_decision, "Saved final-ticket-blockers closeout record decision."),
         ("vol_ticket_final_blockers_closed_blocker", final_closeout_record_blocker, "Final checklist blockers closed from saved closeout record."),
         ("vol_ticket_final_blockers_remaining_blockers", final_closeout_record_remaining, "Known remaining checklist blockers after final closeout."),
+        ("vol_execution_approval_request_readiness_status", execution_approval_request_status, "Saved execution approval request readiness status."),
+        ("vol_execution_approval_request_readiness_decision", execution_approval_request_decision, "Readiness to ask for a separate explicit approval only."),
+        ("vol_execution_approval_request_ready", execution_approval_request_ready, "True means ready to ask, not approved to trade."),
+        ("vol_execution_approval_requested", execution_approval_requested, "This remains false until a separate explicit approval process."),
+        ("vol_execution_approval_recorded", execution_approval_recorded, "This remains false until a separate explicit approval record."),
         ("paper_live_checklist_phase_status", checklist_status, "Saved paper-live checklist phase status."),
         ("paper_live_monitoring_recommended_next_step", monitoring_next, "Saved paper-live monitoring recommended next step."),
         ("vps_monitoring_status_assumption", "status_only_monitoring_no_cron_change", "Dashboard assumes existing VPS monitoring remains status-only."),

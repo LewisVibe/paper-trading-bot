@@ -93,6 +93,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-executable-ticket-prerequisites-closeout",
     "--vol-targeted-growth-executable-ticket-approval-readiness",
     "--show-vol-targeted-growth-executable-ticket-approval-readiness",
+    "--vol-targeted-growth-execution-approval-request-readiness",
+    "--show-vol-targeted-growth-execution-approval-request-readiness",
     "--vol-targeted-growth-executable-ticket-approval-criteria",
     "--show-vol-targeted-growth-executable-ticket-approval-criteria",
     "--vol-targeted-growth-executable-ticket-criteria-resolution-plan",

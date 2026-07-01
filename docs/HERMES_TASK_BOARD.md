@@ -1651,6 +1651,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Forbidden commands:** Broker reads, Alpaca calls, market refresh, order value population, executable ticket creation, order creation/submission/cancellation/replacement, strategy-to-execution wiring, cron edits, or treating checklist closeout as execution approval.
 - **Stop condition:** Stop if the task would populate executable order values, create an executable ticket, submit/cancel/replace orders, approve paper execution, approve live trading, or schedule anything.
 
+### Task: Volatility-targeted growth execution approval request readiness
+- **Purpose:** Use `python bot.py --vol-targeted-growth-execution-approval-request-readiness` after final checklist closeout to confirm whether a separate explicit human execution approval question can be asked.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** `python bot.py --vol-targeted-growth-execution-approval-request-readiness`, `python bot.py --show-vol-targeted-growth-execution-approval-request-readiness`, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_execution_approval_request_readiness.py`.
+- **Expected status:** `READY_FOR_SEPARATE_EXECUTION_APPROVAL_REQUEST_NOT_APPROVED`; `approval_request_ready=True`, `approval_requested=False`, `approval_recorded=False`, and all execution/scheduling flags false.
+- **Forbidden commands:** Broker reads, Alpaca calls, market refresh, approval recording, order value population, executable ticket creation, order creation/submission/cancellation/replacement, strategy-to-execution wiring, cron edits, or treating readiness-to-ask as execution approval.
+- **Stop condition:** Stop if the task would ask for or record execution approval, populate executable order values, create an executable ticket, submit/cancel/replace orders, approve paper execution, approve live trading, or schedule anything.
+
 ### Task: Paper-live go/no-go dashboard
 - **Purpose:** Use `python bot.py --paper-live-go-no-go-dashboard` to summarize QQQ100 no-action state, volatility blocker state, executable-ticket closeout/readiness, checklist phase, and VPS monitoring assumptions in one saved-output view.
 - **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.

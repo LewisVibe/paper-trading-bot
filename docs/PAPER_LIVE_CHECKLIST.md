@@ -169,6 +169,12 @@ Remaining steps, in order:
    - This closes `ticket_values_not_approved` and `executable_ticket_prerequisites_not_met` only as checklist blockers. It does not populate side, quantity, order type, time-in-force, account, or broker-order fields. It does not create an executable ticket and does not approve execution/scheduling.
    - The execution blocker rollup and executable ticket gap list must now show `closed_blocker_count=5`, `ticket_values_not_approved_closed=True`, `executable_ticket_prerequisites_not_met_closed=True`, `remaining_known_blockers_after_closeout=none`, and `largest_blocker=execution_not_approved`.
 
+6r. **Create execution approval request readiness, without requesting approval.**
+   - Run `python bot.py --vol-targeted-growth-execution-approval-request-readiness`.
+   - Optional display: `python bot.py --show-vol-targeted-growth-execution-approval-request-readiness`.
+   - Expected decision is `READY_FOR_SEPARATE_EXECUTION_APPROVAL_REQUEST_NOT_APPROVED`.
+   - This means the checklist is ready for a separate explicit human approval question only. It must keep `approval_requested=False`, `approval_recorded=False`, `order_values_populated=False`, `executable_ticket_created=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
+
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.
    - It must still be non-submitting and must not connect to the order gateway.
