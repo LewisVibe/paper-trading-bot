@@ -753,6 +753,22 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    closeout_record_routes = {
+        "--vol-targeted-growth-criteria-source-closeout-record": "generate_vol_targeted_growth_criteria_source_closeout_record",
+        "--show-vol-targeted-growth-criteria-source-closeout-record": "show_vol_targeted_growth_criteria_source_closeout_record",
+    }
+    if sys.argv[1:] and sys.argv[1] in closeout_record_routes and len(sys.argv[1:]) == 1:
+        from trading_bot.research import vol_targeted_growth_criteria_source_closeout_record as closeout_record
+
+        result = getattr(closeout_record, closeout_record_routes[sys.argv[1]])()
+        if isinstance(result, tuple):
+            code, lines = result
+            for line in lines:
+                print(line)
+            raise SystemExit(code)
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
     if sys.argv[1:] == ["--paper-live-f6-f7-audit"]:
         from trading_bot.research.paper_live_f6_f7_audit import generate_paper_live_f6_f7_audit
 

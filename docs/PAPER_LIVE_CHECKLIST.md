@@ -135,6 +135,12 @@ Remaining steps, in order:
    - Future approval phrase, if Lewis chooses to use it later: `I approve closing the criteria_source_reviewed blocker only.`
    - This defines wording only. It does not close the blocker, record approval, close any other blocker, populate ticket values, create an executable ticket, or approve execution/scheduling.
 
+6n. **Close only the criteria source blocker after explicit approval.**
+   - Run `python bot.py --vol-targeted-growth-criteria-source-closeout-record`.
+   - Optional display: `python bot.py --show-vol-targeted-growth-criteria-source-closeout-record`.
+   - Current closeout decision is `CRITERIA_SOURCE_REVIEWED_BLOCKER_CLOSED_ONLY`.
+   - This closes only `criteria_source_reviewed`. It does not close `criteria_resolution_plan_open` or `approval_criteria_not_approval`, does not populate ticket values, does not create an executable ticket, and does not approve execution/scheduling.
+
 7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
    - This is not approved yet.
    - It must still be non-submitting and must not connect to the order gateway.
