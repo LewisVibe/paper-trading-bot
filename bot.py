@@ -668,6 +668,26 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    ticket_values_approval_routes = {
+        "--vol-targeted-growth-ticket-values-approval-readiness": "generate_vol_targeted_growth_ticket_values_approval_readiness",
+        "--show-vol-targeted-growth-ticket-values-approval-readiness": "show_vol_targeted_growth_ticket_values_approval_readiness",
+        "--vol-targeted-growth-ticket-values-approval-wording": "generate_vol_targeted_growth_ticket_values_approval_wording",
+        "--show-vol-targeted-growth-ticket-values-approval-wording": "show_vol_targeted_growth_ticket_values_approval_wording",
+        "--vol-targeted-growth-ticket-values-approval-record": "generate_vol_targeted_growth_ticket_values_approval_record",
+        "--show-vol-targeted-growth-ticket-values-approval-record": "show_vol_targeted_growth_ticket_values_approval_record",
+    }
+    if sys.argv[1:] and sys.argv[1] in ticket_values_approval_routes and len(sys.argv[1:]) == 1:
+        from trading_bot.research import vol_targeted_growth_ticket_values_approval as ticket_values_approval
+
+        result = getattr(ticket_values_approval, ticket_values_approval_routes[sys.argv[1]])()
+        if isinstance(result, tuple):
+            code, lines = result
+            for line in lines:
+                print(line)
+            raise SystemExit(code)
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
     if sys.argv[1:] == ["--vol-targeted-growth-executable-ticket-approval-criteria"]:
         from trading_bot.research.vol_targeted_growth_executable_ticket_approval_criteria import (
             generate_vol_targeted_growth_executable_ticket_approval_criteria,
@@ -7926,6 +7946,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Display the saved non-submitting executable-ticket design.",
     )
+    parser.add_argument("--vol-targeted-growth-ticket-values-approval-readiness", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-ticket-values-approval-readiness", action="store_true")
+    parser.add_argument("--vol-targeted-growth-ticket-values-approval-wording", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-ticket-values-approval-wording", action="store_true")
+    parser.add_argument("--vol-targeted-growth-ticket-values-approval-record", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-ticket-values-approval-record", action="store_true")
     parser.add_argument(
         "--vol-targeted-growth-executable-ticket-approval-criteria",
         action="store_true",

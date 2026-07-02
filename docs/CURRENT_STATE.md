@@ -34,6 +34,8 @@ For the ordered paper-live implementation path, see `docs/PAPER_LIVE_CHECKLIST.m
 - `python bot.py --vol-targeted-growth-execution-design-approval-record` records approval to continue designing the next non-submitting execution-ticket layer only.
 - The design record does not populate order values, create an executable ticket, call Alpaca, submit orders, approve paper execution, approve live trading, or approve scheduling.
 - `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-design` creates the first post-approval design artifact for a future executable-ticket review, but it keeps all order values blank and keeps `executable_ticket_created=False`.
+- `python bot.py --vol-targeted-growth-ticket-values-approval-readiness`, `python bot.py --vol-targeted-growth-ticket-values-approval-wording`, and `python bot.py --vol-targeted-growth-ticket-values-approval-record` create a discussion-only checkpoint for future ticket-value placeholders.
+- The ticket-values record can mark `ticket_value_discussion_approved=True`, but it keeps `ticket_values_approved=False`, `order_values_populated=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals false.
 - The go/no-go dashboard and VPS daily monitoring summary surface the execution-design approval record while keeping `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
 ## Paper-Live F7 Accounting Checkpoint

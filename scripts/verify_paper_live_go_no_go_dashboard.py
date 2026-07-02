@@ -49,7 +49,12 @@ REQUIRED_TOKENS = [
     "vol_execution_design_approved",
     "vol_non_submitting_executable_ticket_design_status",
     "vol_non_submitting_executable_ticket_design_decision",
+    "vol_ticket_values_approval_record_status",
+    "vol_ticket_values_approval_record_decision",
+    "vol_ticket_value_discussion_approved",
+    "vol_ticket_values_approved",
     "non_submitting_executable_ticket_is_not_an_order",
+    "ticket_value_discussion_is_not_value_approval",
     "executable_ticket_prerequisites_not_closed",
     "executable_ticket_approval_not_ready",
     "executable_ticket_approval_criteria_review_required",
@@ -401,6 +406,16 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_ticket_values_approval_record_summary.csv",
+            {
+                "final_ticket_values_record_status": "vol_targeted_growth_ticket_values_approval_recorded_manual_review_required",
+                "final_ticket_values_record_decision": "TICKET_VALUE_DISCUSSION_APPROVED_NO_ORDER_VALUES",
+                "ticket_value_discussion_approved": "True",
+                "ticket_values_approved": "False",
+                "order_values_populated": "False",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -412,7 +427,13 @@ def verify_fixture_output(failures: list[str]) -> None:
         result = generate_paper_live_go_no_go_dashboard(root)
         status_code, lines = show_paper_live_go_no_go_dashboard(root)
 
-    output = "\n".join(result.summary_lines + lines)
+    output = "\n".join(
+        [
+            *result.summary_lines,
+            *lines,
+            *[str(row) for row in result.blocker_rows],
+        ]
+    )
     if status_code != 0:
         failures.append("dashboard display should return 0 after generation")
     for phrase in [
@@ -467,6 +488,10 @@ def verify_fixture_output(failures: list[str]) -> None:
         "vol_execution_design_approved: True",
         "NON_SUBMITTING_EXECUTABLE_TICKET_DESIGNED_NO_ORDER_VALUES",
         "vol_non_submitting_executable_ticket_order_values_populated: False",
+        "TICKET_VALUE_DISCUSSION_APPROVED_NO_ORDER_VALUES",
+        "vol_ticket_value_discussion_approved: True",
+        "vol_ticket_values_approved: False",
+        "ticket_value_discussion_is_not_value_approval",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",

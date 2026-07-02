@@ -189,6 +189,16 @@ Remaining steps, in order:
    - It may set `executable_ticket_design_created=True`, but must keep `executable_ticket_created=False`, `order_values_populated=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
    - It must still be non-submitting and must not connect to the order gateway.
 
+7a. **Record ticket-values discussion approval without approving values.**
+   - Implemented checkpoints:
+     `python bot.py --vol-targeted-growth-ticket-values-approval-readiness`,
+     `python bot.py --vol-targeted-growth-ticket-values-approval-wording`,
+     and `python bot.py --vol-targeted-growth-ticket-values-approval-record`.
+   - Saved displays use the matching `--show-...` commands.
+   - This can record permission to discuss future non-executable value placeholders only.
+   - It may set `ticket_value_discussion_approved=True`, but it must keep `ticket_values_approved=False`, `order_values_populated=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
+   - It must not populate side, quantity, order type, time-in-force, price, account reference, or broker-order fields.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
