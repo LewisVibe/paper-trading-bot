@@ -49,6 +49,7 @@ INPUT_FILES = {
     "vol_ticket_values_approval_record": Path("data/vol_targeted_growth_ticket_values_approval_record_summary.csv"),
     "vol_ticket_value_placeholders": Path("data/vol_targeted_growth_ticket_value_placeholders_summary.csv"),
     "vol_ticket_value_quality_gate": Path("data/vol_targeted_growth_ticket_value_quality_gate_summary.csv"),
+    "vol_ticket_value_proposal_approval_record": Path("data/vol_targeted_growth_ticket_value_proposal_approval_record_summary.csv"),
     "paper_live_checklist": Path("data/paper_live_checklist_status_summary.csv"),
 }
 
@@ -201,6 +202,7 @@ def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int,
         f"vol_ticket_values_approved: {summary_value(rows, 'vol_ticket_values_approved')}",
         f"vol_ticket_value_placeholder_decision: {summary_value(rows, 'vol_ticket_value_placeholder_decision')}",
         f"vol_ticket_value_quality_gate_decision: {summary_value(rows, 'vol_ticket_value_quality_gate_decision')}",
+        f"vol_ticket_value_proposal_approval_record_decision: {summary_value(rows, 'vol_ticket_value_proposal_approval_record_decision')}",
         f"paper_live_checklist_phase_status: {summary_value(rows, 'paper_live_checklist_phase_status')}",
         f"vps_monitoring_status_assumption: {summary_value(rows, 'vps_monitoring_status_assumption')}",
         f"final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
@@ -348,6 +350,9 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     ticket_value_placeholder_populated_count = summary_value(inputs["vol_ticket_value_placeholders"], "populated_order_value_count") or "0"
     ticket_value_quality_gate_decision = summary_value(inputs["vol_ticket_value_quality_gate"], "final_ticket_value_quality_gate_decision") or "missing_vol_ticket_value_quality_gate"
     ticket_value_quality_gate_passed = summary_value(inputs["vol_ticket_value_quality_gate"], "quality_gate_passed") or "False"
+    ticket_value_proposal_record_decision = summary_value(inputs["vol_ticket_value_proposal_approval_record"], "final_ticket_value_proposal_record_decision") or "missing_vol_ticket_value_proposal_approval_record"
+    ticket_value_proposal_discussion_approved = summary_value(inputs["vol_ticket_value_proposal_approval_record"], "ticket_value_proposal_discussion_approved") or "False"
+    proposed_ticket_values_created = summary_value(inputs["vol_ticket_value_proposal_approval_record"], "proposed_ticket_values_created") or "False"
     checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
     monitoring_next = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
     data = [
@@ -435,6 +440,9 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("vol_ticket_value_placeholder_populated_count", ticket_value_placeholder_populated_count, "Must remain 0."),
         ("vol_ticket_value_quality_gate_decision", ticket_value_quality_gate_decision, "Saved placeholder quality-gate decision."),
         ("vol_ticket_value_quality_gate_passed", ticket_value_quality_gate_passed, "True only for non-executable placeholder checks."),
+        ("vol_ticket_value_proposal_approval_record_decision", ticket_value_proposal_record_decision, "Saved proposal approval record decision."),
+        ("vol_ticket_value_proposal_discussion_approved", ticket_value_proposal_discussion_approved, "True means proposed values may be drafted next; no values are populated here."),
+        ("vol_proposed_ticket_values_created", proposed_ticket_values_created, "Must remain False in the proposal approval checkpoint."),
         ("paper_live_checklist_phase_status", checklist_status, "Saved paper-live checklist phase status."),
         ("paper_live_monitoring_recommended_next_step", monitoring_next, "Saved paper-live monitoring recommended next step."),
         ("vps_monitoring_status_assumption", "status_only_monitoring_no_cron_change", "Dashboard assumes existing VPS monitoring remains status-only."),
@@ -469,6 +477,7 @@ def build_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str
         ("non_submitting_executable_ticket_is_not_an_order", "blocked", "critical", "The non-submitting executable-ticket design has no side, quantity, order type, account, broker id, or submit-ready state.", "manual_review_non_submitting_executable_ticket_design_before_any_ticket_values_or_order_approval"),
         ("ticket_value_discussion_is_not_value_approval", "blocked", "critical", "Ticket-value discussion approval does not populate side, quantity, order type, time-in-force, or price.", "draft_non_executable_ticket_value_placeholders_without_values"),
         ("ticket_value_placeholders_are_not_order_values", "blocked", "critical", "Placeholder quality may pass while ticket_values_approved and order_values_populated remain false.", "manual_review_ticket_value_placeholders_before_any_value_approval"),
+        ("ticket_value_proposal_approval_is_not_values", "blocked", "critical", "Proposal approval can allow drafting values next, but does not create or approve values.", "draft_proposed_ticket_values_as_non_executable_review_only"),
         ("repeat_followup_orders_not_approved", "blocked", "critical", "QQQ100 follow-up and repeat orders remain unapproved.", "hold_no_action_and_monitor_only"),
         ("scheduling_not_approved", "blocked", "critical", "No order-capable scheduling is approved.", "keep_monitoring_status_only"),
     ]
@@ -529,6 +538,7 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"vol_ticket_values_approved={summary_value(summary_rows, 'vol_ticket_values_approved')}",
         f"vol_ticket_value_placeholder_decision={summary_value(summary_rows, 'vol_ticket_value_placeholder_decision')}",
         f"vol_ticket_value_quality_gate_decision={summary_value(summary_rows, 'vol_ticket_value_quality_gate_decision')}",
+        f"vol_ticket_value_proposal_approval_record_decision={summary_value(summary_rows, 'vol_ticket_value_proposal_approval_record_decision')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

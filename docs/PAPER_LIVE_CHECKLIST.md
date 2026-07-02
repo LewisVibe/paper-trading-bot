@@ -208,6 +208,14 @@ Remaining steps, in order:
    - A passing quality gate means the placeholders are structurally safe for manual review only.
    - It must keep `populated_order_value_count=0`, `ticket_values_approved=False`, `order_values_populated=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
 
+7c. **Record proposal approval before drafting proposed ticket values.**
+   - Implemented checkpoints:
+     `python bot.py --vol-targeted-growth-ticket-value-proposal-approval-wording`
+     and `python bot.py --vol-targeted-growth-ticket-value-proposal-approval-record`.
+   - Saved displays use the matching `--show-...` commands.
+   - This can record permission to draft proposed ticket values in a later review-only report.
+   - It must keep `proposed_ticket_values_created=False`, `ticket_values_approved=False`, `order_values_populated=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
