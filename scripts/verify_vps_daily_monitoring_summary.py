@@ -107,6 +107,8 @@ REQUIRED_OUTPUT_PHRASES = [
     "vol_proposed_ticket_values_quality_gate_decision:",
     "vol_executable_ticket_draft_readiness_decision:",
     "vol_executable_ticket_draft_discussion_ready:",
+    "vol_non_submitting_executable_ticket_draft_decision:",
+    "vol_non_submitting_executable_ticket_draft_quality_gate_decision:",
     "alignment_state: aligned_long",
     "followup_policy_status: no_action_required_already_aligned",
     "recommended_next_step: hold_no_action_and_monitor_only",

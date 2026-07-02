@@ -232,6 +232,14 @@ Remaining steps, in order:
    - This checks whether the non-executable proposed values are clear enough for a later manual draft discussion.
    - It may set `draft_discussion_ready=True`, but it must create no ticket, no side, no quantity, no order instruction, no broker call, no paper execution approval, and no execution approval.
 
+7f. **Create the non-submitting executable-ticket draft and run its quality gate.**
+   - Implemented checkpoints:
+     `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-draft`
+     and `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-draft-quality-gate`.
+   - Saved displays use the matching `--show-...` commands.
+   - This creates a review draft from proposed labels and verifies it has no executable order fields.
+   - It may set `draft_ticket_created=True`, but it must keep `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.

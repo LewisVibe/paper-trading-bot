@@ -1710,6 +1710,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface draft-readiness decisions when present.
 - **Stop condition:** Stop if the task would create a ticket, fill side, quantity, order type, time-in-force, price, account, broker fields, submit/cancel/replace orders, approve execution, or schedule anything.
 
+### Task: Volatility-targeted growth non-submitting executable-ticket draft
+- **Purpose:** Use `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-draft` and `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-draft-quality-gate` to create a review draft from proposed labels and verify it remains non-executable.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** The two report commands above, their matching `--show-...` commands, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_non_submitting_executable_ticket_draft.py`.
+- **Expected status:** `NON_SUBMITTING_EXECUTABLE_TICKET_DRAFT_QUALITY_GATE_PASSED_NO_EXECUTION`; `draft_ticket_created=True` may be recorded, while `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals remain false.
+- **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface draft and draft-quality-gate decisions when present.
+- **Stop condition:** Stop if the task would create broker-ready order fields, fill side, numeric quantity, executable order type, time-in-force, price, account, broker fields, submit/cancel/replace orders, approve execution, or schedule anything.
+
 ### Task: Hermes status cron checkpoint
 - **Purpose:** Document and verify the enabled status-only Hermes job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no additional Hermes job is created, edited, triggered, deleted, or scheduled and the existing job remains status-only.

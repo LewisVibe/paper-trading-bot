@@ -60,12 +60,15 @@ REQUIRED_TOKENS = [
     "vol_proposed_ticket_values_quality_gate_decision",
     "vol_executable_ticket_draft_readiness_decision",
     "vol_executable_ticket_draft_discussion_ready",
+    "vol_non_submitting_executable_ticket_draft_decision",
+    "vol_non_submitting_executable_ticket_draft_quality_gate_decision",
     "non_submitting_executable_ticket_is_not_an_order",
     "ticket_value_discussion_is_not_value_approval",
     "ticket_value_placeholders_are_not_order_values",
     "ticket_value_proposal_approval_is_not_values",
     "proposed_ticket_values_are_not_executable",
     "draft_readiness_is_not_a_ticket",
+    "non_submitting_ticket_draft_is_not_executable",
     "executable_ticket_prerequisites_not_closed",
     "executable_ticket_approval_not_ready",
     "executable_ticket_approval_criteria_review_required",
@@ -484,6 +487,26 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_non_submitting_executable_ticket_draft_summary.csv",
+            {
+                "final_ticket_draft_decision": "NON_SUBMITTING_EXECUTABLE_TICKET_DRAFT_CREATED_NOT_EXECUTABLE",
+                "draft_ticket_created": "True",
+                "ticket_values_approved": "False",
+                "order_values_populated": "False",
+                "executable_ticket_created": "False",
+            },
+        )
+        write_summary(
+            data / "vol_targeted_growth_non_submitting_executable_ticket_draft_quality_gate_summary.csv",
+            {
+                "final_ticket_draft_quality_decision": "NON_SUBMITTING_EXECUTABLE_TICKET_DRAFT_QUALITY_GATE_PASSED_NO_EXECUTION",
+                "quality_gate_passed": "True",
+                "ticket_values_approved": "False",
+                "order_values_populated": "False",
+                "executable_ticket_created": "False",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -571,6 +594,9 @@ def verify_fixture_output(failures: list[str]) -> None:
         "READY_TO_DISCUSS_NON_SUBMITTING_DRAFT_VALUES_NOT_EXECUTABLE",
         "vol_executable_ticket_draft_discussion_ready: True",
         "draft_readiness_is_not_a_ticket",
+        "NON_SUBMITTING_EXECUTABLE_TICKET_DRAFT_CREATED_NOT_EXECUTABLE",
+        "NON_SUBMITTING_EXECUTABLE_TICKET_DRAFT_QUALITY_GATE_PASSED_NO_EXECUTION",
+        "non_submitting_ticket_draft_is_not_executable",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",
@@ -590,6 +616,7 @@ def verify_vps_daily_summary_integration(failures: list[str]) -> None:
         "paper_live_go_no_go_dashboard_status_lines",
         "NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY",
         "vol_executable_ticket_draft_readiness_decision",
+        "vol_non_submitting_executable_ticket_draft_decision",
         "paper_live_go_no_go_warning: monitor only;",
     ]:
         if phrase not in source:

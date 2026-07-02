@@ -44,6 +44,8 @@ For the ordered paper-live implementation path, see `docs/PAPER_LIVE_CHECKLIST.m
 - The proposed-values quality gate can pass with `proposed_ticket_values_created=True`, but it keeps `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals false.
 - `python bot.py --vol-targeted-growth-executable-ticket-draft-readiness` checks whether the review-only proposed values are clear enough for a later manual non-submitting draft discussion.
 - Draft readiness can set `draft_discussion_ready=True`, but it still creates no ticket, no side, no quantity, no order instruction, no broker call, and no execution/scheduling approval.
+- `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-draft` creates a saved review draft from proposed labels, and `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-draft-quality-gate` verifies it still has no executable order fields.
+- The draft quality gate can pass with `draft_ticket_created=True`, but it keeps `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals false.
 - The go/no-go dashboard and VPS daily monitoring summary surface the execution-design approval record while keeping `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
 ## Paper-Live F7 Accounting Checkpoint

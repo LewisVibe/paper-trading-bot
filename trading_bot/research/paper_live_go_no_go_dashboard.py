@@ -53,6 +53,8 @@ INPUT_FILES = {
     "vol_proposed_ticket_values": Path("data/vol_targeted_growth_proposed_ticket_values_summary.csv"),
     "vol_proposed_ticket_values_quality_gate": Path("data/vol_targeted_growth_proposed_ticket_values_quality_gate_summary.csv"),
     "vol_executable_ticket_draft_readiness": Path("data/vol_targeted_growth_executable_ticket_draft_readiness_summary.csv"),
+    "vol_non_submitting_executable_ticket_draft": Path("data/vol_targeted_growth_non_submitting_executable_ticket_draft_summary.csv"),
+    "vol_non_submitting_executable_ticket_draft_quality_gate": Path("data/vol_targeted_growth_non_submitting_executable_ticket_draft_quality_gate_summary.csv"),
     "paper_live_checklist": Path("data/paper_live_checklist_status_summary.csv"),
 }
 
@@ -210,6 +212,8 @@ def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int,
         f"vol_proposed_ticket_values_quality_gate_decision: {summary_value(rows, 'vol_proposed_ticket_values_quality_gate_decision')}",
         f"vol_executable_ticket_draft_readiness_decision: {summary_value(rows, 'vol_executable_ticket_draft_readiness_decision')}",
         f"vol_executable_ticket_draft_discussion_ready: {summary_value(rows, 'vol_executable_ticket_draft_discussion_ready')}",
+        f"vol_non_submitting_executable_ticket_draft_decision: {summary_value(rows, 'vol_non_submitting_executable_ticket_draft_decision')}",
+        f"vol_non_submitting_executable_ticket_draft_quality_gate_decision: {summary_value(rows, 'vol_non_submitting_executable_ticket_draft_quality_gate_decision')}",
         f"paper_live_checklist_phase_status: {summary_value(rows, 'paper_live_checklist_phase_status')}",
         f"vps_monitoring_status_assumption: {summary_value(rows, 'vps_monitoring_status_assumption')}",
         f"final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
@@ -365,6 +369,10 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     proposed_ticket_values_quality_gate_passed = summary_value(inputs["vol_proposed_ticket_values_quality_gate"], "quality_gate_passed") or "False"
     executable_ticket_draft_readiness_decision = summary_value(inputs["vol_executable_ticket_draft_readiness"], "final_executable_ticket_draft_readiness_decision") or "missing_vol_executable_ticket_draft_readiness"
     executable_ticket_draft_discussion_ready = summary_value(inputs["vol_executable_ticket_draft_readiness"], "draft_discussion_ready") or "False"
+    non_submitting_ticket_draft_decision = summary_value(inputs["vol_non_submitting_executable_ticket_draft"], "final_ticket_draft_decision") or "missing_vol_non_submitting_executable_ticket_draft"
+    non_submitting_ticket_draft_created = summary_value(inputs["vol_non_submitting_executable_ticket_draft"], "draft_ticket_created") or "False"
+    non_submitting_ticket_draft_quality_decision = summary_value(inputs["vol_non_submitting_executable_ticket_draft_quality_gate"], "final_ticket_draft_quality_decision") or "missing_vol_non_submitting_executable_ticket_draft_quality_gate"
+    non_submitting_ticket_draft_quality_passed = summary_value(inputs["vol_non_submitting_executable_ticket_draft_quality_gate"], "quality_gate_passed") or "False"
     checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
     monitoring_next = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
     data = [
@@ -460,6 +468,10 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("vol_proposed_ticket_values_quality_gate_passed", proposed_ticket_values_quality_gate_passed, "True only for review-only proposed values."),
         ("vol_executable_ticket_draft_readiness_decision", executable_ticket_draft_readiness_decision, "Saved readiness decision for a future non-submitting draft discussion."),
         ("vol_executable_ticket_draft_discussion_ready", executable_ticket_draft_discussion_ready, "True only for a future manual discussion; not a ticket or approval."),
+        ("vol_non_submitting_executable_ticket_draft_decision", non_submitting_ticket_draft_decision, "Saved non-submitting draft ticket decision."),
+        ("vol_non_submitting_executable_ticket_draft_created", non_submitting_ticket_draft_created, "True means a review draft exists; it is not executable."),
+        ("vol_non_submitting_executable_ticket_draft_quality_gate_decision", non_submitting_ticket_draft_quality_decision, "Saved draft quality-gate decision."),
+        ("vol_non_submitting_executable_ticket_draft_quality_gate_passed", non_submitting_ticket_draft_quality_passed, "True only when draft remains non-executable."),
         ("paper_live_checklist_phase_status", checklist_status, "Saved paper-live checklist phase status."),
         ("paper_live_monitoring_recommended_next_step", monitoring_next, "Saved paper-live monitoring recommended next step."),
         ("vps_monitoring_status_assumption", "status_only_monitoring_no_cron_change", "Dashboard assumes existing VPS monitoring remains status-only."),
@@ -497,6 +509,7 @@ def build_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str
         ("ticket_value_proposal_approval_is_not_values", "blocked", "critical", "Proposal approval can allow drafting values next, but does not create or approve values.", "draft_proposed_ticket_values_as_non_executable_review_only"),
         ("proposed_ticket_values_are_not_executable", "blocked", "critical", "Review-only proposed values are not executable ticket values or order instructions.", "manual_review_proposed_ticket_values_before_any_executable_ticket"),
         ("draft_readiness_is_not_a_ticket", "blocked", "critical", "Draft readiness can support future manual discussion only; it does not create a ticket or order values.", "manual_review_before_any_non_submitting_executable_ticket_draft"),
+        ("non_submitting_ticket_draft_is_not_executable", "blocked", "critical", "The saved draft is a review artifact and cannot be submitted.", "manual_review_ticket_draft_quality_gate_before_any_value_approval"),
         ("repeat_followup_orders_not_approved", "blocked", "critical", "QQQ100 follow-up and repeat orders remain unapproved.", "hold_no_action_and_monitor_only"),
         ("scheduling_not_approved", "blocked", "critical", "No order-capable scheduling is approved.", "keep_monitoring_status_only"),
     ]
@@ -561,6 +574,8 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"vol_proposed_ticket_values_decision={summary_value(summary_rows, 'vol_proposed_ticket_values_decision')}",
         f"vol_proposed_ticket_values_quality_gate_decision={summary_value(summary_rows, 'vol_proposed_ticket_values_quality_gate_decision')}",
         f"vol_executable_ticket_draft_readiness_decision={summary_value(summary_rows, 'vol_executable_ticket_draft_readiness_decision')}",
+        f"vol_non_submitting_executable_ticket_draft_decision={summary_value(summary_rows, 'vol_non_submitting_executable_ticket_draft_decision')}",
+        f"vol_non_submitting_executable_ticket_draft_quality_gate_decision={summary_value(summary_rows, 'vol_non_submitting_executable_ticket_draft_quality_gate_decision')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
