@@ -216,6 +216,14 @@ Remaining steps, in order:
    - This can record permission to draft proposed ticket values in a later review-only report.
    - It must keep `proposed_ticket_values_created=False`, `ticket_values_approved=False`, `order_values_populated=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
 
+7d. **Draft review-only proposed ticket values and run their quality gate.**
+   - Implemented checkpoints:
+     `python bot.py --vol-targeted-growth-proposed-ticket-values`
+     and `python bot.py --vol-targeted-growth-proposed-ticket-values-quality-gate`.
+   - Saved displays use the matching `--show-...` commands.
+   - This drafts proposal labels for manual review only, such as multi-sleeve rebalance context and component quantity review requirements.
+   - It must keep `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.

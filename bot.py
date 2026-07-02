@@ -724,6 +724,24 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    proposed_ticket_values_routes = {
+        "--vol-targeted-growth-proposed-ticket-values": "generate_vol_targeted_growth_proposed_ticket_values",
+        "--show-vol-targeted-growth-proposed-ticket-values": "show_vol_targeted_growth_proposed_ticket_values",
+        "--vol-targeted-growth-proposed-ticket-values-quality-gate": "generate_vol_targeted_growth_proposed_ticket_values_quality_gate",
+        "--show-vol-targeted-growth-proposed-ticket-values-quality-gate": "show_vol_targeted_growth_proposed_ticket_values_quality_gate",
+    }
+    if sys.argv[1:] and sys.argv[1] in proposed_ticket_values_routes and len(sys.argv[1:]) == 1:
+        from trading_bot.research import vol_targeted_growth_proposed_ticket_values as proposed_ticket_values
+
+        result = getattr(proposed_ticket_values, proposed_ticket_values_routes[sys.argv[1]])()
+        if isinstance(result, tuple):
+            code, lines = result
+            for line in lines:
+                print(line)
+            raise SystemExit(code)
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
     if sys.argv[1:] == ["--vol-targeted-growth-executable-ticket-approval-criteria"]:
         from trading_bot.research.vol_targeted_growth_executable_ticket_approval_criteria import (
             generate_vol_targeted_growth_executable_ticket_approval_criteria,
@@ -7996,6 +8014,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--show-vol-targeted-growth-ticket-value-proposal-approval-wording", action="store_true")
     parser.add_argument("--vol-targeted-growth-ticket-value-proposal-approval-record", action="store_true")
     parser.add_argument("--show-vol-targeted-growth-ticket-value-proposal-approval-record", action="store_true")
+    parser.add_argument("--vol-targeted-growth-proposed-ticket-values", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-proposed-ticket-values", action="store_true")
+    parser.add_argument("--vol-targeted-growth-proposed-ticket-values-quality-gate", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-proposed-ticket-values-quality-gate", action="store_true")
     parser.add_argument(
         "--vol-targeted-growth-executable-ticket-approval-criteria",
         action="store_true",

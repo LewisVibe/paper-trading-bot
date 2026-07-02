@@ -1694,6 +1694,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface the saved proposal approval record when present.
 - **Stop condition:** Stop if the task would fill proposed or actual side, quantity, order type, time-in-force, price, account, broker fields, create an executable ticket, submit/cancel/replace orders, approve execution, or schedule anything.
 
+### Task: Volatility-targeted growth proposed ticket values
+- **Purpose:** Use `python bot.py --vol-targeted-growth-proposed-ticket-values` and `python bot.py --vol-targeted-growth-proposed-ticket-values-quality-gate` to draft review-only proposal labels and verify they are not broker-ready order fields.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** The two report commands above, their matching `--show-...` commands, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_proposed_ticket_values.py`.
+- **Expected status:** `PROPOSED_TICKET_VALUES_QUALITY_GATE_PASSED_NO_EXECUTION`; `proposed_ticket_values_created=True` may be recorded, while `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals remain false.
+- **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface proposed-values and quality-gate decisions when present.
+- **Stop condition:** Stop if the task would create broker-ready order fields, submit/cancel/replace orders, approve execution, or schedule anything.
+
 ### Task: Hermes status cron checkpoint
 - **Purpose:** Document and verify the enabled status-only Hermes job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no additional Hermes job is created, edited, triggered, deleted, or scheduled and the existing job remains status-only.

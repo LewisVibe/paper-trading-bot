@@ -103,6 +103,8 @@ REQUIRED_OUTPUT_PHRASES = [
     "vol_ticket_value_placeholder_decision:",
     "vol_ticket_value_quality_gate_decision:",
     "vol_ticket_value_proposal_approval_record_decision:",
+    "vol_proposed_ticket_values_decision:",
+    "vol_proposed_ticket_values_quality_gate_decision:",
     "alignment_state: aligned_long",
     "followup_policy_status: no_action_required_already_aligned",
     "recommended_next_step: hold_no_action_and_monitor_only",

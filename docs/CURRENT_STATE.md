@@ -40,6 +40,8 @@ For the ordered paper-live implementation path, see `docs/PAPER_LIVE_CHECKLIST.m
 - The placeholder quality gate can pass for structure only; it still keeps `ticket_values_approved=False`, `order_values_populated=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals false.
 - `python bot.py --vol-targeted-growth-ticket-value-proposal-approval-wording` and `python bot.py --vol-targeted-growth-ticket-value-proposal-approval-record` record permission to draft proposed ticket values in a future review-only report.
 - The proposal record can mark `ticket_value_proposal_discussion_approved=True`, but it keeps `proposed_ticket_values_created=False`, `ticket_values_approved=False`, `order_values_populated=False`, `orders_submitted=False`, and all execution/scheduling approvals false.
+- `python bot.py --vol-targeted-growth-proposed-ticket-values` drafts non-executable proposal labels, and `python bot.py --vol-targeted-growth-proposed-ticket-values-quality-gate` verifies they are not broker-ready order fields.
+- The proposed-values quality gate can pass with `proposed_ticket_values_created=True`, but it keeps `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals false.
 - The go/no-go dashboard and VPS daily monitoring summary surface the execution-design approval record while keeping `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
 ## Paper-Live F7 Accounting Checkpoint
