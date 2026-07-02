@@ -58,11 +58,14 @@ REQUIRED_TOKENS = [
     "vol_ticket_value_proposal_approval_record_decision",
     "vol_proposed_ticket_values_decision",
     "vol_proposed_ticket_values_quality_gate_decision",
+    "vol_executable_ticket_draft_readiness_decision",
+    "vol_executable_ticket_draft_discussion_ready",
     "non_submitting_executable_ticket_is_not_an_order",
     "ticket_value_discussion_is_not_value_approval",
     "ticket_value_placeholders_are_not_order_values",
     "ticket_value_proposal_approval_is_not_values",
     "proposed_ticket_values_are_not_executable",
+    "draft_readiness_is_not_a_ticket",
     "executable_ticket_prerequisites_not_closed",
     "executable_ticket_approval_not_ready",
     "executable_ticket_approval_criteria_review_required",
@@ -471,6 +474,16 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_executable_ticket_draft_readiness_summary.csv",
+            {
+                "final_executable_ticket_draft_readiness_decision": "READY_TO_DISCUSS_NON_SUBMITTING_DRAFT_VALUES_NOT_EXECUTABLE",
+                "draft_discussion_ready": "True",
+                "ticket_values_approved": "False",
+                "order_values_populated": "False",
+                "executable_ticket_created": "False",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -555,6 +568,9 @@ def verify_fixture_output(failures: list[str]) -> None:
         "PROPOSED_TICKET_VALUES_CREATED_REVIEW_ONLY_NOT_EXECUTABLE",
         "PROPOSED_TICKET_VALUES_QUALITY_GATE_PASSED_NO_EXECUTION",
         "proposed_ticket_values_are_not_executable",
+        "READY_TO_DISCUSS_NON_SUBMITTING_DRAFT_VALUES_NOT_EXECUTABLE",
+        "vol_executable_ticket_draft_discussion_ready: True",
+        "draft_readiness_is_not_a_ticket",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",
@@ -573,6 +589,7 @@ def verify_vps_daily_summary_integration(failures: list[str]) -> None:
         "Paper-live go/no-go dashboard:",
         "paper_live_go_no_go_dashboard_status_lines",
         "NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY",
+        "vol_executable_ticket_draft_readiness_decision",
         "paper_live_go_no_go_warning: monitor only;",
     ]:
         if phrase not in source:

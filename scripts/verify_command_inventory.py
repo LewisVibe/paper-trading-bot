@@ -119,6 +119,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-proposed-ticket-values",
     "--vol-targeted-growth-proposed-ticket-values-quality-gate",
     "--show-vol-targeted-growth-proposed-ticket-values-quality-gate",
+    "--vol-targeted-growth-executable-ticket-draft-readiness",
+    "--show-vol-targeted-growth-executable-ticket-draft-readiness",
     "--vol-targeted-growth-executable-ticket-approval-criteria",
     "--show-vol-targeted-growth-executable-ticket-approval-criteria",
     "--vol-targeted-growth-executable-ticket-criteria-resolution-plan",

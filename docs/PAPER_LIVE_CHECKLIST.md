@@ -224,6 +224,14 @@ Remaining steps, in order:
    - This drafts proposal labels for manual review only, such as multi-sleeve rebalance context and component quantity review requirements.
    - It must keep `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
 
+7e. **Check readiness for a future non-submitting executable-ticket draft.**
+   - Implemented checkpoint:
+     `python bot.py --vol-targeted-growth-executable-ticket-draft-readiness`.
+   - Saved display:
+     `python bot.py --show-vol-targeted-growth-executable-ticket-draft-readiness`.
+   - This checks whether the non-executable proposed values are clear enough for a later manual draft discussion.
+   - It may set `draft_discussion_ready=True`, but it must create no ticket, no side, no quantity, no order instruction, no broker call, no paper execution approval, and no execution approval.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
