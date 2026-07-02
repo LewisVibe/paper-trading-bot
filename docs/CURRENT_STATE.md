@@ -36,6 +36,8 @@ For the ordered paper-live implementation path, see `docs/PAPER_LIVE_CHECKLIST.m
 - `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-design` creates the first post-approval design artifact for a future executable-ticket review, but it keeps all order values blank and keeps `executable_ticket_created=False`.
 - `python bot.py --vol-targeted-growth-ticket-values-approval-readiness`, `python bot.py --vol-targeted-growth-ticket-values-approval-wording`, and `python bot.py --vol-targeted-growth-ticket-values-approval-record` create a discussion-only checkpoint for future ticket-value placeholders.
 - The ticket-values record can mark `ticket_value_discussion_approved=True`, but it keeps `ticket_values_approved=False`, `order_values_populated=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals false.
+- `python bot.py --vol-targeted-growth-ticket-value-placeholders` creates blank non-executable placeholders, and `python bot.py --vol-targeted-growth-ticket-value-quality-gate` verifies those placeholders still have `populated_order_value_count=0`.
+- The placeholder quality gate can pass for structure only; it still keeps `ticket_values_approved=False`, `order_values_populated=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals false.
 - The go/no-go dashboard and VPS daily monitoring summary surface the execution-design approval record while keeping `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
 ## Paper-Live F7 Accounting Checkpoint

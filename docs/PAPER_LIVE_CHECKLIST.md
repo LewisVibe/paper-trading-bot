@@ -199,6 +199,15 @@ Remaining steps, in order:
    - It may set `ticket_value_discussion_approved=True`, but it must keep `ticket_values_approved=False`, `order_values_populated=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
    - It must not populate side, quantity, order type, time-in-force, price, account reference, or broker-order fields.
 
+7b. **Create blank ticket-value placeholders and run a non-executable quality gate.**
+   - Implemented checkpoints:
+     `python bot.py --vol-targeted-growth-ticket-value-placeholders`
+     and `python bot.py --vol-targeted-growth-ticket-value-quality-gate`.
+   - Saved displays use the matching `--show-...` commands.
+   - This creates empty placeholders for future side, quantity, order type, time-in-force, and price review.
+   - A passing quality gate means the placeholders are structurally safe for manual review only.
+   - It must keep `populated_order_value_count=0`, `ticket_values_approved=False`, `order_values_populated=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
