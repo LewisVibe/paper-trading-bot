@@ -47,6 +47,9 @@ REQUIRED_TOKENS = [
     "vol_execution_design_approval_wording_status",
     "vol_execution_design_approval_record_status",
     "vol_execution_design_approved",
+    "vol_non_submitting_executable_ticket_design_status",
+    "vol_non_submitting_executable_ticket_design_decision",
+    "non_submitting_executable_ticket_is_not_an_order",
     "executable_ticket_prerequisites_not_closed",
     "executable_ticket_approval_not_ready",
     "executable_ticket_approval_criteria_review_required",
@@ -389,6 +392,15 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_non_submitting_executable_ticket_design_summary.csv",
+            {
+                "final_executable_ticket_design_status": "vol_targeted_growth_non_submitting_executable_ticket_design_created_manual_review_required",
+                "final_executable_ticket_design_decision": "NON_SUBMITTING_EXECUTABLE_TICKET_DESIGNED_NO_ORDER_VALUES",
+                "order_values_populated": "False",
+                "executable_ticket_created": "False",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -453,6 +465,8 @@ def verify_fixture_output(failures: list[str]) -> None:
         "I approve execution design only for the active volatility seed; do not create or submit orders.",
         "EXECUTION_DESIGN_APPROVED_NO_ORDER_OR_EXECUTION_APPROVAL",
         "vol_execution_design_approved: True",
+        "NON_SUBMITTING_EXECUTABLE_TICKET_DESIGNED_NO_ORDER_VALUES",
+        "vol_non_submitting_executable_ticket_order_values_populated: False",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",

@@ -182,10 +182,12 @@ Remaining steps, in order:
    - Optional display: `python bot.py --show-vol-targeted-growth-execution-design-approval-record`.
    - This records approval to design the next non-submitting execution-ticket layer only. It does not populate side, quantity, order type, time-in-force, account, or broker-order fields. It does not create an executable ticket and does not approve execution/scheduling.
 
-7. **Create a non-submitting draft ticket instance only if explicitly approved later.**
-   - Execution-design-only approval can allow this design work to continue, but it is still not order approval.
+7. **Create a non-submitting executable-ticket design artifact after design-only approval.**
+   - Implemented checkpoint: `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-design`.
+   - Saved display: `python bot.py --show-vol-targeted-growth-non-submitting-executable-ticket-design`.
+   - Execution-design-only approval allows this design work to continue, but it is still not order approval.
+   - It may set `executable_ticket_design_created=True`, but must keep `executable_ticket_created=False`, `order_values_populated=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
    - It must still be non-submitting and must not connect to the order gateway.
-   - It must preserve `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
 
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.

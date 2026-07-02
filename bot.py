@@ -650,6 +650,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-non-submitting-executable-ticket-design"]:
+        from trading_bot.research.vol_targeted_growth_non_submitting_executable_ticket_design import (
+            generate_vol_targeted_growth_non_submitting_executable_ticket_design,
+        )
+
+        result = generate_vol_targeted_growth_non_submitting_executable_ticket_design()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-non-submitting-executable-ticket-design"]:
+        from trading_bot.research.vol_targeted_growth_non_submitting_executable_ticket_design import (
+            show_vol_targeted_growth_non_submitting_executable_ticket_design,
+        )
+
+        code, lines = show_vol_targeted_growth_non_submitting_executable_ticket_design()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-executable-ticket-approval-criteria"]:
         from trading_bot.research.vol_targeted_growth_executable_ticket_approval_criteria import (
             generate_vol_targeted_growth_executable_ticket_approval_criteria,
@@ -7897,6 +7915,16 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-execution-design-approval-record",
         action="store_true",
         help="Display the saved execution-design-only approval record.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-non-submitting-executable-ticket-design",
+        action="store_true",
+        help="Create a saved non-submitting executable-ticket design without order values or execution approval.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-non-submitting-executable-ticket-design",
+        action="store_true",
+        help="Display the saved non-submitting executable-ticket design.",
     )
     parser.add_argument(
         "--vol-targeted-growth-executable-ticket-approval-criteria",

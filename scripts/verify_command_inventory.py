@@ -99,6 +99,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-execution-design-approval-wording",
     "--vol-targeted-growth-execution-design-approval-record",
     "--show-vol-targeted-growth-execution-design-approval-record",
+    "--vol-targeted-growth-non-submitting-executable-ticket-design",
+    "--show-vol-targeted-growth-non-submitting-executable-ticket-design",
     "--vol-targeted-growth-executable-ticket-approval-criteria",
     "--show-vol-targeted-growth-executable-ticket-approval-criteria",
     "--vol-targeted-growth-executable-ticket-criteria-resolution-plan",

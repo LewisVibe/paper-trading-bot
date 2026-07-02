@@ -95,6 +95,8 @@ REQUIRED_OUTPUT_PHRASES = [
     "vol_execution_design_approval_wording_decision:",
     "vol_execution_design_approval_record_decision:",
     "vol_execution_design_approved:",
+    "vol_non_submitting_executable_ticket_design_decision:",
+    "vol_non_submitting_executable_ticket_order_values_populated:",
     "alignment_state: aligned_long",
     "followup_policy_status: no_action_required_already_aligned",
     "recommended_next_step: hold_no_action_and_monitor_only",

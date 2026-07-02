@@ -624,6 +624,8 @@ def paper_live_go_no_go_dashboard_status_lines(root: Path) -> list[str]:
         f"- vol_execution_design_approval_wording_decision: {summary_value(rows, 'vol_execution_design_approval_wording_decision')}",
         f"- vol_execution_design_approval_record_decision: {summary_value(rows, 'vol_execution_design_approval_record_decision')}",
         f"- vol_execution_design_approved: {summary_value(rows, 'vol_execution_design_approved')}",
+        f"- vol_non_submitting_executable_ticket_design_decision: {summary_value(rows, 'vol_non_submitting_executable_ticket_design_decision')}",
+        f"- vol_non_submitting_executable_ticket_order_values_populated: {summary_value(rows, 'vol_non_submitting_executable_ticket_order_values_populated')}",
         f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         f"- order_instructions_created: {summary_value(rows, 'order_instructions_created') or 'False'}",
         f"- execution_approved: {summary_value(rows, 'execution_approved') or 'False'}",
