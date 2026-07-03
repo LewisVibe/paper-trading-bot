@@ -776,6 +776,22 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    draft_ticket_value_approval_readiness_routes = {
+        "--vol-targeted-growth-draft-ticket-value-approval-readiness": "generate_vol_targeted_growth_draft_ticket_value_approval_readiness",
+        "--show-vol-targeted-growth-draft-ticket-value-approval-readiness": "show_vol_targeted_growth_draft_ticket_value_approval_readiness",
+    }
+    if sys.argv[1:] and sys.argv[1] in draft_ticket_value_approval_readiness_routes and len(sys.argv[1:]) == 1:
+        from trading_bot.research import vol_targeted_growth_draft_ticket_value_approval_readiness as draft_value_approval_readiness
+
+        result = getattr(draft_value_approval_readiness, draft_ticket_value_approval_readiness_routes[sys.argv[1]])()
+        if isinstance(result, tuple):
+            code, lines = result
+            for line in lines:
+                print(line)
+            raise SystemExit(code)
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
     if sys.argv[1:] == ["--vol-targeted-growth-executable-ticket-approval-criteria"]:
         from trading_bot.research.vol_targeted_growth_executable_ticket_approval_criteria import (
             generate_vol_targeted_growth_executable_ticket_approval_criteria,
@@ -8058,6 +8074,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--show-vol-targeted-growth-non-submitting-executable-ticket-draft", action="store_true")
     parser.add_argument("--vol-targeted-growth-non-submitting-executable-ticket-draft-quality-gate", action="store_true")
     parser.add_argument("--show-vol-targeted-growth-non-submitting-executable-ticket-draft-quality-gate", action="store_true")
+    parser.add_argument("--vol-targeted-growth-draft-ticket-value-approval-readiness", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-draft-ticket-value-approval-readiness", action="store_true")
     parser.add_argument(
         "--vol-targeted-growth-executable-ticket-approval-criteria",
         action="store_true",

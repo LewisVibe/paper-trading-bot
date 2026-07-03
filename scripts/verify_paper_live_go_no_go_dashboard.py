@@ -62,6 +62,8 @@ REQUIRED_TOKENS = [
     "vol_executable_ticket_draft_discussion_ready",
     "vol_non_submitting_executable_ticket_draft_decision",
     "vol_non_submitting_executable_ticket_draft_quality_gate_decision",
+    "vol_draft_ticket_value_approval_readiness_decision",
+    "vol_ticket_value_approval_request_ready",
     "non_submitting_executable_ticket_is_not_an_order",
     "ticket_value_discussion_is_not_value_approval",
     "ticket_value_placeholders_are_not_order_values",
@@ -69,6 +71,7 @@ REQUIRED_TOKENS = [
     "proposed_ticket_values_are_not_executable",
     "draft_readiness_is_not_a_ticket",
     "non_submitting_ticket_draft_is_not_executable",
+    "ticket_value_approval_readiness_is_not_approval",
     "executable_ticket_prerequisites_not_closed",
     "executable_ticket_approval_not_ready",
     "executable_ticket_approval_criteria_review_required",
@@ -507,6 +510,17 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_draft_ticket_value_approval_readiness_summary.csv",
+            {
+                "final_ticket_value_approval_readiness_decision": "READY_TO_REQUEST_TICKET_VALUE_APPROVAL_NOT_APPROVED",
+                "ticket_value_approval_request_ready": "True",
+                "ticket_value_approval_requested": "False",
+                "ticket_value_approval_recorded": "False",
+                "ticket_values_approved": "False",
+                "order_values_populated": "False",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -597,6 +611,9 @@ def verify_fixture_output(failures: list[str]) -> None:
         "NON_SUBMITTING_EXECUTABLE_TICKET_DRAFT_CREATED_NOT_EXECUTABLE",
         "NON_SUBMITTING_EXECUTABLE_TICKET_DRAFT_QUALITY_GATE_PASSED_NO_EXECUTION",
         "non_submitting_ticket_draft_is_not_executable",
+        "READY_TO_REQUEST_TICKET_VALUE_APPROVAL_NOT_APPROVED",
+        "vol_ticket_value_approval_request_ready: True",
+        "ticket_value_approval_readiness_is_not_approval",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",
@@ -617,6 +634,7 @@ def verify_vps_daily_summary_integration(failures: list[str]) -> None:
         "NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY",
         "vol_executable_ticket_draft_readiness_decision",
         "vol_non_submitting_executable_ticket_draft_decision",
+        "vol_draft_ticket_value_approval_readiness_decision",
         "paper_live_go_no_go_warning: monitor only;",
     ]:
         if phrase not in source:

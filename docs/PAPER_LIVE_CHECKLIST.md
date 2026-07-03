@@ -240,6 +240,14 @@ Remaining steps, in order:
    - This creates a review draft from proposed labels and verifies it has no executable order fields.
    - It may set `draft_ticket_created=True`, but it must keep `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
 
+7g. **Check readiness to request explicit ticket-value approval later.**
+   - Implemented checkpoint:
+     `python bot.py --vol-targeted-growth-draft-ticket-value-approval-readiness`.
+   - Saved display:
+     `python bot.py --show-vol-targeted-growth-draft-ticket-value-approval-readiness`.
+   - This checks whether the non-submitting draft and its quality gate are complete enough to ask later for explicit ticket-value approval.
+   - It may set `ticket_value_approval_request_ready=True`, but it must keep `ticket_value_approval_requested=False`, `ticket_value_approval_recorded=False`, `ticket_values_approved=False`, `order_values_populated=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
