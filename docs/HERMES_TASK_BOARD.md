@@ -1734,6 +1734,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface the wording decision, record decision, and `ticket_value_population_approved` when present.
 - **Stop condition:** Stop if the task would populate actual side, numeric quantity, executable order type, time-in-force, price, account, broker fields, submit/cancel/replace orders, approve execution, or schedule anything.
 
+### Task: Volatility-targeted growth review-only draft ticket values
+- **Purpose:** Use `python bot.py --vol-targeted-growth-review-only-draft-ticket-values` and `python bot.py --vol-targeted-growth-review-only-draft-ticket-values-quality-gate` to create review-only draft labels after the draft-value approval record.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** The draft-values and quality-gate commands above, their matching `--show-...` commands, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_review_only_draft_ticket_values.py`.
+- **Expected status:** `REVIEW_ONLY_DRAFT_TICKET_VALUES_POPULATED_NOT_EXECUTABLE` and `REVIEW_ONLY_DRAFT_TICKET_VALUES_QUALITY_GATE_PASSED_NO_EXECUTION`. The quality gate may pass with `draft_ticket_values_created=True`, while `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals remain false.
+- **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface the draft-values decision and quality-gate decision when present.
+- **Stop condition:** Stop if the task would populate actual broker-ready side, numeric quantity, executable order type, time-in-force, price, account, broker fields, submit/cancel/replace orders, approve execution, or schedule anything.
+
 ### Task: Hermes status cron checkpoint
 - **Purpose:** Document and verify the enabled status-only Hermes job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no additional Hermes job is created, edited, triggered, deleted, or scheduled and the existing job remains status-only.

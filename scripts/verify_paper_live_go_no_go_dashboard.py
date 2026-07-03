@@ -67,6 +67,9 @@ REQUIRED_TOKENS = [
     "vol_draft_ticket_value_approval_wording_decision",
     "vol_draft_ticket_value_approval_record_decision",
     "vol_ticket_value_population_approved",
+    "vol_review_only_draft_ticket_values_decision",
+    "vol_review_only_draft_ticket_values_quality_gate_decision",
+    "vol_review_only_draft_ticket_values_quality_gate_passed",
     "non_submitting_executable_ticket_is_not_an_order",
     "ticket_value_discussion_is_not_value_approval",
     "ticket_value_placeholders_are_not_order_values",
@@ -76,6 +79,7 @@ REQUIRED_TOKENS = [
     "non_submitting_ticket_draft_is_not_executable",
     "ticket_value_approval_readiness_is_not_approval",
     "draft_ticket_value_approval_is_not_values",
+    "review_only_draft_ticket_values_are_not_executable",
     "executable_ticket_prerequisites_not_closed",
     "executable_ticket_approval_not_ready",
     "executable_ticket_approval_criteria_review_required",
@@ -549,6 +553,28 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_review_only_draft_ticket_values_summary.csv",
+            {
+                "final_review_only_draft_ticket_values_decision": "REVIEW_ONLY_DRAFT_TICKET_VALUES_POPULATED_NOT_EXECUTABLE",
+                "draft_ticket_values_created": "True",
+                "review_value_count": "11",
+                "ticket_values_approved": "False",
+                "order_values_populated": "False",
+            },
+        )
+        write_summary(
+            data / "vol_targeted_growth_review_only_draft_ticket_values_quality_gate_summary.csv",
+            {
+                "final_review_only_draft_ticket_values_quality_decision": "REVIEW_ONLY_DRAFT_TICKET_VALUES_QUALITY_GATE_PASSED_NO_EXECUTION",
+                "quality_gate_passed": "True",
+                "review_value_count": "11",
+                "executable_order_field_count": "0",
+                "forbidden_field_count": "0",
+                "ticket_values_approved": "False",
+                "order_values_populated": "False",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -646,6 +672,10 @@ def verify_fixture_output(failures: list[str]) -> None:
         "TICKET_VALUE_APPROVAL_RECORDED_NO_ORDER_VALUES",
         "vol_ticket_value_population_approved: True",
         "draft_ticket_value_approval_is_not_values",
+        "REVIEW_ONLY_DRAFT_TICKET_VALUES_POPULATED_NOT_EXECUTABLE",
+        "REVIEW_ONLY_DRAFT_TICKET_VALUES_QUALITY_GATE_PASSED_NO_EXECUTION",
+        "vol_review_only_draft_ticket_values_quality_gate_passed: True",
+        "review_only_draft_ticket_values_are_not_executable",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",
@@ -670,6 +700,9 @@ def verify_vps_daily_summary_integration(failures: list[str]) -> None:
         "vol_draft_ticket_value_approval_wording_decision",
         "vol_draft_ticket_value_approval_record_decision",
         "vol_ticket_value_population_approved",
+        "vol_review_only_draft_ticket_values_decision",
+        "vol_review_only_draft_ticket_values_quality_gate_decision",
+        "vol_review_only_draft_ticket_values_quality_gate_passed",
         "paper_live_go_no_go_warning: monitor only;",
     ]:
         if phrase not in source:

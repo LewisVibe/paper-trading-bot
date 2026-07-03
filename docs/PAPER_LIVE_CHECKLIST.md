@@ -257,6 +257,15 @@ Remaining steps, in order:
    - The record can set `ticket_value_population_approved=True`, meaning a later checkpoint may populate review-only draft ticket values.
    - It must keep `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, `execution_approved=False`, and `scheduling_approved=False`.
 
+7i. **Populate review-only draft ticket values and run a quality gate.**
+   - Implemented checkpoint:
+     `python bot.py --vol-targeted-growth-review-only-draft-ticket-values`.
+   - Implemented quality gate:
+     `python bot.py --vol-targeted-growth-review-only-draft-ticket-values-quality-gate`.
+   - Matching saved displays use the same commands with `--show-...`.
+   - This can create review labels for sleeve targets and blocked side/quantity/order fields.
+   - A passing quality gate can set `draft_ticket_values_created=True`, but it must keep `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, `execution_approved=False`, and `scheduling_approved=False`.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
