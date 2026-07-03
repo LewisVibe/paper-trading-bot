@@ -48,6 +48,8 @@ For the ordered paper-live implementation path, see `docs/PAPER_LIVE_CHECKLIST.m
 - The draft quality gate can pass with `draft_ticket_created=True`, but it keeps `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals false.
 - `python bot.py --vol-targeted-growth-draft-ticket-value-approval-readiness` checks whether the non-submitting draft is complete enough to ask later for explicit ticket-value approval.
 - Approval readiness can set `ticket_value_approval_request_ready=True`, but it keeps `ticket_value_approval_requested=False`, `ticket_value_approval_recorded=False`, `ticket_values_approved=False`, `order_values_populated=False`, `orders_submitted=False`, and all execution/scheduling approvals false.
+- `python bot.py --vol-targeted-growth-draft-ticket-value-approval-wording` defines the narrow phrase for approving a later review-only draft-value population step.
+- `python bot.py --vol-targeted-growth-draft-ticket-value-approval-record` records that narrow approval only. It can set `ticket_value_population_approved=True`, but it keeps `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals false.
 - The go/no-go dashboard and VPS daily monitoring summary surface the execution-design approval record while keeping `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
 ## Paper-Live F7 Accounting Checkpoint

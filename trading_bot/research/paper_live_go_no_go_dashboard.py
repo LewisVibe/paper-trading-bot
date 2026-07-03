@@ -56,6 +56,8 @@ INPUT_FILES = {
     "vol_non_submitting_executable_ticket_draft": Path("data/vol_targeted_growth_non_submitting_executable_ticket_draft_summary.csv"),
     "vol_non_submitting_executable_ticket_draft_quality_gate": Path("data/vol_targeted_growth_non_submitting_executable_ticket_draft_quality_gate_summary.csv"),
     "vol_draft_ticket_value_approval_readiness": Path("data/vol_targeted_growth_draft_ticket_value_approval_readiness_summary.csv"),
+    "vol_draft_ticket_value_approval_wording": Path("data/vol_targeted_growth_draft_ticket_value_approval_wording_summary.csv"),
+    "vol_draft_ticket_value_approval_record": Path("data/vol_targeted_growth_draft_ticket_value_approval_record_summary.csv"),
     "paper_live_checklist": Path("data/paper_live_checklist_status_summary.csv"),
 }
 
@@ -217,6 +219,9 @@ def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int,
         f"vol_non_submitting_executable_ticket_draft_quality_gate_decision: {summary_value(rows, 'vol_non_submitting_executable_ticket_draft_quality_gate_decision')}",
         f"vol_draft_ticket_value_approval_readiness_decision: {summary_value(rows, 'vol_draft_ticket_value_approval_readiness_decision')}",
         f"vol_ticket_value_approval_request_ready: {summary_value(rows, 'vol_ticket_value_approval_request_ready')}",
+        f"vol_draft_ticket_value_approval_wording_decision: {summary_value(rows, 'vol_draft_ticket_value_approval_wording_decision')}",
+        f"vol_draft_ticket_value_approval_record_decision: {summary_value(rows, 'vol_draft_ticket_value_approval_record_decision')}",
+        f"vol_ticket_value_population_approved: {summary_value(rows, 'vol_ticket_value_population_approved')}",
         f"paper_live_checklist_phase_status: {summary_value(rows, 'paper_live_checklist_phase_status')}",
         f"vps_monitoring_status_assumption: {summary_value(rows, 'vps_monitoring_status_assumption')}",
         f"final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
@@ -380,6 +385,11 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     ticket_value_approval_request_ready = summary_value(inputs["vol_draft_ticket_value_approval_readiness"], "ticket_value_approval_request_ready") or "False"
     ticket_value_approval_requested = summary_value(inputs["vol_draft_ticket_value_approval_readiness"], "ticket_value_approval_requested") or "False"
     ticket_value_approval_recorded = summary_value(inputs["vol_draft_ticket_value_approval_readiness"], "ticket_value_approval_recorded") or "False"
+    draft_ticket_value_approval_wording_decision = summary_value(inputs["vol_draft_ticket_value_approval_wording"], "final_draft_ticket_value_approval_wording_decision") or "missing_vol_draft_ticket_value_approval_wording"
+    draft_ticket_value_approval_record_decision = summary_value(inputs["vol_draft_ticket_value_approval_record"], "final_draft_ticket_value_approval_record_decision") or "missing_vol_draft_ticket_value_approval_record"
+    draft_ticket_value_approval_phrase = summary_value(inputs["vol_draft_ticket_value_approval_record"], "approval_phrase") or summary_value(inputs["vol_draft_ticket_value_approval_wording"], "approval_phrase") or "missing_draft_ticket_value_approval_phrase"
+    ticket_value_population_approved = summary_value(inputs["vol_draft_ticket_value_approval_record"], "ticket_value_population_approved") or "False"
+    draft_ticket_value_approval_recorded = summary_value(inputs["vol_draft_ticket_value_approval_record"], "ticket_value_approval_recorded") or "False"
     checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
     monitoring_next = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
     data = [
@@ -483,6 +493,11 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("vol_ticket_value_approval_request_ready", ticket_value_approval_request_ready, "True means a future request may be considered; not requested now."),
         ("vol_ticket_value_approval_requested", ticket_value_approval_requested, "Must remain False."),
         ("vol_ticket_value_approval_recorded", ticket_value_approval_recorded, "Must remain False."),
+        ("vol_draft_ticket_value_approval_wording_decision", draft_ticket_value_approval_wording_decision, "Saved wording decision for draft-value population approval."),
+        ("vol_draft_ticket_value_approval_record_decision", draft_ticket_value_approval_record_decision, "Saved record decision for draft-value population approval."),
+        ("vol_draft_ticket_value_approval_phrase", draft_ticket_value_approval_phrase, "Narrow wording; not an order instruction."),
+        ("vol_ticket_value_population_approved", ticket_value_population_approved, "True means a later review-only draft-value population step may proceed."),
+        ("vol_draft_ticket_value_approval_recorded", draft_ticket_value_approval_recorded, "True only for the draft-value approval record checkpoint."),
         ("paper_live_checklist_phase_status", checklist_status, "Saved paper-live checklist phase status."),
         ("paper_live_monitoring_recommended_next_step", monitoring_next, "Saved paper-live monitoring recommended next step."),
         ("vps_monitoring_status_assumption", "status_only_monitoring_no_cron_change", "Dashboard assumes existing VPS monitoring remains status-only."),
@@ -522,6 +537,7 @@ def build_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str
         ("draft_readiness_is_not_a_ticket", "blocked", "critical", "Draft readiness can support future manual discussion only; it does not create a ticket or order values.", "manual_review_before_any_non_submitting_executable_ticket_draft"),
         ("non_submitting_ticket_draft_is_not_executable", "blocked", "critical", "The saved draft is a review artifact and cannot be submitted.", "manual_review_ticket_draft_quality_gate_before_any_value_approval"),
         ("ticket_value_approval_readiness_is_not_approval", "blocked", "critical", "Approval readiness can support a future request only; it does not request or record approval.", "manual_review_before_any_explicit_ticket_value_approval_request"),
+        ("draft_ticket_value_approval_is_not_values", "blocked", "critical", "Draft ticket-value approval may allow a later review-only population step, but no concrete values or order instructions exist.", "populate_review_only_draft_ticket_values_without_execution"),
         ("repeat_followup_orders_not_approved", "blocked", "critical", "QQQ100 follow-up and repeat orders remain unapproved.", "hold_no_action_and_monitor_only"),
         ("scheduling_not_approved", "blocked", "critical", "No order-capable scheduling is approved.", "keep_monitoring_status_only"),
     ]
@@ -589,6 +605,9 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"vol_non_submitting_executable_ticket_draft_decision={summary_value(summary_rows, 'vol_non_submitting_executable_ticket_draft_decision')}",
         f"vol_non_submitting_executable_ticket_draft_quality_gate_decision={summary_value(summary_rows, 'vol_non_submitting_executable_ticket_draft_quality_gate_decision')}",
         f"vol_draft_ticket_value_approval_readiness_decision={summary_value(summary_rows, 'vol_draft_ticket_value_approval_readiness_decision')}",
+        f"vol_draft_ticket_value_approval_wording_decision={summary_value(summary_rows, 'vol_draft_ticket_value_approval_wording_decision')}",
+        f"vol_draft_ticket_value_approval_record_decision={summary_value(summary_rows, 'vol_draft_ticket_value_approval_record_decision')}",
+        f"vol_ticket_value_population_approved={summary_value(summary_rows, 'vol_ticket_value_population_approved')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

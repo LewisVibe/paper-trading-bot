@@ -248,6 +248,15 @@ Remaining steps, in order:
    - This checks whether the non-submitting draft and its quality gate are complete enough to ask later for explicit ticket-value approval.
    - It may set `ticket_value_approval_request_ready=True`, but it must keep `ticket_value_approval_requested=False`, `ticket_value_approval_recorded=False`, `ticket_values_approved=False`, `order_values_populated=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, and `execution_approved=False`.
 
+7h. **Record narrow approval for the next review-only draft-value population step.**
+   - Implemented wording checkpoint:
+     `python bot.py --vol-targeted-growth-draft-ticket-value-approval-wording`.
+   - Implemented record checkpoint:
+     `python bot.py --vol-targeted-growth-draft-ticket-value-approval-record`.
+   - Matching saved displays use the same commands with `--show-...`.
+   - The record can set `ticket_value_population_approved=True`, meaning a later checkpoint may populate review-only draft ticket values.
+   - It must keep `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, `execution_approved=False`, and `scheduling_approved=False`.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
