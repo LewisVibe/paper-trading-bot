@@ -295,6 +295,15 @@ Remaining steps, in order:
    - It must keep `broker_ready_order_values_populated=False`, `order_values_populated=False`, `order_instructions_created=False`, `ticket_instance_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, `execution_approved=False`, and `scheduling_approved=False`.
    - The next step is manual review before any separate ticket-creation checkpoint; populated review values are not orders.
 
+7m. **Review populated values and assess ticket-creation discussion readiness.**
+   - Implemented manual-review checkpoint:
+     `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-values-manual-review`.
+   - Implemented readiness checkpoint:
+     `python bot.py --vol-targeted-growth-non-submitting-ticket-creation-readiness`.
+   - Matching saved displays use the same commands with `--show-...`.
+   - Readiness can set `ticket_creation_discussion_ready=True` only for a future non-submitting ticket-instance checkpoint.
+   - It must keep `ticket_creation_approved=False`, `ticket_instance_created=False`, `executable_ticket_created=False`, `order_values_populated=False`, `order_instructions_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, `execution_approved=False`, and `scheduling_approved=False`.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.

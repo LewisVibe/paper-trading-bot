@@ -66,6 +66,8 @@ INPUT_FILES = {
     "vol_executable_ticket_values_approval_record": Path("data/vol_targeted_growth_executable_ticket_values_approval_record_summary.csv"),
     "vol_non_submitting_executable_ticket_values": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_summary.csv"),
     "vol_non_submitting_executable_ticket_values_quality_gate": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate_summary.csv"),
+    "vol_non_submitting_executable_ticket_values_manual_review": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_manual_review_summary.csv"),
+    "vol_non_submitting_ticket_creation_readiness": Path("data/vol_targeted_growth_non_submitting_ticket_creation_readiness_summary.csv"),
     "paper_live_checklist": Path("data/paper_live_checklist_status_summary.csv"),
 }
 
@@ -244,6 +246,10 @@ def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int,
         f"vol_non_submitting_executable_ticket_values_quality_gate_decision: {summary_value(rows, 'vol_non_submitting_executable_ticket_values_quality_gate_decision')}",
         f"vol_non_submitting_executable_ticket_values_populated: {summary_value(rows, 'vol_non_submitting_executable_ticket_values_populated')}",
         f"vol_non_submitting_executable_ticket_values_order_values_populated: {summary_value(rows, 'vol_non_submitting_executable_ticket_values_order_values_populated')}",
+        f"vol_non_submitting_executable_ticket_values_manual_review_decision: {summary_value(rows, 'vol_non_submitting_executable_ticket_values_manual_review_decision')}",
+        f"vol_non_submitting_ticket_creation_readiness_decision: {summary_value(rows, 'vol_non_submitting_ticket_creation_readiness_decision')}",
+        f"vol_non_submitting_ticket_creation_discussion_ready: {summary_value(rows, 'vol_non_submitting_ticket_creation_discussion_ready')}",
+        f"vol_non_submitting_ticket_creation_approved: {summary_value(rows, 'vol_non_submitting_ticket_creation_approved')}",
         f"paper_live_checklist_phase_status: {summary_value(rows, 'paper_live_checklist_phase_status')}",
         f"vps_monitoring_status_assumption: {summary_value(rows, 'vps_monitoring_status_assumption')}",
         f"final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
@@ -430,6 +436,11 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     non_submitting_values_order_values_populated = summary_value(inputs["vol_non_submitting_executable_ticket_values"], "order_values_populated") or "False"
     non_submitting_values_quality_decision = summary_value(inputs["vol_non_submitting_executable_ticket_values_quality_gate"], "final_non_submitting_executable_ticket_values_quality_decision") or "missing_vol_non_submitting_executable_ticket_values_quality_gate"
     non_submitting_values_quality_passed = summary_value(inputs["vol_non_submitting_executable_ticket_values_quality_gate"], "quality_gate_passed") or "False"
+    non_submitting_values_manual_review_decision = summary_value(inputs["vol_non_submitting_executable_ticket_values_manual_review"], "final_non_submitting_executable_ticket_values_manual_review_decision") or "missing_vol_non_submitting_executable_ticket_values_manual_review"
+    non_submitting_values_manual_review_completed = summary_value(inputs["vol_non_submitting_executable_ticket_values_manual_review"], "manual_review_completed") or "False"
+    ticket_creation_readiness_decision = summary_value(inputs["vol_non_submitting_ticket_creation_readiness"], "final_non_submitting_ticket_creation_readiness_decision") or "missing_vol_non_submitting_ticket_creation_readiness"
+    ticket_creation_discussion_ready = summary_value(inputs["vol_non_submitting_ticket_creation_readiness"], "ticket_creation_discussion_ready") or "False"
+    ticket_creation_approved = summary_value(inputs["vol_non_submitting_ticket_creation_readiness"], "ticket_creation_approved") or "False"
     checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
     monitoring_next = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
     data = [
@@ -556,6 +567,11 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("vol_non_submitting_executable_ticket_values_quality_gate_passed", non_submitting_values_quality_passed, "True only when values remain non-submitting."),
         ("vol_non_submitting_executable_ticket_values_populated", non_submitting_values_populated, "True when reviewable non-submitting values exist."),
         ("vol_non_submitting_executable_ticket_values_order_values_populated", non_submitting_values_order_values_populated, "Must remain False because no broker-ready order values exist."),
+        ("vol_non_submitting_executable_ticket_values_manual_review_decision", non_submitting_values_manual_review_decision, "Saved manual-review decision for non-submitting values."),
+        ("vol_non_submitting_executable_ticket_values_manual_review_completed", non_submitting_values_manual_review_completed, "True when saved-output manual review is complete."),
+        ("vol_non_submitting_ticket_creation_readiness_decision", ticket_creation_readiness_decision, "Saved readiness decision for future ticket-instance discussion."),
+        ("vol_non_submitting_ticket_creation_discussion_ready", ticket_creation_discussion_ready, "True means future ticket-instance discussion can be considered."),
+        ("vol_non_submitting_ticket_creation_approved", ticket_creation_approved, "Must remain False; readiness is not approval."),
         ("paper_live_checklist_phase_status", checklist_status, "Saved paper-live checklist phase status."),
         ("paper_live_monitoring_recommended_next_step", monitoring_next, "Saved paper-live monitoring recommended next step."),
         ("vps_monitoring_status_assumption", "status_only_monitoring_no_cron_change", "Dashboard assumes existing VPS monitoring remains status-only."),
@@ -600,6 +616,7 @@ def build_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str
         ("executable_ticket_values_readiness_is_not_approval", "blocked", "critical", "Executable ticket-values readiness can support a future request only; it does not request approval, record approval, or populate broker-ready values.", "manual_review_before_any_explicit_executable_ticket_values_approval_request"),
         ("executable_ticket_values_approval_is_not_value_population", "blocked", "critical", "Executable ticket-values approval may allow a later non-submitting value population step, but order_values_populated and executable_ticket_created remain false.", "populate_non_submitting_executable_ticket_values_for_manual_review_only"),
         ("non_submitting_executable_ticket_values_are_not_orders", "blocked", "critical", "Non-submitting values may be populated for manual review while broker-ready order values, tickets, and execution remain false.", "manual_review_non_submitting_executable_ticket_values_before_any_ticket_creation"),
+        ("ticket_creation_readiness_is_not_ticket_creation", "blocked", "critical", "Ticket-creation readiness can support future discussion only; ticket_creation_approved, ticket_instance_created, and executable_ticket_created remain false.", "manual_review_ticket_creation_readiness_before_any_ticket_instance_checkpoint"),
         ("repeat_followup_orders_not_approved", "blocked", "critical", "QQQ100 follow-up and repeat orders remain unapproved.", "hold_no_action_and_monitor_only"),
         ("scheduling_not_approved", "blocked", "critical", "No order-capable scheduling is approved.", "keep_monitoring_status_only"),
     ]
@@ -683,6 +700,10 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"vol_non_submitting_executable_ticket_values_quality_gate_decision={summary_value(summary_rows, 'vol_non_submitting_executable_ticket_values_quality_gate_decision')}",
         f"vol_non_submitting_executable_ticket_values_populated={summary_value(summary_rows, 'vol_non_submitting_executable_ticket_values_populated')}",
         f"vol_non_submitting_executable_ticket_values_order_values_populated={summary_value(summary_rows, 'vol_non_submitting_executable_ticket_values_order_values_populated')}",
+        f"vol_non_submitting_executable_ticket_values_manual_review_decision={summary_value(summary_rows, 'vol_non_submitting_executable_ticket_values_manual_review_decision')}",
+        f"vol_non_submitting_ticket_creation_readiness_decision={summary_value(summary_rows, 'vol_non_submitting_ticket_creation_readiness_decision')}",
+        f"vol_non_submitting_ticket_creation_discussion_ready={summary_value(summary_rows, 'vol_non_submitting_ticket_creation_discussion_ready')}",
+        f"vol_non_submitting_ticket_creation_approved={summary_value(summary_rows, 'vol_non_submitting_ticket_creation_approved')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

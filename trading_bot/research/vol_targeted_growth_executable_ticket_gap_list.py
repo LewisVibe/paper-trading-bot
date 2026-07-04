@@ -44,6 +44,8 @@ INPUT_FILES = {
     "executable_ticket_values_approval_record": Path("data/vol_targeted_growth_executable_ticket_values_approval_record_summary.csv"),
     "non_submitting_executable_ticket_values": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_summary.csv"),
     "non_submitting_executable_ticket_values_quality_gate": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate_summary.csv"),
+    "non_submitting_executable_ticket_values_manual_review": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_manual_review_summary.csv"),
+    "non_submitting_ticket_creation_readiness": Path("data/vol_targeted_growth_non_submitting_ticket_creation_readiness_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -161,6 +163,10 @@ def show_vol_targeted_growth_executable_ticket_gap_list(root_dir: Path | str = "
         f"non_submitting_executable_ticket_values_quality_gate_decision: {summary_value(rows, 'non_submitting_executable_ticket_values_quality_gate_decision')}",
         f"non_submitting_executable_ticket_values_populated: {summary_value(rows, 'non_submitting_executable_ticket_values_populated')}",
         f"non_submitting_executable_ticket_values_order_values_populated: {summary_value(rows, 'non_submitting_executable_ticket_values_order_values_populated')}",
+        f"non_submitting_executable_ticket_values_manual_review_decision: {summary_value(rows, 'non_submitting_executable_ticket_values_manual_review_decision')}",
+        f"non_submitting_ticket_creation_readiness_decision: {summary_value(rows, 'non_submitting_ticket_creation_readiness_decision')}",
+        f"non_submitting_ticket_creation_discussion_ready: {summary_value(rows, 'non_submitting_ticket_creation_discussion_ready')}",
+        f"non_submitting_ticket_creation_approved: {summary_value(rows, 'non_submitting_ticket_creation_approved')}",
         f"recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
         "Warning: saved-output gap list only; no Alpaca, broker read, order, ticket design, live trading, or scheduling approval.",
@@ -273,6 +279,12 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     non_submitting_values_quality_decision = summary_value(non_submitting_values_quality_rows, "final_non_submitting_executable_ticket_values_quality_decision") or "missing_non_submitting_executable_ticket_values_quality_gate"
     non_submitting_values_populated = summary_value(non_submitting_values_rows, "non_submitting_ticket_values_populated") or "False"
     non_submitting_values_order_values_populated = summary_value(non_submitting_values_rows, "order_values_populated") or "False"
+    non_submitting_values_manual_review_rows = inputs.get("non_submitting_executable_ticket_values_manual_review", [])
+    ticket_creation_readiness_rows = inputs.get("non_submitting_ticket_creation_readiness", [])
+    non_submitting_values_manual_review_decision = summary_value(non_submitting_values_manual_review_rows, "final_non_submitting_executable_ticket_values_manual_review_decision") or "missing_non_submitting_executable_ticket_values_manual_review"
+    ticket_creation_readiness_decision = summary_value(ticket_creation_readiness_rows, "final_non_submitting_ticket_creation_readiness_decision") or "missing_non_submitting_ticket_creation_readiness"
+    ticket_creation_discussion_ready = summary_value(ticket_creation_readiness_rows, "ticket_creation_discussion_ready") or "False"
+    ticket_creation_approved = summary_value(ticket_creation_readiness_rows, "ticket_creation_approved") or "False"
     data = [
         ("final_gap_list_status", FINAL_STATUS, "Executable ticket design remains blocked."),
         ("final_ticket_design_decision", FINAL_DECISION, "No executable ticket design is ready or approved."),
@@ -297,6 +309,10 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("non_submitting_executable_ticket_values_quality_gate_decision", non_submitting_values_quality_decision, "Saved non-submitting values quality gate decision."),
         ("non_submitting_executable_ticket_values_populated", non_submitting_values_populated, "True when reviewable non-submitting values exist."),
         ("non_submitting_executable_ticket_values_order_values_populated", non_submitting_values_order_values_populated, "Must remain False because no broker-ready order values exist."),
+        ("non_submitting_executable_ticket_values_manual_review_decision", non_submitting_values_manual_review_decision, "Saved manual-review decision for non-submitting values."),
+        ("non_submitting_ticket_creation_readiness_decision", ticket_creation_readiness_decision, "Saved readiness decision for future ticket-instance discussion."),
+        ("non_submitting_ticket_creation_discussion_ready", ticket_creation_discussion_ready, "True means discussion can continue; it is not approval."),
+        ("non_submitting_ticket_creation_approved", ticket_creation_approved, "Must remain False."),
         ("missing_saved_input_count", str(len(missing_inputs)), "Missing saved input summaries."),
         ("missing_saved_inputs", ";".join(missing_inputs) or "none", "Saved inputs missing from this gap list."),
         ("largest_gap", "execution_not_approved" if remaining_known_blockers == "none" else "manual_execution_design_approval_missing", "Primary blocker before any executable ticket design."),
@@ -409,6 +425,10 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"non_submitting_executable_ticket_values_quality_gate_decision={summary_value(summary_rows, 'non_submitting_executable_ticket_values_quality_gate_decision')}",
         f"non_submitting_executable_ticket_values_populated={summary_value(summary_rows, 'non_submitting_executable_ticket_values_populated')}",
         f"non_submitting_executable_ticket_values_order_values_populated={summary_value(summary_rows, 'non_submitting_executable_ticket_values_order_values_populated')}",
+        f"non_submitting_executable_ticket_values_manual_review_decision={summary_value(summary_rows, 'non_submitting_executable_ticket_values_manual_review_decision')}",
+        f"non_submitting_ticket_creation_readiness_decision={summary_value(summary_rows, 'non_submitting_ticket_creation_readiness_decision')}",
+        f"non_submitting_ticket_creation_discussion_ready={summary_value(summary_rows, 'non_submitting_ticket_creation_discussion_ready')}",
+        f"non_submitting_ticket_creation_approved={summary_value(summary_rows, 'non_submitting_ticket_creation_approved')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

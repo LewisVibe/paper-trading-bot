@@ -869,6 +869,10 @@ def _early_report_only_route() -> None:
         "--show-vol-targeted-growth-non-submitting-executable-ticket-values": "show_vol_targeted_growth_non_submitting_executable_ticket_values",
         "--vol-targeted-growth-non-submitting-executable-ticket-values-quality-gate": "generate_vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate",
         "--show-vol-targeted-growth-non-submitting-executable-ticket-values-quality-gate": "show_vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate",
+        "--vol-targeted-growth-non-submitting-executable-ticket-values-manual-review": "generate_vol_targeted_growth_non_submitting_executable_ticket_values_manual_review",
+        "--show-vol-targeted-growth-non-submitting-executable-ticket-values-manual-review": "show_vol_targeted_growth_non_submitting_executable_ticket_values_manual_review",
+        "--vol-targeted-growth-non-submitting-ticket-creation-readiness": "generate_vol_targeted_growth_non_submitting_ticket_creation_readiness",
+        "--show-vol-targeted-growth-non-submitting-ticket-creation-readiness": "show_vol_targeted_growth_non_submitting_ticket_creation_readiness",
     }
     if sys.argv[1:] and sys.argv[1] in non_submitting_executable_ticket_values_routes and len(sys.argv[1:]) == 1:
         from trading_bot.research import vol_targeted_growth_non_submitting_executable_ticket_values as non_submitting_values
@@ -8186,6 +8190,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--show-vol-targeted-growth-non-submitting-executable-ticket-values", action="store_true")
     parser.add_argument("--vol-targeted-growth-non-submitting-executable-ticket-values-quality-gate", action="store_true")
     parser.add_argument("--show-vol-targeted-growth-non-submitting-executable-ticket-values-quality-gate", action="store_true")
+    parser.add_argument("--vol-targeted-growth-non-submitting-executable-ticket-values-manual-review", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-non-submitting-executable-ticket-values-manual-review", action="store_true")
+    parser.add_argument("--vol-targeted-growth-non-submitting-ticket-creation-readiness", action="store_true")
+    parser.add_argument("--show-vol-targeted-growth-non-submitting-ticket-creation-readiness", action="store_true")
     parser.add_argument(
         "--vol-targeted-growth-executable-ticket-approval-criteria",
         action="store_true",

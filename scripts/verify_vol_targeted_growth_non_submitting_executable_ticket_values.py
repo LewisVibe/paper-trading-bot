@@ -16,10 +16,16 @@ if str(ROOT) not in sys.path:
 from trading_bot.research.vol_targeted_growth_non_submitting_executable_ticket_values import (  # noqa: E402
     QUALITY_DECISION,
     QUALITY_OUTPUTS,
+    MANUAL_REVIEW_DECISION,
+    MANUAL_REVIEW_OUTPUTS,
+    READINESS_DECISION,
+    READINESS_OUTPUTS,
     VALUES_DECISION,
     VALUES_OUTPUTS,
     generate_vol_targeted_growth_non_submitting_executable_ticket_values,
+    generate_vol_targeted_growth_non_submitting_executable_ticket_values_manual_review,
     generate_vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate,
+    generate_vol_targeted_growth_non_submitting_ticket_creation_readiness,
     show_vol_targeted_growth_non_submitting_executable_ticket_values,
 )
 
@@ -29,6 +35,10 @@ COMMANDS = [
     "--show-vol-targeted-growth-non-submitting-executable-ticket-values",
     "--vol-targeted-growth-non-submitting-executable-ticket-values-quality-gate",
     "--show-vol-targeted-growth-non-submitting-executable-ticket-values-quality-gate",
+    "--vol-targeted-growth-non-submitting-executable-ticket-values-manual-review",
+    "--show-vol-targeted-growth-non-submitting-executable-ticket-values-manual-review",
+    "--vol-targeted-growth-non-submitting-ticket-creation-readiness",
+    "--show-vol-targeted-growth-non-submitting-ticket-creation-readiness",
 ]
 
 FALSE_FLAGS = [
@@ -37,6 +47,7 @@ FALSE_FLAGS = [
     "order_instructions_created",
     "ticket_instance_created",
     "executable_ticket_created",
+    "ticket_creation_approved",
     "orders_created",
     "orders_submitted",
     "orders_cancelled",
@@ -80,7 +91,7 @@ def verify_commands_registered(failures: list[str]) -> None:
 
 
 def verify_outputs_ignored(failures: list[str]) -> None:
-    for path in [*VALUES_OUTPUTS.values(), *QUALITY_OUTPUTS.values()]:
+    for path in [*VALUES_OUTPUTS.values(), *QUALITY_OUTPUTS.values(), *MANUAL_REVIEW_OUTPUTS.values(), *READINESS_OUTPUTS.values()]:
         result = subprocess.run(["git", "check-ignore", str(path)], cwd=ROOT, text=True, capture_output=True, check=False)
         if result.returncode != 0:
             failures.append(f"expected output is not ignored by git: {path}")
@@ -113,14 +124,22 @@ def verify_fixture_outputs(failures: list[str]) -> None:
         seed_inputs(root)
         values = generate_vol_targeted_growth_non_submitting_executable_ticket_values(root)
         quality = generate_vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate(root)
+        manual_review = generate_vol_targeted_growth_non_submitting_executable_ticket_values_manual_review(root)
+        readiness = generate_vol_targeted_growth_non_submitting_ticket_creation_readiness(root)
         code, lines = show_vol_targeted_growth_non_submitting_executable_ticket_values(root)
         if code != 0:
             failures.append("values display failed after generation")
-        output = "\n".join(values.summary_lines + quality.summary_lines + lines)
+        output = "\n".join(values.summary_lines + quality.summary_lines + manual_review.summary_lines + readiness.summary_lines + lines)
         for phrase in [
             VALUES_DECISION,
             QUALITY_DECISION,
+            MANUAL_REVIEW_DECISION,
+            READINESS_DECISION,
             "non_submitting_ticket_values_populated=True",
+            "manual_review_completed=True",
+            "ticket_creation_discussion_ready=True",
+            "ticket_creation_approved=False",
+            "ticket_instance_created=False",
             "broker_ready_order_values_populated=False",
             "order_values_populated=False",
             "orders_submitted=false",
@@ -132,13 +151,13 @@ def verify_fixture_outputs(failures: list[str]) -> None:
                 failures.append(f"fixture output missing phrase: {phrase}")
         if len(values.value_rows) < 8:
             failures.append("expected multiple reviewable value rows")
-        verify_false_flags(values.summary_rows + quality.summary_rows, failures)
+        verify_false_flags(values.summary_rows + quality.summary_rows + manual_review.summary_rows + readiness.summary_rows, failures)
         for row in values.value_rows:
             name = str(row.get("ticket_value_name", "")).lower()
             if name in {"order_side", "order_quantity", "order_type", "time_in_force"}:
                 if row.get("ticket_value_status") != "blocked_unpopulated":
                     failures.append(f"broker-ready field is not blocked: {name}")
-        for path in [*values.output_paths.values(), *quality.output_paths.values()]:
+        for path in [*values.output_paths.values(), *quality.output_paths.values(), *manual_review.output_paths.values(), *readiness.output_paths.values()]:
             if not path.exists():
                 failures.append(f"expected output missing: {path}")
 
