@@ -1750,6 +1750,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface the manual-review decision, readiness decision, and request-ready flag when present.
 - **Stop condition:** Stop if the task would request or record executable-values approval, populate broker-ready side, numeric quantity, executable order type, time-in-force, price, account, broker fields, submit/cancel/replace orders, approve execution, or schedule anything.
 
+### Task: Volatility-targeted growth executable ticket-values approval wording and record
+- **Purpose:** Use `python bot.py --vol-targeted-growth-executable-ticket-values-approval-wording` and `python bot.py --vol-targeted-growth-executable-ticket-values-approval-record` to record narrow approval for a later non-submitting executable ticket-values population checkpoint.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** The wording and record commands above, their matching `--show-...` commands, `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, `python bot.py --vol-targeted-growth-executable-ticket-gap-list`, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_executable_ticket_values_approval.py`.
+- **Expected status:** `EXECUTABLE_TICKET_VALUES_APPROVAL_WORDING_DEFINED_NOT_APPROVED` and `EXECUTABLE_TICKET_VALUES_APPROVAL_RECORDED_NO_ORDER_SUBMISSION`. The record may set `executable_ticket_values_approved=True` and `ticket_values_approved=True`, while `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals remain false.
+- **Monitoring integration:** The execution blocker rollup, executable ticket gap list, paper-live go/no-go dashboard, and VPS daily monitoring summary surface the approval record separately from value population.
+- **Stop condition:** Stop if the task would populate side, quantity, order type, time-in-force, price, account, broker fields, submit/cancel/replace orders, approve execution, call Alpaca, read positions, or schedule anything.
+
 ### Task: Hermes status cron checkpoint
 - **Purpose:** Document and verify the enabled status-only Hermes job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no additional Hermes job is created, edited, triggered, deleted, or scheduled and the existing job remains status-only.

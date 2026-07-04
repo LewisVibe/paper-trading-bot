@@ -125,6 +125,7 @@ INPUT_FILES = {
     "criteria_resolution_plan_closeout_record_summary": Path("data/vol_targeted_growth_executable_ticket_criteria_resolution_plan_closeout_record_summary.csv"),
     "approval_criteria_closeout_record_summary": Path("data/vol_targeted_growth_executable_ticket_approval_criteria_closeout_record_summary.csv"),
     "final_ticket_blockers_closeout_record_summary": Path("data/vol_targeted_growth_final_ticket_blockers_closeout_record_summary.csv"),
+    "executable_ticket_values_approval_record_summary": Path("data/vol_targeted_growth_executable_ticket_values_approval_record_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -1149,11 +1150,16 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
             "criteria_source_closeout_record_summary",
             "criteria_resolution_plan_closeout_record_summary",
             "approval_criteria_closeout_record_summary",
+            "executable_ticket_values_approval_record_summary",
         ]
         if not inputs[name]
     ]
     blocker_count = sum(1 for row in rows if row.get("status") != "closed_saved_evidence")
     remaining_known_blockers = remaining_blockers_after_closeout(inputs)
+    values_approval_rows = inputs.get("executable_ticket_values_approval_record_summary", [])
+    executable_ticket_values_approval_record_decision = summary_value(values_approval_rows, "final_executable_ticket_values_approval_record_decision") or "missing_executable_ticket_values_approval_record"
+    executable_ticket_values_approved = summary_value(values_approval_rows, "executable_ticket_values_approved") or "False"
+    executable_ticket_values_order_values_populated = summary_value(values_approval_rows, "order_values_populated") or "False"
     data = [
         ("final_execution_blocker_rollup_status", EXECUTION_BLOCKER_ROLLUP_STATUS, "Execution blockers are rolled up for manual review only."),
         ("active_seed", ACTIVE_SEED, "Current status/report seed."),
@@ -1170,6 +1176,9 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
         ("executable_ticket_prerequisites_not_met_closed", str("executable_ticket_prerequisites_not_met" in closed), "True only when the saved final-ticket-blockers closeout record closes that blocker."),
         ("closed_blocker", ";".join(closed) or "none", "Closed blockers recognised by this recalculation."),
         ("remaining_known_blockers_after_closeout", remaining_known_blockers, "Known blockers that remain open after the criteria-source closeout record."),
+        ("executable_ticket_values_approval_record_decision", executable_ticket_values_approval_record_decision, "Saved explicit approval record for later non-submitting ticket values."),
+        ("executable_ticket_values_approved", executable_ticket_values_approved, "True only as approval for a later non-submitting value population step."),
+        ("executable_ticket_values_order_values_populated", executable_ticket_values_order_values_populated, "Must remain False until the later population step."),
         ("paper_live_candidate_discussion_approved", "True", "Discussion may continue from the saved approval record."),
         ("paper_live_candidate_approved", "False", "Rollup does not approve paper-live candidacy."),
         ("executable_ticket_prerequisites_met", "False", "Prerequisites remain incomplete."),
@@ -1421,6 +1430,9 @@ def summary_lines(title: str, summary_rows: list[dict[str, Any]], output_paths: 
         "ticket_values_not_approved_closed",
         "executable_ticket_prerequisites_not_met_closed",
         "remaining_known_blockers_after_closeout",
+        "executable_ticket_values_approval_record_decision",
+        "executable_ticket_values_approved",
+        "executable_ticket_values_order_values_populated",
     ]:
         value = summary_value(summary_rows, key)
         if value:

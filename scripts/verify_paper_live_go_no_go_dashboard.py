@@ -73,6 +73,11 @@ REQUIRED_TOKENS = [
     "vol_draft_ticket_values_manual_review_decision",
     "vol_executable_ticket_values_readiness_decision",
     "vol_executable_ticket_values_approval_request_ready",
+    "vol_executable_ticket_values_approval_wording_decision",
+    "vol_executable_ticket_values_approval_record_decision",
+    "vol_executable_ticket_values_approved",
+    "vol_executable_ticket_values_order_values_populated",
+    "executable_ticket_values_approval_is_not_value_population",
     "non_submitting_executable_ticket_is_not_an_order",
     "ticket_value_discussion_is_not_value_approval",
     "ticket_value_placeholders_are_not_order_values",
@@ -598,6 +603,30 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_executable_ticket_values_approval_wording_summary.csv",
+            {
+                "final_executable_ticket_values_approval_wording_decision": "EXECUTABLE_TICKET_VALUES_APPROVAL_WORDING_DEFINED_NOT_APPROVED",
+                "approval_phrase": "I approve creating executable ticket values for manual review only; do not submit orders.",
+                "executable_ticket_values_approval_wording_defined": "True",
+                "executable_ticket_values_approval_recorded": "False",
+                "executable_ticket_values_approved": "False",
+                "ticket_values_approved": "False",
+                "order_values_populated": "False",
+            },
+        )
+        write_summary(
+            data / "vol_targeted_growth_executable_ticket_values_approval_record_summary.csv",
+            {
+                "final_executable_ticket_values_approval_record_decision": "EXECUTABLE_TICKET_VALUES_APPROVAL_RECORDED_NO_ORDER_SUBMISSION",
+                "approval_phrase": "I approve creating executable ticket values for manual review only; do not submit orders.",
+                "executable_ticket_values_approval_wording_defined": "True",
+                "executable_ticket_values_approval_recorded": "True",
+                "executable_ticket_values_approved": "True",
+                "ticket_values_approved": "True",
+                "order_values_populated": "False",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -703,6 +732,11 @@ def verify_fixture_output(failures: list[str]) -> None:
         "READY_TO_REQUEST_EXECUTABLE_TICKET_VALUES_APPROVAL_NOT_APPROVED",
         "vol_executable_ticket_values_approval_request_ready: True",
         "executable_ticket_values_readiness_is_not_approval",
+        "EXECUTABLE_TICKET_VALUES_APPROVAL_WORDING_DEFINED_NOT_APPROVED",
+        "EXECUTABLE_TICKET_VALUES_APPROVAL_RECORDED_NO_ORDER_SUBMISSION",
+        "vol_executable_ticket_values_approved: True",
+        "vol_executable_ticket_values_order_values_populated: False",
+        "executable_ticket_values_approval_is_not_value_population",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",
@@ -733,6 +767,10 @@ def verify_vps_daily_summary_integration(failures: list[str]) -> None:
         "vol_draft_ticket_values_manual_review_decision",
         "vol_executable_ticket_values_readiness_decision",
         "vol_executable_ticket_values_approval_request_ready",
+        "vol_executable_ticket_values_approval_wording_decision",
+        "vol_executable_ticket_values_approval_record_decision",
+        "vol_executable_ticket_values_approved",
+        "vol_executable_ticket_values_order_values_populated",
         "paper_live_go_no_go_warning: monitor only;",
     ]:
         if phrase not in source:

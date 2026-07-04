@@ -41,6 +41,7 @@ INPUT_FILES = {
     "criteria_resolution_plan_closeout_record": Path("data/vol_targeted_growth_executable_ticket_criteria_resolution_plan_closeout_record_summary.csv"),
     "approval_criteria_closeout_record": Path("data/vol_targeted_growth_executable_ticket_approval_criteria_closeout_record_summary.csv"),
     "final_ticket_blockers_closeout_record": Path("data/vol_targeted_growth_final_ticket_blockers_closeout_record_summary.csv"),
+    "executable_ticket_values_approval_record": Path("data/vol_targeted_growth_executable_ticket_values_approval_record_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -151,6 +152,9 @@ def show_vol_targeted_growth_executable_ticket_gap_list(root_dir: Path | str = "
         f"ticket_values_not_approved_closed: {summary_value(rows, 'ticket_values_not_approved_closed')}",
         f"executable_ticket_prerequisites_not_met_closed: {summary_value(rows, 'executable_ticket_prerequisites_not_met_closed')}",
         f"remaining_known_blockers_after_closeout: {summary_value(rows, 'remaining_known_blockers_after_closeout')}",
+        f"executable_ticket_values_approval_record_decision: {summary_value(rows, 'executable_ticket_values_approval_record_decision')}",
+        f"executable_ticket_values_approved: {summary_value(rows, 'executable_ticket_values_approved')}",
+        f"executable_ticket_values_order_values_populated: {summary_value(rows, 'executable_ticket_values_order_values_populated')}",
         f"recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
         "Warning: saved-output gap list only; no Alpaca, broker read, order, ticket design, live trading, or scheduling approval.",
@@ -253,6 +257,10 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     closed = closed_blockers(inputs)
     closed_blocker_count = len(closed)
     remaining_known_blockers = remaining_blockers_after_closeout(inputs)
+    values_approval_rows = inputs.get("executable_ticket_values_approval_record", [])
+    executable_ticket_values_approval_record_decision = summary_value(values_approval_rows, "final_executable_ticket_values_approval_record_decision") or "missing_executable_ticket_values_approval_record"
+    executable_ticket_values_approved = summary_value(values_approval_rows, "executable_ticket_values_approved") or "False"
+    executable_ticket_values_order_values_populated = summary_value(values_approval_rows, "order_values_populated") or "False"
     data = [
         ("final_gap_list_status", FINAL_STATUS, "Executable ticket design remains blocked."),
         ("final_ticket_design_decision", FINAL_DECISION, "No executable ticket design is ready or approved."),
@@ -270,6 +278,9 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("executable_ticket_prerequisites_not_met_closed", str("executable_ticket_prerequisites_not_met" in closed), "True only when the saved final-ticket-blockers closeout record closes that blocker."),
         ("closed_blocker", ";".join(closed) or "none", "Closed blockers recognised by this gap-list recalculation."),
         ("remaining_known_blockers_after_closeout", remaining_known_blockers, "Known blockers that remain open after the criteria-source closeout record."),
+        ("executable_ticket_values_approval_record_decision", executable_ticket_values_approval_record_decision, "Saved explicit approval record for later non-submitting ticket values."),
+        ("executable_ticket_values_approved", executable_ticket_values_approved, "True only as approval for a later non-submitting value population step."),
+        ("executable_ticket_values_order_values_populated", executable_ticket_values_order_values_populated, "Must remain False until the later population step."),
         ("missing_saved_input_count", str(len(missing_inputs)), "Missing saved input summaries."),
         ("missing_saved_inputs", ";".join(missing_inputs) or "none", "Saved inputs missing from this gap list."),
         ("largest_gap", "execution_not_approved" if remaining_known_blockers == "none" else "manual_execution_design_approval_missing", "Primary blocker before any executable ticket design."),
@@ -375,6 +386,9 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"ticket_values_not_approved_closed={summary_value(summary_rows, 'ticket_values_not_approved_closed')}",
         f"executable_ticket_prerequisites_not_met_closed={summary_value(summary_rows, 'executable_ticket_prerequisites_not_met_closed')}",
         f"remaining_known_blockers_after_closeout={summary_value(summary_rows, 'remaining_known_blockers_after_closeout')}",
+        f"executable_ticket_values_approval_record_decision={summary_value(summary_rows, 'executable_ticket_values_approval_record_decision')}",
+        f"executable_ticket_values_approved={summary_value(summary_rows, 'executable_ticket_values_approved')}",
+        f"executable_ticket_values_order_values_populated={summary_value(summary_rows, 'executable_ticket_values_order_values_populated')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

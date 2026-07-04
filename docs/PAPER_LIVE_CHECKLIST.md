@@ -275,6 +275,16 @@ Remaining steps, in order:
    - Readiness can set `executable_ticket_values_approval_request_ready=True`, meaning a future explicit approval request could be considered.
    - It must keep `executable_ticket_values_approval_requested=False`, `executable_ticket_values_approval_recorded=False`, `executable_ticket_values_approved=False`, `ticket_values_approved=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, `execution_approved=False`, and `scheduling_approved=False`.
 
+7k. **Record explicit approval for later non-submitting executable ticket values.**
+   - Implemented wording checkpoint:
+     `python bot.py --vol-targeted-growth-executable-ticket-values-approval-wording`.
+   - Implemented record checkpoint:
+     `python bot.py --vol-targeted-growth-executable-ticket-values-approval-record`.
+   - Matching saved displays use the same commands with `--show-...`.
+   - The record can set `executable_ticket_values_approved=True` and `ticket_values_approved=True` only for a later non-submitting ticket-value population checkpoint.
+   - It must keep `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, `execution_approved=False`, and `scheduling_approved=False`.
+   - The execution blocker rollup, executable ticket gap list, paper-live go/no-go dashboard, and VPS daily monitoring summary must show that approval separately from value population.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
