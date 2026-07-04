@@ -46,6 +46,7 @@ INPUT_FILES = {
     "non_submitting_executable_ticket_values_quality_gate": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate_summary.csv"),
     "non_submitting_executable_ticket_values_manual_review": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_manual_review_summary.csv"),
     "non_submitting_ticket_creation_readiness": Path("data/vol_targeted_growth_non_submitting_ticket_creation_readiness_summary.csv"),
+    "non_submitting_ticket_instance_checkpoint": Path("data/vol_targeted_growth_non_submitting_ticket_instance_checkpoint_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -167,6 +168,9 @@ def show_vol_targeted_growth_executable_ticket_gap_list(root_dir: Path | str = "
         f"non_submitting_ticket_creation_readiness_decision: {summary_value(rows, 'non_submitting_ticket_creation_readiness_decision')}",
         f"non_submitting_ticket_creation_discussion_ready: {summary_value(rows, 'non_submitting_ticket_creation_discussion_ready')}",
         f"non_submitting_ticket_creation_approved: {summary_value(rows, 'non_submitting_ticket_creation_approved')}",
+        f"non_submitting_ticket_instance_checkpoint_decision: {summary_value(rows, 'non_submitting_ticket_instance_checkpoint_decision')}",
+        f"non_submitting_ticket_instance_checkpoint_created: {summary_value(rows, 'non_submitting_ticket_instance_checkpoint_created')}",
+        f"non_submitting_ticket_instance_created: {summary_value(rows, 'non_submitting_ticket_instance_created')}",
         f"recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
         "Warning: saved-output gap list only; no Alpaca, broker read, order, ticket design, live trading, or scheduling approval.",
@@ -285,6 +289,10 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     ticket_creation_readiness_decision = summary_value(ticket_creation_readiness_rows, "final_non_submitting_ticket_creation_readiness_decision") or "missing_non_submitting_ticket_creation_readiness"
     ticket_creation_discussion_ready = summary_value(ticket_creation_readiness_rows, "ticket_creation_discussion_ready") or "False"
     ticket_creation_approved = summary_value(ticket_creation_readiness_rows, "ticket_creation_approved") or "False"
+    ticket_instance_checkpoint_rows = inputs.get("non_submitting_ticket_instance_checkpoint", [])
+    ticket_instance_checkpoint_decision = summary_value(ticket_instance_checkpoint_rows, "final_non_submitting_ticket_instance_checkpoint_decision") or "missing_non_submitting_ticket_instance_checkpoint"
+    ticket_instance_checkpoint_created = summary_value(ticket_instance_checkpoint_rows, "ticket_instance_checkpoint_created") or "False"
+    ticket_instance_created = summary_value(ticket_instance_checkpoint_rows, "ticket_instance_created") or "False"
     data = [
         ("final_gap_list_status", FINAL_STATUS, "Executable ticket design remains blocked."),
         ("final_ticket_design_decision", FINAL_DECISION, "No executable ticket design is ready or approved."),
@@ -313,6 +321,9 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("non_submitting_ticket_creation_readiness_decision", ticket_creation_readiness_decision, "Saved readiness decision for future ticket-instance discussion."),
         ("non_submitting_ticket_creation_discussion_ready", ticket_creation_discussion_ready, "True means discussion can continue; it is not approval."),
         ("non_submitting_ticket_creation_approved", ticket_creation_approved, "Must remain False."),
+        ("non_submitting_ticket_instance_checkpoint_decision", ticket_instance_checkpoint_decision, "Saved non-submitting ticket-instance checkpoint decision."),
+        ("non_submitting_ticket_instance_checkpoint_created", ticket_instance_checkpoint_created, "True only for a non-executable checkpoint artifact."),
+        ("non_submitting_ticket_instance_created", ticket_instance_created, "Must remain False because no executable ticket exists."),
         ("missing_saved_input_count", str(len(missing_inputs)), "Missing saved input summaries."),
         ("missing_saved_inputs", ";".join(missing_inputs) or "none", "Saved inputs missing from this gap list."),
         ("largest_gap", "execution_not_approved" if remaining_known_blockers == "none" else "manual_execution_design_approval_missing", "Primary blocker before any executable ticket design."),
@@ -429,6 +440,9 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"non_submitting_ticket_creation_readiness_decision={summary_value(summary_rows, 'non_submitting_ticket_creation_readiness_decision')}",
         f"non_submitting_ticket_creation_discussion_ready={summary_value(summary_rows, 'non_submitting_ticket_creation_discussion_ready')}",
         f"non_submitting_ticket_creation_approved={summary_value(summary_rows, 'non_submitting_ticket_creation_approved')}",
+        f"non_submitting_ticket_instance_checkpoint_decision={summary_value(summary_rows, 'non_submitting_ticket_instance_checkpoint_decision')}",
+        f"non_submitting_ticket_instance_checkpoint_created={summary_value(summary_rows, 'non_submitting_ticket_instance_checkpoint_created')}",
+        f"non_submitting_ticket_instance_created={summary_value(summary_rows, 'non_submitting_ticket_instance_created')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

@@ -9,7 +9,7 @@ Current status:
 - The active report/status seed is `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`.
 - The previous QQQ100 seed context remains `qqq_100_trend_gate` / `QQQ`, with saved evidence showing long exactly one share and no follow-up/repeat order needed.
 - The VPS/Hermes status job is monitoring-only and must remain status/report-only.
-- The volatility seed has a non-submitting ticket schema design, a non-submitting ticket-instance design, a fresh broker pre-ticket gate design, a run-readiness checkpoint, a manual ticket-value design, and executable-ticket closeout/readiness/criteria/resolution-plan/source-review/blocker-review checkpoints, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
+- The volatility seed has a non-submitting ticket schema design, a non-submitting ticket-instance design, a non-submitting ticket-instance checkpoint, a fresh broker pre-ticket gate design, a run-readiness checkpoint, a manual ticket-value design, and executable-ticket closeout/readiness/criteria/resolution-plan/source-review/blocker-review checkpoints, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
 - High-growth, crypto, defensive, SMA, and slow-SMA remain excluded from paper-live execution.
 
 Remaining steps, in order:
@@ -303,6 +303,14 @@ Remaining steps, in order:
    - Matching saved displays use the same commands with `--show-...`.
    - Readiness can set `ticket_creation_discussion_ready=True` only for a future non-submitting ticket-instance checkpoint.
    - It must keep `ticket_creation_approved=False`, `ticket_instance_created=False`, `executable_ticket_created=False`, `order_values_populated=False`, `order_instructions_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, `execution_approved=False`, and `scheduling_approved=False`.
+
+7n. **Create the non-submitting ticket-instance checkpoint.**
+   - Implemented checkpoint:
+     `python bot.py --vol-targeted-growth-non-submitting-ticket-instance-checkpoint`.
+   - Saved display:
+     `python bot.py --show-vol-targeted-growth-non-submitting-ticket-instance-checkpoint`.
+   - This can set `ticket_instance_checkpoint_created=True` for a saved review artifact only.
+   - It must keep `ticket_instance_created=False`, `ticket_creation_approved=False`, `broker_ready_order_values_populated=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, `execution_approved=False`, and `scheduling_approved=False`.
 
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.

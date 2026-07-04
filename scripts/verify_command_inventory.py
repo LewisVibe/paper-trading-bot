@@ -407,6 +407,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-non-submitting-ticket-schema-design",
     "--vol-targeted-growth-non-submitting-ticket-instance-design",
     "--show-vol-targeted-growth-non-submitting-ticket-instance-design",
+    "--vol-targeted-growth-non-submitting-ticket-instance-checkpoint",
+    "--show-vol-targeted-growth-non-submitting-ticket-instance-checkpoint",
     "--vol-targeted-growth-fresh-broker-pre-ticket-gate-design",
     "--show-vol-targeted-growth-fresh-broker-pre-ticket-gate-design",
     "--vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness",

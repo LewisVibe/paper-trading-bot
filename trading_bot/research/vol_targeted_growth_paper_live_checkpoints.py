@@ -130,6 +130,7 @@ INPUT_FILES = {
     "non_submitting_executable_ticket_values_quality_gate_summary": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate_summary.csv"),
     "non_submitting_executable_ticket_values_manual_review_summary": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_manual_review_summary.csv"),
     "non_submitting_ticket_creation_readiness_summary": Path("data/vol_targeted_growth_non_submitting_ticket_creation_readiness_summary.csv"),
+    "non_submitting_ticket_instance_checkpoint_summary": Path("data/vol_targeted_growth_non_submitting_ticket_instance_checkpoint_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -1159,6 +1160,7 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
             "non_submitting_executable_ticket_values_quality_gate_summary",
             "non_submitting_executable_ticket_values_manual_review_summary",
             "non_submitting_ticket_creation_readiness_summary",
+            "non_submitting_ticket_instance_checkpoint_summary",
         ]
         if not inputs[name]
     ]
@@ -1180,6 +1182,10 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
     ticket_creation_readiness_decision = summary_value(ticket_creation_readiness_rows, "final_non_submitting_ticket_creation_readiness_decision") or "missing_non_submitting_ticket_creation_readiness"
     ticket_creation_discussion_ready = summary_value(ticket_creation_readiness_rows, "ticket_creation_discussion_ready") or "False"
     ticket_creation_approved = summary_value(ticket_creation_readiness_rows, "ticket_creation_approved") or "False"
+    ticket_instance_checkpoint_rows = inputs.get("non_submitting_ticket_instance_checkpoint_summary", [])
+    ticket_instance_checkpoint_decision = summary_value(ticket_instance_checkpoint_rows, "final_non_submitting_ticket_instance_checkpoint_decision") or "missing_non_submitting_ticket_instance_checkpoint"
+    ticket_instance_checkpoint_created = summary_value(ticket_instance_checkpoint_rows, "ticket_instance_checkpoint_created") or "False"
+    ticket_instance_created = summary_value(ticket_instance_checkpoint_rows, "ticket_instance_created") or "False"
     data = [
         ("final_execution_blocker_rollup_status", EXECUTION_BLOCKER_ROLLUP_STATUS, "Execution blockers are rolled up for manual review only."),
         ("active_seed", ACTIVE_SEED, "Current status/report seed."),
@@ -1207,6 +1213,9 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
         ("non_submitting_ticket_creation_readiness_decision", ticket_creation_readiness_decision, "Saved readiness decision for future ticket-instance discussion."),
         ("non_submitting_ticket_creation_discussion_ready", ticket_creation_discussion_ready, "True means discussion can continue; it is not approval."),
         ("non_submitting_ticket_creation_approved", ticket_creation_approved, "Must remain False."),
+        ("non_submitting_ticket_instance_checkpoint_decision", ticket_instance_checkpoint_decision, "Saved non-submitting ticket-instance checkpoint decision."),
+        ("non_submitting_ticket_instance_checkpoint_created", ticket_instance_checkpoint_created, "True only for a non-executable checkpoint artifact."),
+        ("non_submitting_ticket_instance_created", ticket_instance_created, "Must remain False because no executable ticket exists."),
         ("paper_live_candidate_discussion_approved", "True", "Discussion may continue from the saved approval record."),
         ("paper_live_candidate_approved", "False", "Rollup does not approve paper-live candidacy."),
         ("executable_ticket_prerequisites_met", "False", "Prerequisites remain incomplete."),
@@ -1469,6 +1478,9 @@ def summary_lines(title: str, summary_rows: list[dict[str, Any]], output_paths: 
         "non_submitting_ticket_creation_readiness_decision",
         "non_submitting_ticket_creation_discussion_ready",
         "non_submitting_ticket_creation_approved",
+        "non_submitting_ticket_instance_checkpoint_decision",
+        "non_submitting_ticket_instance_checkpoint_created",
+        "non_submitting_ticket_instance_created",
     ]:
         value = summary_value(summary_rows, key)
         if value:

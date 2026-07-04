@@ -68,6 +68,7 @@ INPUT_FILES = {
     "vol_non_submitting_executable_ticket_values_quality_gate": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate_summary.csv"),
     "vol_non_submitting_executable_ticket_values_manual_review": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_manual_review_summary.csv"),
     "vol_non_submitting_ticket_creation_readiness": Path("data/vol_targeted_growth_non_submitting_ticket_creation_readiness_summary.csv"),
+    "vol_non_submitting_ticket_instance_checkpoint": Path("data/vol_targeted_growth_non_submitting_ticket_instance_checkpoint_summary.csv"),
     "paper_live_checklist": Path("data/paper_live_checklist_status_summary.csv"),
 }
 
@@ -250,6 +251,9 @@ def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int,
         f"vol_non_submitting_ticket_creation_readiness_decision: {summary_value(rows, 'vol_non_submitting_ticket_creation_readiness_decision')}",
         f"vol_non_submitting_ticket_creation_discussion_ready: {summary_value(rows, 'vol_non_submitting_ticket_creation_discussion_ready')}",
         f"vol_non_submitting_ticket_creation_approved: {summary_value(rows, 'vol_non_submitting_ticket_creation_approved')}",
+        f"vol_non_submitting_ticket_instance_checkpoint_decision: {summary_value(rows, 'vol_non_submitting_ticket_instance_checkpoint_decision')}",
+        f"vol_non_submitting_ticket_instance_checkpoint_created: {summary_value(rows, 'vol_non_submitting_ticket_instance_checkpoint_created')}",
+        f"vol_non_submitting_ticket_instance_created: {summary_value(rows, 'vol_non_submitting_ticket_instance_created')}",
         f"paper_live_checklist_phase_status: {summary_value(rows, 'paper_live_checklist_phase_status')}",
         f"vps_monitoring_status_assumption: {summary_value(rows, 'vps_monitoring_status_assumption')}",
         f"final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
@@ -441,6 +445,9 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     ticket_creation_readiness_decision = summary_value(inputs["vol_non_submitting_ticket_creation_readiness"], "final_non_submitting_ticket_creation_readiness_decision") or "missing_vol_non_submitting_ticket_creation_readiness"
     ticket_creation_discussion_ready = summary_value(inputs["vol_non_submitting_ticket_creation_readiness"], "ticket_creation_discussion_ready") or "False"
     ticket_creation_approved = summary_value(inputs["vol_non_submitting_ticket_creation_readiness"], "ticket_creation_approved") or "False"
+    ticket_instance_checkpoint_decision = summary_value(inputs["vol_non_submitting_ticket_instance_checkpoint"], "final_non_submitting_ticket_instance_checkpoint_decision") or "missing_vol_non_submitting_ticket_instance_checkpoint"
+    ticket_instance_checkpoint_created = summary_value(inputs["vol_non_submitting_ticket_instance_checkpoint"], "ticket_instance_checkpoint_created") or "False"
+    ticket_instance_created = summary_value(inputs["vol_non_submitting_ticket_instance_checkpoint"], "ticket_instance_created") or "False"
     checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
     monitoring_next = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
     data = [
@@ -572,6 +579,9 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("vol_non_submitting_ticket_creation_readiness_decision", ticket_creation_readiness_decision, "Saved readiness decision for future ticket-instance discussion."),
         ("vol_non_submitting_ticket_creation_discussion_ready", ticket_creation_discussion_ready, "True means future ticket-instance discussion can be considered."),
         ("vol_non_submitting_ticket_creation_approved", ticket_creation_approved, "Must remain False; readiness is not approval."),
+        ("vol_non_submitting_ticket_instance_checkpoint_decision", ticket_instance_checkpoint_decision, "Saved non-submitting ticket-instance checkpoint decision."),
+        ("vol_non_submitting_ticket_instance_checkpoint_created", ticket_instance_checkpoint_created, "True only for a non-executable checkpoint artifact."),
+        ("vol_non_submitting_ticket_instance_created", ticket_instance_created, "Must remain False because no executable ticket exists."),
         ("paper_live_checklist_phase_status", checklist_status, "Saved paper-live checklist phase status."),
         ("paper_live_monitoring_recommended_next_step", monitoring_next, "Saved paper-live monitoring recommended next step."),
         ("vps_monitoring_status_assumption", "status_only_monitoring_no_cron_change", "Dashboard assumes existing VPS monitoring remains status-only."),
@@ -617,6 +627,7 @@ def build_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str
         ("executable_ticket_values_approval_is_not_value_population", "blocked", "critical", "Executable ticket-values approval may allow a later non-submitting value population step, but order_values_populated and executable_ticket_created remain false.", "populate_non_submitting_executable_ticket_values_for_manual_review_only"),
         ("non_submitting_executable_ticket_values_are_not_orders", "blocked", "critical", "Non-submitting values may be populated for manual review while broker-ready order values, tickets, and execution remain false.", "manual_review_non_submitting_executable_ticket_values_before_any_ticket_creation"),
         ("ticket_creation_readiness_is_not_ticket_creation", "blocked", "critical", "Ticket-creation readiness can support future discussion only; ticket_creation_approved, ticket_instance_created, and executable_ticket_created remain false.", "manual_review_ticket_creation_readiness_before_any_ticket_instance_checkpoint"),
+        ("ticket_instance_checkpoint_is_not_executable", "blocked", "critical", "The non-submitting ticket-instance checkpoint can exist while ticket_instance_created, executable_ticket_created, and orders_submitted remain false.", "manual_review_checkpoint_before_any_broker_ready_ticket_values"),
         ("repeat_followup_orders_not_approved", "blocked", "critical", "QQQ100 follow-up and repeat orders remain unapproved.", "hold_no_action_and_monitor_only"),
         ("scheduling_not_approved", "blocked", "critical", "No order-capable scheduling is approved.", "keep_monitoring_status_only"),
     ]
@@ -704,6 +715,9 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"vol_non_submitting_ticket_creation_readiness_decision={summary_value(summary_rows, 'vol_non_submitting_ticket_creation_readiness_decision')}",
         f"vol_non_submitting_ticket_creation_discussion_ready={summary_value(summary_rows, 'vol_non_submitting_ticket_creation_discussion_ready')}",
         f"vol_non_submitting_ticket_creation_approved={summary_value(summary_rows, 'vol_non_submitting_ticket_creation_approved')}",
+        f"vol_non_submitting_ticket_instance_checkpoint_decision={summary_value(summary_rows, 'vol_non_submitting_ticket_instance_checkpoint_decision')}",
+        f"vol_non_submitting_ticket_instance_checkpoint_created={summary_value(summary_rows, 'vol_non_submitting_ticket_instance_checkpoint_created')}",
+        f"vol_non_submitting_ticket_instance_created={summary_value(summary_rows, 'vol_non_submitting_ticket_instance_created')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

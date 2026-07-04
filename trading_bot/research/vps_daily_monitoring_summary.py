@@ -39,6 +39,7 @@ VOL_EXECUTABLE_TICKET_GAP_LIST_SUMMARY_PATH = "data/vol_targeted_growth_executab
 VOL_MANUAL_EXECUTION_DESIGN_APPROVAL_GATE_SUMMARY_PATH = "data/vol_targeted_growth_manual_execution_design_approval_gate_summary.csv"
 VOL_NON_SUBMITTING_TICKET_SCHEMA_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_non_submitting_ticket_schema_design_summary.csv"
 VOL_NON_SUBMITTING_TICKET_INSTANCE_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_non_submitting_ticket_instance_design_summary.csv"
+VOL_NON_SUBMITTING_TICKET_INSTANCE_CHECKPOINT_SUMMARY_PATH = "data/vol_targeted_growth_non_submitting_ticket_instance_checkpoint_summary.csv"
 VOL_FRESH_BROKER_PRE_TICKET_GATE_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_design_summary.csv"
 VOL_FRESH_BROKER_PRE_TICKET_GATE_RUN_READINESS_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_run_readiness_summary.csv"
 VOL_FRESH_BROKER_PRE_TICKET_GATE_RUN_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_run_summary.csv"
@@ -162,6 +163,7 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         ]
     )
     lines.extend(vol_non_submitting_ticket_instance_design_status_lines(root_path))
+    lines.extend(vol_non_submitting_ticket_instance_checkpoint_status_lines(root_path))
     lines.extend(
         [
             "",
@@ -369,6 +371,9 @@ def vol_executable_ticket_gap_list_status_lines(root: Path) -> list[str]:
         f"- non_submitting_ticket_creation_readiness_decision: {summary_value(rows, 'non_submitting_ticket_creation_readiness_decision')}",
         f"- non_submitting_ticket_creation_discussion_ready: {summary_value(rows, 'non_submitting_ticket_creation_discussion_ready')}",
         f"- non_submitting_ticket_creation_approved: {summary_value(rows, 'non_submitting_ticket_creation_approved')}",
+        f"- non_submitting_ticket_instance_checkpoint_decision: {summary_value(rows, 'non_submitting_ticket_instance_checkpoint_decision')}",
+        f"- non_submitting_ticket_instance_checkpoint_created: {summary_value(rows, 'non_submitting_ticket_instance_checkpoint_created')}",
+        f"- non_submitting_ticket_instance_created: {summary_value(rows, 'non_submitting_ticket_instance_created')}",
         f"- largest_gap: {summary_value(rows, 'largest_gap')}",
         f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         f"- order_fields_created: {summary_value(rows, 'order_fields_created') or 'False'}",
@@ -471,6 +476,37 @@ def vol_non_submitting_ticket_instance_design_status_lines(root: Path) -> list[s
         f"- paper_execution_approved: {summary_value(rows, 'paper_execution_approved') or 'False'}",
         f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
         "- vol_non_submitting_ticket_instance_design_warning: monitor only; ticket-instance design is not order approval, execution approval, or scheduling approval.",
+    ]
+
+
+def vol_non_submitting_ticket_instance_checkpoint_status_lines(root: Path) -> list[str]:
+    path = root / VOL_NON_SUBMITTING_TICKET_INSTANCE_CHECKPOINT_SUMMARY_PATH
+    rows = read_csv_rows(path)
+    if not rows:
+        return [
+            "",
+            "Volatility non-submitting ticket-instance checkpoint:",
+            "- vol_non_submitting_ticket_instance_checkpoint_present: False",
+            f"- vol_non_submitting_ticket_instance_checkpoint_missing_saved_output: {VOL_NON_SUBMITTING_TICKET_INSTANCE_CHECKPOINT_SUMMARY_PATH}",
+            "- vol_non_submitting_ticket_instance_checkpoint_status: missing_saved_output",
+            "- ticket_instance_checkpoint_created: False",
+            "- ticket_instance_created: False",
+            "- vol_non_submitting_ticket_instance_checkpoint_warning: monitor only; missing checkpoint does not approve order values, execution, or scheduling.",
+        ]
+    return [
+        "",
+        "Volatility non-submitting ticket-instance checkpoint:",
+        "- vol_non_submitting_ticket_instance_checkpoint_present: True",
+        f"- final_non_submitting_ticket_instance_checkpoint_status: {summary_value(rows, 'final_non_submitting_ticket_instance_checkpoint_status')}",
+        f"- final_non_submitting_ticket_instance_checkpoint_decision: {summary_value(rows, 'final_non_submitting_ticket_instance_checkpoint_decision')}",
+        f"- ticket_instance_checkpoint_created: {summary_value(rows, 'ticket_instance_checkpoint_created') or 'False'}",
+        f"- ticket_instance_created: {summary_value(rows, 'ticket_instance_created') or 'False'}",
+        f"- ticket_creation_approved: {summary_value(rows, 'ticket_creation_approved') or 'False'}",
+        f"- broker_ready_order_values_populated: {summary_value(rows, 'broker_ready_order_values_populated') or 'False'}",
+        f"- order_values_populated: {summary_value(rows, 'order_values_populated') or 'False'}",
+        f"- order_instructions_created: {summary_value(rows, 'order_instructions_created') or 'False'}",
+        f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
+        "- vol_non_submitting_ticket_instance_checkpoint_warning: monitor only; checkpoint is not a broker-ready ticket, order approval, execution approval, or scheduling approval.",
     ]
 
 
@@ -672,6 +708,9 @@ def paper_live_go_no_go_dashboard_status_lines(root: Path) -> list[str]:
         f"- vol_non_submitting_ticket_creation_readiness_decision: {summary_value(rows, 'vol_non_submitting_ticket_creation_readiness_decision')}",
         f"- vol_non_submitting_ticket_creation_discussion_ready: {summary_value(rows, 'vol_non_submitting_ticket_creation_discussion_ready')}",
         f"- vol_non_submitting_ticket_creation_approved: {summary_value(rows, 'vol_non_submitting_ticket_creation_approved')}",
+        f"- vol_non_submitting_ticket_instance_checkpoint_decision: {summary_value(rows, 'vol_non_submitting_ticket_instance_checkpoint_decision')}",
+        f"- vol_non_submitting_ticket_instance_checkpoint_created: {summary_value(rows, 'vol_non_submitting_ticket_instance_checkpoint_created')}",
+        f"- vol_non_submitting_ticket_instance_created: {summary_value(rows, 'vol_non_submitting_ticket_instance_created')}",
         f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         f"- order_instructions_created: {summary_value(rows, 'order_instructions_created') or 'False'}",
         f"- execution_approved: {summary_value(rows, 'execution_approved') or 'False'}",

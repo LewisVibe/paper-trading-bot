@@ -1774,6 +1774,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Monitoring integration:** The execution blocker rollup, executable ticket gap list, paper-live go/no-go dashboard, and VPS daily monitoring summary surface readiness separately from ticket creation approval.
 - **Stop condition:** Stop if the task would create a ticket instance, populate broker-ready values, submit/cancel/replace orders, approve execution, call Alpaca, read positions, or schedule anything.
 
+### Task: Volatility-targeted growth non-submitting ticket-instance checkpoint
+- **Purpose:** Use `python bot.py --vol-targeted-growth-non-submitting-ticket-instance-checkpoint` and `python bot.py --show-vol-targeted-growth-non-submitting-ticket-instance-checkpoint` to create a saved review checkpoint after ticket-creation readiness.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** The checkpoint commands above, `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, `python bot.py --vol-targeted-growth-executable-ticket-gap-list`, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_non_submitting_ticket_instance_checkpoint.py`.
+- **Expected status:** `NON_SUBMITTING_TICKET_INSTANCE_CHECKPOINT_CREATED_NO_ORDER_VALUES`. The checkpoint may set `ticket_instance_checkpoint_created=True`, while `ticket_instance_created=False`, `ticket_creation_approved=False`, `broker_ready_order_values_populated=False`, `order_values_populated=False`, `order_instructions_created=False`, `orders_submitted=False`, and all execution/scheduling approvals remain false.
+- **Monitoring integration:** The execution blocker rollup, executable ticket gap list, paper-live go/no-go dashboard, and VPS daily monitoring summary surface the checkpoint separately from executable ticket creation.
+- **Stop condition:** Stop if the task would populate side, quantity, order type, time-in-force, account/broker identifiers, create a broker-ready ticket, submit/cancel/replace orders, approve execution, call Alpaca, read positions, or schedule anything.
+
 ### Task: Hermes status cron checkpoint
 - **Purpose:** Document and verify the enabled status-only Hermes job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no additional Hermes job is created, edited, triggered, deleted, or scheduled and the existing job remains status-only.

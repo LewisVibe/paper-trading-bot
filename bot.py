@@ -2926,6 +2926,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-non-submitting-ticket-instance-checkpoint"]:
+        from trading_bot.research.vol_targeted_growth_non_submitting_ticket_instance_checkpoint import (
+            generate_vol_targeted_growth_non_submitting_ticket_instance_checkpoint,
+        )
+
+        result = generate_vol_targeted_growth_non_submitting_ticket_instance_checkpoint()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-non-submitting-ticket-instance-checkpoint"]:
+        from trading_bot.research.vol_targeted_growth_non_submitting_ticket_instance_checkpoint import (
+            show_vol_targeted_growth_non_submitting_ticket_instance_checkpoint,
+        )
+
+        code, lines = show_vol_targeted_growth_non_submitting_ticket_instance_checkpoint()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-fresh-broker-pre-ticket-gate-design"]:
         from trading_bot.research.vol_targeted_growth_fresh_broker_pre_ticket_gate_design import (
             generate_vol_targeted_growth_fresh_broker_pre_ticket_gate_design,
@@ -9363,6 +9381,16 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-non-submitting-ticket-instance-design",
         action="store_true",
         help="Display the saved volatility-targeted growth non-submitting ticket-instance design.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-non-submitting-ticket-instance-checkpoint",
+        action="store_true",
+        help="Create a saved-output-only non-submitting ticket-instance checkpoint for the active volatility seed.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-non-submitting-ticket-instance-checkpoint",
+        action="store_true",
+        help="Display the saved volatility-targeted growth non-submitting ticket-instance checkpoint.",
     )
     parser.add_argument(
         "--vol-targeted-growth-fresh-broker-pre-ticket-gate-design",

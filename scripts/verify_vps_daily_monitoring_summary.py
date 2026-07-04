@@ -44,6 +44,8 @@ REQUIRED_OUTPUT_PHRASES = [
     "Volatility non-submitting ticket-instance design:",
     "vol_non_submitting_ticket_instance_design_present:",
     "vol_non_submitting_ticket_instance_design_warning: monitor only;",
+    "vol_non_submitting_ticket_instance_checkpoint_present:",
+    "vol_non_submitting_ticket_instance_checkpoint_warning: monitor only;",
     "Volatility fresh broker pre-ticket gate design:",
     "vol_fresh_broker_pre_ticket_gate_design_present:",
     "vol_fresh_broker_pre_ticket_gate_design_warning: monitor only;",
@@ -171,6 +173,8 @@ REQUIRED_ACTION_STATES = [
     "vol_non_submitting_ticket_schema_design_status",
     "vol_non_submitting_ticket_instance_design_missing_saved_output",
     "vol_non_submitting_ticket_instance_design_status",
+    "vol_non_submitting_ticket_instance_checkpoint_missing_saved_output",
+    "vol_non_submitting_ticket_instance_checkpoint_status",
     "vol_fresh_broker_pre_ticket_gate_design_missing_saved_output",
     "vol_fresh_broker_pre_ticket_gate_design_status",
     "vol_fresh_broker_pre_ticket_gate_run_readiness_missing_saved_output",
@@ -430,6 +434,30 @@ def verify_command_output(failures: list[str]) -> None:
                 failures.append(f"Daily summary missing-saved non-submitting ticket-instance design section missing phrase: {phrase}")
     else:
         failures.append("Daily summary must report whether non-submitting ticket-instance design is present")
+    if "vol_non_submitting_ticket_instance_checkpoint_present: True" in output:
+        for phrase in [
+            "final_non_submitting_ticket_instance_checkpoint_status: vol_targeted_growth_non_submitting_ticket_instance_checkpoint_created_manual_review_required",
+            "final_non_submitting_ticket_instance_checkpoint_decision: NON_SUBMITTING_TICKET_INSTANCE_CHECKPOINT_CREATED_NO_ORDER_VALUES",
+            "ticket_instance_checkpoint_created: True",
+            "ticket_instance_created: False",
+            "ticket_creation_approved: False",
+            "broker_ready_order_values_populated: False",
+            "order_values_populated: False",
+            "order_instructions_created: False",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary non-submitting ticket-instance checkpoint section missing phrase: {phrase}")
+    elif "vol_non_submitting_ticket_instance_checkpoint_present: False" in output:
+        for phrase in [
+            "vol_non_submitting_ticket_instance_checkpoint_missing_saved_output: data/vol_targeted_growth_non_submitting_ticket_instance_checkpoint_summary.csv",
+            "vol_non_submitting_ticket_instance_checkpoint_status: missing_saved_output",
+            "ticket_instance_checkpoint_created: False",
+            "ticket_instance_created: False",
+        ]:
+            if phrase not in output:
+                failures.append(f"Daily summary missing-saved non-submitting ticket-instance checkpoint section missing phrase: {phrase}")
+    else:
+        failures.append("Daily summary must report whether non-submitting ticket-instance checkpoint is present")
     if "vol_fresh_broker_pre_ticket_gate_design_present: True" in output:
         for phrase in [
             "final_pre_ticket_gate_design_status: vol_targeted_growth_fresh_broker_pre_ticket_gate_design_created_manual_review_required",
