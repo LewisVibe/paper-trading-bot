@@ -126,6 +126,8 @@ INPUT_FILES = {
     "approval_criteria_closeout_record_summary": Path("data/vol_targeted_growth_executable_ticket_approval_criteria_closeout_record_summary.csv"),
     "final_ticket_blockers_closeout_record_summary": Path("data/vol_targeted_growth_final_ticket_blockers_closeout_record_summary.csv"),
     "executable_ticket_values_approval_record_summary": Path("data/vol_targeted_growth_executable_ticket_values_approval_record_summary.csv"),
+    "non_submitting_executable_ticket_values_summary": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_summary.csv"),
+    "non_submitting_executable_ticket_values_quality_gate_summary": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -1151,6 +1153,8 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
             "criteria_resolution_plan_closeout_record_summary",
             "approval_criteria_closeout_record_summary",
             "executable_ticket_values_approval_record_summary",
+            "non_submitting_executable_ticket_values_summary",
+            "non_submitting_executable_ticket_values_quality_gate_summary",
         ]
         if not inputs[name]
     ]
@@ -1160,6 +1164,12 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
     executable_ticket_values_approval_record_decision = summary_value(values_approval_rows, "final_executable_ticket_values_approval_record_decision") or "missing_executable_ticket_values_approval_record"
     executable_ticket_values_approved = summary_value(values_approval_rows, "executable_ticket_values_approved") or "False"
     executable_ticket_values_order_values_populated = summary_value(values_approval_rows, "order_values_populated") or "False"
+    non_submitting_values_rows = inputs.get("non_submitting_executable_ticket_values_summary", [])
+    non_submitting_values_quality_rows = inputs.get("non_submitting_executable_ticket_values_quality_gate_summary", [])
+    non_submitting_values_decision = summary_value(non_submitting_values_rows, "final_non_submitting_executable_ticket_values_decision") or "missing_non_submitting_executable_ticket_values"
+    non_submitting_values_quality_decision = summary_value(non_submitting_values_quality_rows, "final_non_submitting_executable_ticket_values_quality_decision") or "missing_non_submitting_executable_ticket_values_quality_gate"
+    non_submitting_values_populated = summary_value(non_submitting_values_rows, "non_submitting_ticket_values_populated") or "False"
+    non_submitting_values_order_values_populated = summary_value(non_submitting_values_rows, "order_values_populated") or "False"
     data = [
         ("final_execution_blocker_rollup_status", EXECUTION_BLOCKER_ROLLUP_STATUS, "Execution blockers are rolled up for manual review only."),
         ("active_seed", ACTIVE_SEED, "Current status/report seed."),
@@ -1179,6 +1189,10 @@ def execution_blocker_rollup_summary_rows(inputs: dict[str, list[dict[str, str]]
         ("executable_ticket_values_approval_record_decision", executable_ticket_values_approval_record_decision, "Saved explicit approval record for later non-submitting ticket values."),
         ("executable_ticket_values_approved", executable_ticket_values_approved, "True only as approval for a later non-submitting value population step."),
         ("executable_ticket_values_order_values_populated", executable_ticket_values_order_values_populated, "Must remain False until the later population step."),
+        ("non_submitting_executable_ticket_values_decision", non_submitting_values_decision, "Saved non-submitting executable ticket values decision."),
+        ("non_submitting_executable_ticket_values_quality_gate_decision", non_submitting_values_quality_decision, "Saved non-submitting values quality gate decision."),
+        ("non_submitting_executable_ticket_values_populated", non_submitting_values_populated, "True when reviewable non-submitting values exist."),
+        ("non_submitting_executable_ticket_values_order_values_populated", non_submitting_values_order_values_populated, "Must remain False because no broker-ready order values exist."),
         ("paper_live_candidate_discussion_approved", "True", "Discussion may continue from the saved approval record."),
         ("paper_live_candidate_approved", "False", "Rollup does not approve paper-live candidacy."),
         ("executable_ticket_prerequisites_met", "False", "Prerequisites remain incomplete."),
@@ -1433,6 +1447,10 @@ def summary_lines(title: str, summary_rows: list[dict[str, Any]], output_paths: 
         "executable_ticket_values_approval_record_decision",
         "executable_ticket_values_approved",
         "executable_ticket_values_order_values_populated",
+        "non_submitting_executable_ticket_values_decision",
+        "non_submitting_executable_ticket_values_quality_gate_decision",
+        "non_submitting_executable_ticket_values_populated",
+        "non_submitting_executable_ticket_values_order_values_populated",
     ]:
         value = summary_value(summary_rows, key)
         if value:

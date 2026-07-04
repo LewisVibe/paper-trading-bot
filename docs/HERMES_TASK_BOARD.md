@@ -1758,6 +1758,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Monitoring integration:** The execution blocker rollup, executable ticket gap list, paper-live go/no-go dashboard, and VPS daily monitoring summary surface the approval record separately from value population.
 - **Stop condition:** Stop if the task would populate side, quantity, order type, time-in-force, price, account, broker fields, submit/cancel/replace orders, approve execution, call Alpaca, read positions, or schedule anything.
 
+### Task: Volatility-targeted growth non-submitting executable ticket values
+- **Purpose:** Use `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-values` and `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-values-quality-gate` to populate and verify reviewable seed/sleeve context after the explicit approval record.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** The values and quality-gate commands above, their matching `--show-...` commands, `python bot.py --vol-targeted-growth-paper-live-execution-blocker-rollup`, `python bot.py --vol-targeted-growth-executable-ticket-gap-list`, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_non_submitting_executable_ticket_values.py`.
+- **Expected status:** `NON_SUBMITTING_EXECUTABLE_TICKET_VALUES_POPULATED_REVIEW_ONLY` and `NON_SUBMITTING_EXECUTABLE_TICKET_VALUES_QUALITY_GATE_PASSED_NO_ORDER`. The pack may set `non_submitting_ticket_values_populated=True`, while `broker_ready_order_values_populated=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_submitted=False`, and all execution/scheduling approvals remain false.
+- **Monitoring integration:** The execution blocker rollup, executable ticket gap list, paper-live go/no-go dashboard, and VPS daily monitoring summary surface the non-submitting values separately from broker-ready order values.
+- **Stop condition:** Stop if the task would populate broker-ready side, numeric quantity, executable order type, time-in-force, price, account, broker fields, submit/cancel/replace orders, approve execution, call Alpaca, read positions, or schedule anything.
+
 ### Task: Hermes status cron checkpoint
 - **Purpose:** Document and verify the enabled status-only Hermes job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no additional Hermes job is created, edited, triggered, deleted, or scheduled and the existing job remains status-only.

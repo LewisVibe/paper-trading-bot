@@ -285,6 +285,16 @@ Remaining steps, in order:
    - It must keep `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, `execution_approved=False`, and `scheduling_approved=False`.
    - The execution blocker rollup, executable ticket gap list, paper-live go/no-go dashboard, and VPS daily monitoring summary must show that approval separately from value population.
 
+7l. **Populate non-submitting executable ticket values for manual review only.**
+   - Implemented values checkpoint:
+     `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-values`.
+   - Implemented quality gate:
+     `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-values-quality-gate`.
+   - Matching saved displays use the same commands with `--show-...`.
+   - This can set `non_submitting_ticket_values_populated=True` for reviewable seed/sleeve context only.
+   - It must keep `broker_ready_order_values_populated=False`, `order_values_populated=False`, `order_instructions_created=False`, `ticket_instance_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, `execution_approved=False`, and `scheduling_approved=False`.
+   - The next step is manual review before any separate ticket-creation checkpoint; populated review values are not orders.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
