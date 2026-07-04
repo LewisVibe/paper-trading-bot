@@ -312,6 +312,15 @@ Remaining steps, in order:
    - This can set `ticket_instance_checkpoint_created=True` for a saved review artifact only.
    - It must keep `ticket_instance_created=False`, `ticket_creation_approved=False`, `broker_ready_order_values_populated=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_created=False`, `orders_submitted=False`, `paper_execution_approved=False`, `execution_approved=False`, and `scheduling_approved=False`.
 
+7o. **Map sleeves to real review symbols and create the non-executable action proposal.**
+   - Implemented mapping:
+     `python bot.py --vol-targeted-growth-sleeve-symbol-mapping`.
+   - Implemented proposal:
+     `python bot.py --vol-targeted-growth-broker-ready-action-proposal`.
+   - Saved displays use the matching `--show-...` commands.
+   - Current review symbols are `QQQ`, `MGK`, `IBIT`, and `SGOV`.
+   - This makes the paper-live path more concrete, but it must keep side, quantity, order type, time-in-force, account reference, broker order id, order instructions, order submission, execution approval, and scheduling approval absent/false.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
