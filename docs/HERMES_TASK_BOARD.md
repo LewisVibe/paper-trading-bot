@@ -1742,6 +1742,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface the draft-values decision and quality-gate decision when present.
 - **Stop condition:** Stop if the task would populate actual broker-ready side, numeric quantity, executable order type, time-in-force, price, account, broker fields, submit/cancel/replace orders, approve execution, or schedule anything.
 
+### Task: Volatility-targeted growth draft ticket-values manual review and executable-values readiness
+- **Purpose:** Use `python bot.py --vol-targeted-growth-draft-ticket-values-manual-review` and `python bot.py --vol-targeted-growth-executable-ticket-values-readiness` to review saved draft labels and decide whether a later explicit executable-values approval request can be considered.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** The manual-review and readiness commands above, their matching `--show-...` commands, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_draft_ticket_values_manual_review.py`.
+- **Expected status:** `DRAFT_TICKET_VALUES_REVIEWED_MANUAL_REVIEW_REQUIRED_NOT_EXECUTABLE` and `READY_TO_REQUEST_EXECUTABLE_TICKET_VALUES_APPROVAL_NOT_APPROVED`. Readiness may set `executable_ticket_values_approval_request_ready=True`, while `executable_ticket_values_approval_requested=False`, `executable_ticket_values_approved=False`, `order_values_populated=False`, `orders_submitted=False`, and all execution/scheduling approvals remain false.
+- **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface the manual-review decision, readiness decision, and request-ready flag when present.
+- **Stop condition:** Stop if the task would request or record executable-values approval, populate broker-ready side, numeric quantity, executable order type, time-in-force, price, account, broker fields, submit/cancel/replace orders, approve execution, or schedule anything.
+
 ### Task: Hermes status cron checkpoint
 - **Purpose:** Document and verify the enabled status-only Hermes job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no additional Hermes job is created, edited, triggered, deleted, or scheduled and the existing job remains status-only.
