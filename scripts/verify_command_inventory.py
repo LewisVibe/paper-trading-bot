@@ -413,6 +413,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-sleeve-symbol-mapping",
     "--vol-targeted-growth-broker-ready-action-proposal",
     "--show-vol-targeted-growth-broker-ready-action-proposal",
+    "--vol-targeted-growth-calculated-order-values",
+    "--show-vol-targeted-growth-calculated-order-values",
     "--vol-targeted-growth-fresh-broker-pre-ticket-gate-design",
     "--show-vol-targeted-growth-fresh-broker-pre-ticket-gate-design",
     "--vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness",

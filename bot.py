@@ -2980,6 +2980,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-calculated-order-values"]:
+        from trading_bot.research.vol_targeted_growth_calculated_order_values import (
+            generate_vol_targeted_growth_calculated_order_values,
+        )
+
+        result = generate_vol_targeted_growth_calculated_order_values()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-calculated-order-values"]:
+        from trading_bot.research.vol_targeted_growth_calculated_order_values import (
+            show_vol_targeted_growth_calculated_order_values,
+        )
+
+        code, lines = show_vol_targeted_growth_calculated_order_values()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-fresh-broker-pre-ticket-gate-design"]:
         from trading_bot.research.vol_targeted_growth_fresh_broker_pre_ticket_gate_design import (
             generate_vol_targeted_growth_fresh_broker_pre_ticket_gate_design,
@@ -9447,6 +9465,16 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-broker-ready-action-proposal",
         action="store_true",
         help="Display the saved volatility-targeted growth real-symbol action proposal.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-calculated-order-values",
+        action="store_true",
+        help="Create saved-output-only calculated target-dollar values without executable quantities.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-calculated-order-values",
+        action="store_true",
+        help="Display saved volatility-targeted calculated target-dollar values.",
     )
     parser.add_argument(
         "--vol-targeted-growth-fresh-broker-pre-ticket-gate-design",

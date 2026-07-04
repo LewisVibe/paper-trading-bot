@@ -321,6 +321,14 @@ Remaining steps, in order:
    - Current review symbols are `QQQ`, `MGK`, `IBIT`, and `SGOV`.
    - This makes the paper-live path more concrete, but it must keep side, quantity, order type, time-in-force, account reference, broker order id, order instructions, order submission, execution approval, and scheduling approval absent/false.
 
+7p. **Calculate target-dollar review values without quantities.**
+   - Implemented checkpoint:
+     `python bot.py --vol-targeted-growth-calculated-order-values`.
+   - Saved display:
+     `python bot.py --show-vol-targeted-growth-calculated-order-values`.
+   - Current review notional is `$1000`: `QQQ=$700`, `MGK=$200`, `IBIT=$50`, and `SGOV=$50`.
+   - This must keep side, share quantity, order type, time-in-force, account reference, broker order id, order instructions, order submission, execution approval, and scheduling approval absent/false until saved prices and separate explicit approval exist.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
