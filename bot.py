@@ -3070,6 +3070,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    saved_price_snapshot_runner_approval_routes = {
+        "--vol-targeted-growth-saved-price-snapshot-runner-approval-wording": "generate_vol_targeted_growth_saved_price_snapshot_runner_approval_wording",
+        "--show-vol-targeted-growth-saved-price-snapshot-runner-approval-wording": "show_vol_targeted_growth_saved_price_snapshot_runner_approval_wording",
+        "--vol-targeted-growth-saved-price-snapshot-runner-approval-record": "generate_vol_targeted_growth_saved_price_snapshot_runner_approval_record",
+        "--show-vol-targeted-growth-saved-price-snapshot-runner-approval-record": "show_vol_targeted_growth_saved_price_snapshot_runner_approval_record",
+    }
+    if sys.argv[1:] and sys.argv[1] in saved_price_snapshot_runner_approval_routes and len(sys.argv[1:]) == 1:
+        from trading_bot.research import vol_targeted_growth_saved_price_snapshot_runner_approval as snapshot_runner_approval
+
+        result = getattr(snapshot_runner_approval, saved_price_snapshot_runner_approval_routes[sys.argv[1]])()
+        if isinstance(result, tuple):
+            code, lines = result
+            for line in lines:
+                print(line)
+            raise SystemExit(code)
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
     if sys.argv[1:] == ["--vol-targeted-growth-fresh-broker-pre-ticket-gate-design"]:
         from trading_bot.research.vol_targeted_growth_fresh_broker_pre_ticket_gate_design import (
             generate_vol_targeted_growth_fresh_broker_pre_ticket_gate_design,
@@ -9597,6 +9615,26 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-saved-price-snapshot-runner-readiness",
         action="store_true",
         help="Display saved volatility-targeted saved-price snapshot runner implementation readiness.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-saved-price-snapshot-runner-approval-wording",
+        action="store_true",
+        help="Create saved-output-only wording for future saved-price snapshot runner implementation approval.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-saved-price-snapshot-runner-approval-wording",
+        action="store_true",
+        help="Display saved volatility-targeted saved-price snapshot runner implementation approval wording.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-saved-price-snapshot-runner-approval-record",
+        action="store_true",
+        help="Record saved-output-only approval for future saved-price snapshot runner implementation.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-saved-price-snapshot-runner-approval-record",
+        action="store_true",
+        help="Display saved volatility-targeted saved-price snapshot runner implementation approval record.",
     )
     parser.add_argument(
         "--vol-targeted-growth-fresh-broker-pre-ticket-gate-design",

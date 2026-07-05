@@ -361,6 +361,14 @@ Remaining steps, in order:
    - This can set `runner_implementation_discussion_ready=True` when saved prerequisites are present.
    - This must keep `runner_implementation_approved=False`, `saved_price_snapshot_run_approved=False`, `saved_prices_fetched=False`, `prices_refreshed=False`, `order_quantities_calculated=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
+7u. **Record approval to implement the saved-price snapshot runner only.**
+   - Implemented wording checkpoint:
+     `python bot.py --vol-targeted-growth-saved-price-snapshot-runner-approval-wording`.
+   - Implemented record checkpoint:
+     `python bot.py --vol-targeted-growth-saved-price-snapshot-runner-approval-record`.
+   - Saved displays use the matching `--show-...` commands.
+   - The record can set `runner_implementation_approved=True` and `saved_price_snapshot_runner_approved=True`, but it must keep `saved_price_snapshot_run_approved=False`, `saved_prices_fetched=False`, `prices_refreshed=False`, `order_quantities_calculated=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
