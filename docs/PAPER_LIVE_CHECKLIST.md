@@ -329,6 +329,14 @@ Remaining steps, in order:
    - Current review notional is `$1000`: `QQQ=$700`, `MGK=$200`, `IBIT=$50`, and `SGOV=$50`.
    - This must keep side, share quantity, order type, time-in-force, account reference, broker order id, order instructions, order submission, execution approval, and scheduling approval absent/false until saved prices and separate explicit approval exist.
 
+7q. **Define saved-price evidence before quantity calculation.**
+   - Implemented readiness checkpoint:
+     `python bot.py --vol-targeted-growth-saved-price-snapshot-readiness`.
+   - Saved display:
+     `python bot.py --show-vol-targeted-growth-saved-price-snapshot-readiness`.
+   - This identifies that `QQQ`, `MGK`, `IBIT`, and `SGOV` each need saved price, timestamp, and source evidence before share quantities can be calculated.
+   - This must not fetch prices, call Alpaca, refresh yfinance data, create side/quantity/order fields, create order instructions, approve execution, or approve scheduling.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
