@@ -3088,6 +3088,30 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    if sys.argv[1:] and sys.argv[1] == "--vol-targeted-growth-saved-price-snapshot":
+        allowed = {"--vol-targeted-growth-saved-price-snapshot", "--confirm-saved-price-snapshot-run"}
+        if any(item not in allowed for item in sys.argv[1:]) or len(sys.argv[1:]) > 2:
+            print("--vol-targeted-growth-saved-price-snapshot only accepts --confirm-saved-price-snapshot-run.")
+            raise SystemExit(2)
+        from trading_bot.research.vol_targeted_growth_saved_price_snapshot_runner import (
+            generate_vol_targeted_growth_saved_price_snapshot,
+        )
+
+        result = generate_vol_targeted_growth_saved_price_snapshot(
+            confirm_saved_price_snapshot_run="--confirm-saved-price-snapshot-run" in sys.argv[1:]
+        )
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-saved-price-snapshot"]:
+        from trading_bot.research.vol_targeted_growth_saved_price_snapshot_runner import (
+            show_vol_targeted_growth_saved_price_snapshot,
+        )
+
+        code, lines = show_vol_targeted_growth_saved_price_snapshot()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-fresh-broker-pre-ticket-gate-design"]:
         from trading_bot.research.vol_targeted_growth_fresh_broker_pre_ticket_gate_design import (
             generate_vol_targeted_growth_fresh_broker_pre_ticket_gate_design,
@@ -9635,6 +9659,21 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-saved-price-snapshot-runner-approval-record",
         action="store_true",
         help="Display saved volatility-targeted saved-price snapshot runner implementation approval record.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-saved-price-snapshot",
+        action="store_true",
+        help="Create a guarded saved-price snapshot; fetches prices only with --confirm-saved-price-snapshot-run.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-saved-price-snapshot",
+        action="store_true",
+        help="Display the saved volatility-targeted price snapshot report.",
+    )
+    parser.add_argument(
+        "--confirm-saved-price-snapshot-run",
+        action="store_true",
+        help="Required confirmation for --vol-targeted-growth-saved-price-snapshot to fetch prices.",
     )
     parser.add_argument(
         "--vol-targeted-growth-fresh-broker-pre-ticket-gate-design",

@@ -369,6 +369,16 @@ Remaining steps, in order:
    - Saved displays use the matching `--show-...` commands.
    - The record can set `runner_implementation_approved=True` and `saved_price_snapshot_runner_approved=True`, but it must keep `saved_price_snapshot_run_approved=False`, `saved_prices_fetched=False`, `prices_refreshed=False`, `order_quantities_calculated=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
+7v. **Implement the guarded saved-price snapshot runner.**
+   - Implemented guarded command:
+     `python bot.py --vol-targeted-growth-saved-price-snapshot`.
+   - Saved display:
+     `python bot.py --show-vol-targeted-growth-saved-price-snapshot`.
+   - Default mode writes a blocked report and does not fetch prices.
+   - A future price snapshot run requires:
+     `python bot.py --vol-targeted-growth-saved-price-snapshot --confirm-saved-price-snapshot-run`.
+   - Even a confirmed snapshot run must stay price-only and keep `order_quantities_calculated=False`, `order_values_populated=False`, `order_instructions_created=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
