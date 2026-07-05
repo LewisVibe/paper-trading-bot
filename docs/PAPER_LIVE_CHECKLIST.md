@@ -345,6 +345,14 @@ Remaining steps, in order:
    - Saved displays use the matching `--show-...` commands.
    - The record can set `saved_price_snapshot_method_discussion_approved=True`, but it must keep `saved_price_snapshot_approved=False`, `saved_prices_fetched=False`, `prices_refreshed=False`, `order_quantities_calculated=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
+7s. **Design the saved-price snapshot runner without running it.**
+   - Implemented checkpoint:
+     `python bot.py --vol-targeted-growth-saved-price-snapshot-runner-design`.
+   - Saved display:
+     `python bot.py --show-vol-targeted-growth-saved-price-snapshot-runner-design`.
+   - This defines allowed future fields such as `broker_symbol`, `last_saved_price`, `price_timestamp_utc`, `price_source`, `price_status`, and `price_error`, plus stale-price and provider-failure stop conditions.
+   - This must keep `saved_price_snapshot_runner_approved=False`, `saved_price_snapshot_run_approved=False`, `saved_prices_fetched=False`, `prices_refreshed=False`, `order_quantities_calculated=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.

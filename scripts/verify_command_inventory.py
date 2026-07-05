@@ -421,6 +421,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-saved-price-snapshot-approval-wording",
     "--vol-targeted-growth-saved-price-snapshot-approval-record",
     "--show-vol-targeted-growth-saved-price-snapshot-approval-record",
+    "--vol-targeted-growth-saved-price-snapshot-runner-design",
+    "--show-vol-targeted-growth-saved-price-snapshot-runner-design",
     "--vol-targeted-growth-fresh-broker-pre-ticket-gate-design",
     "--show-vol-targeted-growth-fresh-broker-pre-ticket-gate-design",
     "--vol-targeted-growth-fresh-broker-pre-ticket-gate-run-readiness",
