@@ -388,6 +388,15 @@ Remaining steps, in order:
    - The record can set `saved_price_snapshot_run_approved=True`, but it must keep `saved_prices_fetched=False`, `prices_refreshed=False`, `price_provider_called=False`, `order_quantities_calculated=False`, `order_values_populated=False`, `order_instructions_created=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
    - The actual price snapshot still requires a separate explicit command with `--confirm-saved-price-snapshot-run`.
 
+7x. **Quality-check the saved-price snapshot before quantities.**
+   - Implemented saved-output gate:
+     `python bot.py --vol-targeted-growth-saved-price-snapshot-quality-gate`.
+   - Saved display:
+     `python bot.py --show-vol-targeted-growth-saved-price-snapshot-quality-gate`.
+   - The gate checks required symbols, missing/error rows, stale timestamps, and positive saved prices.
+   - It does not fetch prices, call Alpaca, read positions, calculate quantities, create order instructions, approve execution, or approve scheduling.
+   - A passing gate only supports manual review of saved price evidence before any later quantity-calculation checkpoint.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.

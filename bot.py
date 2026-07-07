@@ -3130,6 +3130,24 @@ def _early_report_only_route() -> None:
         for line in result.summary_lines:
             print(line)
         raise SystemExit(0)
+    if sys.argv[1:] == ["--vol-targeted-growth-saved-price-snapshot-quality-gate"]:
+        from trading_bot.research.vol_targeted_growth_saved_price_snapshot_quality_gate import (
+            generate_vol_targeted_growth_saved_price_snapshot_quality_gate,
+        )
+
+        result = generate_vol_targeted_growth_saved_price_snapshot_quality_gate()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-saved-price-snapshot-quality-gate"]:
+        from trading_bot.research.vol_targeted_growth_saved_price_snapshot_quality_gate import (
+            show_vol_targeted_growth_saved_price_snapshot_quality_gate,
+        )
+
+        code, lines = show_vol_targeted_growth_saved_price_snapshot_quality_gate()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-fresh-broker-pre-ticket-gate-design"]:
         from trading_bot.research.vol_targeted_growth_fresh_broker_pre_ticket_gate_design import (
             generate_vol_targeted_growth_fresh_broker_pre_ticket_gate_design,
@@ -9712,6 +9730,16 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-saved-price-snapshot-run-approval-record",
         action="store_true",
         help="Display saved volatility-targeted saved-price snapshot run approval record.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-saved-price-snapshot-quality-gate",
+        action="store_true",
+        help="Create a saved-output-only quality gate for the saved-price snapshot.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-saved-price-snapshot-quality-gate",
+        action="store_true",
+        help="Display the saved volatility-targeted saved-price snapshot quality gate.",
     )
     parser.add_argument(
         "--vol-targeted-growth-fresh-broker-pre-ticket-gate-design",
