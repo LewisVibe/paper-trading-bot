@@ -1782,6 +1782,14 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Monitoring integration:** The execution blocker rollup, executable ticket gap list, paper-live go/no-go dashboard, and VPS daily monitoring summary surface the checkpoint and review quantity context separately from executable ticket creation.
 - **Stop condition:** Stop if the task would populate side, quantity, order type, time-in-force, account/broker identifiers, create a broker-ready ticket, submit/cancel/replace orders, approve execution, call Alpaca, read positions, or schedule anything.
 
+### Task: Volatility-targeted growth non-submitting ticket-instance quality gate
+- **Purpose:** Use `python bot.py --vol-targeted-growth-non-submitting-ticket-instance-quality-gate` and `python bot.py --show-vol-targeted-growth-non-submitting-ticket-instance-quality-gate` to verify that the enriched checkpoint has complete review inputs, blank protected order fields, and no broker-ready order values.
+- **Risk level:** Low/report-only when limited to saved outputs and no broker or market-data reads.
+- **Allowed commands:** The quality-gate commands above, `python bot.py --paper-live-go-no-go-dashboard`, `python bot.py --vps-daily-monitoring-summary`, and `python scripts\verify_vol_targeted_growth_non_submitting_ticket_instance_checkpoint.py`.
+- **Expected status:** `NON_SUBMITTING_TICKET_INSTANCE_QUALITY_GATE_PASSED_NO_ORDER_VALUES` when saved review inputs are complete and protected order fields remain blank. Passing still keeps `ticket_instance_created=False`, `executable_ticket_created=False`, `broker_ready_order_values_populated=False`, `order_values_populated=False`, `order_instructions_created=False`, `orders_submitted=False`, and all execution/scheduling approvals false.
+- **Monitoring integration:** The paper-live go/no-go dashboard and VPS daily monitoring summary surface the pre-ticket quality gate separately from any future broker-ready ticket design.
+- **Stop condition:** Stop if the task would populate side, quantity, order type, time-in-force, account/broker identifiers, create a broker-ready ticket, submit/cancel/replace orders, approve execution, call Alpaca, read positions, or schedule anything.
+
 ### Task: Hermes status cron checkpoint
 - **Purpose:** Document and verify the enabled status-only Hermes job `paused-vps-safe-paper-bot-status-check` / `66c8a5bb438e`.
 - **Risk level:** Low/docs-verifier-only when no additional Hermes job is created, edited, triggered, deleted, or scheduled and the existing job remains status-only.

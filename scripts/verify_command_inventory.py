@@ -409,6 +409,8 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-non-submitting-ticket-instance-design",
     "--vol-targeted-growth-non-submitting-ticket-instance-checkpoint",
     "--show-vol-targeted-growth-non-submitting-ticket-instance-checkpoint",
+    "--vol-targeted-growth-non-submitting-ticket-instance-quality-gate",
+    "--show-vol-targeted-growth-non-submitting-ticket-instance-quality-gate",
     "--vol-targeted-growth-sleeve-symbol-mapping",
     "--show-vol-targeted-growth-sleeve-symbol-mapping",
     "--vol-targeted-growth-broker-ready-action-proposal",

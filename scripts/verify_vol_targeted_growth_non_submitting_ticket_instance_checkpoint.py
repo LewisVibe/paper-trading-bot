@@ -15,14 +15,22 @@ from trading_bot.research.vol_targeted_growth_non_submitting_ticket_instance_che
     FINAL_DECISION,
     FINAL_STATUS,
     OUTPUT_FILES,
+    QUALITY_BLOCKED_DECISION,
+    QUALITY_OUTPUT_FILES,
+    QUALITY_PASS_DECISION,
+    QUALITY_PASS_STATUS,
     generate_vol_targeted_growth_non_submitting_ticket_instance_checkpoint,
+    generate_vol_targeted_growth_non_submitting_ticket_instance_quality_gate,
     show_vol_targeted_growth_non_submitting_ticket_instance_checkpoint,
+    show_vol_targeted_growth_non_submitting_ticket_instance_quality_gate,
 )
 
 
 COMMANDS = [
     "--vol-targeted-growth-non-submitting-ticket-instance-checkpoint",
     "--show-vol-targeted-growth-non-submitting-ticket-instance-checkpoint",
+    "--vol-targeted-growth-non-submitting-ticket-instance-quality-gate",
+    "--show-vol-targeted-growth-non-submitting-ticket-instance-quality-gate",
 ]
 
 FALSE_FLAGS = [
@@ -107,7 +115,7 @@ def verify_commands_registered(failures: list[str]) -> None:
 
 
 def verify_outputs_ignored(failures: list[str]) -> None:
-    for path in OUTPUT_FILES.values():
+    for path in [*OUTPUT_FILES.values(), *QUALITY_OUTPUT_FILES.values()]:
         result = subprocess.run(["git", "check-ignore", str(path)], cwd=ROOT, text=True, capture_output=True, check=False)
         if result.returncode != 0:
             failures.append(f"expected output is not ignored by git: {path}")
@@ -127,6 +135,9 @@ def verify_source_safety(failures: list[str]) -> None:
         "orders_submitted",
         "execution_approved",
         "scheduling_approved",
+        "NON_SUBMITTING_TICKET_INSTANCE_QUALITY_GATE_PASSED_NO_ORDER_VALUES",
+        "pre_ticket_quality_gate_passed",
+        "protected_order_fields_blank",
     ]:
         if phrase not in source:
             failures.append(f"checkpoint source missing safety phrase: {phrase}")
@@ -163,6 +174,8 @@ def verify_fixture_output(failures: list[str]) -> None:
         verify_summary_rows(result.summary_rows, failures)
         verify_ticket_rows(result.ticket_rows, failures)
         verify_quantity_context(result.ticket_rows, failures)
+        verify_quality_gate_output(root, failures)
+        verify_quality_gate_blocks_missing_inputs(failures)
         for path in result.output_paths.values():
             if not path.exists():
                 failures.append(f"expected output missing: {path}")
@@ -217,6 +230,54 @@ def verify_quantity_context(rows: list[dict[str, object]], failures: list[str]) 
             failures.append(f"review share estimate context missing symbol: {symbol}")
     if fields.get("review_share_quantity_estimates", {}).get("field_status") != "review_context":
         failures.append("review share estimates must stay review_context, not an order field")
+
+
+def verify_quality_gate_output(root: Path, failures: list[str]) -> None:
+    result = generate_vol_targeted_growth_non_submitting_ticket_instance_quality_gate(root)
+    code, lines = show_vol_targeted_growth_non_submitting_ticket_instance_quality_gate(root)
+    if code != 0:
+        failures.append("quality gate show command failed after fixture generation")
+    output = "\n".join(result.summary_lines + lines)
+    for phrase in [
+        QUALITY_PASS_STATUS,
+        QUALITY_PASS_DECISION,
+        "pre_ticket_quality_gate_passed=True",
+        "review_inputs_complete=True",
+        "protected_order_fields_blank=True",
+        "broker_ready_order_values_populated=False",
+        "order_values_populated=False",
+        "order_instructions_created=False",
+        "orders_submitted=false",
+        "execution_approved=false",
+        "paper_execution_approved=false",
+        "scheduling_approved=false",
+    ]:
+        if phrase not in output:
+            failures.append(f"quality gate fixture output missing phrase: {phrase}")
+    if summary_value(result.summary_rows, "largest_blocker") != "broker_ready_ticket_values_still_not_approved":
+        failures.append("quality gate should keep broker-ready ticket values blocked even when quality passes")
+    for flag in FALSE_FLAGS:
+        if summary_or_flag_value(result.summary_rows, flag) != "False":
+            failures.append(f"quality gate summary flag must be False: {flag}")
+    for path in result.output_paths.values():
+        if not path.exists():
+            failures.append(f"expected quality gate output missing: {path}")
+
+
+def verify_quality_gate_blocks_missing_inputs(failures: list[str]) -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        seed_inputs(root)
+        generate_vol_targeted_growth_non_submitting_ticket_instance_checkpoint(root)
+        (root / "data" / "vol_targeted_growth_review_quantity_quality_gate_summary.csv").unlink()
+        generate_vol_targeted_growth_non_submitting_ticket_instance_checkpoint(root)
+        result = generate_vol_targeted_growth_non_submitting_ticket_instance_quality_gate(root)
+        if summary_value(result.summary_rows, "final_non_submitting_ticket_instance_quality_decision") != QUALITY_BLOCKED_DECISION:
+            failures.append("quality gate should block when review quality input is missing")
+        if summary_value(result.summary_rows, "pre_ticket_quality_gate_passed") != "False":
+            failures.append("quality gate should not pass with missing review input")
+        if summary_value(result.summary_rows, "missing_review_input_count") == "0":
+            failures.append("quality gate should count missing review inputs")
 
 
 def seed_inputs(root: Path) -> None:

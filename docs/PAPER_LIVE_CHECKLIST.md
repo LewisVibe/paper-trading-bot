@@ -427,6 +427,10 @@ Remaining steps, in order:
 
 8. **Add ticket-instance quality gates and tests.**
    - The non-submitting ticket-instance checkpoint now carries saved review quantity estimates when they exist, but only as manual-review context.
+   - Implemented pre-ticket quality gate:
+     `python bot.py --vol-targeted-growth-non-submitting-ticket-instance-quality-gate`
+     and `python bot.py --show-vol-targeted-growth-non-submitting-ticket-instance-quality-gate`.
+   - The quality gate checks complete review inputs, blank protected order fields, and absence of broker-ready order values before any future broker-ready ticket design discussion.
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
    - Verify stale broker data, unknown positions, missing target weights, or component-sleeve blockers all block.

@@ -18,6 +18,11 @@ ACTIVE_TICKER = "MULTI_SLEEVE"
 FINAL_STATUS = "vol_targeted_growth_non_submitting_ticket_instance_checkpoint_created_manual_review_required"
 FINAL_DECISION = "NON_SUBMITTING_TICKET_INSTANCE_CHECKPOINT_CREATED_NO_ORDER_VALUES"
 NEXT_STEP = "manual_review_non_submitting_ticket_instance_checkpoint_before_any_broker_ready_ticket_values"
+QUALITY_PASS_STATUS = "vol_targeted_growth_non_submitting_ticket_instance_quality_gate_passed_manual_review_required"
+QUALITY_BLOCKED_STATUS = "vol_targeted_growth_non_submitting_ticket_instance_quality_gate_blocked_manual_review_required"
+QUALITY_PASS_DECISION = "NON_SUBMITTING_TICKET_INSTANCE_QUALITY_GATE_PASSED_NO_ORDER_VALUES"
+QUALITY_BLOCKED_DECISION = "NON_SUBMITTING_TICKET_INSTANCE_QUALITY_GATE_BLOCKED_MANUAL_REVIEW_REQUIRED"
+QUALITY_NEXT_STEP = "manual_review_pre_ticket_quality_gate_before_any_broker_ready_ticket_design"
 
 OUTPUT_FILES = {
     "report": Path("data/vol_targeted_growth_non_submitting_ticket_instance_checkpoint.csv"),
@@ -25,6 +30,13 @@ OUTPUT_FILES = {
     "ticket": Path("data/vol_targeted_growth_non_submitting_ticket_instance_checkpoint_ticket.csv"),
     "blockers": Path("data/vol_targeted_growth_non_submitting_ticket_instance_checkpoint_blockers.csv"),
     "evidence": Path("data/vol_targeted_growth_non_submitting_ticket_instance_checkpoint_evidence.csv"),
+}
+
+QUALITY_OUTPUT_FILES = {
+    "report": Path("data/vol_targeted_growth_non_submitting_ticket_instance_quality_gate.csv"),
+    "summary": Path("data/vol_targeted_growth_non_submitting_ticket_instance_quality_gate_summary.csv"),
+    "blockers": Path("data/vol_targeted_growth_non_submitting_ticket_instance_quality_gate_blockers.csv"),
+    "evidence": Path("data/vol_targeted_growth_non_submitting_ticket_instance_quality_gate_evidence.csv"),
 }
 
 INPUT_FILES = {
@@ -73,6 +85,33 @@ SAFETY_FLAGS = {
     "never_schedule_order_capable_commands": True,
 }
 
+PROTECTED_ORDER_FIELDS = {
+    "order_side",
+    "order_quantity",
+    "order_type",
+    "time_in_force",
+    "account_reference",
+    "broker_order_id",
+    "submit_instruction",
+}
+
+REVIEW_INPUT_FIELDS = {
+    "review_quantity_estimates_decision",
+    "review_quantity_quality_gate_decision",
+    "review_quantity_estimate_count",
+    "review_quantity_symbols",
+    "review_share_quantity_estimates",
+}
+
+FORBIDDEN_VALUE_MARKERS = (
+    "api_key",
+    "secret",
+    "token",
+    "webhook",
+    "account_id",
+    "order_id",
+)
+
 REPORT_COLUMNS = ["check_name", "status", "risk_level", "evidence", "interpretation", "required_next_step", *SAFETY_FLAGS.keys()]
 SUMMARY_COLUMNS = ["summary_name", "summary_value", "details", *SAFETY_FLAGS.keys()]
 TICKET_COLUMNS = ["ticket_field", "field_status", "field_value", "source_context", "why_reviewable", "why_not_broker_ready", "required_next_step", *SAFETY_FLAGS.keys()]
@@ -86,6 +125,16 @@ class NonSubmittingTicketInstanceCheckpointResult:
     report_rows: list[dict[str, Any]]
     summary_rows: list[dict[str, Any]]
     ticket_rows: list[dict[str, Any]]
+    blocker_rows: list[dict[str, Any]]
+    evidence_rows: list[dict[str, Any]]
+    summary_lines: list[str]
+
+
+@dataclass
+class NonSubmittingTicketInstanceQualityGateResult:
+    output_paths: dict[str, Path]
+    report_rows: list[dict[str, Any]]
+    summary_rows: list[dict[str, Any]]
     blocker_rows: list[dict[str, Any]]
     evidence_rows: list[dict[str, Any]]
     summary_lines: list[str]
@@ -135,6 +184,58 @@ def show_vol_targeted_growth_non_submitting_ticket_instance_checkpoint(root_dir:
         f"broker_ready_order_values_populated: {summary_value(rows, 'broker_ready_order_values_populated')}",
         f"order_values_populated: {summary_value(rows, 'order_values_populated')}",
         f"order_instructions_created: {summary_value(rows, 'order_instructions_created')}",
+        f"largest_blocker: {summary_value(rows, 'largest_blocker')}",
+        f"recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
+        "orders_submitted=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
+    ]
+
+
+def generate_vol_targeted_growth_non_submitting_ticket_instance_quality_gate(
+    root_dir: Path | str = ".",
+) -> NonSubmittingTicketInstanceQualityGateResult:
+    root = Path(root_dir)
+    checkpoint_summary = read_csv_rows(root / OUTPUT_FILES["summary"])
+    checkpoint_ticket = read_csv_rows(root / OUTPUT_FILES["ticket"])
+    checks = evaluate_quality_gate(checkpoint_summary, checkpoint_ticket)
+    passed = all(check["status"] == "pass" for check in checks)
+    report_rows = [quality_report_row(check) for check in checks]
+    summary_rows = build_quality_summary_rows(checks, checkpoint_summary, checkpoint_ticket, passed)
+    blocker_rows = build_quality_blocker_rows(checks)
+    evidence_rows = build_quality_evidence_rows(checkpoint_summary, checkpoint_ticket)
+    output_paths = write_quality_outputs(root, report_rows, summary_rows, blocker_rows, evidence_rows)
+    return NonSubmittingTicketInstanceQualityGateResult(
+        output_paths,
+        report_rows,
+        summary_rows,
+        blocker_rows,
+        evidence_rows,
+        quality_summary_lines(summary_rows, output_paths["report"]),
+    )
+
+
+def show_vol_targeted_growth_non_submitting_ticket_instance_quality_gate(root_dir: Path | str = ".") -> tuple[int, list[str]]:
+    path = Path(root_dir) / QUALITY_OUTPUT_FILES["summary"]
+    if not path.exists():
+        return 1, [
+            "Volatility-targeted non-submitting ticket-instance quality gate is missing.",
+            "Run `python bot.py --vol-targeted-growth-non-submitting-ticket-instance-quality-gate` first.",
+            "execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
+        ]
+    rows = read_csv_rows(path)
+    return 0, [
+        "Volatility-targeted non-submitting ticket-instance quality gate display. Pre-ticket review only; no broker-ready order values.",
+        f"final_non_submitting_ticket_instance_quality_status: {summary_value(rows, 'final_non_submitting_ticket_instance_quality_status')}",
+        f"final_non_submitting_ticket_instance_quality_decision: {summary_value(rows, 'final_non_submitting_ticket_instance_quality_decision')}",
+        f"pre_ticket_quality_gate_passed: {summary_value(rows, 'pre_ticket_quality_gate_passed')}",
+        f"ticket_instance_checkpoint_present: {summary_value(rows, 'ticket_instance_checkpoint_present')}",
+        f"ticket_instance_ticket_rows_present: {summary_value(rows, 'ticket_instance_ticket_rows_present')}",
+        f"review_inputs_complete: {summary_value(rows, 'review_inputs_complete')}",
+        f"protected_order_fields_blank: {summary_value(rows, 'protected_order_fields_blank')}",
+        f"broker_ready_order_values_populated: {summary_value(rows, 'broker_ready_order_values_populated')}",
+        f"order_values_populated: {summary_value(rows, 'order_values_populated')}",
+        f"order_instructions_created: {summary_value(rows, 'order_instructions_created')}",
+        f"broker_ready_field_violation_count: {summary_value(rows, 'broker_ready_field_violation_count')}",
+        f"missing_review_input_count: {summary_value(rows, 'missing_review_input_count')}",
         f"largest_blocker: {summary_value(rows, 'largest_blocker')}",
         f"recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         "orders_submitted=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
@@ -265,6 +366,184 @@ def build_evidence_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[st
     return rows
 
 
+def evaluate_quality_gate(
+    checkpoint_summary: list[dict[str, str]],
+    checkpoint_ticket: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    ticket_fields = {row.get("ticket_field", ""): row for row in checkpoint_ticket}
+    missing_protected = sorted(PROTECTED_ORDER_FIELDS - set(ticket_fields))
+    protected_violations = [
+        field
+        for field in sorted(PROTECTED_ORDER_FIELDS & set(ticket_fields))
+        if str(ticket_fields[field].get("field_value", "")).strip()
+    ]
+    missing_review_inputs = [
+        field
+        for field in sorted(REVIEW_INPUT_FIELDS)
+        if not str(ticket_fields.get(field, {}).get("field_value", "")).strip()
+        or str(ticket_fields.get(field, {}).get("field_value", "")).strip().startswith("missing_")
+    ]
+    forbidden_value_hits = find_forbidden_value_hits(checkpoint_ticket)
+    approval_violations = {
+        key: summary_value(checkpoint_summary, key)
+        for key in [
+            "ticket_instance_created",
+            "ticket_creation_approved",
+            "broker_ready_order_values_populated",
+            "order_values_populated",
+            "order_instructions_created",
+            "executable_ticket_created",
+            "orders_submitted",
+            "execution_approved",
+            "paper_execution_approved",
+            "scheduling_approved",
+        ]
+        if (summary_value(checkpoint_summary, key) or "False") != "False"
+    }
+    review_quantity_count = parse_int(summary_value(checkpoint_summary, "review_quantity_estimate_count"))
+    checks = [
+        quality_check(
+            "checkpoint_summary_present",
+            bool(checkpoint_summary),
+            f"rows={len(checkpoint_summary)}",
+            "Refresh the non-submitting ticket-instance checkpoint first.",
+        ),
+        quality_check(
+            "checkpoint_ticket_rows_present",
+            bool(checkpoint_ticket),
+            f"rows={len(checkpoint_ticket)}",
+            "Refresh the non-submitting ticket-instance checkpoint ticket rows first.",
+        ),
+        quality_check(
+            "review_quantity_estimates_present",
+            (summary_value(checkpoint_summary, "review_quantities_created") == "True" and review_quantity_count > 0),
+            f"review_quantities_created={summary_value(checkpoint_summary, 'review_quantities_created') or 'False'}; review_quantity_estimate_count={review_quantity_count}",
+            "Refresh saved review quantity estimates before broker-ready ticket design discussion.",
+        ),
+        quality_check(
+            "review_quantity_quality_gate_passed",
+            summary_value(checkpoint_summary, "review_quantity_quality_gate_passed") == "True",
+            f"review_quantity_quality_gate_passed={summary_value(checkpoint_summary, 'review_quantity_quality_gate_passed') or 'False'}",
+            "Pass the saved review quantity quality gate first.",
+        ),
+        quality_check(
+            "review_inputs_complete",
+            not missing_review_inputs,
+            f"missing_review_inputs={';'.join(missing_review_inputs) or 'none'}",
+            "Refresh missing review inputs before broker-ready ticket design discussion.",
+        ),
+        quality_check(
+            "protected_order_fields_present",
+            not missing_protected,
+            f"missing_protected_fields={';'.join(missing_protected) or 'none'}",
+            "Regenerate checkpoint with explicit protected blank order fields.",
+        ),
+        quality_check(
+            "protected_order_fields_blank",
+            not protected_violations,
+            f"populated_protected_fields={';'.join(protected_violations) or 'none'}",
+            "Remove broker-ready order values from the checkpoint.",
+        ),
+        quality_check(
+            "forbidden_secret_or_broker_values_absent",
+            not forbidden_value_hits,
+            f"forbidden_value_hits={';'.join(forbidden_value_hits) or 'none'}",
+            "Remove secret, account, webhook, token, or broker-id-like values.",
+        ),
+        quality_check(
+            "approval_flags_false",
+            not approval_violations,
+            f"approval_violations={format_mapping(approval_violations)}",
+            "Reset any approval-like value to false before continuing.",
+        ),
+    ]
+    return checks
+
+
+def build_quality_summary_rows(
+    checks: list[dict[str, str]],
+    checkpoint_summary: list[dict[str, str]],
+    checkpoint_ticket: list[dict[str, str]],
+    passed: bool,
+) -> list[dict[str, Any]]:
+    failed = [check for check in checks if check["status"] != "pass"]
+    protected_fields = {row.get("ticket_field", ""): row for row in checkpoint_ticket if row.get("ticket_field", "") in PROTECTED_ORDER_FIELDS}
+    protected_violations = [
+        field for field, row in protected_fields.items() if str(row.get("field_value", "")).strip()
+    ]
+    missing_review_inputs = [
+        check["check_name"]
+        for check in checks
+        if check["check_name"] in {"review_quantity_estimates_present", "review_quantity_quality_gate_passed", "review_inputs_complete"}
+        and check["status"] != "pass"
+    ]
+    status = QUALITY_PASS_STATUS if passed else QUALITY_BLOCKED_STATUS
+    decision = QUALITY_PASS_DECISION if passed else QUALITY_BLOCKED_DECISION
+    largest_blocker = "broker_ready_ticket_values_still_not_approved" if passed else failed[0]["check_name"]
+    data = [
+        ("final_non_submitting_ticket_instance_quality_status", status, "Saved pre-ticket quality-gate status."),
+        ("final_non_submitting_ticket_instance_quality_decision", decision, "Gate result; no broker-ready order values are created."),
+        ("active_seed", ACTIVE_SEED, "Current report/status seed."),
+        ("active_ticker", ACTIVE_TICKER, "Portfolio label only."),
+        ("pre_ticket_quality_gate_passed", str(passed), "True only when saved review context is complete and protected fields are blank."),
+        ("ticket_instance_checkpoint_present", str(bool(checkpoint_summary)), "Checkpoint summary availability."),
+        ("ticket_instance_ticket_rows_present", str(bool(checkpoint_ticket)), "Checkpoint ticket rows availability."),
+        ("review_inputs_complete", str(not missing_review_inputs), "Review quantity context must be present and quality-gated."),
+        ("protected_order_fields_blank", str(not protected_violations), "Protected broker-ready fields must stay blank."),
+        ("broker_ready_field_violation_count", str(len(protected_violations)), "Protected fields with populated values."),
+        ("missing_review_input_count", str(len(missing_review_inputs)), "Missing or failed review-input checks."),
+        ("ticket_instance_checkpoint_created", summary_value(checkpoint_summary, "ticket_instance_checkpoint_created") or "False", "Saved checkpoint artifact state."),
+        ("ticket_instance_created", "False", "No executable ticket instance exists."),
+        ("ticket_creation_approved", "False", "No ticket creation approval exists."),
+        ("executable_ticket_created", "False", "No executable ticket exists."),
+        ("broker_ready_order_values_populated", "False", "No broker-ready values exist."),
+        ("order_values_populated", "False", "No side, quantity, order type, time-in-force, account, or broker id exists."),
+        ("order_instructions_created", "False", "No order instructions exist."),
+        ("orders_submitted", "False", "No orders are submitted."),
+        ("check_count", str(len(checks)), "Quality checks evaluated."),
+        ("pass_count", str(sum(1 for check in checks if check["status"] == "pass")), "Passing quality checks."),
+        ("blocked_count", str(len(failed)), "Blocked quality checks."),
+        ("largest_blocker", largest_blocker, "Primary blocker. Passing still does not approve broker-ready tickets."),
+        ("recommended_next_step", QUALITY_NEXT_STEP, "Manual review before any broker-ready ticket design."),
+    ]
+    return [summary_row(*item) for item in data]
+
+
+def build_quality_blocker_rows(checks: list[dict[str, str]]) -> list[dict[str, Any]]:
+    blocked = [check for check in checks if check["status"] != "pass"]
+    rows = [
+        blocker_row(
+            "broker_ready_ticket_values_still_not_approved",
+            "blocked",
+            "critical",
+            "Quality gate is pre-ticket only and never approves broker-ready values.",
+            QUALITY_NEXT_STEP,
+        )
+    ]
+    rows.extend(
+        blocker_row(check["check_name"], "blocked", "high", check["evidence"], check["required_next_step"])
+        for check in blocked
+    )
+    return rows
+
+
+def build_quality_evidence_rows(
+    checkpoint_summary: list[dict[str, str]],
+    checkpoint_ticket: list[dict[str, str]],
+) -> list[dict[str, Any]]:
+    protected_blank_count = sum(
+        1
+        for row in checkpoint_ticket
+        if row.get("ticket_field", "") in PROTECTED_ORDER_FIELDS and not str(row.get("field_value", "")).strip()
+    )
+    return [
+        evidence_row("checkpoint_summary_rows", str(len(checkpoint_summary)), "Saved checkpoint summary rows read."),
+        evidence_row("checkpoint_ticket_rows", str(len(checkpoint_ticket)), "Saved checkpoint ticket rows read."),
+        evidence_row("protected_blank_field_count", str(protected_blank_count), "Protected order fields that remain blank."),
+        evidence_row("runtime_boundary", "saved_output_only_no_broker_or_market_refresh", "No Alpaca, yfinance, config, positions, order, alert, SQLite, or scheduling path is used."),
+    ]
+
+
 def load_inputs(root: Path) -> dict[str, list[dict[str, str]]]:
     return {name: read_csv_rows(root / path) for name, path in INPUT_FILES.items()}
 
@@ -281,6 +560,21 @@ def write_outputs(
     write_rows(paths["report"], REPORT_COLUMNS, report_rows)
     write_rows(paths["summary"], SUMMARY_COLUMNS, summary_rows)
     write_rows(paths["ticket"], TICKET_COLUMNS, ticket_rows)
+    write_rows(paths["blockers"], BLOCKER_COLUMNS, blocker_rows)
+    write_rows(paths["evidence"], EVIDENCE_COLUMNS, evidence_rows)
+    return paths
+
+
+def write_quality_outputs(
+    root: Path,
+    report_rows: list[dict[str, Any]],
+    summary_rows: list[dict[str, Any]],
+    blocker_rows: list[dict[str, Any]],
+    evidence_rows: list[dict[str, Any]],
+) -> dict[str, Path]:
+    paths = {name: root / path for name, path in QUALITY_OUTPUT_FILES.items()}
+    write_rows(paths["report"], REPORT_COLUMNS, report_rows)
+    write_rows(paths["summary"], SUMMARY_COLUMNS, summary_rows)
     write_rows(paths["blockers"], BLOCKER_COLUMNS, blocker_rows)
     write_rows(paths["evidence"], EVIDENCE_COLUMNS, evidence_rows)
     return paths
@@ -306,6 +600,26 @@ def summary_lines(rows: list[dict[str, Any]], report_path: Path) -> list[str]:
     ]
 
 
+def quality_summary_lines(rows: list[dict[str, Any]], report_path: Path) -> list[str]:
+    return [
+        "Non-submitting ticket-instance quality gate complete. Pre-ticket review only; no executable ticket or order approved.",
+        f"final_non_submitting_ticket_instance_quality_status={summary_value(rows, 'final_non_submitting_ticket_instance_quality_status')}",
+        f"final_non_submitting_ticket_instance_quality_decision={summary_value(rows, 'final_non_submitting_ticket_instance_quality_decision')}",
+        f"pre_ticket_quality_gate_passed={summary_value(rows, 'pre_ticket_quality_gate_passed')}",
+        f"ticket_instance_checkpoint_present={summary_value(rows, 'ticket_instance_checkpoint_present')}",
+        f"ticket_instance_ticket_rows_present={summary_value(rows, 'ticket_instance_ticket_rows_present')}",
+        f"review_inputs_complete={summary_value(rows, 'review_inputs_complete')}",
+        f"protected_order_fields_blank={summary_value(rows, 'protected_order_fields_blank')}",
+        f"broker_ready_order_values_populated={summary_value(rows, 'broker_ready_order_values_populated')}",
+        f"order_values_populated={summary_value(rows, 'order_values_populated')}",
+        f"order_instructions_created={summary_value(rows, 'order_instructions_created')}",
+        f"largest_blocker={summary_value(rows, 'largest_blocker')}",
+        f"recommended_next_step={summary_value(rows, 'recommended_next_step')}",
+        f"saved_report={report_path}",
+        "orders_submitted=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",
+    ]
+
+
 def report_row(name: str, status: str, risk: str, evidence: str, interpretation: str, next_step: str) -> dict[str, Any]:
     return {"check_name": name, "status": status, "risk_level": risk, "evidence": evidence, "interpretation": interpretation, "required_next_step": next_step, **SAFETY_FLAGS}
 
@@ -324,6 +638,53 @@ def blocker_row(name: str, status: str, severity: str, details: str, next_step: 
 
 def evidence_row(name: str, value: str, details: str) -> dict[str, Any]:
     return {"evidence_name": name, "evidence_value": value, "details": details, **SAFETY_FLAGS}
+
+
+def quality_check(name: str, passed: bool, evidence: str, next_step: str) -> dict[str, str]:
+    return {
+        "check_name": name,
+        "status": "pass" if passed else "blocked",
+        "risk_level": "low" if passed else "high",
+        "evidence": evidence,
+        "interpretation": "Pre-ticket quality requirement satisfied." if passed else "Manual review required before any broker-ready ticket design.",
+        "required_next_step": "continue_manual_review_only" if passed else next_step,
+    }
+
+
+def quality_report_row(check: dict[str, str]) -> dict[str, Any]:
+    return {
+        "check_name": check["check_name"],
+        "status": check["status"],
+        "risk_level": check["risk_level"],
+        "evidence": check["evidence"],
+        "interpretation": check["interpretation"],
+        "required_next_step": check["required_next_step"],
+        **SAFETY_FLAGS,
+    }
+
+
+def find_forbidden_value_hits(rows: list[dict[str, str]]) -> list[str]:
+    hits: list[str] = []
+    for row in rows:
+        field = row.get("ticket_field", "")
+        value = str(row.get("field_value", "")).lower()
+        for marker in FORBIDDEN_VALUE_MARKERS:
+            if marker in value:
+                hits.append(f"{field}:{marker}")
+    return hits
+
+
+def parse_int(value: str) -> int:
+    try:
+        return int(float(str(value).strip()))
+    except (TypeError, ValueError):
+        return 0
+
+
+def format_mapping(values: dict[str, str]) -> str:
+    if not values:
+        return "none"
+    return ";".join(f"{key}={value}" for key, value in sorted(values.items()))
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:

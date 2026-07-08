@@ -71,6 +71,7 @@ INPUT_FILES = {
     "vol_non_submitting_executable_ticket_values_manual_review": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_manual_review_summary.csv"),
     "vol_non_submitting_ticket_creation_readiness": Path("data/vol_targeted_growth_non_submitting_ticket_creation_readiness_summary.csv"),
     "vol_non_submitting_ticket_instance_checkpoint": Path("data/vol_targeted_growth_non_submitting_ticket_instance_checkpoint_summary.csv"),
+    "vol_non_submitting_ticket_instance_quality_gate": Path("data/vol_targeted_growth_non_submitting_ticket_instance_quality_gate_summary.csv"),
     "paper_live_checklist": Path("data/paper_live_checklist_status_summary.csv"),
 }
 
@@ -263,6 +264,9 @@ def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int,
         f"vol_non_submitting_ticket_instance_review_quantity_estimate_count: {summary_value(rows, 'vol_non_submitting_ticket_instance_review_quantity_estimate_count')}",
         f"vol_non_submitting_ticket_instance_review_quantity_quality_gate_passed: {summary_value(rows, 'vol_non_submitting_ticket_instance_review_quantity_quality_gate_passed')}",
         f"vol_non_submitting_ticket_instance_created: {summary_value(rows, 'vol_non_submitting_ticket_instance_created')}",
+        f"vol_non_submitting_ticket_instance_quality_decision: {summary_value(rows, 'vol_non_submitting_ticket_instance_quality_decision')}",
+        f"vol_non_submitting_ticket_instance_quality_gate_passed: {summary_value(rows, 'vol_non_submitting_ticket_instance_quality_gate_passed')}",
+        f"vol_non_submitting_ticket_instance_quality_largest_blocker: {summary_value(rows, 'vol_non_submitting_ticket_instance_quality_largest_blocker')}",
         f"paper_live_checklist_phase_status: {summary_value(rows, 'paper_live_checklist_phase_status')}",
         f"vps_monitoring_status_assumption: {summary_value(rows, 'vps_monitoring_status_assumption')}",
         f"final_go_no_go_decision: {summary_value(rows, 'final_go_no_go_decision')}",
@@ -465,6 +469,11 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     ticket_instance_review_quantity_count = summary_value(inputs["vol_non_submitting_ticket_instance_checkpoint"], "review_quantity_estimate_count") or "0"
     ticket_instance_review_quantity_quality_passed = summary_value(inputs["vol_non_submitting_ticket_instance_checkpoint"], "review_quantity_quality_gate_passed") or "False"
     ticket_instance_created = summary_value(inputs["vol_non_submitting_ticket_instance_checkpoint"], "ticket_instance_created") or "False"
+    ticket_instance_quality_decision = summary_value(inputs["vol_non_submitting_ticket_instance_quality_gate"], "final_non_submitting_ticket_instance_quality_decision") or "missing_vol_non_submitting_ticket_instance_quality_gate"
+    ticket_instance_quality_passed = summary_value(inputs["vol_non_submitting_ticket_instance_quality_gate"], "pre_ticket_quality_gate_passed") or "False"
+    ticket_instance_quality_review_inputs_complete = summary_value(inputs["vol_non_submitting_ticket_instance_quality_gate"], "review_inputs_complete") or "False"
+    ticket_instance_quality_protected_blank = summary_value(inputs["vol_non_submitting_ticket_instance_quality_gate"], "protected_order_fields_blank") or "False"
+    ticket_instance_quality_largest_blocker = summary_value(inputs["vol_non_submitting_ticket_instance_quality_gate"], "largest_blocker") or "missing_vol_non_submitting_ticket_instance_quality_gate"
     checklist_status = summary_value(inputs["paper_live_checklist"], "checklist_phase_status") or "missing_paper_live_checklist"
     monitoring_next = summary_value(inputs["paper_live_monitoring"], "recommended_next_step") or "missing_paper_live_monitoring"
     data = [
@@ -607,6 +616,11 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("vol_non_submitting_ticket_instance_review_quantity_estimate_count", ticket_instance_review_quantity_count, "Review-only quantity rows carried into the checkpoint."),
         ("vol_non_submitting_ticket_instance_review_quantity_quality_gate_passed", ticket_instance_review_quantity_quality_passed, "True only means estimates are reviewable; not order quantities."),
         ("vol_non_submitting_ticket_instance_created", ticket_instance_created, "Must remain False because no executable ticket exists."),
+        ("vol_non_submitting_ticket_instance_quality_decision", ticket_instance_quality_decision, "Saved pre-ticket quality-gate decision."),
+        ("vol_non_submitting_ticket_instance_quality_gate_passed", ticket_instance_quality_passed, "True only means the checkpoint is complete and clean for manual review."),
+        ("vol_non_submitting_ticket_instance_quality_review_inputs_complete", ticket_instance_quality_review_inputs_complete, "Saved review inputs must be complete before broker-ready design discussion."),
+        ("vol_non_submitting_ticket_instance_quality_protected_order_fields_blank", ticket_instance_quality_protected_blank, "Protected order fields must remain blank."),
+        ("vol_non_submitting_ticket_instance_quality_largest_blocker", ticket_instance_quality_largest_blocker, "Passing still keeps broker-ready ticket values blocked."),
         ("paper_live_checklist_phase_status", checklist_status, "Saved paper-live checklist phase status."),
         ("paper_live_monitoring_recommended_next_step", monitoring_next, "Saved paper-live monitoring recommended next step."),
         ("vps_monitoring_status_assumption", "status_only_monitoring_no_cron_change", "Dashboard assumes existing VPS monitoring remains status-only."),
@@ -750,6 +764,9 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"vol_non_submitting_ticket_instance_review_quantity_estimate_count={summary_value(summary_rows, 'vol_non_submitting_ticket_instance_review_quantity_estimate_count')}",
         f"vol_non_submitting_ticket_instance_review_quantity_quality_gate_passed={summary_value(summary_rows, 'vol_non_submitting_ticket_instance_review_quantity_quality_gate_passed')}",
         f"vol_non_submitting_ticket_instance_created={summary_value(summary_rows, 'vol_non_submitting_ticket_instance_created')}",
+        f"vol_non_submitting_ticket_instance_quality_decision={summary_value(summary_rows, 'vol_non_submitting_ticket_instance_quality_decision')}",
+        f"vol_non_submitting_ticket_instance_quality_gate_passed={summary_value(summary_rows, 'vol_non_submitting_ticket_instance_quality_gate_passed')}",
+        f"vol_non_submitting_ticket_instance_quality_largest_blocker={summary_value(summary_rows, 'vol_non_submitting_ticket_instance_quality_largest_blocker')}",
         f"recommended_next_step={summary_value(summary_rows, 'recommended_next_step')}",
         f"saved_report={output_paths['report']}",
         "order_instructions_created=false; executable_ticket_created=false; execution_approved=false; paper_execution_approved=false; scheduling_approved=false",

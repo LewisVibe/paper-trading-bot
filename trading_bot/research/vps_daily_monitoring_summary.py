@@ -40,6 +40,7 @@ VOL_MANUAL_EXECUTION_DESIGN_APPROVAL_GATE_SUMMARY_PATH = "data/vol_targeted_grow
 VOL_NON_SUBMITTING_TICKET_SCHEMA_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_non_submitting_ticket_schema_design_summary.csv"
 VOL_NON_SUBMITTING_TICKET_INSTANCE_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_non_submitting_ticket_instance_design_summary.csv"
 VOL_NON_SUBMITTING_TICKET_INSTANCE_CHECKPOINT_SUMMARY_PATH = "data/vol_targeted_growth_non_submitting_ticket_instance_checkpoint_summary.csv"
+VOL_NON_SUBMITTING_TICKET_INSTANCE_QUALITY_GATE_SUMMARY_PATH = "data/vol_targeted_growth_non_submitting_ticket_instance_quality_gate_summary.csv"
 VOL_FRESH_BROKER_PRE_TICKET_GATE_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_design_summary.csv"
 VOL_FRESH_BROKER_PRE_TICKET_GATE_RUN_READINESS_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_run_readiness_summary.csv"
 VOL_FRESH_BROKER_PRE_TICKET_GATE_RUN_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_run_summary.csv"
@@ -164,6 +165,7 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
     )
     lines.extend(vol_non_submitting_ticket_instance_design_status_lines(root_path))
     lines.extend(vol_non_submitting_ticket_instance_checkpoint_status_lines(root_path))
+    lines.extend(vol_non_submitting_ticket_instance_quality_gate_status_lines(root_path))
     lines.extend(
         [
             "",
@@ -513,6 +515,44 @@ def vol_non_submitting_ticket_instance_checkpoint_status_lines(root: Path) -> li
     ]
 
 
+def vol_non_submitting_ticket_instance_quality_gate_status_lines(root: Path) -> list[str]:
+    path = root / VOL_NON_SUBMITTING_TICKET_INSTANCE_QUALITY_GATE_SUMMARY_PATH
+    rows = read_csv_rows(path)
+    if not rows:
+        return [
+            "",
+            "Volatility non-submitting ticket-instance quality gate:",
+            "- vol_non_submitting_ticket_instance_quality_gate_present: False",
+            f"- vol_non_submitting_ticket_instance_quality_gate_missing_saved_output: {VOL_NON_SUBMITTING_TICKET_INSTANCE_QUALITY_GATE_SUMMARY_PATH}",
+            "- vol_non_submitting_ticket_instance_quality_gate_status: missing_saved_output",
+            "- pre_ticket_quality_gate_passed: False",
+            "- broker_ready_order_values_populated: False",
+            "- order_values_populated: False",
+            "- order_instructions_created: False",
+            "- vol_non_submitting_ticket_instance_quality_gate_warning: monitor only; missing quality gate does not approve ticket values, execution, or scheduling.",
+        ]
+    return [
+        "",
+        "Volatility non-submitting ticket-instance quality gate:",
+        "- vol_non_submitting_ticket_instance_quality_gate_present: True",
+        f"- final_non_submitting_ticket_instance_quality_status: {summary_value(rows, 'final_non_submitting_ticket_instance_quality_status')}",
+        f"- final_non_submitting_ticket_instance_quality_decision: {summary_value(rows, 'final_non_submitting_ticket_instance_quality_decision')}",
+        f"- pre_ticket_quality_gate_passed: {summary_value(rows, 'pre_ticket_quality_gate_passed') or 'False'}",
+        f"- review_inputs_complete: {summary_value(rows, 'review_inputs_complete') or 'False'}",
+        f"- protected_order_fields_blank: {summary_value(rows, 'protected_order_fields_blank') or 'False'}",
+        f"- broker_ready_field_violation_count: {summary_value(rows, 'broker_ready_field_violation_count') or '0'}",
+        f"- missing_review_input_count: {summary_value(rows, 'missing_review_input_count') or '0'}",
+        f"- ticket_instance_created: {summary_value(rows, 'ticket_instance_created') or 'False'}",
+        f"- executable_ticket_created: {summary_value(rows, 'executable_ticket_created') or 'False'}",
+        f"- broker_ready_order_values_populated: {summary_value(rows, 'broker_ready_order_values_populated') or 'False'}",
+        f"- order_values_populated: {summary_value(rows, 'order_values_populated') or 'False'}",
+        f"- order_instructions_created: {summary_value(rows, 'order_instructions_created') or 'False'}",
+        f"- largest_blocker: {summary_value(rows, 'largest_blocker')}",
+        f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
+        "- vol_non_submitting_ticket_instance_quality_gate_warning: monitor only; passing this gate is not broker-ready ticket design, order approval, execution approval, or scheduling approval.",
+    ]
+
+
 def vol_fresh_broker_pre_ticket_gate_design_status_lines(root: Path) -> list[str]:
     rows = read_csv_rows(root / VOL_FRESH_BROKER_PRE_TICKET_GATE_DESIGN_SUMMARY_PATH)
     if not rows:
@@ -722,6 +762,9 @@ def paper_live_go_no_go_dashboard_status_lines(root: Path) -> list[str]:
         f"- vol_non_submitting_ticket_instance_review_quantity_estimate_count: {summary_value(rows, 'vol_non_submitting_ticket_instance_review_quantity_estimate_count')}",
         f"- vol_non_submitting_ticket_instance_review_quantity_quality_gate_passed: {summary_value(rows, 'vol_non_submitting_ticket_instance_review_quantity_quality_gate_passed')}",
         f"- vol_non_submitting_ticket_instance_created: {summary_value(rows, 'vol_non_submitting_ticket_instance_created')}",
+        f"- vol_non_submitting_ticket_instance_quality_decision: {summary_value(rows, 'vol_non_submitting_ticket_instance_quality_decision')}",
+        f"- vol_non_submitting_ticket_instance_quality_gate_passed: {summary_value(rows, 'vol_non_submitting_ticket_instance_quality_gate_passed')}",
+        f"- vol_non_submitting_ticket_instance_quality_largest_blocker: {summary_value(rows, 'vol_non_submitting_ticket_instance_quality_largest_blocker')}",
         f"- recommended_next_step: {summary_value(rows, 'recommended_next_step')}",
         f"- order_instructions_created: {summary_value(rows, 'order_instructions_created') or 'False'}",
         f"- execution_approved: {summary_value(rows, 'execution_approved') or 'False'}",
