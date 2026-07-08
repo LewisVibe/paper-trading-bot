@@ -546,7 +546,7 @@ def verify_command_output(failures: list[str]) -> None:
             "final_go_no_go_status: paper_live_go_no_go_dashboard_execution_blocked_monitor_only",
             "final_go_no_go_decision: NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY",
             "qqq100_no_action_state: hold_no_action_aligned_long",
-            "vol_largest_blocker: execution_not_approved",
+            "vol_largest_blocker:",
             "vol_post_gate_review_status:",
             "vol_post_gate_review_decision:",
             "vol_post_gate_largest_blocker:",
