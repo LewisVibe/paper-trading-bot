@@ -3148,6 +3148,24 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    if sys.argv[1:] == ["--vol-targeted-growth-quantity-calculation-readiness"]:
+        from trading_bot.research.vol_targeted_growth_quantity_calculation_readiness import (
+            generate_vol_targeted_growth_quantity_calculation_readiness,
+        )
+
+        result = generate_vol_targeted_growth_quantity_calculation_readiness()
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
+    if sys.argv[1:] == ["--show-vol-targeted-growth-quantity-calculation-readiness"]:
+        from trading_bot.research.vol_targeted_growth_quantity_calculation_readiness import (
+            show_vol_targeted_growth_quantity_calculation_readiness,
+        )
+
+        code, lines = show_vol_targeted_growth_quantity_calculation_readiness()
+        for line in lines:
+            print(line)
+        raise SystemExit(code)
     if sys.argv[1:] == ["--vol-targeted-growth-fresh-broker-pre-ticket-gate-design"]:
         from trading_bot.research.vol_targeted_growth_fresh_broker_pre_ticket_gate_design import (
             generate_vol_targeted_growth_fresh_broker_pre_ticket_gate_design,
@@ -9740,6 +9758,16 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-saved-price-snapshot-quality-gate",
         action="store_true",
         help="Display the saved volatility-targeted saved-price snapshot quality gate.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-quantity-calculation-readiness",
+        action="store_true",
+        help="Create a saved-output-only readiness review for future quantity calculation.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-quantity-calculation-readiness",
+        action="store_true",
+        help="Display saved volatility-targeted quantity-calculation readiness.",
     )
     parser.add_argument(
         "--vol-targeted-growth-fresh-broker-pre-ticket-gate-design",

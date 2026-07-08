@@ -397,6 +397,15 @@ Remaining steps, in order:
    - It does not fetch prices, call Alpaca, read positions, calculate quantities, create order instructions, approve execution, or approve scheduling.
    - A passing gate only supports manual review of saved price evidence before any later quantity-calculation checkpoint.
 
+7y. **Check readiness to request quantity-calculation approval.**
+   - Implemented saved-output readiness report:
+     `python bot.py --vol-targeted-growth-quantity-calculation-readiness`.
+   - Saved display:
+     `python bot.py --show-vol-targeted-growth-quantity-calculation-readiness`.
+   - The checkpoint reads saved target-dollar values and saved price quality only.
+   - It may set `quantity_calculation_discussion_ready=True`, but it must keep `quantity_calculation_approved=False`, `order_quantities_calculated=False`, `order_values_populated=False`, `order_instructions_created=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
+   - The next step is a separate explicit quantity-calculation approval record, not actual share calculation.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
