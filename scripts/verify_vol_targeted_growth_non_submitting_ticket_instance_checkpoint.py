@@ -147,6 +147,9 @@ def verify_fixture_output(failures: list[str]) -> None:
             "ticket_instance_checkpoint_created=True",
             "ticket_instance_created=False",
             "ticket_creation_approved=False",
+            "review_quantities_created=True",
+            "review_quantity_estimate_count=4",
+            "review_quantity_quality_gate_passed=True",
             "broker_ready_order_values_populated=False",
             "order_values_populated=False",
             "order_instructions_created=False",
@@ -159,6 +162,7 @@ def verify_fixture_output(failures: list[str]) -> None:
                 failures.append(f"fixture output missing phrase: {phrase}")
         verify_summary_rows(result.summary_rows, failures)
         verify_ticket_rows(result.ticket_rows, failures)
+        verify_quantity_context(result.ticket_rows, failures)
         for path in result.output_paths.values():
             if not path.exists():
                 failures.append(f"expected output missing: {path}")
@@ -171,6 +175,12 @@ def verify_summary_rows(rows: list[dict[str, object]], failures: list[str]) -> N
         failures.append("summary final decision is incorrect")
     if summary_value(rows, "ticket_instance_checkpoint_created") != "True":
         failures.append("summary should create only a checkpoint artifact")
+    if summary_value(rows, "review_quantities_created") != "True":
+        failures.append("summary should carry review quantities when saved evidence exists")
+    if summary_value(rows, "review_quantity_estimate_count") != "4":
+        failures.append("summary should count four review quantity estimate rows")
+    if summary_value(rows, "review_quantity_quality_gate_passed") != "True":
+        failures.append("summary should carry the review quantity quality gate state")
     for flag in FALSE_FLAGS:
         if summary_or_flag_value(rows, flag) != "False":
             failures.append(f"summary flag must be False: {flag}")
@@ -188,6 +198,25 @@ def verify_ticket_rows(rows: list[dict[str, object]], failures: list[str]) -> No
         for flag in FALSE_FLAGS:
             if str(row.get(flag, "")).strip() != "False":
                 failures.append(f"ticket row flag must be False for {field}: {flag}")
+
+
+def verify_quantity_context(rows: list[dict[str, object]], failures: list[str]) -> None:
+    fields = {str(row.get("ticket_field", "")): row for row in rows}
+    for field in [
+        "review_quantity_estimates_decision",
+        "review_quantity_quality_gate_decision",
+        "review_quantity_estimate_count",
+        "review_quantity_symbols",
+        "review_share_quantity_estimates",
+    ]:
+        if field not in fields:
+            failures.append(f"ticket checkpoint missing review quantity context: {field}")
+    estimates = str(fields.get("review_share_quantity_estimates", {}).get("field_value", ""))
+    for symbol in ["QQQ", "MGK", "IBIT", "SGOV"]:
+        if symbol not in estimates:
+            failures.append(f"review share estimate context missing symbol: {symbol}")
+    if fields.get("review_share_quantity_estimates", {}).get("field_status") != "review_context":
+        failures.append("review share estimates must stay review_context, not an order field")
 
 
 def seed_inputs(root: Path) -> None:
@@ -230,6 +259,44 @@ def seed_inputs(root: Path) -> None:
             "manual_review_completed": "True",
         },
     )
+    write_summary(
+        data / "vol_targeted_growth_review_quantity_estimates_summary.csv",
+        {
+            "final_review_quantity_estimates_decision": "REVIEW_QUANTITY_ESTIMATES_CREATED_NO_ORDER_INSTRUCTIONS",
+            "review_quantities_created": "True",
+            "review_quantity_row_count": "4",
+        },
+    )
+    write_summary(
+        data / "vol_targeted_growth_review_quantity_quality_gate_summary.csv",
+        {
+            "final_review_quantity_quality_decision": "REVIEW_QUANTITY_QUALITY_GATE_PASSED_NO_ORDER",
+            "review_quantity_quality_gate_passed": "True",
+        },
+    )
+    write_quantity_estimates(data / "vol_targeted_growth_review_quantity_estimates.csv")
+
+
+def write_quantity_estimates(path: Path) -> None:
+    fieldnames = [
+        "sleeve_name",
+        "broker_symbol",
+        "target_dollars",
+        "saved_price",
+        "review_share_quantity_estimate",
+        "quantity_estimate_status",
+    ]
+    rows = [
+        ("qqq100_core", "QQQ", "700.00", "500.00", "1", "review_quantity_estimate_created"),
+        ("high_growth_research", "MGK", "200.00", "300.00", "0.6", "review_quantity_estimate_created"),
+        ("crypto_research", "IBIT", "50.00", "60.00", "0.8", "review_quantity_estimate_created"),
+        ("defensive_buffer", "SGOV", "50.00", "100.00", "0.5", "review_quantity_estimate_created"),
+    ]
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(dict(zip(fieldnames, row, strict=True)))
 
 
 def write_summary(path: Path, values: dict[str, str]) -> None:

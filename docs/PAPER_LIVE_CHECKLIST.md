@@ -426,9 +426,11 @@ Remaining steps, in order:
    - The go/no-go dashboard and VPS daily monitoring summary may surface `review_quantities_created=True`, but this is still not ticket creation, order instruction creation, or execution approval.
 
 8. **Add ticket-instance quality gates and tests.**
+   - The non-submitting ticket-instance checkpoint now carries saved review quantity estimates when they exist, but only as manual-review context.
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
    - Verify stale broker data, unknown positions, missing target weights, or component-sleeve blockers all block.
+   - Current checkpoint still keeps `ticket_instance_created=False`, `ticket_creation_approved=False`, `broker_ready_order_values_populated=False`, `order_values_populated=False`, `order_instructions_created=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
 9. **Manual review of whether paper execution should ever be allowed for this seed.**
    - This is a human decision point, not an automatic result of previous reports.

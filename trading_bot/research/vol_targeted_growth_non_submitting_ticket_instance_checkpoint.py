@@ -33,6 +33,9 @@ INPUT_FILES = {
     "non_submitting_values": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_summary.csv"),
     "non_submitting_values_quality": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate_summary.csv"),
     "manual_review": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_manual_review_summary.csv"),
+    "review_quantity_estimates": Path("data/vol_targeted_growth_review_quantity_estimates.csv"),
+    "review_quantity_estimates_summary": Path("data/vol_targeted_growth_review_quantity_estimates_summary.csv"),
+    "review_quantity_quality_gate": Path("data/vol_targeted_growth_review_quantity_quality_gate_summary.csv"),
 }
 
 SAFETY_FLAGS = {
@@ -126,6 +129,9 @@ def show_vol_targeted_growth_non_submitting_ticket_instance_checkpoint(root_dir:
         f"ticket_instance_checkpoint_created: {summary_value(rows, 'ticket_instance_checkpoint_created')}",
         f"ticket_instance_created: {summary_value(rows, 'ticket_instance_created')}",
         f"ticket_creation_approved: {summary_value(rows, 'ticket_creation_approved')}",
+        f"review_quantities_created: {summary_value(rows, 'review_quantities_created')}",
+        f"review_quantity_estimate_count: {summary_value(rows, 'review_quantity_estimate_count')}",
+        f"review_quantity_quality_gate_passed: {summary_value(rows, 'review_quantity_quality_gate_passed')}",
         f"broker_ready_order_values_populated: {summary_value(rows, 'broker_ready_order_values_populated')}",
         f"order_values_populated: {summary_value(rows, 'order_values_populated')}",
         f"order_instructions_created: {summary_value(rows, 'order_instructions_created')}",
@@ -153,6 +159,7 @@ def build_ticket_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str,
     values_decision = summary_value(inputs["non_submitting_values"], "final_non_submitting_executable_ticket_values_decision") or "missing_non_submitting_values"
     quality_decision = summary_value(inputs["non_submitting_values_quality"], "final_non_submitting_executable_ticket_values_quality_decision") or "missing_quality_gate"
     manual_review = summary_value(inputs["manual_review"], "final_non_submitting_executable_ticket_values_manual_review_decision") or "missing_manual_review"
+    quantity_context = build_review_quantity_context(inputs)
     items = [
         ("checkpoint_id", "review_context", "vol_targeted_growth_non_submitting_ticket_instance_checkpoint_v1", "local checkpoint id", "Identifies the saved review artifact.", "Not a broker id.", NEXT_STEP),
         ("active_seed", "review_context", ACTIVE_SEED, "fixed active seed", "Connects the checkpoint to the current seed.", "Does not approve the seed for orders.", NEXT_STEP),
@@ -161,6 +168,11 @@ def build_ticket_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str,
         ("non_submitting_values_decision", "review_context", values_decision, "saved values summary", "Shows reviewable non-submitting values exist.", "Not broker-ready values.", NEXT_STEP),
         ("non_submitting_values_quality", "review_context", quality_decision, "saved quality summary", "Shows quality gate context.", "Still no order fields.", NEXT_STEP),
         ("manual_review_decision", "review_context", manual_review, "saved manual review summary", "Shows values review context.", "Still no execution approval.", NEXT_STEP),
+        ("review_quantity_estimates_decision", "review_context", quantity_context["review_quantity_estimates_decision"], "saved review quantity summary", "Shows review-only quantity estimate status.", "Not an order quantity approval.", NEXT_STEP),
+        ("review_quantity_quality_gate_decision", "review_context", quantity_context["review_quantity_quality_decision"], "saved review quantity quality gate", "Shows estimate quality context.", "Quality gate does not create orders.", NEXT_STEP),
+        ("review_quantity_estimate_count", "review_context", quantity_context["review_quantity_estimate_count"], "saved review quantity rows", "Counts saved review estimate rows.", "A count is not a broker-ready quantity.", NEXT_STEP),
+        ("review_quantity_symbols", "review_context", quantity_context["review_quantity_symbols"], "saved review quantity rows", "Lists symbols with saved review estimates.", "Symbols are context only and not routing instructions.", NEXT_STEP),
+        ("review_share_quantity_estimates", "review_context", quantity_context["review_quantity_estimates"], "saved review quantity rows", "Carries review-only estimates into the checkpoint.", "These are not executable order quantities.", NEXT_STEP),
         ("order_side", "blocked_blank", "", "forbidden order field", "Requires a later separate approval if ever designed.", "Blank prevents buy/sell instruction.", "keep_blank"),
         ("order_quantity", "blocked_blank", "", "forbidden order field", "Requires a later separate approval if ever designed.", "Blank prevents quantity instruction.", "keep_blank"),
         ("order_type", "blocked_blank", "", "forbidden order field", "Requires a later separate approval if ever designed.", "Blank prevents order routing.", "keep_blank"),
@@ -179,12 +191,18 @@ def build_summary_rows(
 ) -> list[dict[str, Any]]:
     missing_inputs = [name for name, rows in inputs.items() if not rows]
     discussion_ready = summary_value(inputs["ticket_creation_readiness"], "ticket_creation_discussion_ready") or "False"
+    quantity_context = build_review_quantity_context(inputs)
     data = [
         ("final_non_submitting_ticket_instance_checkpoint_status", FINAL_STATUS, "Saved non-submitting ticket-instance checkpoint status."),
         ("final_non_submitting_ticket_instance_checkpoint_decision", FINAL_DECISION, "Checkpoint created; no order values or executable ticket."),
         ("active_seed", ACTIVE_SEED, "Current report/status seed."),
         ("active_ticker", ACTIVE_TICKER, "Portfolio label only."),
         ("ticket_creation_discussion_ready", discussion_ready, "Saved readiness context only."),
+        ("review_quantity_estimates_decision", quantity_context["review_quantity_estimates_decision"], "Saved review quantity estimates decision."),
+        ("review_quantities_created", quantity_context["review_quantities_created"], "True means review estimates exist; not order instructions."),
+        ("review_quantity_estimate_count", quantity_context["review_quantity_estimate_count"], "Number of review-only quantity estimate rows carried into this checkpoint."),
+        ("review_quantity_quality_gate_decision", quantity_context["review_quantity_quality_decision"], "Saved review quantity quality-gate decision."),
+        ("review_quantity_quality_gate_passed", quantity_context["review_quantity_quality_gate_passed"], "True only means saved estimates are reviewable."),
         ("ticket_instance_checkpoint_created", "True", "A saved checkpoint artifact exists."),
         ("ticket_instance_created", "False", "No executable ticket instance exists."),
         ("ticket_creation_approved", "False", "No ticket creation approval exists."),
@@ -201,6 +219,31 @@ def build_summary_rows(
         ("recommended_next_step", NEXT_STEP, "Manual review before any broker-ready ticket values."),
     ]
     return [summary_row(*item) for item in data]
+
+
+def build_review_quantity_context(inputs: dict[str, list[dict[str, str]]]) -> dict[str, str]:
+    quantity_rows = [
+        row
+        for row in inputs["review_quantity_estimates"]
+        if row.get("quantity_estimate_status") == "review_quantity_estimate_created"
+    ]
+    symbols = ",".join(row.get("broker_symbol", "") for row in quantity_rows if row.get("broker_symbol")) or "none"
+    estimates = "; ".join(
+        f"{row.get('broker_symbol', 'UNKNOWN')}={row.get('review_share_quantity_estimate', 'missing')}"
+        for row in quantity_rows
+    ) or "missing_review_quantity_estimates"
+    return {
+        "review_quantity_estimates_decision": summary_value(inputs["review_quantity_estimates_summary"], "final_review_quantity_estimates_decision")
+        or "missing_review_quantity_estimates",
+        "review_quantities_created": summary_value(inputs["review_quantity_estimates_summary"], "review_quantities_created") or "False",
+        "review_quantity_quality_decision": summary_value(inputs["review_quantity_quality_gate"], "final_review_quantity_quality_decision")
+        or "missing_review_quantity_quality_gate",
+        "review_quantity_quality_gate_passed": summary_value(inputs["review_quantity_quality_gate"], "review_quantity_quality_gate_passed")
+        or "False",
+        "review_quantity_estimate_count": str(len(quantity_rows)),
+        "review_quantity_symbols": symbols,
+        "review_quantity_estimates": estimates,
+    }
 
 
 def build_blocker_rows(inputs: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
@@ -251,6 +294,9 @@ def summary_lines(rows: list[dict[str, Any]], report_path: Path) -> list[str]:
         f"ticket_instance_checkpoint_created={summary_value(rows, 'ticket_instance_checkpoint_created')}",
         f"ticket_instance_created={summary_value(rows, 'ticket_instance_created')}",
         f"ticket_creation_approved={summary_value(rows, 'ticket_creation_approved')}",
+        f"review_quantities_created={summary_value(rows, 'review_quantities_created')}",
+        f"review_quantity_estimate_count={summary_value(rows, 'review_quantity_estimate_count')}",
+        f"review_quantity_quality_gate_passed={summary_value(rows, 'review_quantity_quality_gate_passed')}",
         f"broker_ready_order_values_populated={summary_value(rows, 'broker_ready_order_values_populated')}",
         f"order_values_populated={summary_value(rows, 'order_values_populated')}",
         f"order_instructions_created={summary_value(rows, 'order_instructions_created')}",
