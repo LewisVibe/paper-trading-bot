@@ -61,6 +61,9 @@ INPUT_FILES = {
     "draft_values_manual_review": Path("data/vol_targeted_growth_draft_ticket_values_manual_review_summary.csv"),
     "review_only_draft_values": Path("data/vol_targeted_growth_review_only_draft_ticket_values_summary.csv"),
     "review_only_draft_quality": Path("data/vol_targeted_growth_review_only_draft_ticket_values_quality_gate_summary.csv"),
+    "review_quantity_estimates": Path("data/vol_targeted_growth_review_quantity_estimates.csv"),
+    "review_quantity_estimates_summary": Path("data/vol_targeted_growth_review_quantity_estimates_summary.csv"),
+    "review_quantity_quality_gate": Path("data/vol_targeted_growth_review_quantity_quality_gate_summary.csv"),
     "go_no_go_dashboard": Path("data/paper_live_go_no_go_dashboard_summary.csv"),
 }
 
@@ -195,6 +198,8 @@ def show_vol_targeted_growth_non_submitting_executable_ticket_values(root_dir: P
         f"final_non_submitting_executable_ticket_values_status: {summary_value(rows, 'final_non_submitting_executable_ticket_values_status')}",
         f"final_non_submitting_executable_ticket_values_decision: {summary_value(rows, 'final_non_submitting_executable_ticket_values_decision')}",
         f"non_submitting_ticket_values_populated: {summary_value(rows, 'non_submitting_ticket_values_populated')}",
+        f"review_quantities_created: {summary_value(rows, 'review_quantities_created')}",
+        f"review_quantity_estimate_count: {summary_value(rows, 'review_quantity_estimate_count')}",
         f"review_value_count: {summary_value(rows, 'review_value_count')}",
         f"broker_ready_order_values_populated: {summary_value(rows, 'broker_ready_order_values_populated')}",
         f"order_values_populated: {summary_value(rows, 'order_values_populated')}",
@@ -340,6 +345,16 @@ def load_readiness_inputs(root: Path) -> dict[str, list[dict[str, str]]]:
 
 
 def build_context(inputs: dict[str, list[dict[str, str]]]) -> dict[str, str]:
+    quantity_estimate_rows = [
+        row
+        for row in inputs["review_quantity_estimates"]
+        if row.get("quantity_estimate_status") == "review_quantity_estimate_created"
+    ]
+    quantity_symbols = ",".join(row.get("broker_symbol", "") for row in quantity_estimate_rows if row.get("broker_symbol")) or "none"
+    quantity_estimates = "; ".join(
+        f"{row.get('broker_symbol', 'UNKNOWN')}={row.get('review_share_quantity_estimate', 'missing')}"
+        for row in quantity_estimate_rows
+    ) or "missing_review_quantity_estimates"
     return {
         "approval_record_decision": summary_value(inputs["approval_record"], "final_executable_ticket_values_approval_record_decision")
         or "missing_executable_ticket_values_approval_record",
@@ -352,6 +367,15 @@ def build_context(inputs: dict[str, list[dict[str, str]]]) -> dict[str, str]:
         or "missing_review_only_draft_ticket_values",
         "review_only_draft_quality_decision": summary_value(inputs["review_only_draft_quality"], "final_review_only_draft_ticket_values_quality_decision")
         or "missing_review_only_draft_ticket_values_quality_gate",
+        "review_quantity_estimates_decision": summary_value(inputs["review_quantity_estimates_summary"], "final_review_quantity_estimates_decision")
+        or "missing_review_quantity_estimates",
+        "review_quantity_quality_decision": summary_value(inputs["review_quantity_quality_gate"], "final_review_quantity_quality_decision")
+        or "missing_review_quantity_quality_gate",
+        "review_quantity_quality_gate_passed": summary_value(inputs["review_quantity_quality_gate"], "review_quantity_quality_gate_passed") or "False",
+        "review_quantities_created": summary_value(inputs["review_quantity_estimates_summary"], "review_quantities_created") or "False",
+        "review_quantity_estimate_count": str(len(quantity_estimate_rows)),
+        "review_quantity_symbols": quantity_symbols,
+        "review_quantity_estimates": quantity_estimates,
         "go_no_go_decision": summary_value(inputs["go_no_go_dashboard"], "final_go_no_go_decision") or "missing_go_no_go_dashboard",
     }
 
@@ -364,6 +388,11 @@ def build_value_rows(context: dict[str, str]) -> list[dict[str, Any]]:
         ("approved_context", "review_value", context["approval_record_decision"], "approval_record", "Shows saved approval exists for value population.", "Approval is not order submission.", "Review approval source before any ticket creation."),
         ("target_volatility_policy", "review_value", "target_vol=15%; window=20d; exposure_cap=1x", "saved_seed_design", "Defines research risk policy context.", "No side, quantity, or price.", "Manual risk review remains required."),
         ("sleeve_target_context", "review_value", "qqq100_core=70%; high_growth_research=20%; crypto_research=5%; defensive_buffer=5%", "saved_seed_design", "Documents sleeve target context.", "Percentages are not broker-ready quantities.", "Fresh broker state and component mapping are required later."),
+        ("review_quantity_estimates_decision", "review_value", context["review_quantity_estimates_decision"], "review_quantity_estimates_summary", "Shows saved review-only quantity estimate status.", "This is not an order instruction.", "Manual review is required before any ticket discussion."),
+        ("review_quantity_quality_gate_decision", "review_value", context["review_quantity_quality_decision"], "review_quantity_quality_gate", "Shows saved estimate quality status.", "Quality gate does not approve orders.", "Manual review is required before any ticket discussion."),
+        ("review_quantity_estimate_count", "review_value", context["review_quantity_estimate_count"], "review_quantity_estimates", "Counts saved review-only estimate rows.", "A row count is not broker-ready quantity approval.", "Review estimated quantities manually."),
+        ("review_quantity_symbols", "review_value", context["review_quantity_symbols"], "review_quantity_estimates", "Lists symbols with saved review estimates.", "Symbols are context only and not order routing.", "Confirm broker context separately before any future ticket."),
+        ("review_share_quantity_estimates", "review_value", context["review_quantity_estimates"], "review_quantity_estimates", "Carries saved review-only share estimates into this packet.", "These estimates are not executable order quantities.", "Separate future ticket creation approval required."),
         ("broker_state_requirement", "blocked_requirement", "fresh_readonly_broker_check_required_before_any_order_discussion", "safety_boundary", "Names the required future evidence.", "This report does not read broker state.", "Run read-only broker check only with explicit approval."),
         ("order_side", "blocked_unpopulated", "blocked_not_populated", "safety_boundary", "Side field is intentionally absent.", "No buy/sell instruction exists.", "Separate future ticket creation approval required."),
         ("order_quantity", "blocked_unpopulated", "blocked_not_populated", "safety_boundary", "Quantity field is intentionally absent.", "No numeric order quantity exists.", "Separate future ticket creation approval required."),
@@ -393,6 +422,11 @@ def build_summary_rows(context: dict[str, str], value_rows: list[dict[str, Any]]
         ("executable_ticket_values_approved", context["executable_ticket_values_approved"], "True means value population can occur; not order approval."),
         ("values_readiness_decision", context["values_readiness_decision"], "Saved readiness context."),
         ("draft_values_manual_review_decision", context["draft_values_manual_review_decision"], "Saved manual-review context."),
+        ("review_quantity_estimates_decision", context["review_quantity_estimates_decision"], "Saved review quantity estimates decision."),
+        ("review_quantity_quality_gate_decision", context["review_quantity_quality_decision"], "Saved review quantity quality-gate decision."),
+        ("review_quantity_quality_gate_passed", context["review_quantity_quality_gate_passed"], "True only when saved estimates are reviewable."),
+        ("review_quantities_created", context["review_quantities_created"], "True when saved review quantity estimates exist."),
+        ("review_quantity_estimate_count", context["review_quantity_estimate_count"], "Number of review-only quantity estimate rows carried into the packet."),
         ("review_value_count", str(len(value_rows)), "Number of reviewable value rows."),
         ("non_submitting_ticket_values_populated", "True", "Reviewable values were populated."),
         ("broker_ready_order_values_populated", "False", "No broker-ready order values are populated."),
@@ -444,11 +478,19 @@ def build_quality_report_rows(checks: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def build_quality_summary_rows(inputs: dict[str, list[dict[str, str]]], checks: dict[str, Any], rows: list[dict[str, str]]) -> list[dict[str, Any]]:
+    quantity_estimate_count = 0
+    for row in rows:
+        if row.get("ticket_value_name") == "review_share_quantity_estimates":
+            value = str(row.get("ticket_value", ""))
+            quantity_estimate_count = 0 if value.startswith("missing_") else len([item for item in value.split(";") if item.strip()])
     data = [
         ("final_non_submitting_executable_ticket_values_quality_status", QUALITY_STATUS if checks["passed"] else "vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate_failed_manual_review_required", "Quality gate status."),
         ("final_non_submitting_executable_ticket_values_quality_decision", QUALITY_DECISION if checks["passed"] else "NON_SUBMITTING_EXECUTABLE_TICKET_VALUES_QUALITY_GATE_FAILED", "Quality gate decision."),
         ("quality_gate_passed", str(checks["passed"]), "True only when values remain non-submitting."),
         ("approval_record_decision", summary_value(inputs["approval_record"], "final_executable_ticket_values_approval_record_decision") or "missing_approval_record", "Saved approval context."),
+        ("review_quantity_quality_gate_decision", summary_value(inputs["review_quantity_quality_gate"], "final_review_quantity_quality_decision") or "missing_review_quantity_quality_gate", "Saved review quantity quality-gate context."),
+        ("review_quantity_quality_gate_passed", summary_value(inputs["review_quantity_quality_gate"], "review_quantity_quality_gate_passed") or "False", "True only when saved estimates are reviewable."),
+        ("review_quantity_estimate_count", str(quantity_estimate_count), "Count of review-only quantity estimate value rows in this packet."),
         ("review_value_count", str(checks["review_value_count"]), "Number of saved rows."),
         ("forbidden_field_count", str(checks["forbidden_field_count"]), "Must remain 0."),
         ("broker_ready_field_count", str(checks["broker_ready_count"]), "Must remain 0."),
@@ -652,6 +694,8 @@ def values_lines(rows: list[dict[str, Any]], report_path: Path) -> list[str]:
         f"final_non_submitting_executable_ticket_values_status={summary_value(rows, 'final_non_submitting_executable_ticket_values_status')}",
         f"final_non_submitting_executable_ticket_values_decision={summary_value(rows, 'final_non_submitting_executable_ticket_values_decision')}",
         f"non_submitting_ticket_values_populated={summary_value(rows, 'non_submitting_ticket_values_populated')}",
+        f"review_quantities_created={summary_value(rows, 'review_quantities_created')}",
+        f"review_quantity_estimate_count={summary_value(rows, 'review_quantity_estimate_count')}",
         f"review_value_count={summary_value(rows, 'review_value_count')}",
         f"broker_ready_order_values_populated={summary_value(rows, 'broker_ready_order_values_populated')}",
         f"order_values_populated={summary_value(rows, 'order_values_populated')}",
@@ -667,6 +711,8 @@ def quality_lines(rows: list[dict[str, Any]], report_path: Path) -> list[str]:
         f"final_non_submitting_executable_ticket_values_quality_status={summary_value(rows, 'final_non_submitting_executable_ticket_values_quality_status')}",
         f"final_non_submitting_executable_ticket_values_quality_decision={summary_value(rows, 'final_non_submitting_executable_ticket_values_quality_decision')}",
         f"quality_gate_passed={summary_value(rows, 'quality_gate_passed')}",
+        f"review_quantity_quality_gate_passed={summary_value(rows, 'review_quantity_quality_gate_passed')}",
+        f"review_quantity_estimate_count={summary_value(rows, 'review_quantity_estimate_count')}",
         f"review_value_count={summary_value(rows, 'review_value_count')}",
         f"forbidden_field_count={summary_value(rows, 'forbidden_field_count')}",
         f"broker_ready_order_values_populated={summary_value(rows, 'broker_ready_order_values_populated')}",

@@ -77,6 +77,10 @@ REQUIRED_TOKENS = [
     "vol_executable_ticket_values_approval_record_decision",
     "vol_executable_ticket_values_approved",
     "vol_executable_ticket_values_order_values_populated",
+    "vol_review_quantity_estimates_decision",
+    "vol_review_quantities_created",
+    "vol_review_quantity_quality_gate_decision",
+    "vol_review_quantity_quality_gate_passed",
     "executable_ticket_values_approval_is_not_value_population",
     "non_submitting_executable_ticket_is_not_an_order",
     "ticket_value_discussion_is_not_value_approval",
@@ -627,6 +631,25 @@ def verify_fixture_output(failures: list[str]) -> None:
             },
         )
         write_summary(
+            data / "vol_targeted_growth_review_quantity_estimates_summary.csv",
+            {
+                "final_review_quantity_estimates_decision": "REVIEW_QUANTITY_ESTIMATES_CREATED_NO_ORDER_INSTRUCTIONS",
+                "review_quantities_created": "True",
+                "review_quantity_row_count": "4",
+                "order_values_populated": "False",
+                "order_instructions_created": "False",
+            },
+        )
+        write_summary(
+            data / "vol_targeted_growth_review_quantity_quality_gate_summary.csv",
+            {
+                "final_review_quantity_quality_decision": "REVIEW_QUANTITY_QUALITY_GATE_PASSED_NO_ORDER",
+                "review_quantity_quality_gate_passed": "True",
+                "order_values_populated": "False",
+                "order_instructions_created": "False",
+            },
+        )
+        write_summary(
             data / "paper_live_checklist_status_summary.csv",
             {
                 "checklist_phase_status": "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review",
@@ -737,6 +760,10 @@ def verify_fixture_output(failures: list[str]) -> None:
         "vol_executable_ticket_values_approved: True",
         "vol_executable_ticket_values_order_values_populated: False",
         "executable_ticket_values_approval_is_not_value_population",
+        "REVIEW_QUANTITY_ESTIMATES_CREATED_NO_ORDER_INSTRUCTIONS",
+        "vol_review_quantities_created: True",
+        "REVIEW_QUANTITY_QUALITY_GATE_PASSED_NO_ORDER",
+        "vol_review_quantity_quality_gate_passed: True",
         "status_only_monitoring_no_cron_change",
         "order_instructions_created=false",
         "executable_ticket_created=false",
@@ -771,6 +798,10 @@ def verify_vps_daily_summary_integration(failures: list[str]) -> None:
         "vol_executable_ticket_values_approval_record_decision",
         "vol_executable_ticket_values_approved",
         "vol_executable_ticket_values_order_values_populated",
+        "vol_review_quantity_estimates_decision",
+        "vol_review_quantities_created",
+        "vol_review_quantity_quality_gate_decision",
+        "vol_review_quantity_quality_gate_passed",
         "paper_live_go_no_go_warning: monitor only;",
     ]:
         if phrase not in source:

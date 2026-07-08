@@ -417,6 +417,14 @@ Remaining steps, in order:
    - Saved displays use the matching `--show-...` commands.
    - These estimates are not order quantities. They must keep side, order type, time-in-force, account, ticket, broker order ID, order instruction, order submission, execution approval, and scheduling approval absent/false.
 
+7aa. **Carry review-only quantity estimates into the non-submitting ticket-value packet.**
+   - Implemented by updating:
+     `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-values`
+     and `python bot.py --vol-targeted-growth-non-submitting-executable-ticket-values-quality-gate`.
+   - The packet may display saved review quantity estimates when they exist, but only as manual-review evidence.
+   - It must keep `broker_ready_order_values_populated=False`, `order_values_populated=False`, `order_instructions_created=False`, `executable_ticket_created=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
+   - The go/no-go dashboard and VPS daily monitoring summary may surface `review_quantities_created=True`, but this is still not ticket creation, order instruction creation, or execution approval.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.

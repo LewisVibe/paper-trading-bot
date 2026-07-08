@@ -136,6 +136,8 @@ def verify_fixture_outputs(failures: list[str]) -> None:
             MANUAL_REVIEW_DECISION,
             READINESS_DECISION,
             "non_submitting_ticket_values_populated=True",
+            "review_quantities_created=True",
+            "review_quantity_estimate_count=4",
             "manual_review_completed=True",
             "ticket_creation_discussion_ready=True",
             "ticket_creation_approved=False",
@@ -151,6 +153,11 @@ def verify_fixture_outputs(failures: list[str]) -> None:
                 failures.append(f"fixture output missing phrase: {phrase}")
         if len(values.value_rows) < 8:
             failures.append("expected multiple reviewable value rows")
+        quantity_rows = [row for row in values.value_rows if row.get("ticket_value_name") == "review_share_quantity_estimates"]
+        if len(quantity_rows) != 1:
+            failures.append("expected exactly one review-only quantity estimate value row")
+        elif quantity_rows[0].get("ticket_value_status") != "review_value":
+            failures.append("review quantity estimates must be review values, not broker-ready fields")
         verify_false_flags(values.summary_rows + quality.summary_rows + manual_review.summary_rows + readiness.summary_rows, failures)
         for row in values.value_rows:
             name = str(row.get("ticket_value_name", "")).lower()
@@ -195,7 +202,45 @@ def seed_inputs(root: Path) -> None:
         data / "vol_targeted_growth_review_only_draft_ticket_values_quality_gate_summary.csv",
         {"final_review_only_draft_ticket_values_quality_decision": "REVIEW_ONLY_DRAFT_TICKET_VALUES_QUALITY_GATE_PASSED_NO_EXECUTION"},
     )
+    write_summary(
+        data / "vol_targeted_growth_review_quantity_estimates_summary.csv",
+        {
+            "final_review_quantity_estimates_decision": "REVIEW_QUANTITY_ESTIMATES_CREATED_NO_ORDER_INSTRUCTIONS",
+            "review_quantities_created": "True",
+            "review_quantity_row_count": "4",
+        },
+    )
+    write_summary(
+        data / "vol_targeted_growth_review_quantity_quality_gate_summary.csv",
+        {
+            "final_review_quantity_quality_decision": "REVIEW_QUANTITY_QUALITY_GATE_PASSED_NO_ORDER",
+            "review_quantity_quality_gate_passed": "True",
+        },
+    )
+    write_quantity_estimates(data / "vol_targeted_growth_review_quantity_estimates.csv")
     write_summary(data / "paper_live_go_no_go_dashboard_summary.csv", {"final_go_no_go_decision": "NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY"})
+
+
+def write_quantity_estimates(path: Path) -> None:
+    fieldnames = [
+        "sleeve_name",
+        "broker_symbol",
+        "target_dollars",
+        "saved_price",
+        "review_share_quantity_estimate",
+        "quantity_estimate_status",
+    ]
+    rows = [
+        ("qqq100_core", "QQQ", "700.00", "500.00", "1", "review_quantity_estimate_created"),
+        ("high_growth_research", "MGK", "200.00", "300.00", "0.6", "review_quantity_estimate_created"),
+        ("crypto_research", "IBIT", "50.00", "60.00", "0.8", "review_quantity_estimate_created"),
+        ("defensive_buffer", "SGOV", "50.00", "100.00", "0.5", "review_quantity_estimate_created"),
+    ]
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(dict(zip(fieldnames, row, strict=True)))
 
 
 def write_summary(path: Path, values: dict[str, str]) -> None:

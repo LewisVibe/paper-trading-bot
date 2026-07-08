@@ -64,6 +64,8 @@ INPUT_FILES = {
     "vol_executable_ticket_values_readiness": Path("data/vol_targeted_growth_executable_ticket_values_readiness_summary.csv"),
     "vol_executable_ticket_values_approval_wording": Path("data/vol_targeted_growth_executable_ticket_values_approval_wording_summary.csv"),
     "vol_executable_ticket_values_approval_record": Path("data/vol_targeted_growth_executable_ticket_values_approval_record_summary.csv"),
+    "vol_review_quantity_estimates": Path("data/vol_targeted_growth_review_quantity_estimates_summary.csv"),
+    "vol_review_quantity_quality_gate": Path("data/vol_targeted_growth_review_quantity_quality_gate_summary.csv"),
     "vol_non_submitting_executable_ticket_values": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_summary.csv"),
     "vol_non_submitting_executable_ticket_values_quality_gate": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_quality_gate_summary.csv"),
     "vol_non_submitting_executable_ticket_values_manual_review": Path("data/vol_targeted_growth_non_submitting_executable_ticket_values_manual_review_summary.csv"),
@@ -243,6 +245,10 @@ def show_paper_live_go_no_go_dashboard(root_dir: Path | str = ".") -> tuple[int,
         f"vol_executable_ticket_values_approval_record_decision: {summary_value(rows, 'vol_executable_ticket_values_approval_record_decision')}",
         f"vol_executable_ticket_values_approved: {summary_value(rows, 'vol_executable_ticket_values_approved')}",
         f"vol_executable_ticket_values_order_values_populated: {summary_value(rows, 'vol_executable_ticket_values_order_values_populated')}",
+        f"vol_review_quantity_estimates_decision: {summary_value(rows, 'vol_review_quantity_estimates_decision')}",
+        f"vol_review_quantities_created: {summary_value(rows, 'vol_review_quantities_created')}",
+        f"vol_review_quantity_quality_gate_decision: {summary_value(rows, 'vol_review_quantity_quality_gate_decision')}",
+        f"vol_review_quantity_quality_gate_passed: {summary_value(rows, 'vol_review_quantity_quality_gate_passed')}",
         f"vol_non_submitting_executable_ticket_values_decision: {summary_value(rows, 'vol_non_submitting_executable_ticket_values_decision')}",
         f"vol_non_submitting_executable_ticket_values_quality_gate_decision: {summary_value(rows, 'vol_non_submitting_executable_ticket_values_quality_gate_decision')}",
         f"vol_non_submitting_executable_ticket_values_populated: {summary_value(rows, 'vol_non_submitting_executable_ticket_values_populated')}",
@@ -435,6 +441,11 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
     executable_ticket_values_approved = summary_value(inputs["vol_executable_ticket_values_approval_record"], "executable_ticket_values_approved") or "False"
     executable_ticket_values_approval_recorded = summary_value(inputs["vol_executable_ticket_values_approval_record"], "executable_ticket_values_approval_recorded") or "False"
     executable_ticket_values_order_values_populated = summary_value(inputs["vol_executable_ticket_values_approval_record"], "order_values_populated") or "False"
+    review_quantity_estimates_decision = summary_value(inputs["vol_review_quantity_estimates"], "final_review_quantity_estimates_decision") or "missing_vol_review_quantity_estimates"
+    review_quantities_created = summary_value(inputs["vol_review_quantity_estimates"], "review_quantities_created") or "False"
+    review_quantity_estimate_count = summary_value(inputs["vol_review_quantity_estimates"], "review_quantity_row_count") or "0"
+    review_quantity_quality_decision = summary_value(inputs["vol_review_quantity_quality_gate"], "final_review_quantity_quality_decision") or "missing_vol_review_quantity_quality_gate"
+    review_quantity_quality_passed = summary_value(inputs["vol_review_quantity_quality_gate"], "review_quantity_quality_gate_passed") or "False"
     non_submitting_values_decision = summary_value(inputs["vol_non_submitting_executable_ticket_values"], "final_non_submitting_executable_ticket_values_decision") or "missing_vol_non_submitting_executable_ticket_values"
     non_submitting_values_populated = summary_value(inputs["vol_non_submitting_executable_ticket_values"], "non_submitting_ticket_values_populated") or "False"
     non_submitting_values_order_values_populated = summary_value(inputs["vol_non_submitting_executable_ticket_values"], "order_values_populated") or "False"
@@ -569,6 +580,11 @@ def build_summary_rows(inputs: dict[str, list[dict[str, str]]], report_rows: lis
         ("vol_executable_ticket_values_approval_recorded", executable_ticket_values_approval_recorded, "True only after the explicit record checkpoint exists."),
         ("vol_executable_ticket_values_approved", executable_ticket_values_approved, "True only for later non-submitting value population; not execution approval."),
         ("vol_executable_ticket_values_order_values_populated", executable_ticket_values_order_values_populated, "Must remain False until a later non-submitting value population step."),
+        ("vol_review_quantity_estimates_decision", review_quantity_estimates_decision, "Saved review-only quantity estimates decision."),
+        ("vol_review_quantities_created", review_quantities_created, "True means review estimates exist; not order instructions."),
+        ("vol_review_quantity_estimate_count", review_quantity_estimate_count, "Number of review-only quantity rows."),
+        ("vol_review_quantity_quality_gate_decision", review_quantity_quality_decision, "Saved review quantity quality-gate decision."),
+        ("vol_review_quantity_quality_gate_passed", review_quantity_quality_passed, "True only means review estimates are usable for manual review."),
         ("vol_non_submitting_executable_ticket_values_decision", non_submitting_values_decision, "Saved non-submitting executable ticket values decision."),
         ("vol_non_submitting_executable_ticket_values_quality_gate_decision", non_submitting_values_quality_decision, "Saved quality gate decision for non-submitting values."),
         ("vol_non_submitting_executable_ticket_values_quality_gate_passed", non_submitting_values_quality_passed, "True only when values remain non-submitting."),
@@ -707,6 +723,10 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"vol_executable_ticket_values_approval_record_decision={summary_value(summary_rows, 'vol_executable_ticket_values_approval_record_decision')}",
         f"vol_executable_ticket_values_approved={summary_value(summary_rows, 'vol_executable_ticket_values_approved')}",
         f"vol_executable_ticket_values_order_values_populated={summary_value(summary_rows, 'vol_executable_ticket_values_order_values_populated')}",
+        f"vol_review_quantity_estimates_decision={summary_value(summary_rows, 'vol_review_quantity_estimates_decision')}",
+        f"vol_review_quantities_created={summary_value(summary_rows, 'vol_review_quantities_created')}",
+        f"vol_review_quantity_quality_gate_decision={summary_value(summary_rows, 'vol_review_quantity_quality_gate_decision')}",
+        f"vol_review_quantity_quality_gate_passed={summary_value(summary_rows, 'vol_review_quantity_quality_gate_passed')}",
         f"vol_non_submitting_executable_ticket_values_decision={summary_value(summary_rows, 'vol_non_submitting_executable_ticket_values_decision')}",
         f"vol_non_submitting_executable_ticket_values_quality_gate_decision={summary_value(summary_rows, 'vol_non_submitting_executable_ticket_values_quality_gate_decision')}",
         f"vol_non_submitting_executable_ticket_values_populated={summary_value(summary_rows, 'vol_non_submitting_executable_ticket_values_populated')}",
