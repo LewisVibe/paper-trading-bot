@@ -3166,6 +3166,28 @@ def _early_report_only_route() -> None:
         for line in lines:
             print(line)
         raise SystemExit(code)
+    quantity_calculation_routes = {
+        "--vol-targeted-growth-quantity-calculation-approval-wording": "generate_vol_targeted_growth_quantity_calculation_approval_wording",
+        "--show-vol-targeted-growth-quantity-calculation-approval-wording": "show_vol_targeted_growth_quantity_calculation_approval_wording",
+        "--vol-targeted-growth-quantity-calculation-approval-record": "generate_vol_targeted_growth_quantity_calculation_approval_record",
+        "--show-vol-targeted-growth-quantity-calculation-approval-record": "show_vol_targeted_growth_quantity_calculation_approval_record",
+        "--vol-targeted-growth-review-quantity-estimates": "generate_vol_targeted_growth_review_quantity_estimates",
+        "--show-vol-targeted-growth-review-quantity-estimates": "show_vol_targeted_growth_review_quantity_estimates",
+        "--vol-targeted-growth-review-quantity-quality-gate": "generate_vol_targeted_growth_review_quantity_quality_gate",
+        "--show-vol-targeted-growth-review-quantity-quality-gate": "show_vol_targeted_growth_review_quantity_quality_gate",
+    }
+    if sys.argv[1:] and sys.argv[1] in quantity_calculation_routes and len(sys.argv[1:]) == 1:
+        from trading_bot.research import vol_targeted_growth_quantity_calculation as quantity_calculation
+
+        result = getattr(quantity_calculation, quantity_calculation_routes[sys.argv[1]])()
+        if isinstance(result, tuple):
+            code, lines = result
+            for line in lines:
+                print(line)
+            raise SystemExit(code)
+        for line in result.summary_lines:
+            print(line)
+        raise SystemExit(0)
     if sys.argv[1:] == ["--vol-targeted-growth-fresh-broker-pre-ticket-gate-design"]:
         from trading_bot.research.vol_targeted_growth_fresh_broker_pre_ticket_gate_design import (
             generate_vol_targeted_growth_fresh_broker_pre_ticket_gate_design,
@@ -9768,6 +9790,46 @@ def parse_args() -> argparse.Namespace:
         "--show-vol-targeted-growth-quantity-calculation-readiness",
         action="store_true",
         help="Display saved volatility-targeted quantity-calculation readiness.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-quantity-calculation-approval-wording",
+        action="store_true",
+        help="Create saved-output-only wording for review quantity calculation approval.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-quantity-calculation-approval-wording",
+        action="store_true",
+        help="Display saved volatility-targeted quantity-calculation approval wording.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-quantity-calculation-approval-record",
+        action="store_true",
+        help="Record saved-output-only approval for review quantity calculation.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-quantity-calculation-approval-record",
+        action="store_true",
+        help="Display saved volatility-targeted quantity-calculation approval record.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-review-quantity-estimates",
+        action="store_true",
+        help="Create saved-output-only review share quantity estimates.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-review-quantity-estimates",
+        action="store_true",
+        help="Display saved volatility-targeted review share quantity estimates.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-review-quantity-quality-gate",
+        action="store_true",
+        help="Create a saved-output-only quality gate for review quantity estimates.",
+    )
+    parser.add_argument(
+        "--show-vol-targeted-growth-review-quantity-quality-gate",
+        action="store_true",
+        help="Display saved volatility-targeted review quantity quality gate.",
     )
     parser.add_argument(
         "--vol-targeted-growth-fresh-broker-pre-ticket-gate-design",

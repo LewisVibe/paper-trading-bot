@@ -406,6 +406,17 @@ Remaining steps, in order:
    - It may set `quantity_calculation_discussion_ready=True`, but it must keep `quantity_calculation_approved=False`, `order_quantities_calculated=False`, `order_values_populated=False`, `order_instructions_created=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
    - The next step is a separate explicit quantity-calculation approval record, not actual share calculation.
 
+7z. **Approve and create review-only share quantity estimates.**
+   - Implemented approval wording/record:
+     `python bot.py --vol-targeted-growth-quantity-calculation-approval-wording`
+     and `python bot.py --vol-targeted-growth-quantity-calculation-approval-record`.
+   - Implemented saved review quantity estimates:
+     `python bot.py --vol-targeted-growth-review-quantity-estimates`.
+   - Implemented saved quality gate:
+     `python bot.py --vol-targeted-growth-review-quantity-quality-gate`.
+   - Saved displays use the matching `--show-...` commands.
+   - These estimates are not order quantities. They must keep side, order type, time-in-force, account, ticket, broker order ID, order instruction, order submission, execution approval, and scheduling approval absent/false.
+
 8. **Add ticket-instance quality gates and tests.**
    - Verify no secrets, account IDs, webhook URLs, broker order IDs, or generated trading data appear in ticket outputs.
    - Verify no order can be submitted from a report-only ticket.
