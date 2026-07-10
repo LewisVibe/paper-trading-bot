@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import pytest
 
 import bot
+from trading_bot.cli import parser as cli_parser
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,7 +24,7 @@ def saved_command_inventory() -> set[str]:
 
 
 def parser_options(monkeypatch: pytest.MonkeyPatch) -> set[str]:
-    original_parser = bot.argparse.ArgumentParser
+    original_parser = cli_parser.argparse.ArgumentParser
 
     class CapturingParser(original_parser):
         instance: "CapturingParser | None" = None
@@ -32,7 +33,7 @@ def parser_options(monkeypatch: pytest.MonkeyPatch) -> set[str]:
             super().__init__(*args, **kwargs)
             CapturingParser.instance = self
 
-    monkeypatch.setattr(bot, "argparse", SimpleNamespace(ArgumentParser=CapturingParser))
+    monkeypatch.setattr(cli_parser, "argparse", SimpleNamespace(ArgumentParser=CapturingParser))
     monkeypatch.setattr(sys, "argv", ["bot.py"])
     bot.parse_args()
 
@@ -60,6 +61,10 @@ def configure_main_dependencies(monkeypatch: pytest.MonkeyPatch):
 
 def test_parser_option_inventory_matches_saved_baseline(monkeypatch: pytest.MonkeyPatch):
     assert parser_options(monkeypatch) == saved_command_inventory()
+
+
+def test_bot_reexports_extracted_parser_for_compatibility():
+    assert bot.parse_args is cli_parser.parse_args
 
 
 def test_parser_defaults_for_normal_run(monkeypatch: pytest.MonkeyPatch):
