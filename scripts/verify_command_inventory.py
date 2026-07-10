@@ -175,10 +175,6 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-approval-criteria-not-approval-closeout-candidate-review",
     "--vol-targeted-growth-criteria-closeout-candidate-review-rollup",
     "--show-vol-targeted-growth-criteria-closeout-candidate-review-rollup",
-    "--vol-targeted-growth-criteria-source-closeout-approval-wording",
-    "--show-vol-targeted-growth-criteria-source-closeout-approval-wording",
-    "--vol-targeted-growth-criteria-source-closeout-record",
-    "--show-vol-targeted-growth-criteria-source-closeout-record",
     "--vol-targeted-growth-criteria-resolution-plan-closeout-approval-wording",
     "--show-vol-targeted-growth-criteria-resolution-plan-closeout-approval-wording",
     "--vol-targeted-growth-criteria-resolution-plan-closeout-record",
@@ -381,8 +377,6 @@ REQUIRED_COMMANDS = [
     "--show-vol-targeted-growth-seed-change-implementation-design",
     "--vol-targeted-growth-seed-change-dry-run-diff",
     "--show-vol-targeted-growth-seed-change-dry-run-diff",
-    "--vol-targeted-growth-active-seed-readiness",
-    "--show-vol-targeted-growth-active-seed-readiness",
     "--vol-targeted-growth-paper-live-manual-approval-gate",
     "--show-vol-targeted-growth-paper-live-manual-approval-gate",
     "--vol-targeted-growth-paper-live-action-preview-pack",
@@ -566,6 +560,11 @@ REQUIRED_COMMANDS = [
     "--confirm-slow-sma-paper",
     "--paper-order-test",
     "--confirm-paper-order",
+    "--config",
+    "--dry-run",
+    "--etf-universe",
+    "--plot-strategy-results",
+    "--research-universe",
 ]
 
 
