@@ -168,23 +168,3 @@ def test_confirmed_paper_order_dispatches_to_paper_runner(monkeypatch: pytest.Mo
             "confirm_paper_order": True,
         }
     ]
-
-
-@pytest.mark.parametrize(
-    ("side", "expected_side"),
-    [("buy", bot.OrderSide.BUY), ("sell", bot.OrderSide.SELL)],
-)
-def test_direct_order_submission_adapter_uses_mocked_client(side: str, expected_side):
-    submitted: list[object] = []
-
-    class Client:
-        def submit_order(self, *, order_data):
-            submitted.append(order_data)
-            return "submitted"
-
-    assert bot.submit_alpaca_order(Client(), "AAPL", side, bot.Decimal("2")) == "submitted"
-    assert len(submitted) == 1
-    assert submitted[0].symbol == "AAPL"
-    assert submitted[0].qty == 2.0
-    assert submitted[0].side == expected_side
-    assert submitted[0].time_in_force == bot.TimeInForce.DAY

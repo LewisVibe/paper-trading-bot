@@ -18,8 +18,6 @@ if __name__ == "__main__":
         raise SystemExit(early_exit_code)
 
 from alpaca.trading.client import TradingClient
-from alpaca.trading.enums import OrderSide, TimeInForce
-from alpaca.trading.requests import MarketOrderRequest
 
 from trading_bot.alpaca_client import (
     get_open_orders_for_ticker,
@@ -52,6 +50,7 @@ from trading_bot.output import (
     format_slow_sma_preview_table_header,
     format_slow_sma_preview_table_row,
 )
+from trading_bot.paper_orders import PaperOrderRequest, PaperOrderRoute, submit_paper_order
 from trading_bot.positions import (
     POSITION_FLAT,
     POSITION_LONG,
@@ -845,25 +844,6 @@ def parse_order_test_quantity(value: str) -> Decimal:
     return quantity
 
 
-def submit_alpaca_order(client: TradingClient, ticker: str, side: str, quantity: Decimal):
-    order_side = OrderSide.BUY if side == "buy" else OrderSide.SELL
-    order_request = MarketOrderRequest(
-        symbol=ticker,
-        qty=decimal_to_float(quantity),
-        side=order_side,
-        time_in_force=TimeInForce.DAY,
-    )
-    return client.submit_order(order_data=order_request)
-
-
-
-
-
-
-
-
-
-
 def run_paper_order_test(
     config: AppConfig,
     logger: logging.Logger,
@@ -1074,9 +1054,19 @@ def run_paper_order_test(
 
         conn = init_database(config.database_path)
         order_config = replace(config, dry_run=False)
-        order = submit_alpaca_order(alpaca_client, ticker, side, quantity)
-        order_id = str(getattr(order, "id", ""))
-        order_status = normalize_order_status(getattr(order, "status", "submitted"))
+        submission = submit_paper_order(
+            alpaca_client,
+            PaperOrderRequest(
+                route=PaperOrderRoute.MANUAL_TEST,
+                ticker=ticker,
+                side=side,
+                quantity=quantity,
+                confirmed=confirm_paper_order,
+                alpaca_paper=config.alpaca_paper,
+            ),
+        )
+        order_id = submission.order_id
+        order_status = normalize_order_status(submission.initial_status)
         order_status = refresh_order_status(
             alpaca_client,
             logger,
@@ -1272,14 +1262,19 @@ def run_execute_qqq100_paper(
             write_qqq100_paper_execution_report(blocked)
             return 2
 
-        order = submit_alpaca_order(
+        submission = submit_paper_order(
             alpaca_client,
-            QQQ100_TICKER,
-            decision.order_side,
-            QQQ100_FIXED_QUANTITY,
+            PaperOrderRequest(
+                route=PaperOrderRoute.QQQ100,
+                ticker=QQQ100_TICKER,
+                side=decision.order_side,
+                quantity=QQQ100_FIXED_QUANTITY,
+                confirmed=confirm_qqq100_paper,
+                alpaca_paper=config.alpaca_paper,
+            ),
         )
-        order_id = str(getattr(order, "id", ""))
-        order_status = normalize_order_status(getattr(order, "status", "submitted"))
+        order_id = submission.order_id
+        order_status = normalize_order_status(submission.initial_status)
         order_status = refresh_order_status(
             alpaca_client,
             logger,
@@ -2154,6 +2149,7 @@ def run_slow_sma_paper_execution(
                     short_window=short_window,
                     long_window=long_window,
                     stats=stats,
+                    confirm_slow_sma_paper=confirm_slow_sma_paper,
                 )
             except Exception as exc:
                 stats.failed_tickers += 1
@@ -2212,6 +2208,7 @@ def process_slow_sma_execution_ticker(
     short_window: int,
     long_window: int,
     stats: SlowSmaExecutionStats,
+    confirm_slow_sma_paper: bool,
 ) -> None:
     close_prices = download_slow_sma_preview_prices(
         ticker,
@@ -2256,9 +2253,19 @@ def process_slow_sma_execution_ticker(
             error = asset_error
 
     if quantity > 0 and side:
-        order = submit_alpaca_order(alpaca_client, ticker, side, quantity)
-        order_id = str(getattr(order, "id", ""))
-        order_status = normalize_order_status(getattr(order, "status", "submitted"))
+        submission = submit_paper_order(
+            alpaca_client,
+            PaperOrderRequest(
+                route=PaperOrderRoute.SLOW_SMA,
+                ticker=ticker,
+                side=side,
+                quantity=quantity,
+                confirmed=confirm_slow_sma_paper,
+                alpaca_paper=config.alpaca_paper,
+            ),
+        )
+        order_id = submission.order_id
+        order_status = normalize_order_status(submission.initial_status)
         order_status = refresh_order_status(
             alpaca_client,
             logger,
