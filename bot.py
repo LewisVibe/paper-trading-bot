@@ -34,12 +34,11 @@ from trading_bot.cli.dispatch import dispatch_config_command, dispatch_pre_confi
 from trading_bot.config import AppConfig, ConfigError, default_research_universe_tickers, load_config
 from trading_bot.database import init_database, insert_trade_log
 from trading_bot.discord_alerts import send_discord_alert
-from trading_bot.execution import decide_trade, manual_sell_would_oversell
+from trading_bot.execution import manual_sell_would_oversell
 from trading_bot.logging_setup import setup_logging
 from trading_bot.market_data import (
     configure_yfinance_cache,
     download_backtest_prices,
-    download_close_prices,
     download_slow_sma_preview_prices,
 )
 from trading_bot.output import (
@@ -61,7 +60,6 @@ from trading_bot.positions import (
     decimal_from_any,
     format_decimal,
     get_alpaca_positions,
-    get_simulated_positions,
 )
 from trading_bot.research.crypto import run_crypto_research_preview_files
 from trading_bot.research.crypto_universe_readiness import (
@@ -725,6 +723,14 @@ from trading_bot.runners.previews import (
     run_promoted_decision_preview,
     run_promoted_risk_preview,
 )
+from trading_bot.runners.paper_execution import (
+    RunStats,
+    build_summary,
+    decimal_to_float,
+    process_ticker,
+    run_bot,
+    update_signal_stats,
+)
 from trading_bot.runners.research_reports import (
     run_build_etf_breadth_price_history_command,
     run_build_research_dashboard_command,
@@ -781,14 +787,7 @@ from trading_bot.safety.manual_paper_smoke_test_gate import (
     read_saved_smoke_test_preflight_context,
     write_manual_paper_smoke_test_gate_report,
 )
-from trading_bot.strategies.sma import (
-    SIGNAL_BUY,
-    SIGNAL_HOLD,
-    SIGNAL_SELL,
-    SlowSmaPreviewRow,
-    calculate_signal,
-    calculate_slow_sma_preview_row,
-)
+from trading_bot.strategies.sma import SlowSmaPreviewRow, calculate_slow_sma_preview_row
 
 
 
@@ -797,14 +796,6 @@ class ManualOrderError(RuntimeError):
 
 
 @dataclass
-class RunStats:
-    tickers_processed: int = 0
-    buy_signals: int = 0
-    sell_signals: int = 0
-    hold_signals: int = 0
-    skipped_trades: int = 0
-    failed_tickers: int = 0
-    submitted_trades: int = 0
 
 
 @dataclass
@@ -841,8 +832,6 @@ def now_utc() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def decimal_to_float(value: Decimal) -> float:
-    return float(value)
 
 
 def parse_order_test_quantity(value: str) -> Decimal:
@@ -867,178 +856,12 @@ def submit_alpaca_order(client: TradingClient, ticker: str, side: str, quantity:
     return client.submit_order(order_data=order_request)
 
 
-def update_signal_stats(stats: RunStats, signal: str) -> None:
-    if signal == SIGNAL_BUY:
-        stats.buy_signals += 1
-    elif signal == SIGNAL_SELL:
-        stats.sell_signals += 1
-    elif signal == SIGNAL_HOLD:
-        stats.hold_signals += 1
 
 
-def build_summary(config: AppConfig, stats: RunStats) -> str:
-    mode = "dry run" if config.dry_run else "Alpaca paper trading"
-    return (
-        f"Bot completed in {mode}. "
-        f"Processed: {stats.tickers_processed}, "
-        f"BUY: {stats.buy_signals}, "
-        f"SELL: {stats.sell_signals}, "
-        f"HOLD: {stats.hold_signals}, "
-        f"skipped trades: {stats.skipped_trades}, "
-        f"failed tickers: {stats.failed_tickers}, "
-        f"trades: {stats.submitted_trades}."
-    )
 
 
-def process_ticker(
-    config: AppConfig,
-    conn: sqlite3.Connection,
-    logger: logging.Logger,
-    ticker: str,
-    positions: dict[str, Position],
-    completed_actions: set[tuple[str, str]],
-    alpaca_client: TradingClient | None,
-    stats: RunStats,
-) -> None:
-    logger.info("Processing %s", ticker)
-    stats.tickers_processed += 1
-
-    close_prices = download_close_prices(config, ticker)
-    result = calculate_signal(config, close_prices)
-    update_signal_stats(stats, result.signal)
-
-    position_before = positions.get(ticker, Position())
-    decision = decide_trade(
-        result.signal,
-        position_before,
-        config.allow_shorting,
-        config.order_quantity,
-    )
-
-    if not decision.should_trade:
-        if result.signal != SIGNAL_HOLD:
-            stats.skipped_trades += 1
-            logger.info("%s %s skipped: %s", ticker, result.signal, decision.reason)
-
-        insert_trade_log(
-            conn=conn,
-            config=config,
-            ticker=ticker,
-            signal=result.signal,
-            position_before=position_before,
-            position_after=position_before,
-            quantity=0 if result.signal != SIGNAL_HOLD else None,
-            last_close=result.last_close,
-            short_ma=result.short_ma,
-            long_ma=result.long_ma,
-            order_status="skipped" if result.signal != SIGNAL_HOLD else "",
-            error=decision.reason if result.signal != SIGNAL_HOLD else "",
-        )
-        return
-
-    order_status = "monitor_only"
-    logger.info(
-        "Monitoring only: would %s %s %s share(s) (normal run does not place orders)",
-        decision.action,
-        format_decimal(decision.trade_quantity),
-        ticker,
-    )
-
-    insert_trade_log(
-        conn=conn,
-        config=config,
-        ticker=ticker,
-        signal=result.signal,
-        side=decision.side,
-        action=decision.action,
-        position_before=position_before,
-        position_after=position_before,
-        quantity=decimal_to_float(decision.trade_quantity),
-        last_close=result.last_close,
-        short_ma=result.short_ma,
-        long_ma=result.long_ma,
-        order_status=order_status,
-    )
-
-    send_discord_alert(
-        config,
-        logger,
-        (
-            f"Monitoring only: {ticker} would {decision.side.upper()} "
-            f"{format_decimal(decision.trade_quantity)} share(s) "
-            f"({decision.action}, signal {result.signal}, status {order_status})"
-        ),
-    )
 
 
-def run_bot(config: AppConfig, logger: logging.Logger) -> int:
-    conn = init_database(config.database_path)
-    stats = RunStats()
-
-    logger.info("Starting bot. dry_run=%s allow_shorting=%s", config.dry_run, config.allow_shorting)
-    configure_yfinance_cache(config, logger)
-    send_discord_alert(
-        config,
-        logger,
-        f"Bot started. dry_run={config.dry_run}, allow_shorting={config.allow_shorting}",
-    )
-
-    alpaca_client: TradingClient | None = None
-    try:
-        try:
-            if config.dry_run:
-                positions = get_simulated_positions(conn)
-            else:
-                alpaca_client = TradingClient(
-                    config.alpaca_api_key,
-                    config.alpaca_secret_key,
-                    paper=True,
-                )
-                positions = get_alpaca_positions(alpaca_client)
-        except Exception as exc:
-            stats.failed_tickers = len(config.tickers)
-            startup_area = "dry-run startup" if config.dry_run else "Alpaca startup"
-            message = f"{startup_area} failed: {exc}"
-            logger.error(message)
-            send_discord_alert(config, logger, f"Error: {message}")
-            summary = build_summary(config, stats)
-            logger.info(summary)
-            send_discord_alert(config, logger, summary)
-            return 1
-
-        completed_actions: set[tuple[str, str]] = set()
-        for ticker in config.tickers:
-            try:
-                process_ticker(
-                    config=config,
-                    conn=conn,
-                    logger=logger,
-                    ticker=ticker,
-                    positions=positions,
-                    completed_actions=completed_actions,
-                    alpaca_client=alpaca_client,
-                    stats=stats,
-                )
-            except Exception as exc:
-                stats.failed_tickers += 1
-                message = f"{ticker} failed: {exc}"
-                logger.exception(message)
-                insert_trade_log(
-                    conn=conn,
-                    config=config,
-                    ticker=ticker,
-                    signal="ERROR",
-                    order_status="error",
-                    error=str(exc),
-                )
-                send_discord_alert(config, logger, f"Error: {message}")
-
-        summary = build_summary(config, stats)
-        logger.info(summary)
-        send_discord_alert(config, logger, summary)
-        return 0 if stats.failed_tickers == 0 else 1
-    finally:
-        conn.close()
 
 
 def run_paper_order_test(
