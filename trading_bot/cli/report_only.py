@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import sys
+
 
 REPORT_ONLY = "report_only"
+RESEARCH = "research"
+MARKET_DATA = "market_data"
 BROKER_READ = "broker_read"
 NETWORK_DIAGNOSTIC = "network_diagnostic"
 
@@ -28,6 +32,14 @@ def classify_early_route(argv: list[str]) -> str:
         return BROKER_READ
     if "--qqq100-action-preview" in options and "--use-paper-positions-readonly" in options:
         return BROKER_READ
+    if "--qqq100-action-preview" in options:
+        return REPORT_ONLY
+    if argv:
+        from trading_bot.cli.dispatch import PRE_CONFIG_BY_OPTION
+
+        descriptor = PRE_CONFIG_BY_OPTION.get(argv[0])
+        if descriptor is not None:
+            return descriptor.side_effect.value
     return REPORT_ONLY
 
 
@@ -3319,6 +3331,791 @@ def _dispatch_early_command(argv: list[str]) -> int | None:
             print(line)
         return (code)
 
+
+    if argv == ["--plot-strategy-results"]:
+        from trading_bot.research.plotting import plot_strategy_results
+
+        return plot_strategy_results()
+
+    if argv == ["--research-report"]:
+        from trading_bot.research.reporting import generate_research_report
+
+        try:
+            result = generate_research_report()
+        except Exception as exc:
+            print(f"Research report failed: {exc}", file=sys.stderr)
+            return 1
+        for warning in result.warnings:
+            print(f"Warning: {warning}")
+        for line in result.summary_lines:
+            print(line)
+        print(f"Saved research report to {result.output_path}")
+        return 0
+
+    if argv == ["--walk-forward-report"]:
+        from trading_bot.research.walk_forward import generate_walk_forward_report
+
+        try:
+            result = generate_walk_forward_report()
+        except Exception as exc:
+            print(f"Walk-forward report failed: {exc}", file=sys.stderr)
+            return 1
+        for warning in result.warnings:
+            print(f"Warning: {warning}")
+        for line in result.summary_lines:
+            print(line)
+        print(f"Saved walk-forward report to {result.output_path}")
+        return 0
+
+    if argv == ["--strategy-promotion-report"]:
+        from trading_bot.research.promotion import generate_strategy_promotion_report
+
+        try:
+            result = generate_strategy_promotion_report()
+        except Exception as exc:
+            print(f"Strategy promotion report failed: {exc}", file=sys.stderr)
+            return 1
+        for warning in result.warnings:
+            print(f"Warning: {warning}")
+        for line in result.summary_lines:
+            print(line)
+        print(f"Saved strategy promotion report to {result.output_path}")
+        return 0
+
+    if argv == ["--defensive-strategy-report"]:
+        from trading_bot.research.defensive import generate_defensive_strategy_report
+
+        try:
+            result = generate_defensive_strategy_report()
+        except Exception as exc:
+            print(f"Defensive strategy report failed: {exc}", file=sys.stderr)
+            return 1
+        for warning in result.warnings:
+            print(f"Warning: {warning}")
+        for line in result.summary_lines:
+            print(line)
+        print(f"Saved defensive strategy report to {result.output_path}")
+        return 0
+
+    if argv == ["--defensive-candidate-comparison"]:
+        from trading_bot.runners.research_reports import run_defensive_candidate_comparison_command
+
+        return run_defensive_candidate_comparison_command()
+
+    if argv == ["--defensive-research-state-report"]:
+        from trading_bot.runners.research_reports import run_defensive_research_state_report_command
+
+        return run_defensive_research_state_report_command()
+
+    if argv == ["--defensive-allocation-preview"]:
+        from trading_bot.runners.research_reports import run_defensive_allocation_preview_command
+
+        return run_defensive_allocation_preview_command()
+
+    if argv == ["--defensive-allocation-risk-preview"]:
+        from trading_bot.runners.research_reports import run_defensive_allocation_risk_preview_command
+
+        return run_defensive_allocation_risk_preview_command()
+
+    if argv == ["--defensive-allocation-decision-report"]:
+        from trading_bot.runners.research_reports import run_defensive_allocation_decision_report_command
+
+        return run_defensive_allocation_decision_report_command()
+
+    if argv == ["--defensive-execution-readiness-report"]:
+        from trading_bot.runners.research_reports import run_defensive_execution_readiness_report_command
+
+        return run_defensive_execution_readiness_report_command()
+
+    if argv == ["--drawdown-period-report"]:
+        from trading_bot.runners.research_reports import run_drawdown_period_report_command
+
+        return run_drawdown_period_report_command()
+
+    if argv == ["--etf-defensive-drawdown-comparison"]:
+        from trading_bot.runners.research_reports import run_etf_defensive_drawdown_comparison_command
+
+        return run_etf_defensive_drawdown_comparison_command()
+
+    if argv == ["--plot-etf-defensive-comparison"]:
+        from trading_bot.runners.research_reports import run_plot_etf_defensive_comparison_command
+
+        return run_plot_etf_defensive_comparison_command()
+
+    if argv == ["--refresh-defensive-research"]:
+        from trading_bot.runners.research_reports import run_refresh_defensive_research_command
+
+        return run_refresh_defensive_research_command()
+
+    if argv == ["--short-selling-readiness-report"]:
+        from trading_bot.runners.research_reports import run_short_selling_readiness_report_command
+
+        return run_short_selling_readiness_report_command()
+
+    if argv == ["--etf-rotation-robustness"]:
+        from trading_bot.runners.research_reports import run_etf_rotation_robustness_command
+
+        return run_etf_rotation_robustness_command()
+
+    if argv == ["--etf-breadth-regime-backtest"]:
+        from trading_bot.runners.research_reports import run_etf_breadth_regime_backtest_command
+
+        return run_etf_breadth_regime_backtest_command()
+
+    if argv == ["--etf-breadth-regime-decision-report"]:
+        from trading_bot.runners.research_reports import run_etf_breadth_regime_decision_report_command
+
+        return run_etf_breadth_regime_decision_report_command()
+
+    if argv == ["--etf-breadth-regime-robustness"]:
+        from trading_bot.runners.research_reports import run_etf_breadth_regime_robustness_command
+
+        return run_etf_breadth_regime_robustness_command()
+
+    if argv == ["--strategy-improvement-lab"]:
+        from trading_bot.research.strategy_improvement_lab import run_strategy_improvement_lab_files
+
+        try:
+            result = run_strategy_improvement_lab_files()
+        except Exception as exc:
+            print(f"Strategy improvement lab failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-strategy-improvement-lab"]:
+        from trading_bot.research.strategy_improvement_lab import show_strategy_improvement_lab_file
+
+        status_code, lines = show_strategy_improvement_lab_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--strategy-improvement-robustness"]:
+        from trading_bot.research.strategy_improvement_robustness import generate_strategy_improvement_robustness
+
+        try:
+            result = generate_strategy_improvement_robustness()
+        except Exception as exc:
+            print(f"Strategy improvement robustness failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-strategy-improvement-robustness"]:
+        from trading_bot.research.strategy_improvement_robustness import show_strategy_improvement_robustness_file
+
+        status_code, lines = show_strategy_improvement_robustness_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--strategy-improvement-diagnostics"]:
+        from trading_bot.research.strategy_improvement_diagnostics import generate_strategy_improvement_diagnostics
+
+        try:
+            result = generate_strategy_improvement_diagnostics()
+        except Exception as exc:
+            print(f"Strategy improvement diagnostics failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-strategy-improvement-diagnostics"]:
+        from trading_bot.research.strategy_improvement_diagnostics import show_strategy_improvement_diagnostics_file
+
+        status_code, lines = show_strategy_improvement_diagnostics_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--growth-biased-stricter-validation"]:
+        from trading_bot.research.growth_biased_stricter_validation import generate_growth_biased_stricter_validation
+
+        try:
+            result = generate_growth_biased_stricter_validation()
+        except Exception as exc:
+            print(f"Growth-biased stricter validation failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-growth-biased-stricter-validation"]:
+        from trading_bot.research.growth_biased_stricter_validation import show_growth_biased_stricter_validation_file
+
+        status_code, lines = show_growth_biased_stricter_validation_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--growth-biased-stricter-promotion-readiness"]:
+        from trading_bot.research.growth_biased_stricter_promotion_readiness import generate_growth_biased_stricter_promotion_readiness
+
+        try:
+            result = generate_growth_biased_stricter_promotion_readiness()
+        except Exception as exc:
+            print(f"Growth-biased stricter promotion readiness failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-growth-biased-stricter-promotion-readiness"]:
+        from trading_bot.research.growth_biased_stricter_promotion_readiness import show_growth_biased_stricter_promotion_readiness_file
+
+        status_code, lines = show_growth_biased_stricter_promotion_readiness_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--growth-biased-stricter-manual-review-pack"]:
+        from trading_bot.research.growth_biased_stricter_manual_review_pack import generate_growth_biased_stricter_manual_review_pack
+
+        try:
+            result = generate_growth_biased_stricter_manual_review_pack()
+        except Exception as exc:
+            print(f"Growth-biased stricter manual review pack failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-growth-biased-stricter-manual-review-pack"]:
+        from trading_bot.research.growth_biased_stricter_manual_review_pack import show_growth_biased_stricter_manual_review_pack_file
+
+        status_code, lines = show_growth_biased_stricter_manual_review_pack_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--growth-biased-stricter-threshold-neighbourhood"]:
+        from trading_bot.research.growth_biased_stricter_threshold_neighbourhood import generate_growth_biased_stricter_threshold_neighbourhood
+
+        try:
+            result = generate_growth_biased_stricter_threshold_neighbourhood()
+        except Exception as exc:
+            print(f"Growth-biased stricter threshold neighbourhood failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-growth-biased-stricter-threshold-neighbourhood"]:
+        from trading_bot.research.growth_biased_stricter_threshold_neighbourhood import show_growth_biased_stricter_threshold_neighbourhood_file
+
+        status_code, lines = show_growth_biased_stricter_threshold_neighbourhood_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--growth-biased-stricter-cost-turnover-stress"]:
+        from trading_bot.research.growth_biased_stricter_cost_turnover_stress import generate_growth_biased_stricter_cost_turnover_stress
+
+        try:
+            result = generate_growth_biased_stricter_cost_turnover_stress()
+        except Exception as exc:
+            print(f"Growth-biased stricter cost/turnover stress failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-growth-biased-stricter-cost-turnover-stress"]:
+        from trading_bot.research.growth_biased_stricter_cost_turnover_stress import show_growth_biased_stricter_cost_turnover_stress_file
+
+        status_code, lines = show_growth_biased_stricter_cost_turnover_stress_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--growth-biased-stricter-persistence-filter"]:
+        from trading_bot.research.growth_biased_stricter_persistence_filter import generate_growth_biased_stricter_persistence_filter
+
+        try:
+            result = generate_growth_biased_stricter_persistence_filter()
+        except Exception as exc:
+            print(f"Growth-biased stricter persistence filter failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-growth-biased-stricter-persistence-filter"]:
+        from trading_bot.research.growth_biased_stricter_persistence_filter import show_growth_biased_stricter_persistence_filter_file
+
+        status_code, lines = show_growth_biased_stricter_persistence_filter_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--codex-ambitious-validation"]:
+        from trading_bot.research.codex_ambitious_validation import generate_codex_ambitious_validation
+
+        try:
+            result = generate_codex_ambitious_validation()
+        except Exception as exc:
+            print(f"Codex ambitious validation failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-codex-ambitious-validation"]:
+        from trading_bot.research.codex_ambitious_validation import show_codex_ambitious_validation_file
+
+        status_code, lines = show_codex_ambitious_validation_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--codex-ambitious-split-drawdown-validation"]:
+        from trading_bot.research.codex_ambitious_split_drawdown_validation import generate_codex_ambitious_split_drawdown_validation
+
+        try:
+            result = generate_codex_ambitious_split_drawdown_validation()
+        except Exception as exc:
+            print(f"Codex ambitious split/drawdown validation failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-codex-ambitious-split-drawdown-validation"]:
+        from trading_bot.research.codex_ambitious_split_drawdown_validation import show_codex_ambitious_split_drawdown_validation_file
+
+        status_code, lines = show_codex_ambitious_split_drawdown_validation_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--codex-ambitious-lead-decision"]:
+        from trading_bot.research.codex_ambitious_lead_decision import generate_codex_ambitious_lead_decision
+
+        try:
+            result = generate_codex_ambitious_lead_decision()
+        except Exception as exc:
+            print(f"Codex ambitious lead decision failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-codex-ambitious-lead-decision"]:
+        from trading_bot.research.codex_ambitious_lead_decision import show_codex_ambitious_lead_decision_file
+
+        status_code, lines = show_codex_ambitious_lead_decision_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--crypto-research-preview"]:
+        from trading_bot.research.crypto import run_crypto_research_preview_files
+
+        result = run_crypto_research_preview_files()
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--crypto-universe-readiness-report"]:
+        from trading_bot.research.crypto_universe_readiness import generate_crypto_universe_readiness_report
+
+        try:
+            result = generate_crypto_universe_readiness_report()
+        except Exception as exc:
+            print(f"Crypto universe readiness report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-crypto-universe-readiness-report"]:
+        from trading_bot.research.crypto_universe_readiness import show_crypto_universe_readiness_report_file
+
+        status_code, lines = show_crypto_universe_readiness_report_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--expanded-crypto-strategy-lab"]:
+        from trading_bot.research.expanded_crypto_strategy_lab import generate_expanded_crypto_strategy_lab
+
+        try:
+            result = generate_expanded_crypto_strategy_lab()
+        except Exception as exc:
+            print(f"Expanded crypto strategy lab failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-expanded-crypto-strategy-lab"]:
+        from trading_bot.research.expanded_crypto_strategy_lab import show_expanded_crypto_strategy_lab_file
+
+        status_code, lines = show_expanded_crypto_strategy_lab_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--expanded-crypto-robustness-report"]:
+        from trading_bot.research.expanded_crypto_robustness_report import generate_expanded_crypto_robustness_report
+
+        try:
+            result = generate_expanded_crypto_robustness_report()
+        except Exception as exc:
+            print(f"Expanded crypto robustness report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-expanded-crypto-robustness-report"]:
+        from trading_bot.research.expanded_crypto_robustness_report import show_expanded_crypto_robustness_report_file
+
+        status_code, lines = show_expanded_crypto_robustness_report_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--crypto-equal-weight-crash-gate"]:
+        from trading_bot.research.crypto_equal_weight_crash_gate import generate_crypto_equal_weight_crash_gate
+
+        try:
+            result = generate_crypto_equal_weight_crash_gate()
+        except Exception as exc:
+            print(f"Crypto equal-weight crash-gate report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-crypto-equal-weight-crash-gate"]:
+        from trading_bot.research.crypto_equal_weight_crash_gate import show_crypto_equal_weight_crash_gate_file
+
+        status_code, lines = show_crypto_equal_weight_crash_gate_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--crypto-equal-weight-volatility-scaling"]:
+        from trading_bot.research.crypto_equal_weight_volatility_scaling import generate_crypto_equal_weight_volatility_scaling
+
+        try:
+            result = generate_crypto_equal_weight_volatility_scaling()
+        except Exception as exc:
+            print(f"Crypto equal-weight volatility-scaling report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-crypto-equal-weight-volatility-scaling"]:
+        from trading_bot.research.crypto_equal_weight_volatility_scaling import show_crypto_equal_weight_volatility_scaling_file
+
+        status_code, lines = show_crypto_equal_weight_volatility_scaling_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--crypto-equal-weight-capped-risk-report"]:
+        from trading_bot.research.crypto_equal_weight_capped_risk_report import generate_crypto_equal_weight_capped_risk_report
+
+        try:
+            result = generate_crypto_equal_weight_capped_risk_report()
+        except Exception as exc:
+            print(f"Crypto equal-weight capped-risk report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-crypto-equal-weight-capped-risk-report"]:
+        from trading_bot.research.crypto_equal_weight_capped_risk_report import show_crypto_equal_weight_capped_risk_report_file
+
+        status_code, lines = show_crypto_equal_weight_capped_risk_report_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--expanded-crypto-lead-decision"]:
+        from trading_bot.research.expanded_crypto_lead_decision import generate_expanded_crypto_lead_decision
+
+        try:
+            result = generate_expanded_crypto_lead_decision()
+        except Exception as exc:
+            print(f"Expanded crypto lead decision failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-expanded-crypto-lead-decision"]:
+        from trading_bot.research.expanded_crypto_lead_decision import show_expanded_crypto_lead_decision_file
+
+        status_code, lines = show_expanded_crypto_lead_decision_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--crypto-lead-split-sensitivity-diagnosis"]:
+        from trading_bot.research.crypto_lead_split_sensitivity_diagnosis import generate_crypto_lead_split_sensitivity_diagnosis
+
+        try:
+            result = generate_crypto_lead_split_sensitivity_diagnosis()
+        except Exception as exc:
+            print(f"Crypto lead split-sensitivity diagnosis failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-crypto-lead-split-sensitivity-diagnosis"]:
+        from trading_bot.research.crypto_lead_split_sensitivity_diagnosis import show_crypto_lead_split_sensitivity_diagnosis_file
+
+        status_code, lines = show_crypto_lead_split_sensitivity_diagnosis_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--expanded-crypto-manual-review-pack"]:
+        from trading_bot.research.expanded_crypto_manual_review_pack import generate_expanded_crypto_manual_review_pack
+
+        try:
+            result = generate_expanded_crypto_manual_review_pack()
+        except Exception as exc:
+            print(f"Expanded crypto manual review pack failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-expanded-crypto-manual-review-pack"]:
+        from trading_bot.research.expanded_crypto_manual_review_pack import show_expanded_crypto_manual_review_pack_file
+
+        status_code, lines = show_expanded_crypto_manual_review_pack_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--project-research-state-refresh"]:
+        from trading_bot.research.project_research_state_refresh import generate_project_research_state_refresh
+
+        try:
+            result = generate_project_research_state_refresh()
+        except Exception as exc:
+            print(f"Project research state refresh failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-project-research-state-refresh"]:
+        from trading_bot.research.project_research_state_refresh import show_project_research_state_refresh_file
+
+        status_code, lines = show_project_research_state_refresh_file()
+        for line in lines:
+            print(line)
+        return status_code
+
+    if argv == ["--project-research-state-quality-report"]:
+        from trading_bot.research.project_research_state_quality_report import generate_project_research_state_quality_report
+
+        try:
+            result = generate_project_research_state_quality_report()
+        except Exception as exc:
+            print(f"Project research-state quality report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--crypto-strategy-lab"]:
+        from trading_bot.research.crypto_lab import run_crypto_strategy_lab_files
+
+        try:
+            result = run_crypto_strategy_lab_files()
+        except Exception as exc:
+            print(f"Crypto strategy lab failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--crypto-strategy-report"]:
+        from trading_bot.runners.research_reports import run_crypto_strategy_report_command
+
+        return run_crypto_strategy_report_command()
+
+    if argv == ["--crypto-strategy-decision-report"]:
+        from trading_bot.runners.research_reports import run_crypto_strategy_decision_report_command
+
+        return run_crypto_strategy_decision_report_command()
+
+    if argv == ["--crypto-cost-stress-report"]:
+        from trading_bot.research.crypto_cost_stress import generate_crypto_cost_stress_report
+
+        try:
+            result = generate_crypto_cost_stress_report()
+        except Exception as exc:
+            print(f"Crypto cost stress report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        print(f"Saved crypto cost stress report to {result.output_path}")
+        return 0
+
+    if argv == ["--crypto-robustness-report"]:
+        from trading_bot.research.crypto_robustness import generate_crypto_robustness_report
+
+        try:
+            result = generate_crypto_robustness_report()
+        except Exception as exc:
+            print(f"Crypto robustness report failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        print(f"Saved crypto robustness report to {result.output_path}")
+        return 0
+
+    if argv == ["--crypto-period-diagnostics"]:
+        from trading_bot.runners.research_reports import run_crypto_period_diagnostics_command
+
+        return run_crypto_period_diagnostics_command()
+
+    if argv == ["--preview-crypto-signals"]:
+        from trading_bot.research.crypto_signal_preview import generate_crypto_signal_preview
+
+        try:
+            result = generate_crypto_signal_preview()
+        except Exception as exc:
+            print(f"Crypto signal preview failed: {exc}", file=sys.stderr)
+            return 1
+        for line in result.summary_lines:
+            print(line)
+        return 0
+
+    if argv == ["--show-crypto-monitor"]:
+        from trading_bot.runners.research_reports import run_show_crypto_monitor_command
+
+        return run_show_crypto_monitor_command()
+
+    if argv == ["--crypto-research-state-report"]:
+        from trading_bot.runners.research_reports import run_crypto_research_state_report_command
+
+        return run_crypto_research_state_report_command()
+
+    if argv == ["--ticker-universe-readiness-report"]:
+        from trading_bot.runners.research_reports import run_ticker_universe_readiness_report_command
+
+        return run_ticker_universe_readiness_report_command()
+
+    if argv == ["--market-monitor-snapshot"]:
+        from trading_bot.runners.research_reports import run_market_monitor_snapshot_command
+
+        return run_market_monitor_snapshot_command()
+
+    if argv == ["--show-market-monitor"]:
+        from trading_bot.runners.research_reports import run_show_market_monitor_command
+
+        return run_show_market_monitor_command()
+
+    if argv == ["--market-monitor-quality-report"]:
+        from trading_bot.runners.research_reports import run_market_monitor_quality_report_command
+
+        return run_market_monitor_quality_report_command()
+
+    if argv == ["--refresh-market-monitor"]:
+        from trading_bot.runners.research_reports import run_refresh_market_monitor_command
+
+        return run_refresh_market_monitor_command()
+
+    if argv == ["--monitor-lockfile-readiness-report"]:
+        from trading_bot.runners.research_reports import run_monitor_lockfile_readiness_report_command
+
+        return run_monitor_lockfile_readiness_report_command()
+
+    if argv == ["--show-promoted-actions"]:
+        from trading_bot.runners.research_reports import run_show_promoted_actions_command
+
+        return run_show_promoted_actions_command()
+
+    if argv == ["--promoted-risk-preview"]:
+        from trading_bot.runners.previews import run_promoted_risk_preview
+
+        return run_promoted_risk_preview()
+
+    if argv == ["--promoted-consensus-preview"]:
+        from trading_bot.runners.previews import run_promoted_consensus_preview
+
+        return run_promoted_consensus_preview()
+
+    if argv == ["--promoted-decision-preview"]:
+        from trading_bot.runners.previews import run_promoted_decision_preview
+
+        return run_promoted_decision_preview()
+
+    if argv == ["--show-promoted-decision"]:
+        from trading_bot.runners.research_reports import run_show_promoted_decision_command
+
+        return run_show_promoted_decision_command()
+
+    if argv == ["--deployment-readiness-report"]:
+        from trading_bot.runners.research_reports import run_deployment_readiness_report_command
+
+        return run_deployment_readiness_report_command()
+
+    if argv == ["--vps-operations-readiness-report"]:
+        from trading_bot.runners.research_reports import run_vps_operations_readiness_report_command
+
+        return run_vps_operations_readiness_report_command()
+
+    if argv == ["--portfolio-risk-policy-report"]:
+        from trading_bot.runners.research_reports import run_portfolio_risk_policy_report_command
+
+        return run_portfolio_risk_policy_report_command()
+
+    if argv == ["--show-portfolio-risk-policy"]:
+        from trading_bot.runners.research_reports import run_show_portfolio_risk_policy_command
+
+        return run_show_portfolio_risk_policy_command()
+
+    if argv == ["--paper-kill-switch-readiness-report"]:
+        from trading_bot.runners.research_reports import run_paper_kill_switch_readiness_report_command
+
+        return run_paper_kill_switch_readiness_report_command()
+
+    if argv == ["--paper-kill-switch-gate-report"]:
+        from trading_bot.runners.research_reports import run_paper_kill_switch_gate_report_command
+
+        return run_paper_kill_switch_gate_report_command()
+
+    if argv == ["--paper-execution-protection-report"]:
+        from trading_bot.runners.research_reports import run_paper_execution_protection_report_command
+
+        return run_paper_execution_protection_report_command()
+
+    if argv == ["--normal-bot-execution-policy-report"]:
+        from trading_bot.runners.research_reports import run_normal_bot_execution_policy_report_command
+
+        return run_normal_bot_execution_policy_report_command()
+
+    if argv == ["--execution-eligibility-report"]:
+        from trading_bot.runners.research_reports import run_execution_eligibility_report_command
+
+        return run_execution_eligibility_report_command()
+
+    if argv == ["--build-research-dashboard"]:
+        from trading_bot.runners.research_reports import run_build_research_dashboard_command
+
+        return run_build_research_dashboard_command()
+
+    if argv == ["--show-promoted-risk"]:
+        from trading_bot.runners.research_reports import run_show_promoted_risk_command
+
+        return run_show_promoted_risk_command()
 
 def _parse_live_preflight_early_args(argv: list[str]) -> dict[str, str]:
     values = {

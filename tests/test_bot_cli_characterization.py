@@ -9,6 +9,7 @@ import pytest
 
 import bot
 from trading_bot.cli import parser as cli_parser
+from trading_bot.research import reporting
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -107,7 +108,7 @@ def test_report_only_flag_dispatches_without_loading_config(monkeypatch: pytest.
     args = parse_cli(monkeypatch, "--research-report")
     monkeypatch.setattr(bot, "parse_args", lambda: args)
     monkeypatch.setattr(
-        bot,
+        reporting,
         "generate_research_report",
         lambda: SimpleNamespace(warnings=[], summary_lines=["report"], output_path="report.csv"),
     )
