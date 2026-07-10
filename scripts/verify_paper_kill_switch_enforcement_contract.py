@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON = sys.executable
+APPLICATION = ROOT / "trading_bot" / "cli" / "application.py"
 
 CONTRACT_PREREQUISITES = [
     "alpaca_paper_only",
@@ -49,7 +50,7 @@ REPORT_PREVIEW_MODULES = [
 def main() -> int:
     failures: list[str] = []
     help_text = bot_help_text()
-    bot_source = read_text(ROOT / "bot.py")
+    bot_source = read_text(APPLICATION)
     config_example = read_json(ROOT / "config.example.json")
 
     verify_contract_defined(failures)
@@ -183,11 +184,11 @@ def verify_helper_wired_only_to_manual_paper_order_test(failures: list[str]) -> 
     helper_text = read_text(helper_path)
     if "evaluate_paper_kill_switch_gate" not in helper_text:
         failures.append("isolated paper kill-switch helper must expose evaluate_paper_kill_switch_gate")
-    bot_source = read_text(ROOT / "bot.py")
+    bot_source = read_text(APPLICATION)
     if "evaluate_paper_kill_switch_gate" not in bot_source:
-        failures.append("manual paper-order test should use isolated paper kill-switch helper")
+        failures.append("configured application should use isolated paper kill-switch helper")
     elif not helper_call_is_limited_to_scoped_paper_commands(bot_source):
-        failures.append("isolated helper must be limited to manual and slow SMA paper preflights in bot.py")
+        failures.append("isolated helper must be limited to manual and slow SMA paper preflights")
     high_risk_paths = [
         ROOT / "trading_bot" / "execution.py",
         ROOT / "trading_bot" / "alpaca_client.py",
@@ -219,7 +220,7 @@ def helper_call_is_limited_to_scoped_paper_commands(bot_source: str) -> bool:
         return False
     return preflight_before_terms(
         manual_source,
-        ["TradingClient(", "submit_alpaca_order(", "init_database("],
+        ["TradingClient(", "submit_paper_order(", "init_database("],
     ) and preflight_before_terms(
         slow_source,
         ["configure_yfinance_cache(", "init_database(", "send_discord_alert(", "TradingClient(", "get_alpaca_positions("],

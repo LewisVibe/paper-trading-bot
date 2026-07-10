@@ -6,6 +6,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+APPLICATION = ROOT / "trading_bot" / "cli" / "application.py"
+PARSER = ROOT / "trading_bot" / "cli" / "parser.py"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -26,7 +28,7 @@ from trading_bot.safety.qqq100_paper_execution import (  # noqa: E402
 
 def main() -> int:
     failures: list[str] = []
-    bot_source = read_text(ROOT / "bot.py")
+    bot_source = read_text(PARSER) + "\n" + read_text(APPLICATION)
     helper_source = read_text(ROOT / "trading_bot" / "safety" / "qqq100_paper_execution.py")
 
     verify_helper_cases(failures)
@@ -177,10 +179,10 @@ def verify_command_registration(bot_source: str, failures: list[str]) -> None:
         "--execute-qqq100-paper",
         "--confirm-qqq100-paper",
         "run_execute_qqq100_paper(",
-        "confirm_qqq100_paper=args.confirm_qqq100_paper",
+        "confirm_qqq100_paper=command_args.confirm_qqq100_paper",
     ]:
         if token not in bot_source:
-            failures.append(f"bot.py missing QQQ100 paper command token: {token}")
+            failures.append(f"CLI sources missing QQQ100 paper command token: {token}")
 
 
 def verify_runtime_scope(bot_source: str, failures: list[str]) -> None:
@@ -198,7 +200,7 @@ def verify_runtime_scope(bot_source: str, failures: list[str]) -> None:
         "get_open_orders_for_ticker(alpaca_client, QQQ100_TICKER)",
         "recent_matching_manual_smoke_test_order_check(",
         "validate_alpaca_asset_for_order(",
-        "submit_alpaca_order(",
+        "submit_paper_order(",
         "write_qqq100_paper_execution_report(",
     ]
     for token in required:

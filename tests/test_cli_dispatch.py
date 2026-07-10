@@ -6,8 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import bot
-from trading_bot.cli import dispatch, report_only
+from trading_bot.cli import application, dispatch, report_only
 from trading_bot.runners import previews
 
 
@@ -41,14 +40,14 @@ def test_config_registry_is_unique_and_has_explicit_handlers():
 
     assert len(destinations) == 19
     assert len(destinations) == len(set(destinations))
-    assert set(bot.build_config_handlers()) == set(destinations)
+    assert set(application.build_config_handlers()) == set(destinations)
     assert set(destinations).isdisjoint(descriptor.dest for descriptor in dispatch.PRE_CONFIG_COMMANDS)
 
 
-def test_bot_reexports_saved_preview_runners_for_compatibility():
-    assert bot.run_promoted_risk_preview is previews.run_promoted_risk_preview
-    assert bot.run_promoted_consensus_preview is previews.run_promoted_consensus_preview
-    assert bot.run_promoted_decision_preview is previews.run_promoted_decision_preview
+def test_application_uses_extracted_saved_preview_runners():
+    assert application.run_promoted_risk_preview is previews.run_promoted_risk_preview
+    assert application.run_promoted_consensus_preview is previews.run_promoted_consensus_preview
+    assert application.run_promoted_decision_preview is previews.run_promoted_decision_preview
 
 
 def test_every_pre_config_descriptor_routes_once(monkeypatch: pytest.MonkeyPatch):
@@ -147,8 +146,8 @@ def test_report_only_wrapper_refuses_non_report_descriptors(monkeypatch: pytest.
         assert report_only.dispatch_report_only(argv) is None
 
 
-def test_main_no_longer_contains_command_if_chain():
-    tree = ast.parse(inspect.getsource(bot.main))
+def test_application_run_has_no_command_if_chain():
+    tree = ast.parse(inspect.getsource(application.run))
     direct_arg_checks = [
         node
         for node in tree.body[0].body

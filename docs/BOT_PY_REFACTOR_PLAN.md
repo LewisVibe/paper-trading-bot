@@ -1,5 +1,8 @@
 # `bot.py` Refactor Plan
 
+**Status:** all planned phases are implemented. `bot.py` remains the supported
+compatibility command and delegates to the owned modules under `trading_bot/`.
+
 ## Purpose
 
 `bot.py` is currently the compatibility entry point for the project, but at

@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Market monitoring and Alpaca paper trading bot.")
     parser.add_argument(
         "--config",
@@ -2506,4 +2506,4 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Create simple PNG charts from saved strategy comparison CSV files.",
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)

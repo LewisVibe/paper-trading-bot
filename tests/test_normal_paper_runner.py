@@ -8,7 +8,7 @@ from unittest.mock import ANY
 
 import pytest
 
-import bot
+from trading_bot.cli import application
 from trading_bot.positions import Position
 from trading_bot.runners import paper_execution
 
@@ -92,10 +92,8 @@ def make_dependencies(**overrides):
     return paper_execution.NormalRunDependencies(**values)
 
 
-def test_bot_reexports_normal_runner_for_compatibility():
-    assert bot.run_bot is paper_execution.run_bot
-    assert bot.process_ticker is paper_execution.process_ticker
-    assert bot.RunStats is paper_execution.RunStats
+def test_application_uses_extracted_normal_runner():
+    assert application.run_bot is paper_execution.run_bot
 
 
 def test_normal_runner_has_no_order_submission_or_clock_path():

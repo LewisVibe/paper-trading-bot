@@ -9,8 +9,10 @@ A safety-first Python research and paper-trading workspace for testing market si
 
 The project started as a simple moving-average bot, then grew into a controlled research lab: strategy backtests, paper-readiness checks, risk previews, Discord monitoring, SQLite audit trails, and explicit kill-switch gates around anything that could touch Alpaca paper orders.
 
-For the staged plan to reduce the legacy `bot.py` entry point without changing
-trading behaviour, see [the bot.py refactor plan](docs/BOT_PY_REFACTOR_PLAN.md).
+The staged `bot.py` refactor is complete. The supported command remains
+`python bot.py`, while runtime ownership now lives under `trading_bot/`.
+See [the refactor plan](docs/BOT_PY_REFACTOR_PLAN.md) for the safety boundaries
+used during the migration.
 
 > **Important:** this is a learning and paper-trading project. It is not financial advice, does not guarantee profit, and is deliberately designed to avoid live trading.
 
@@ -66,8 +68,11 @@ Paper-order paths are separate commands and require explicit confirmation flags.
 
 ```text
 paper-trading-bot/
-|-- bot.py                         # Main CLI entrypoint
+|-- bot.py                         # Thin, supported compatibility entrypoint
 |-- trading_bot/                   # Config, execution, data, strategies, research modules
+|   |-- cli/                       # Parser, route registry, lazy entrypoint, configured command app
+|   |-- runners/                   # Normal monitoring, previews, backtests, research orchestration
+|   |-- paper_orders.py            # Sole audited Alpaca paper-order submission gateway
 |   |-- strategies/                # Strategy definitions and registry
 |   |-- research/                  # Backtests, reports, readiness checks, dashboards
 |   `-- safety/                    # Kill switch, lockfile, QQQ100 paper-execution guards
@@ -77,6 +82,28 @@ paper-trading-bot/
 |-- data/                          # Generated outputs, ignored except .gitkeep
 `-- logs/                          # Runtime logs, ignored except .gitkeep
 ```
+
+## Code Ownership
+
+`bot.py` deliberately contains no trading logic. It forwards command-line
+arguments to `trading_bot.cli.entrypoint`, which first handles saved-output and
+report-only routes without importing broker or market-data dependencies. Routes
+that need configuration are then passed to `trading_bot.cli.application`.
+
+Command ownership is split by responsibility:
+
+| Area | Owner |
+| --- | --- |
+| Public command and lazy startup | `bot.py`, `trading_bot/cli/entrypoint.py` |
+| CLI options and route metadata | `trading_bot/cli/parser.py`, `trading_bot/cli/dispatch.py` |
+| Saved-output/report-only commands | `trading_bot/cli/report_only.py`, `trading_bot/research/` |
+| Configured command composition | `trading_bot/cli/application.py` |
+| Normal monitoring, previews, and backtests | `trading_bot/runners/` |
+| Paper-order submission | `trading_bot/paper_orders.py` |
+
+Read-only Alpaca reporting remains separate from the paper-order gateway. The
+normal run remains monitoring-only, and only the three explicitly confirmed
+paper commands can reach the audited submission gateway.
 
 ## Quick Start
 
@@ -335,14 +362,19 @@ The VPS daily monitoring summary includes the saved paper-live go/no-go dashboar
 
 ```mermaid
 flowchart LR
-    Config["config.json<br/>local + private"] --> Bot["bot.py CLI"]
-    MarketData["yfinance market data"] --> Bot
-    Bot --> Signals["signals + previews"]
-    Bot --> Research["research reports<br/>CSV outputs"]
-    Bot --> SQLite["SQLite trade_log"]
-    Bot --> Discord["Discord alerts<br/>optional"]
-    Bot --> Safety["paper-only guards<br/>kill switch checks"]
-    Safety --> Alpaca["Alpaca paper account<br/>confirmed paths only"]
+    User["python bot.py"] --> Facade["bot.py<br/>thin compatibility facade"]
+    Facade --> Entry["cli/entrypoint.py<br/>lazy routing"]
+    Entry --> Reports["cli/report_only.py<br/>saved/report-only routes"]
+    Reports --> Research["research modules<br/>CSV outputs"]
+    Entry --> App["cli/application.py<br/>configured commands"]
+    Config["config.json<br/>local + private"] --> App
+    App --> Runners["runners<br/>monitoring, previews, backtests"]
+    Runners --> MarketData["yfinance market data"]
+    Runners --> SQLite["SQLite trade_log"]
+    Runners --> Discord["Discord alerts<br/>optional"]
+    App --> Safety["paper-only guards<br/>kill switch checks"]
+    Safety --> Gateway["paper_orders.py<br/>audited submission gateway"]
+    Gateway --> Alpaca["Alpaca paper account<br/>confirmed paths only"]
 ```
 
 ## Current Direction

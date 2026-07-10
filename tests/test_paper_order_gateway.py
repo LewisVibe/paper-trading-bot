@@ -9,8 +9,8 @@ from types import SimpleNamespace
 import pytest
 from alpaca.trading.enums import OrderSide, TimeInForce
 
-import bot
 from trading_bot.alpaca_client import refresh_order_status
+from trading_bot.cli import application
 from trading_bot.config import ConfigError
 from trading_bot.paper_orders import (
     PaperOrderRefused,
@@ -30,6 +30,7 @@ from trading_bot.safety.qqq100_paper_execution import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+APPLICATION_PATH = ROOT / "trading_bot" / "cli" / "application.py"
 
 
 class MockTradingClient:
@@ -150,7 +151,7 @@ def test_only_gateway_calls_broker_submit_and_all_order_routes_use_gateway():
             if isinstance(node.func, ast.Attribute) and node.func.attr == "submit_order":
                 direct_submitters.append((path.relative_to(ROOT), owner))
             if (
-                path == ROOT / "bot.py"
+                path == APPLICATION_PATH
                 and isinstance(node.func, ast.Name)
                 and node.func.id == "TradingClient"
                 and owner in order_client_owners
@@ -160,7 +161,7 @@ def test_only_gateway_calls_broker_submit_and_all_order_routes_use_gateway():
                 assert isinstance(paper, ast.Constant) and paper.value is True
                 paper_client_owners.add(owner)
             if (
-                path == ROOT / "bot.py"
+                path == APPLICATION_PATH
                 and isinstance(node.func, ast.Name)
                 and node.func.id == "submit_paper_order"
             ):
@@ -266,13 +267,13 @@ def test_qqq100_preflight_refuses_confirmation_live_open_or_duplicate(unsafe_val
 )
 def test_slow_sma_preflight_refuses_live_mode_or_shorting(config):
     with pytest.raises(ConfigError):
-        bot.validate_slow_sma_execution_preflight_safety(config)
+        application.validate_slow_sma_execution_preflight_safety(config)
 
 
 def test_slow_sma_open_order_refusal_creates_no_order_quantity():
     position = Position(Decimal("0"))
 
-    side, action, quantity, position_after, message = bot.decide_slow_sma_execution_action(
+    side, action, quantity, position_after, message = application.decide_slow_sma_execution_action(
         "long",
         position,
         Decimal("1"),
