@@ -9,6 +9,9 @@ A safety-first Python research and paper-trading workspace for testing market si
 
 The project started as a simple moving-average bot, then grew into a controlled research lab: strategy backtests, paper-readiness checks, risk previews, Discord monitoring, SQLite audit trails, and explicit kill-switch gates around anything that could touch Alpaca paper orders.
 
+For the staged plan to reduce the legacy `bot.py` entry point without changing
+trading behaviour, see [the bot.py refactor plan](docs/BOT_PY_REFACTOR_PLAN.md).
+
 > **Important:** this is a learning and paper-trading project. It is not financial advice, does not guarantee profit, and is deliberately designed to avoid live trading.
 
 ## Why It Looks The Way It Does
