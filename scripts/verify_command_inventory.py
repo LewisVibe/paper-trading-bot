@@ -570,7 +570,7 @@ REQUIRED_COMMANDS = [
 
 def main() -> int:
     failures: list[str] = []
-    bot_source = (ROOT / "bot.py").read_text(encoding="utf-8")
+    parser_source = (ROOT / "trading_bot" / "cli" / "parser.py").read_text(encoding="utf-8")
     help_available = True
     try:
         result = subprocess.run(
@@ -591,16 +591,16 @@ def main() -> int:
         output = ""
 
     for command in REQUIRED_COMMANDS:
-        if command not in output and command not in bot_source:
+        if command not in output and command not in parser_source:
             failures.append(f"missing command from help output: {command}")
 
-    command_source = output if help_available else bot_source
+    command_source = output if help_available else parser_source
     if "--paper-order-test" in command_source and "--confirm-paper-order" not in command_source:
         failures.append("--paper-order-test must remain paired with --confirm-paper-order in help output")
     if "--execute-slow-sma-paper" in command_source and "--confirm-slow-sma-paper" not in command_source:
         failures.append("--execute-slow-sma-paper must remain paired with --confirm-slow-sma-paper in help output")
 
-    readonly_context = command_context_for(output, bot_source, "--use-paper-positions-readonly").lower()
+    readonly_context = command_context_for(output, parser_source, "--use-paper-positions-readonly").lower()
     if "--use-paper-positions-readonly" not in readonly_context:
         failures.append("--use-paper-positions-readonly help line was not found")
     else:
@@ -608,11 +608,11 @@ def main() -> int:
             if expected not in readonly_context:
                 failures.append(f"--use-paper-positions-readonly help should mention {expected!r}")
 
-    paper_order_context = command_context_for(output, bot_source, "--paper-order-test").lower()
+    paper_order_context = command_context_for(output, parser_source, "--paper-order-test").lower()
     if "paper" not in paper_order_context or "order" not in paper_order_context:
         failures.append("--paper-order-test help should clearly describe a paper order test")
 
-    slow_sma_context = command_context_for(output, bot_source, "--confirm-slow-sma-paper").lower()
+    slow_sma_context = command_context_for(output, parser_source, "--confirm-slow-sma-paper").lower()
     if "required" not in slow_sma_context:
         failures.append("--confirm-slow-sma-paper help should clearly say it is required")
 
@@ -624,7 +624,7 @@ def main() -> int:
 
     print("Command inventory verification passed.")
     if not help_available:
-        print("Used static bot.py fallback because python bot.py --help could not import optional runtime dependencies.")
+        print("Used the static CLI parser fallback because python bot.py --help could not import optional runtime dependencies.")
     return 0
 
 

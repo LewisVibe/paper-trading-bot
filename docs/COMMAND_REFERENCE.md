@@ -51,7 +51,14 @@ Short selling is riskier than normal long-only trading because losses can grow q
 
 ## Files
 
-- `bot.py` - the bot.
+- `bot.py` - the thin, supported compatibility command; it contains no trading logic.
+- `trading_bot/cli/entrypoint.py` - lazy command entrypoint that keeps report-only routes isolated from broker and market-data imports.
+- `trading_bot/cli/parser.py` - complete public command-line option catalogue.
+- `trading_bot/cli/dispatch.py` - side-effect classifications and command registries.
+- `trading_bot/cli/report_only.py` - saved-output and report-only command routing.
+- `trading_bot/cli/application.py` - configuration loading and configured-command composition.
+- `trading_bot/runners/` - normal monitoring, backtest, preview, and research runners.
+- `trading_bot/paper_orders.py` - the sole audited Alpaca paper-order submission gateway.
 - `config.example.json` - safe example settings.
 - `requirements.txt` - Python packages.
 - `data/trades.db` - created automatically when the bot runs.

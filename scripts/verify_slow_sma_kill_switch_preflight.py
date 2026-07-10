@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+APPLICATION = ROOT / "trading_bot" / "cli" / "application.py"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -23,7 +24,7 @@ SUSPICIOUS_NEW_EXECUTION_COMMANDS = [
 
 def main() -> int:
     failures: list[str] = []
-    bot_source = read_text(ROOT / "bot.py")
+    bot_source = read_text(APPLICATION)
     help_text = bot_help_text()
 
     verify_help_gates(help_text, failures)
@@ -66,8 +67,8 @@ def verify_no_new_execution_commands(help_text: str, failures: list[str]) -> Non
 
 
 def verify_slow_sma_preflight_wiring(bot_source: str, failures: list[str]) -> None:
-    if "from trading_bot.safety.paper_kill_switch import evaluate_paper_kill_switch_gate" not in bot_source:
-        failures.append("bot.py must import evaluate_paper_kill_switch_gate")
+    if "evaluate_paper_kill_switch_gate" not in bot_source:
+        failures.append("configured application must import evaluate_paper_kill_switch_gate")
 
     slow_source = function_block(
         bot_source,
@@ -126,14 +127,14 @@ def verify_slow_sma_preflight_wiring(bot_source: str, failures: list[str]) -> No
         "process_slow_sma_execution_ticker(",
         "insert_trade_log(",
         "send_discord_alert(",
-        "submit_alpaca_order(",
+        "submit_paper_order(",
         "get_open_orders_for_ticker(",
     ]:
         if term in blocked_segment:
             failures.append(f"blocked slow SMA segment must not call {term}")
 
     if ticker_source:
-        for term in ["get_open_orders_for_ticker(", "submit_alpaca_order(", "insert_trade_log(", "send_discord_alert("]:
+        for term in ["get_open_orders_for_ticker(", "submit_paper_order(", "insert_trade_log(", "send_discord_alert("]:
             if term not in ticker_source:
                 failures.append(f"slow SMA ticker execution block should still contain existing term: {term}")
 
@@ -143,7 +144,7 @@ def verify_paper_order_preflight_still_intact(bot_source: str, failures: list[st
     if not manual_source:
         failures.append("could not locate run_paper_order_test block")
         return
-    if not preflight_before_terms(manual_source, ["TradingClient(", "submit_alpaca_order(", "init_database("]):
+    if not preflight_before_terms(manual_source, ["TradingClient(", "submit_paper_order(", "init_database("]):
         failures.append("paper-order-test preflight should remain before Alpaca/database/order work")
 
 

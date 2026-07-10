@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from trading_bot.cli import entrypoint, report_only
+from trading_bot.cli import application, entrypoint, report_only
 from trading_bot.research import vps_monitoring_status
 
 
@@ -88,6 +88,19 @@ def test_entrypoint_delegates_to_compatibility_dispatcher(monkeypatch: pytest.Mo
     assert calls == [["--saved-output-command"]]
 
 
+def test_entrypoint_lazily_delegates_configured_route(monkeypatch: pytest.MonkeyPatch):
+    calls: list[list[str]] = []
+    monkeypatch.setattr(entrypoint, "dispatch_early_command", lambda _argv: None)
+    monkeypatch.setattr(
+        application,
+        "run",
+        lambda argv: calls.append(argv) or 24,
+    )
+
+    assert entrypoint.run(["--backtest"]) == 24
+    assert calls == [["--backtest"]]
+
+
 def test_importing_bot_does_not_execute_an_early_route():
     result = subprocess.run(
         [
@@ -97,7 +110,8 @@ def test_importing_bot_does_not_execute_an_early_route():
                 "import sys; "
                 "sys.argv = ['bot.py', '--vps-monitoring-status']; "
                 "import bot; "
-                "print('bot imported')"
+                "print('bot imported'); "
+                "print('application imported=' + str('trading_bot.cli.application' in sys.modules))"
             ),
         ],
         cwd=ROOT,
@@ -107,4 +121,4 @@ def test_importing_bot_does_not_execute_an_early_route():
     )
 
     assert result.returncode == 0
-    assert result.stdout.strip() == "bot imported"
+    assert result.stdout.splitlines() == ["bot imported", "application imported=False"]

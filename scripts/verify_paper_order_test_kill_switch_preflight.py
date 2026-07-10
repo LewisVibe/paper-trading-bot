@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+APPLICATION = ROOT / "trading_bot" / "cli" / "application.py"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -23,7 +24,7 @@ SUSPICIOUS_NEW_EXECUTION_COMMANDS = [
 
 def main() -> int:
     failures: list[str] = []
-    bot_source = read_text(ROOT / "bot.py")
+    bot_source = read_text(APPLICATION)
     help_text = bot_help_text()
 
     verify_help_gates(help_text, failures)
@@ -64,8 +65,8 @@ def verify_no_new_execution_commands(help_text: str, failures: list[str]) -> Non
 
 
 def verify_preflight_wiring(bot_source: str, failures: list[str]) -> None:
-    if "from trading_bot.safety.paper_kill_switch import evaluate_paper_kill_switch_gate" not in bot_source:
-        failures.append("bot.py must import evaluate_paper_kill_switch_gate for manual paper-order preflight")
+    if "evaluate_paper_kill_switch_gate" not in bot_source:
+        failures.append("configured application must import evaluate_paper_kill_switch_gate")
 
     manual_source = function_block(bot_source, "def run_paper_order_test(", "def estimate_manual_position_after(")
     if not manual_source:
@@ -76,7 +77,7 @@ def verify_preflight_wiring(bot_source: str, failures: list[str]) -> None:
         return
 
     preflight_index = manual_source.index("evaluate_paper_kill_switch_gate(")
-    for term in ["TradingClient(", "submit_alpaca_order(", "init_database("]:
+    for term in ["TradingClient(", "submit_paper_order(", "init_database("]:
         if term not in manual_source:
             failures.append(f"run_paper_order_test is missing expected term: {term}")
         elif preflight_index > manual_source.index(term):
@@ -97,7 +98,7 @@ def verify_preflight_wiring(bot_source: str, failures: list[str]) -> None:
             failures.append(f"blocked preflight output is missing message: {message}")
     forbidden_blocked_terms = [
         "TradingClient(",
-        "submit_alpaca_order(",
+        "submit_paper_order(",
         "insert_trade_log(",
         "send_discord_alert(",
         "cancel_order",

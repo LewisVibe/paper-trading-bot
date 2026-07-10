@@ -5,18 +5,18 @@ from types import SimpleNamespace
 
 import pytest
 
-import bot
+from trading_bot.cli import application
 from trading_bot.cli.report_only import dispatch_report_only
 from trading_bot.runners import backtests
 
 
-def test_bot_reexports_extracted_backtest_runners_for_compatibility():
-    assert bot.run_backtest is backtests.run_backtest
-    assert bot.run_etf_rotation_backtest is backtests.run_etf_rotation_backtest
-    assert bot.run_adaptive_momentum_backtest is backtests.run_adaptive_momentum_backtest
-    assert bot.run_strategy_comparison is backtests.run_strategy_comparison
-    assert bot.run_sma_sensitivity is backtests.run_sma_sensitivity
-    assert bot.run_trend_stress_test is backtests.run_trend_stress_test
+def test_application_uses_extracted_backtest_runners():
+    assert application.run_backtest is backtests.run_backtest
+    assert application.run_etf_rotation_backtest is backtests.run_etf_rotation_backtest
+    assert application.run_adaptive_momentum_backtest is backtests.run_adaptive_momentum_backtest
+    assert application.run_strategy_comparison is backtests.run_strategy_comparison
+    assert application.run_sma_sensitivity is backtests.run_sma_sensitivity
+    assert application.run_trend_stress_test is backtests.run_trend_stress_test
 
 
 @pytest.mark.parametrize("command", sorted(backtests.MARKET_DATA_COMMANDS))
