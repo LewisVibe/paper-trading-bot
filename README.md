@@ -430,6 +430,8 @@ After a matching ticket is fully filled and the postcheck aligns every managed s
 
 Autonomous paper rebalancing is a separate, explicit opt-in. Set `auto_paper_trading_enabled=true` only on the private VPS config. Hermes uses the existing global `Europe/London` timezone, so schedule only `.venv\Scripts\python.exe bot.py --run-vol-targeted-growth-auto-paper` at `5 14,15 * * 1-5`; the internal `America/New_York` gate quietly ignores the nonmatching daylight-saving probe. It runs at most once per session, uses a date-scoped exclusive lease and deterministic Alpaca client IDs, sends outcomes to Discord, and supports no live-trading mode. See `docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`.
 
+Hermes/VPS outage detection uses a separate external dead-man heartbeat. Configure its private URL interactively with `.venv\Scripts\python.exe scripts\configure_gateway_heartbeat.py`, then schedule only `.venv\Scripts\python.exe scripts\send_gateway_heartbeat.py` every five minutes. The sender is HTTPS-only, emits no output on success, never reads `config.json`, and never prints the private URL. See `docs/HERMES_GATEWAY_HEARTBEAT.md`.
+
 ## Disclaimer
 
 This repository is for education, research, and paper-trading workflow development only. Markets are risky, backtests can mislead, and paper trading does not prove live-trading performance.
