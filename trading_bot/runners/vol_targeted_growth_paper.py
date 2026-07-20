@@ -287,12 +287,15 @@ def run_vol_targeted_growth_auto_paper(
     market_now = run_now.astimezone(AUTO_TIMEZONE)
     session_date = market_now.date().isoformat()
     cycle_id = f"vtga-{market_now:%Y%m%d}"
+    if not _inside_auto_window(market_now):
+        # Hermes uses one global Europe/London timezone. The cron probes both
+        # possible London hours, and the nonmatching DST probe exits here.
+        return 0
+
     reasons = _config_reasons(config)
     auto_execution_authorized = getattr(config, "auto_paper_trading_enabled", False) is True
     if not auto_execution_authorized:
         reasons.append("auto_paper_trading_enabled must be explicitly true")
-    if not _inside_auto_window(market_now):
-        reasons.append("automatic paper execution is allowed only from 10:00 through 10:20 America/New_York")
 
     existing_state = read_json(root / AUTO_STATE_JSON)
     if existing_state.get("session_date") == session_date:

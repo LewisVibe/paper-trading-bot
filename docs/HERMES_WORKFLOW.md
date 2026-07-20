@@ -183,7 +183,7 @@ Hermes must also never schedule:
 - Any command that connects research strategies to execution.
 - Any command that bypasses preview, risk checks, manual review, or explicit confirmation.
 
-The sole scoped exception is `.venv\Scripts\python.exe bot.py --run-vol-targeted-growth-auto-paper`, explicitly approved on 2026-07-20 and documented in `docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`. It requires a private default-off config opt-in, remains Alpaca paper-only, and must run as its own once-daily 10:05 `America/New_York` job. No other execution command inherits this approval.
+The sole scoped exception is `.venv\Scripts\python.exe bot.py --run-vol-targeted-growth-auto-paper`, explicitly approved on 2026-07-20 and documented in `docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`. It requires a private default-off config opt-in, remains Alpaca paper-only, and must run in one dedicated Hermes job using the two global-`Europe/London` daylight-saving probe hours. Its internal New York window and session lease permit at most one daily rebalance. No other execution command inherits this approval.
 
 Safe-looking report, preview, display, or verifier commands should still only be scheduled after a separate user-approved scheduling review.
 

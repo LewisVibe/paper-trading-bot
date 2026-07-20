@@ -14,8 +14,8 @@ RUNBOOK = ROOT / "docs" / "HERMES_AUTO_PAPER_EXECUTION_CRON.md"
 CONFIG_EXAMPLE = ROOT / "config.example.json"
 
 COMMAND = "--run-vol-targeted-growth-auto-paper"
-SCHEDULE = "5 10 * * 1-5"
-TIMEZONE = "America/New_York"
+SCHEDULE = "5 14,15 * * 1-5"
+TIMEZONE = "Europe/London"
 
 
 def main() -> int:
@@ -82,7 +82,7 @@ def main() -> int:
             print(f"- {failure}")
         return 1
     print("Autonomous volatility-targeted paper verification passed.")
-    print("Verified default-off config, paper-only routing, session lease/idempotency, Discord reporting, and exact 10:05 ET Hermes scope.")
+    print("Verified default-off config, paper-only routing, session lease/idempotency, Discord reporting, and DST-safe 10:05 ET Hermes scope.")
     return 0
 
 

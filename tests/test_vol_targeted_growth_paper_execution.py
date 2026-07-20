@@ -348,7 +348,7 @@ def test_postcheck_rejects_partial_execution_record(tmp_path, monkeypatch):
     assert "matching execution record is not fully filled" in postcheck["reasons"]
 
 
-def test_auto_paper_requires_explicit_opt_in_and_execution_window(tmp_path, monkeypatch):
+def test_auto_paper_requires_explicit_opt_in_and_quietly_skips_dst_probe(tmp_path, monkeypatch):
     broker_reads = []
     alerts = []
     monkeypatch.setattr(runner, "_paper_client", lambda _config: broker_reads.append(True))
@@ -368,9 +368,10 @@ def test_auto_paper_requires_explicit_opt_in_and_execution_window(tmp_path, monk
     )
 
     assert disabled == 2
-    assert outside_window == 2
+    assert outside_window == 0
     assert broker_reads == []
-    assert all("orders_submitted=0" in message for message in alerts)
+    assert len(alerts) == 1
+    assert "orders_submitted=0" in alerts[0]
 
 
 def test_auto_paper_fills_reconciles_and_blocks_same_session_retry(tmp_path, monkeypatch):

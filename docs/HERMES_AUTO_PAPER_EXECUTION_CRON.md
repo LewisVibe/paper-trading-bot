@@ -28,8 +28,8 @@ automatically without a separate local opt-in.
 ## Job Definition
 
 - Job name: `paper-bot-auto-paper-rebalance`
-- Cron expression: `5 10 * * 1-5`
-- Timezone: `America/New_York`
+- Cron expression: `5 14,15 * * 1-5`
+- Scheduler timezone: keep the existing global Hermes timezone `Europe/London`; do not change it
 - Working directory: `C:\dev\paper-trading-bot`
 - Mode: script-only / no-agent
 - Enabled toolsets: `terminal`
@@ -44,6 +44,12 @@ automatically without a separate local opt-in.
 The existing `paper-bot-vps-status-check` monitoring job remains separate and unchanged.
 The autonomous job must not run Git commands, package installation, tests, report refreshes,
 or any second command.
+
+Hermes does not expose per-job timezone, retry, or missed-run catch-up fields. The two London
+hours cover both possible `10:05 America/New_York` mappings across the U.S./U.K. daylight-saving
+transition gaps. The runner silently exits before broker access when a probe is outside its
+10:00-10:20 New York window, so only the matching probe can reach execution safeguards. This is
+one cron job, not retry behavior; the durable session lease still permits at most one rebalance.
 
 ## Runtime Gates
 

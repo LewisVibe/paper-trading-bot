@@ -428,7 +428,7 @@ After a matching ticket is fully filled and the postcheck aligns every managed s
 
 `paper_kill_switch_enabled` must be `true` in the private local config for execution. Its checked-in example default remains `false`. These three commands must never be placed in Hermes, cron, Task Scheduler, a service, or a loop. Live trading remains unsupported.
 
-Autonomous paper rebalancing is a separate, explicit opt-in. Set `auto_paper_trading_enabled=true` only on the private VPS config and schedule only `.venv\Scripts\python.exe bot.py --run-vol-targeted-growth-auto-paper` at `5 10 * * 1-5` in `America/New_York`. It runs at most once per session, uses a date-scoped exclusive lease and deterministic Alpaca client IDs, sends outcomes to Discord, and supports no live-trading mode. See `docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`.
+Autonomous paper rebalancing is a separate, explicit opt-in. Set `auto_paper_trading_enabled=true` only on the private VPS config. Hermes uses the existing global `Europe/London` timezone, so schedule only `.venv\Scripts\python.exe bot.py --run-vol-targeted-growth-auto-paper` at `5 14,15 * * 1-5`; the internal `America/New_York` gate quietly ignores the nonmatching daylight-saving probe. It runs at most once per session, uses a date-scoped exclusive lease and deterministic Alpaca client IDs, sends outcomes to Discord, and supports no live-trading mode. See `docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`.
 
 ## Disclaimer
 
