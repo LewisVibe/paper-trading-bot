@@ -9,8 +9,10 @@ Current status:
 - The active report/status seed is `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`.
 - The previous QQQ100 seed context remains `qqq_100_trend_gate` / `QQQ`, with saved evidence showing long exactly one share and no follow-up/repeat order needed.
 - The VPS/Hermes status job is monitoring-only and must remain status/report-only.
-- The volatility seed has a non-submitting ticket schema design, a non-submitting ticket-instance design, a non-submitting ticket-instance checkpoint, a fresh broker pre-ticket gate design, a run-readiness checkpoint, a manual ticket-value design, and executable-ticket closeout/readiness/criteria/resolution-plan/source-review/blocker-review checkpoints, but no executable ticket instance, no populated order values, no broker refresh tied to a ticket, and no execution approval.
-- High-growth, crypto, defensive, SMA, and slow-SMA remain excluded from paper-live execution.
+- Lewis approved the exact Alpaca paper scope on 2026-07-10: a `$100,000` maximum, mapped only to `QQQ`, `MGK`, `IBIT`, and `SGOV`, with 70/20/5/5 base weights scaled by the current 20-day realized-volatility factor and a 1x cap.
+- The guarded runtime now prepares a hashed 15-minute paper ticket from fresh prices, paper positions, account state, assets, and open orders. Submission remains blocked until a separate exact ticket ID and `--confirm-vol-targeted-growth-paper` are supplied during market hours.
+- The latest after-hours ticket is review-only because the market is closed and intraday prices are stale. No volatility-targeted order has been submitted yet.
+- Direct high-growth stocks, direct crypto, SMA, and slow-SMA remain excluded; only the approved `MGK`, `IBIT`, and `SGOV` ETF proxies may represent those sleeves inside this exact ticket path.
 
 Remaining steps, in order:
 
@@ -437,20 +439,22 @@ Remaining steps, in order:
    - Current checkpoint still keeps `ticket_instance_created=False`, `ticket_creation_approved=False`, `broker_ready_order_values_populated=False`, `order_values_populated=False`, `order_instructions_created=False`, `orders_submitted=False`, `execution_approved=False`, `paper_execution_approved=False`, and `scheduling_approved=False`.
 
 9. **Manual review of whether paper execution should ever be allowed for this seed.**
-   - This is a human decision point, not an automatic result of previous reports.
-   - Required blockers to review: component sleeves, allocation cap, fresh broker state, QQQ existing exposure, high-growth research-only boundary, crypto research-only boundary, defensive sleeve mapping, drawdown risk, and scheduling prohibition.
+   - Completed by explicit owner approval on 2026-07-10 for Alpaca paper only.
+   - Approved boundary: `$100,000` maximum; `QQQ/MGK/IBIT/SGOV` only; volatility-scaled 70/20/5/5 base mix; unrelated positions untouched; no live trading; no scheduling.
+   - This approval does not approve a stale or unspecified order. Every run still requires a fresh exact ticket and final confirmation.
 
 10. **If approved later, design a separate paper-order execution gate.**
-    - This is not approved yet.
-    - It must remain Alpaca paper-only.
-    - It must be a separate explicit command with confirmation.
-    - It must not alter normal `python bot.py`.
-    - It must not be scheduled by Hermes, cron, Task Scheduler, or any loop.
+    - Implemented preparation command: `python bot.py --prepare-vol-targeted-growth-paper-ticket --confirm-readonly-alpaca-check`.
+    - Implemented execution command: `python bot.py --execute-vol-targeted-growth-paper TICKET_ID --confirm-vol-targeted-growth-paper`.
+   - The ticket uses completed daily sessions for 20-day volatility, checks 15-minute prices, paper account status, every position, all open orders, fractionable/tradable assets, cash/no-leverage capacity, short positions, ticket expiry, deterministic plan math, and deterministic client order IDs.
+   - Unrelated holdings remain untouched and their market value reduces the sleeve's usable allocation below the `$100,000` maximum when necessary.
+    - The command remains Alpaca paper-only, is routed through `submit_paper_order`, does not alter normal `python bot.py`, and must never be scheduled.
 
 11. **Only after all above, consider one manually confirmed paper order.**
-    - This is not approved by this checklist.
-    - It would require a fresh live preflight, fresh broker state, exact ticket review, duplicate-order protection, open-order checks, kill-switch checks, and explicit confirmation.
-    - Postcheck must be read-only and must reconcile broker order/position evidence after the manual order.
+    - Pending one final confirmation of a fresh market-hours ticket ID and its exact order rows.
+    - The current after-hours ticket is not eligible for confirmation or execution because `market_open=False` and `prices_fresh=False`.
+    - Implemented read-only postcheck: `python bot.py --vol-targeted-growth-paper-postcheck --confirm-readonly-alpaca-check`.
+    - A partial/failed basket blocks retry; manual review and postcheck are required before preparing another ticket.
 
 12. **Keep monitoring-only automation after any manual paper action.**
     - Hermes may continue to run status/report summaries only.
@@ -459,12 +463,12 @@ Remaining steps, in order:
 
 Current next safe implementation step:
 
-- If the run-readiness checkpoint passes, the next operational step is a separate prompt explicitly approving the read-only fresh broker pre-ticket gate run. That future run must still not create a ticket, populate order values, submit orders, or approve execution.
+- Implementation and no-network verification are complete. The next safe step is operational: prepare a new ticket while the U.S. market is open, review its exact ID and rows, then request one final confirmation before submission.
 
 Current next market-hours operational step, only after explicit approval:
 
-- Run the read-only volatility broker-position comparison during market hours:
-  `.venv\Scripts\python.exe bot.py --vol-targeted-growth-broker-position-comparison --confirm-readonly-alpaca-check`
+- Prepare a fresh exact volatility-targeted paper ticket during market hours:
+  `.venv\Scripts\python.exe bot.py --prepare-vol-targeted-growth-paper-ticket --confirm-readonly-alpaca-check`
 
 ## 1. Freeze The Current Baseline
 
@@ -741,6 +745,7 @@ The manual flatten runbook reads the saved flatten readiness checkpoint only. Cu
 - Hermes cron must not run normal `python bot.py`.
 - Hermes cron must not run slow-SMA execution.
 - Hermes cron must not run paper-order tests.
+- Hermes cron must not run `--prepare-vol-targeted-growth-paper-ticket`, `--execute-vol-targeted-growth-paper`, or `--vol-targeted-growth-paper-postcheck`.
 - Scheduled output should say monitoring only and no orders.
 
 Implemented checklist closeout checkpoint: `python bot.py --paper-live-checklist-status`.
@@ -749,7 +754,7 @@ Saved display: `python bot.py --show-paper-live-checklist-status`.
 
 Outputs: `data/paper_live_checklist_status.csv`, `data/paper_live_checklist_status_summary.csv`, `data/paper_live_checklist_status_blockers.csv`, and `data/paper_live_checklist_status_evidence.csv`.
 
-Current expected closeout status is `paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review`: Steps 1-11 are complete or complete-for-current-status-only-seed-phase, the volatility-targeted candidate is the active report/status seed, QQQ100 remains aligned long one share as previous-seed context, no further QQQ order is needed now, repeat/follow-up orders remain blocked, and scheduling remains monitoring-only.
+Closeout status is `paper_live_checklist_code_complete_market_hours_confirmation_pending` until Step 11 receives a fresh exact market-hours ticket and final user confirmation. Matching fully filled execution and aligned postcheck evidence changes Step 11 to `complete_filled_and_postcheck_aligned` and the closeout status to `paper_live_checklist_complete_user_hermes_setup_pending`. Step 12's monitoring-only boundary is complete while user-owned Hermes setup remains external. No follow-up or repeat order is approved.
 
 Implemented F6/F7 audit checkpoint: `python bot.py --paper-live-f6-f7-audit`.
 
@@ -817,7 +822,7 @@ Saved display: `python bot.py --show-paper-live-defensive-sleeve-preview-readine
 
 Outputs: `data/paper_live_defensive_sleeve_preview_readiness.csv`, `data/paper_live_defensive_sleeve_preview_readiness_summary.csv`, `data/paper_live_defensive_sleeve_preview_readiness_blockers.csv`, and `data/paper_live_defensive_sleeve_preview_readiness_evidence.csv`.
 
-Current expected preview-readiness status is `defensive_sleeve_preview_candidate_not_approved_manual_review_required`: the defensive sleeve remains research-only and not a preview candidate until a separate manual decision approves a label change. The paper-live checklist status now carries this blocked defensive state alongside the QQQ100 aligned/no-action state.
+Historical defensive preview-readiness status remains `defensive_sleeve_preview_candidate_not_approved_manual_review_required`. It is retained as research evidence, but it is no longer the current paper-live checklist next step after the owner-approved QQQ/MGK/IBIT/SGOV mapping and guarded manual paper path.
 
 Implemented defensive sleeve evidence-quality review checkpoint: `python bot.py --paper-live-defensive-sleeve-evidence-quality`.
 

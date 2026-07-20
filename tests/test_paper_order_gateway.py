@@ -31,6 +31,7 @@ from trading_bot.safety.qqq100_paper_execution import (
 
 ROOT = Path(__file__).resolve().parents[1]
 APPLICATION_PATH = ROOT / "trading_bot" / "cli" / "application.py"
+VOL_RUNNER_PATH = ROOT / "trading_bot" / "runners" / "vol_targeted_growth_paper.py"
 
 
 class MockTradingClient:
@@ -48,6 +49,7 @@ class MockTradingClient:
         (PaperOrderRoute.MANUAL_TEST, "buy", OrderSide.BUY),
         (PaperOrderRoute.QQQ100, "sell", OrderSide.SELL),
         (PaperOrderRoute.SLOW_SMA, "buy", OrderSide.BUY),
+        (PaperOrderRoute.VOL_TARGETED_GROWTH, "buy", OrderSide.BUY),
     ],
 )
 def test_gateway_submits_confirmed_paper_day_market_order(route, side, expected_side):
@@ -62,6 +64,7 @@ def test_gateway_submits_confirmed_paper_day_market_order(route, side, expected_
             quantity=Decimal("2"),
             confirmed=True,
             alpaca_paper=True,
+            client_order_id="paper-ticket-test",
         ),
     )
 
@@ -74,6 +77,7 @@ def test_gateway_submits_confirmed_paper_day_market_order(route, side, expected_
     assert submitted.qty == 2.0
     assert submitted.side == expected_side
     assert submitted.time_in_force == TimeInForce.DAY
+    assert submitted.client_order_id == "paper-ticket-test"
 
 
 @pytest.mark.parametrize(
@@ -86,6 +90,7 @@ def test_gateway_submits_confirmed_paper_day_market_order(route, side, expected_
         ({"side": "hold"}, "Order side"),
         ({"quantity": Decimal("0")}, "finite positive"),
         ({"quantity": Decimal("NaN")}, "finite positive"),
+        ({"client_order_id": "x" * 129}, "128 characters"),
     ],
 )
 def test_gateway_refuses_unsafe_request_before_broker_call(overrides, message):
@@ -134,6 +139,7 @@ def test_only_gateway_calls_broker_submit_and_all_order_routes_use_gateway():
         "run_paper_order_test",
         "run_execute_qqq100_paper",
         "run_slow_sma_paper_execution",
+        "_paper_client",
     }
     source_paths = [ROOT / "bot.py", *sorted((ROOT / "trading_bot").rglob("*.py"))]
 
@@ -151,7 +157,7 @@ def test_only_gateway_calls_broker_submit_and_all_order_routes_use_gateway():
             if isinstance(node.func, ast.Attribute) and node.func.attr == "submit_order":
                 direct_submitters.append((path.relative_to(ROOT), owner))
             if (
-                path == APPLICATION_PATH
+                path in {APPLICATION_PATH, VOL_RUNNER_PATH}
                 and isinstance(node.func, ast.Name)
                 and node.func.id == "TradingClient"
                 and owner in order_client_owners
@@ -161,7 +167,7 @@ def test_only_gateway_calls_broker_submit_and_all_order_routes_use_gateway():
                 assert isinstance(paper, ast.Constant) and paper.value is True
                 paper_client_owners.add(owner)
             if (
-                path == APPLICATION_PATH
+                path in {APPLICATION_PATH, VOL_RUNNER_PATH}
                 and isinstance(node.func, ast.Name)
                 and node.func.id == "submit_paper_order"
             ):
@@ -179,6 +185,7 @@ def test_only_gateway_calls_broker_submit_and_all_order_routes_use_gateway():
         ("run_paper_order_test", "MANUAL_TEST", "confirm_paper_order"),
         ("run_execute_qqq100_paper", "QQQ100", "confirm_qqq100_paper"),
         ("process_slow_sma_execution_ticker", "SLOW_SMA", "confirm_slow_sma_paper"),
+        ("run_execute_vol_targeted_growth_paper", "VOL_TARGETED_GROWTH", "confirmed"),
     }
     assert paper_client_owners == order_client_owners
 

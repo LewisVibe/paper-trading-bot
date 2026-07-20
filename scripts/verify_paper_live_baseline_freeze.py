@@ -47,17 +47,6 @@ def function_body(source: str, name: str) -> str:
     return source[match.start() :]
 
 
-def current_function_by_line(source: str) -> dict[int, str]:
-    current = ""
-    mapping: dict[int, str] = {}
-    for line_number, line in enumerate(source.splitlines(), start=1):
-        match = re.match(r"def (\w+)\(", line)
-        if match:
-            current = match.group(1)
-        mapping[line_number] = current
-    return mapping
-
-
 def git_output(args: list[str]) -> str:
     completed = subprocess.run(
         ["git", "-c", f"safe.directory={ROOT.as_posix()}", "-C", str(ROOT), *args],
@@ -120,33 +109,45 @@ def verify_normal_bot_monitoring_only(bot_source: str) -> None:
         fail("process_ticker does not keep position_after at position_before for monitor-only rows.")
 
 
-def verify_order_submit_calls_are_isolated(bot_source: str) -> None:
-    allowed_call_functions = {
-        "submit_alpaca_order",
-        "run_paper_order_test",
-        "run_execute_qqq100_paper",
-        "process_slow_sma_execution_ticker",
-    }
-    function_map = current_function_by_line(bot_source)
-    for line_number, line in enumerate(bot_source.splitlines(), start=1):
-        if "submit_alpaca_order(" not in line:
-            continue
-        current = function_map.get(line_number, "")
-        if current not in allowed_call_functions:
-            fail(
-                "submit_alpaca_order appears outside allowed dedicated paths: "
-                f"line {line_number} in {current or '<module>'}"
-            )
+def verify_order_submit_calls_are_isolated(
+    parser_source: str,
+    application_source: str,
+    vol_runner_source: str,
+    gateway_source: str,
+) -> None:
+    direct_submitters = []
+    for path in (ROOT / "trading_bot").rglob("*.py"):
+        if ".submit_order(" in path.read_text(encoding="utf-8"):
+            direct_submitters.append(path.relative_to(ROOT).as_posix())
+    if direct_submitters != ["trading_bot/paper_orders.py"]:
+        fail(f"Direct broker submission must stay isolated to the paper gateway: {direct_submitters}")
 
-    manual_body = function_body(bot_source, "run_paper_order_test")
-    qqq100_body = function_body(bot_source, "run_execute_qqq100_paper")
-    slow_sma_body = function_body(bot_source, "run_slow_sma_paper_execution")
-    if "--confirm-paper-order" not in bot_source or "confirm_paper_order" not in manual_body:
+    gateway_body = function_body(gateway_source, "submit_paper_order")
+    if "client.submit_order(" not in gateway_body:
+        fail("The audited paper-order gateway does not contain the broker submission call.")
+
+    manual_body = function_body(application_source, "run_paper_order_test")
+    qqq100_body = function_body(application_source, "run_execute_qqq100_paper")
+    slow_sma_body = function_body(application_source, "run_slow_sma_paper_execution")
+    slow_sma_ticker_body = function_body(application_source, "process_slow_sma_execution_ticker")
+    vol_targeted_body = function_body(vol_runner_source, "run_execute_vol_targeted_growth_paper")
+    for name, body in {
+        "manual paper order": manual_body,
+        "QQQ100 paper execution": qqq100_body,
+        "slow-SMA paper execution": slow_sma_ticker_body,
+        "volatility-targeted paper execution": vol_targeted_body,
+    }.items():
+        if "submit_paper_order(" not in body:
+            fail(f"{name} does not route through the audited paper-order gateway.")
+
+    if "--confirm-paper-order" not in parser_source or "confirm_paper_order" not in manual_body:
         fail("Manual paper-order path is not visibly confirmation-gated.")
-    if "--confirm-qqq100-paper" not in bot_source or "confirm_qqq100_paper" not in qqq100_body:
+    if "--confirm-qqq100-paper" not in parser_source or "confirm_qqq100_paper" not in qqq100_body:
         fail("QQQ100 paper execution path is not visibly confirmation-gated.")
-    if "--confirm-slow-sma-paper" not in bot_source or "confirm_slow_sma_paper" not in slow_sma_body:
+    if "--confirm-slow-sma-paper" not in parser_source or "confirm_slow_sma_paper" not in slow_sma_body:
         fail("Slow-SMA paper execution path is not visibly confirmation-gated.")
+    if "--confirm-vol-targeted-growth-paper" not in parser_source or "if not confirmed" not in vol_targeted_body:
+        fail("Volatility-targeted paper execution path is not visibly confirmation-gated.")
 
 
 def verify_paper_only_policy(bot_source: str, config_source: str) -> None:
@@ -212,13 +213,18 @@ def verify_no_dangerous_staged_files() -> None:
 
 
 def main() -> int:
-    bot_source = read_text("bot.py")
+    normal_runner_source = read_text("trading_bot/runners/paper_execution.py")
+    parser_source = read_text("trading_bot/cli/parser.py")
+    application_source = read_text("trading_bot/cli/application.py")
+    vol_runner_source = read_text("trading_bot/runners/vol_targeted_growth_paper.py")
+    gateway_source = read_text("trading_bot/paper_orders.py")
+    runtime_source = "\n".join([application_source, vol_runner_source, gateway_source])
     config_source = read_text("trading_bot/config.py")
     verify_baseline_commit_present()
     verify_pytest_foundation()
-    verify_normal_bot_monitoring_only(bot_source)
-    verify_order_submit_calls_are_isolated(bot_source)
-    verify_paper_only_policy(bot_source, config_source)
+    verify_normal_bot_monitoring_only(normal_runner_source)
+    verify_order_submit_calls_are_isolated(parser_source, application_source, vol_runner_source, gateway_source)
+    verify_paper_only_policy(runtime_source, config_source)
     verify_docs_policy()
     verify_no_dangerous_staged_files()
     print("Paper-live baseline freeze verification passed.")

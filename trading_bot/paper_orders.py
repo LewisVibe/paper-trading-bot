@@ -16,6 +16,7 @@ class PaperOrderRoute(str, Enum):
     MANUAL_TEST = "paper_order_test"
     QQQ100 = "execute_qqq100_paper"
     SLOW_SMA = "execute_slow_sma_paper"
+    VOL_TARGETED_GROWTH = "execute_vol_targeted_growth_paper"
 
 
 class PaperOrderRefused(RuntimeError):
@@ -30,6 +31,7 @@ class PaperOrderRequest:
     quantity: Decimal
     confirmed: bool
     alpaca_paper: bool
+    client_order_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -50,6 +52,7 @@ def submit_paper_order(
         qty=float(request.quantity),
         side=OrderSide.BUY if request.side == "buy" else OrderSide.SELL,
         time_in_force=TimeInForce.DAY,
+        client_order_id=request.client_order_id or None,
     )
     raw_order = client.submit_order(order_data=order_request)
     return PaperOrderResult(
@@ -72,3 +75,5 @@ def _validate_request(request: PaperOrderRequest) -> None:
         raise PaperOrderRefused("Order side must be 'buy' or 'sell'.")
     if not request.quantity.is_finite() or request.quantity <= 0:
         raise PaperOrderRefused("Order quantity must be a finite positive number.")
+    if len(request.client_order_id) > 128:
+        raise PaperOrderRefused("Client order ID must be 128 characters or fewer.")

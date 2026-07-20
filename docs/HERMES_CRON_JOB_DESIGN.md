@@ -63,6 +63,7 @@ scheduled or automated:
 - normal bot run;
 - paper-order smoke test;
 - slow-SMA paper execution;
+- volatility-targeted ticket preparation, paper execution, and postcheck;
 - any future order-capable command.
 
 This checkpoint preserves:

@@ -1,6 +1,6 @@
 """Saved-output closeout checkpoint for the current paper-live seed phase.
 
-This report reads saved paper-live monitoring evidence only. It does not call
+This report reads saved paper-live monitoring plus exact ticket, execution, and postcheck summaries. It does not call
 Alpaca, read live positions, refresh market data, write SQLite, send alerts,
 schedule anything, create executable order instructions, or approve execution.
 """
@@ -20,6 +20,9 @@ PREVIOUS_TICKER = "QQQ"
 PAPER_LIVE_MONITORING_SUMMARY = Path("data/paper_live_monitoring_status.csv")
 DEFENSIVE_MANUAL_REVIEW_SUMMARY = Path("data/paper_live_defensive_sleeve_manual_review_summary.csv")
 DEFENSIVE_PREVIEW_READINESS_SUMMARY = Path("data/paper_live_defensive_sleeve_preview_readiness_summary.csv")
+VOL_TARGETED_PAPER_TICKET_SUMMARY = Path("data/vol_targeted_growth_paper_ticket_summary.csv")
+VOL_TARGETED_PAPER_EXECUTION_SUMMARY = Path("data/vol_targeted_growth_paper_execution_summary.csv")
+VOL_TARGETED_PAPER_POSTCHECK_SUMMARY = Path("data/vol_targeted_growth_paper_postcheck_summary.csv")
 
 OUTPUT_FILES = {
     "report": Path("data/paper_live_checklist_status.csv"),
@@ -71,6 +74,10 @@ REPORT_COLUMNS = [
     "defensive_sleeve_preview_candidate_status",
     "paper_live_monitoring_status",
     "checklist_phase_status",
+    "paper_ticket_present",
+    "paper_ticket_id",
+    "paper_ticket_execution_ready",
+    "paper_ticket_blockers",
     "finding",
     "next_safe_development_step",
     "research_only",
@@ -129,6 +136,13 @@ class PaperLiveChecklistSnapshot:
     recommended_next_step: str
     paper_live_monitoring_status: str
     checklist_phase_status: str
+    paper_ticket_present: str
+    paper_ticket_id: str
+    paper_ticket_execution_ready: str
+    paper_ticket_blockers: str
+    paper_execution_status: str
+    paper_postcheck_status: str
+    paper_cycle_complete: str
     next_safe_development_step: str
 
 
@@ -188,7 +202,14 @@ def show_paper_live_checklist_status(root_dir: Path | str = ".") -> tuple[int, l
         f"defensive_sleeve_preview_candidate_status: {summary_value(rows, 'defensive_sleeve_preview_candidate_status')}",
         f"no_action_required: {summary_value(rows, 'no_action_required')}",
         f"paper_live_monitoring_status: {summary_value(rows, 'paper_live_monitoring_status')}",
-        f"current_monitoring_recommended_next_step: {summary_value(rows, 'current_monitoring_recommended_next_step')}",
+        f"paper_ticket_present: {summary_value(rows, 'paper_ticket_present')}",
+        f"paper_ticket_id: {summary_value(rows, 'paper_ticket_id')}",
+        f"paper_ticket_execution_ready: {summary_value(rows, 'paper_ticket_execution_ready')}",
+        f"paper_ticket_blockers: {summary_value(rows, 'paper_ticket_blockers')}",
+        f"paper_execution_status: {summary_value(rows, 'paper_execution_status')}",
+        f"paper_postcheck_status: {summary_value(rows, 'paper_postcheck_status')}",
+        f"paper_cycle_complete: {summary_value(rows, 'paper_cycle_complete')}",
+        f"previous_seed_monitoring_recommended_next_step: {summary_value(rows, 'current_monitoring_recommended_next_step')}",
         f"next_safe_development_step: {summary_value(rows, 'next_safe_development_step')}",
         "execution_approved=false; paper_execution_approved=false; scheduling_approved=false; live_trading_approved=false; followup_order_approved=false; repeat_execution_approved=false",
         "never_schedule_order_capable_commands=true",
@@ -211,6 +232,32 @@ def build_checklist_snapshot(root: Path) -> PaperLiveChecklistSnapshot:
     defensive_manual = read_summary_value(root / DEFENSIVE_MANUAL_REVIEW_SUMMARY, "final_manual_review_status") or "not_run"
     defensive_preview = read_summary_value(root / DEFENSIVE_PREVIEW_READINESS_SUMMARY, "final_preview_readiness_status") or "not_run"
     defensive_preview_candidate = read_summary_value(root / DEFENSIVE_PREVIEW_READINESS_SUMMARY, "preview_candidate_status") or "defensive_preview_candidate_not_approved"
+    ticket_rows = read_csv_rows(root / VOL_TARGETED_PAPER_TICKET_SUMMARY)
+    paper_ticket_present = str(bool(ticket_rows))
+    paper_ticket_id = summary_value(ticket_rows, "ticket_id") or "missing"
+    paper_ticket_execution_ready = summary_value(ticket_rows, "execution_ready") or "False"
+    paper_ticket_blockers = summary_value(ticket_rows, "blockers") or "missing"
+    execution_rows = read_csv_rows(root / VOL_TARGETED_PAPER_EXECUTION_SUMMARY)
+    postcheck_rows = read_csv_rows(root / VOL_TARGETED_PAPER_POSTCHECK_SUMMARY)
+    execution_ticket_id = summary_value(execution_rows, "ticket_id")
+    postcheck_ticket_id = summary_value(postcheck_rows, "ticket_id")
+    paper_execution_status = summary_value(execution_rows, "execution_status") or "not_run"
+    paper_postcheck_status = summary_value(postcheck_rows, "postcheck_status") or "not_run"
+    submitted_order_count = parse_int(summary_value(execution_rows, "submitted_order_count"))
+    filled_order_count = parse_int(summary_value(execution_rows, "filled_order_count"))
+    aligned_symbol_count = parse_int(summary_value(postcheck_rows, "aligned_symbol_count"))
+    symbol_count = parse_int(summary_value(postcheck_rows, "symbol_count"))
+    paper_cycle_complete = (
+        bool(ticket_rows)
+        and paper_ticket_id not in {"", "missing"}
+        and paper_ticket_id == execution_ticket_id == postcheck_ticket_id
+        and paper_execution_status == "filled"
+        and submitted_order_count > 0
+        and submitted_order_count == filled_order_count
+        and paper_postcheck_status == "aligned"
+        and symbol_count > 0
+        and aligned_symbol_count == symbol_count
+    )
 
     evidence_complete = (
         active_strategy == ACTIVE_STRATEGY_NAME
@@ -225,14 +272,21 @@ def build_checklist_snapshot(root: Path) -> PaperLiveChecklistSnapshot:
         and recommended == "hold_no_action_and_monitor_only"
     )
     if evidence_complete:
-        paper_live_monitoring_status = "vol_targeted_seed_active_previous_qqq100_aligned_long_one_monitor_only"
-        checklist_phase_status = "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review"
-        if defensive_preview == "defensive_sleeve_preview_candidate_not_approved_manual_review_required":
-            next_step = "manual_review_defensive_sleeve_before_any_preview_or_candidate_label_change"
-        elif defensive_manual == "defensive_sleeve_manual_review_required":
-            next_step = "run_defensive_sleeve_preview_readiness_checkpoint_before_candidate_label_change"
+        if paper_cycle_complete:
+            paper_live_monitoring_status = "vol_targeted_paper_cycle_filled_postcheck_aligned"
+            checklist_phase_status = "paper_live_checklist_complete_user_hermes_setup_pending"
+            next_step = "configure_user_owned_hermes_status_cron_and_monitor_only"
+        elif ticket_rows:
+            paper_live_monitoring_status = "vol_targeted_manual_paper_path_implemented_exact_confirmation_pending"
+            checklist_phase_status = "paper_live_checklist_code_complete_market_hours_confirmation_pending"
+            if paper_ticket_execution_ready == "True":
+                next_step = "review_exact_ticket_then_request_final_user_confirmation"
+            else:
+                next_step = "prepare_fresh_market_hours_ticket_then_request_final_user_confirmation"
         else:
-            next_step = "continue_monitoring_only_then_review_future_f6_f7_or_generic_promotion_ladder_separately"
+            paper_live_monitoring_status = "vol_targeted_manual_paper_path_implemented_ticket_preparation_pending"
+            checklist_phase_status = "paper_live_checklist_code_complete_ticket_preparation_pending"
+            next_step = "prepare_fresh_market_hours_ticket_then_request_final_user_confirmation"
     else:
         paper_live_monitoring_status = "paper_live_monitoring_saved_evidence_missing_or_inconsistent"
         checklist_phase_status = "paper_live_checklist_manual_review_required"
@@ -252,6 +306,13 @@ def build_checklist_snapshot(root: Path) -> PaperLiveChecklistSnapshot:
         recommended_next_step=recommended,
         paper_live_monitoring_status=paper_live_monitoring_status,
         checklist_phase_status=checklist_phase_status,
+        paper_ticket_present=paper_ticket_present,
+        paper_ticket_id=paper_ticket_id,
+        paper_ticket_execution_ready=paper_ticket_execution_ready,
+        paper_ticket_blockers=paper_ticket_blockers,
+        paper_execution_status=paper_execution_status,
+        paper_postcheck_status=paper_postcheck_status,
+        paper_cycle_complete=str(paper_cycle_complete),
         next_safe_development_step=next_step,
     )
 
@@ -262,14 +323,21 @@ def build_report_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, An
         ("2", "test_foundation", "complete", "Pure/no-network pytest foundation exists and remains part of verification."),
         ("3", "active_seed_status", "complete", "Active status seed is higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x / MULTI_SLEEVE; QQQ100 is retained as previous-seed context."),
         ("4", "paper_only_boundary", "complete", "Alpaca paper-only and no-live-trading boundaries remain documented."),
-        ("5", "execution_gate_boundaries", "complete", "Order-capable commands remain separate and confirmation-gated."),
-        ("6", "previous_qqq100_exact_alignment", "complete", "Previous QQQ100 exact zero/one-share alignment is retained by saved evidence checks."),
-        ("7", "saved_evidence_reconciliation", "complete", "Saved postcheck/evidence audit state reconciles aligned long one share."),
-        ("8", "manual_paper_execution_narrowness", "complete_for_current_status_only_phase", "No broad strategy-to-execution path was added."),
-        ("9", "post_execution_verification", "complete_for_previous_qqq100_monitoring_context", "Read-only QQQ100 postcheck evidence exists in saved state."),
-        ("10", "followup_no_action_policy", "complete", "Follow-up policy says no action required and do not repeat buy."),
-        ("11", "monitoring_only_scheduling_boundary", "complete", "VPS/Hermes daily monitoring includes active volatility seed status and previous QQQ100 context without cron changes."),
-        ("12", "generic_promotion_ladder", "future_only", "Generic promotion ladder is not built in this phase; start QQQ100 only later if separately approved."),
+        ("5", "owner_scope_approval", "complete", "Owner approved the $100,000 maximum, four managed symbols, untouched unrelated positions, and paper-only boundary."),
+        ("6", "sleeve_symbol_mapping", "complete", "QQQ/MGK/IBIT/SGOV map to the approved 70/20/5/5 base sleeves."),
+        ("7", "readonly_broker_and_price_path", "complete", "Read-only Alpaca account, position, order, asset, and market-data checks are implemented."),
+        ("8", "deterministic_ticket", "complete", "A hashed semantic ticket uses completed-session volatility, fresh prices, and non-leveraged account capacity."),
+        ("9", "manual_paper_execution_path", "complete", "The volatility-targeted path is isolated, paper-only, kill-switch protected, and gateway routed."),
+        ("10", "execution_and_postcheck_gates", "complete", "Confirmation-time state checks, deterministic client IDs, fill stopping, and read-only reconciliation are implemented."),
+        (
+            "11",
+            "fresh_ticket_final_confirmation",
+            "complete_filled_and_postcheck_aligned" if snapshot.paper_cycle_complete == "True" else "pending_market_hours_and_final_user_confirmation",
+            "The exact confirmed paper ticket filled and the read-only postcheck is aligned."
+            if snapshot.paper_cycle_complete == "True"
+            else "No order is approved until a fresh market-hours ticket is reviewed and explicitly confirmed.",
+        ),
+        ("12", "monitoring_only_scheduling_boundary", "boundary_complete_user_hermes_setup_pending", "Execution commands are forbidden from scheduling; user-owned Hermes status setup remains external."),
     ]
     return [
         {
@@ -288,6 +356,10 @@ def build_report_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, An
             "defensive_sleeve_preview_candidate_status": snapshot.defensive_sleeve_preview_candidate_status,
             "paper_live_monitoring_status": snapshot.paper_live_monitoring_status,
             "checklist_phase_status": snapshot.checklist_phase_status,
+            "paper_ticket_present": snapshot.paper_ticket_present,
+            "paper_ticket_id": snapshot.paper_ticket_id,
+            "paper_ticket_execution_ready": snapshot.paper_ticket_execution_ready,
+            "paper_ticket_blockers": snapshot.paper_ticket_blockers,
             "finding": finding,
             "next_safe_development_step": snapshot.next_safe_development_step,
             **ROW_SAFETY,
@@ -312,9 +384,23 @@ def build_summary_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, A
         ("defensive_sleeve_preview_readiness_status", snapshot.defensive_sleeve_preview_readiness_status, "Saved defensive sleeve preview-readiness status."),
         ("defensive_sleeve_preview_candidate_status", snapshot.defensive_sleeve_preview_candidate_status, "Defensive sleeve preview candidate approval remains blocked."),
         ("paper_live_monitoring_status", snapshot.paper_live_monitoring_status, "Saved paper-live monitor interpretation."),
+        ("paper_ticket_present", snapshot.paper_ticket_present, "Whether a saved exact volatility paper ticket exists."),
+        ("paper_ticket_id", snapshot.paper_ticket_id, "Latest saved exact ticket identifier; not approval."),
+        ("paper_ticket_execution_ready", snapshot.paper_ticket_execution_ready, "True only when the latest saved ticket passed preparation checks."),
+        ("paper_ticket_blockers", snapshot.paper_ticket_blockers, "Latest saved ticket blockers."),
         ("current_monitoring_recommended_next_step", snapshot.recommended_next_step, "Saved paper-live monitoring recommendation."),
-        ("steps_1_to_11_status", "complete_for_current_status_only_seed_phase", "Current report/status seed phase is closed out through Step 11."),
-        ("step_12_status", "future_only", "Generic promotion ladder remains a separate future design."),
+        ("steps_1_to_10_status", "complete", "Implementation and verification are complete through the guarded manual execution path."),
+        (
+            "step_11_status",
+            "complete_filled_and_postcheck_aligned" if snapshot.paper_cycle_complete == "True" else "pending_market_hours_and_final_user_confirmation",
+            "The confirmed paper basket filled and reconciled exactly."
+            if snapshot.paper_cycle_complete == "True"
+            else "A fresh exact market-hours ticket and final user confirmation are still required.",
+        ),
+        ("paper_execution_status", snapshot.paper_execution_status, "Saved execution result for the latest exact ticket."),
+        ("paper_postcheck_status", snapshot.paper_postcheck_status, "Saved read-only reconciliation result for the latest exact ticket."),
+        ("paper_cycle_complete", snapshot.paper_cycle_complete, "True only when matching ticket, filled execution, and aligned postcheck evidence agree."),
+        ("step_12_status", "boundary_complete_user_hermes_setup_pending", "Scheduling boundaries are complete; user-owned Hermes status setup remains external."),
         ("next_safe_development_step", snapshot.next_safe_development_step, "Next safe development path; not an order instruction."),
         ("never_schedule_order_capable_commands", "True", "Order-capable commands must never be scheduled."),
         ("execution_approved", "False", "Execution approval remains false."),
@@ -329,14 +415,27 @@ def build_summary_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, A
 
 def build_blocker_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, Any]]:
     rows = [
-        ("repeat_or_followup_order_not_approved", "blocked", "critical", "No further QQQ order is needed while aligned long one share.", "Hold no action and monitor only."),
-        ("paper_execution_not_approved", "blocked", "critical", "Paper execution approval remains false after this closeout.", "Use separate manual review before any future order discussion."),
         ("scheduling_not_approved", "blocked", "critical", "Scheduling remains monitoring-only; order-capable commands must never be scheduled.", "Do not create, edit, trigger, or schedule execution commands."),
         ("live_trading_not_approved", "blocked", "critical", "Live-money trading remains outside project scope.", "Keep Alpaca paper-only boundaries."),
-        ("generic_promotion_ladder_future_only", "future_only", "medium", "Step 12 is intentionally not implemented in this checkpoint.", "Design a promotion ladder later, starting QQQ100 only."),
-        ("defensive_sleeve_preview_not_approved", "blocked", "critical", "Defensive sleeve review/checkpoints do not approve a preview candidate, promotion, or execution.", "manual review required before any defensive preview label change."),
+        ("repeat_execution_not_approved", "blocked", "critical", "A completed paper cycle does not approve a repeat or follow-up order.", "Require a new fresh ticket and exact confirmation for any future rebalance."),
     ]
-    if snapshot.checklist_phase_status != "paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review":
+    if snapshot.paper_cycle_complete != "True":
+        rows.insert(
+            0,
+            ("exact_ticket_confirmation_pending", "blocked", "critical", "No current order is approved without a fresh exact ticket and final user confirmation.", snapshot.next_safe_development_step),
+        )
+    if snapshot.paper_ticket_execution_ready != "True":
+        rows.insert(
+            1,
+            (
+                "fresh_market_hours_ticket_required",
+                "blocked",
+                "high",
+                f"Latest ticket {snapshot.paper_ticket_id} is not executable: {snapshot.paper_ticket_blockers}",
+                "Prepare a new ticket during an open U.S. market session.",
+            ),
+        )
+    if snapshot.checklist_phase_status == "paper_live_checklist_manual_review_required":
         rows.insert(
             0,
             (
@@ -366,6 +465,8 @@ def build_evidence_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, 
         ("current_saved_alignment", f"{snapshot.saved_position_state}; quantity={snapshot.saved_position_quantity}; {snapshot.alignment_state}", "Explains why no further QQQ order is needed now."),
         ("current_followup_policy", f"{snapshot.followup_policy_status}; no_action_required={snapshot.no_action_required}", "Repeat/follow-up orders remain blocked."),
         ("defensive_sleeve_saved_review_state", f"manual={snapshot.defensive_sleeve_manual_review_status}; preview={snapshot.defensive_sleeve_preview_readiness_status}; candidate={snapshot.defensive_sleeve_preview_candidate_status}", "Defensive sleeve remains blocked from preview/execution."),
+        ("latest_exact_paper_ticket", f"present={snapshot.paper_ticket_present}; id={snapshot.paper_ticket_id}; execution_ready={snapshot.paper_ticket_execution_ready}; blockers={snapshot.paper_ticket_blockers}", "Saved ticket context only; this report cannot approve or submit it."),
+        ("latest_paper_cycle", f"execution={snapshot.paper_execution_status}; postcheck={snapshot.paper_postcheck_status}; complete={snapshot.paper_cycle_complete}", "Completion requires matching ticket IDs, all submitted orders filled, and every managed symbol aligned."),
         ("current_scheduling_boundary", "monitoring_only; never_schedule_order_capable_commands=True", "Hermes/VPS scheduling remains status/report-only."),
     ]
     return [{"evidence_name": name, "evidence_value": value, "details": details, **SAFETY_FLAGS} for name, value, details in rows]
@@ -387,7 +488,13 @@ def build_summary_lines(summary_rows: list[dict[str, Any]], output_paths: dict[s
         f"Defensive sleeve preview candidate status: {summary_value(summary_rows, 'defensive_sleeve_preview_candidate_status')}",
         f"No action required: {summary_value(summary_rows, 'no_action_required')}",
         f"Paper-live monitoring status: {summary_value(summary_rows, 'paper_live_monitoring_status')}",
-        f"Current monitoring recommended next step: {summary_value(summary_rows, 'current_monitoring_recommended_next_step')}",
+        f"Latest paper ticket: {summary_value(summary_rows, 'paper_ticket_id')} ready={summary_value(summary_rows, 'paper_ticket_execution_ready')}",
+        f"Latest paper ticket blockers: {summary_value(summary_rows, 'paper_ticket_blockers')}",
+        f"Paper execution status: {summary_value(summary_rows, 'paper_execution_status')}",
+        f"Paper postcheck status: {summary_value(summary_rows, 'paper_postcheck_status')}",
+        f"Paper cycle complete: {summary_value(summary_rows, 'paper_cycle_complete')}",
+        f"Previous-seed monitoring recommendation: {summary_value(summary_rows, 'current_monitoring_recommended_next_step')}",
+        f"Step 11 status: {summary_value(summary_rows, 'step_11_status')}",
         f"Step 12 status: {summary_value(summary_rows, 'step_12_status')}",
         f"Next safe development step: {summary_value(summary_rows, 'next_safe_development_step')}",
         f"Saved report/summary/blockers/evidence to {output_paths['report']}; {output_paths['summary']}; {output_paths['blockers']}; {output_paths['evidence']}",
@@ -401,6 +508,13 @@ def summary_value(rows: list[dict[str, Any]], key: str) -> str:
         if str(row.get("summary_name", "")) == key:
             return str(row.get("summary_value", "")).strip()
     return ""
+
+
+def parse_int(value: str) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
 
 
 def read_summary_value(path: Path, key: str) -> str:

@@ -15,7 +15,7 @@ from typing import Any
 
 
 ACTIVE_SEED = "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x"
-PROPOSED_REVIEW_NOTIONAL_USD = Decimal("1000.00")
+PROPOSED_REVIEW_NOTIONAL_USD = Decimal("100000.00")
 FINAL_STATUS = "vol_targeted_growth_calculated_order_values_created_manual_review_required"
 FINAL_DECISION = "CALCULATED_TARGET_DOLLARS_CREATED_QUANTITIES_BLOCKED"
 NEXT_STEP = "manual_review_calculated_order_values_before_any_quantity_or_order_approval"

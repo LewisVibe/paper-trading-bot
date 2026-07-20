@@ -73,11 +73,11 @@ def main() -> int:
 
 
 def verify_commands_registered(failures: list[str]) -> None:
-    bot_source = (ROOT / "bot.py").read_text(encoding="utf-8")
+    parser_source = (ROOT / "trading_bot/cli/parser.py").read_text(encoding="utf-8")
     inventory_source = (ROOT / "scripts/verify_command_inventory.py").read_text(encoding="utf-8")
     for command in COMMANDS:
-        if command not in bot_source:
-            failures.append(f"bot.py missing command: {command}")
+        if command not in parser_source:
+            failures.append(f"CLI parser missing command: {command}")
         if command not in inventory_source:
             failures.append(f"command inventory missing command: {command}")
 

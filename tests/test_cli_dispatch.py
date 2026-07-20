@@ -38,7 +38,7 @@ def test_pre_config_registry_is_ordered_unique_and_complete():
 def test_config_registry_is_unique_and_has_explicit_handlers():
     destinations = [descriptor.dest for descriptor in dispatch.CONFIG_COMMANDS]
 
-    assert len(destinations) == 19
+    assert len(destinations) == 22
     assert len(destinations) == len(set(destinations))
     assert set(application.build_config_handlers()) == set(destinations)
     assert set(destinations).isdisjoint(descriptor.dest for descriptor in dispatch.PRE_CONFIG_COMMANDS)
@@ -126,6 +126,9 @@ def test_execution_commands_are_explicitly_classified():
 
     assert effects["execute_qqq100_paper"] is dispatch.SideEffect.PAPER_EXECUTION
     assert effects["execute_slow_sma_paper"] is dispatch.SideEffect.PAPER_EXECUTION
+    assert effects["execute_vol_targeted_growth_paper"] is dispatch.SideEffect.PAPER_EXECUTION
+    assert effects["prepare_vol_targeted_growth_paper_ticket"] is dispatch.SideEffect.BROKER_READ
+    assert effects["vol_targeted_growth_paper_postcheck"] is dispatch.SideEffect.BROKER_READ
     assert effects["paper_order_test"] is dispatch.SideEffect.PAPER_EXECUTION
     assert dispatch.NORMAL_RUN.side_effect is dispatch.SideEffect.PAPER_EXECUTION
 

@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BOT_PATH = ROOT / "bot.py"
+REPORT_ONLY_PATH = ROOT / "trading_bot" / "cli" / "report_only.py"
 MODULE_PATH = ROOT / "trading_bot" / "research" / "vps_daily_monitoring_summary.py"
 COMMAND = "--vps-daily-monitoring-summary"
 
@@ -236,11 +236,13 @@ def main() -> int:
 
 
 def verify_command_registered(failures: list[str]) -> None:
-    bot_source = read_text(BOT_PATH)
-    if COMMAND not in bot_source:
-        failures.append(f"{COMMAND} is missing from bot.py")
-    if f'sys.argv[1:] == ["{COMMAND}"]' not in bot_source:
+    report_only_source = read_text(REPORT_ONLY_PATH)
+    if COMMAND not in report_only_source:
+        failures.append(f"{COMMAND} is missing from the report-only router")
+    if f'argv == ["{COMMAND}"]' not in report_only_source:
         failures.append(f"{COMMAND} should have an exact early report-only route")
+    if "print_vps_daily_monitoring_summary" not in report_only_source:
+        failures.append(f"{COMMAND} should route to the daily status printer")
 
 
 def verify_module_source(failures: list[str]) -> None:

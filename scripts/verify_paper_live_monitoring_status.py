@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BOT = ROOT / "bot.py"
+REPORT_ONLY = ROOT / "trading_bot" / "cli" / "report_only.py"
 MODULE = ROOT / "trading_bot" / "research" / "paper_live_monitoring_status.py"
 README = ROOT / "README.md"
 CURRENT_STATE = ROOT / "docs" / "CURRENT_STATE.md"
@@ -76,14 +76,14 @@ FORBIDDEN_CALL_TOKENS = [
 
 def main() -> int:
     failures: list[str] = []
-    bot_source = read_text(BOT)
+    report_only_source = read_text(REPORT_ONLY)
     module_source = read_text(MODULE)
     docs_source = "\n".join(
         read_text(path)
         for path in [README, CURRENT_STATE, CODEX_WORKFLOW, HERMES_TASK_BOARD, PAPER_LIVE_CHECKLIST]
     )
 
-    verify_commands(bot_source, failures)
+    verify_commands(report_only_source, failures)
     verify_module(module_source, failures)
     verify_docs(docs_source, failures)
     verify_outputs_ignored(failures)
@@ -99,21 +99,17 @@ def main() -> int:
     return 0
 
 
-def verify_commands(bot_source: str, failures: list[str]) -> None:
-    load_config_index = bot_source.find("config = load_config(")
+def verify_commands(report_only_source: str, failures: list[str]) -> None:
     for command in COMMANDS:
-        if command not in bot_source:
+        if command not in report_only_source:
             failures.append(f"missing command registration/routing: {command}")
     branches = {
-        "--paper-live-monitoring-status": 'if sys.argv[1:] == ["--paper-live-monitoring-status"]:',
-        "--show-paper-live-monitoring-status": 'if sys.argv[1:] == ["--show-paper-live-monitoring-status"]:',
+        "--paper-live-monitoring-status": 'if argv == ["--paper-live-monitoring-status"]:',
+        "--show-paper-live-monitoring-status": 'if argv == ["--show-paper-live-monitoring-status"]:',
     }
     for command, branch in branches.items():
-        branch_index = bot_source.find(branch)
-        if branch_index == -1:
+        if branch not in report_only_source:
             failures.append(f"missing early report-only route for {command}")
-        elif load_config_index != -1 and branch_index > load_config_index:
-            failures.append(f"{command} must route before config loading")
 
 
 def verify_module(module_source: str, failures: list[str]) -> None:

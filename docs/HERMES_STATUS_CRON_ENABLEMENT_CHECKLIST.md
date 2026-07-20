@@ -76,7 +76,8 @@ order-capable scheduling.
 The status cron must not run normal `python bot.py`, paper-order tests, QQQ100
 paper execution, slow-SMA paper execution, broker-position comparison, yfinance
 refresh commands, promoted-review refresh, defensive-research refresh, market
-monitor refresh, action-preview commands, or any order-capable command.
+monitor refresh, action-preview commands, volatility-targeted ticket
+preparation/execution/postcheck, or any order-capable command.
 
 It must not call Alpaca, read live or paper positions, create order fields,
 prepare orders, submit orders, cancel orders, replace orders, write SQLite

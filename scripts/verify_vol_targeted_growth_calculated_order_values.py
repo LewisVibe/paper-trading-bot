@@ -66,11 +66,11 @@ def main() -> int:
 
 
 def verify_commands_registered(failures: list[str]) -> None:
-    bot_source = (ROOT / "bot.py").read_text(encoding="utf-8")
+    parser_source = (ROOT / "trading_bot/cli/parser.py").read_text(encoding="utf-8")
     inventory_source = (ROOT / "scripts/verify_command_inventory.py").read_text(encoding="utf-8")
     for command in COMMANDS:
-        if command not in bot_source:
-            failures.append(f"bot.py missing command: {command}")
+        if command not in parser_source:
+            failures.append(f"CLI parser missing command: {command}")
         if command not in inventory_source:
             failures.append(f"command inventory missing command: {command}")
 
@@ -115,8 +115,8 @@ def verify_fixture_output(failures: list[str]) -> None:
         output = "\n".join(result.summary_lines + lines)
         for phrase in [
             FINAL_DECISION,
-            "proposed_review_notional_usd=1000.00",
-            "target_dollar_total=1000.00",
+            "proposed_review_notional_usd=100000.00",
+            "target_dollar_total=100000.00",
             "order_quantities_calculated=False",
             "order_values_populated=False",
             "orders_submitted=false",
@@ -126,7 +126,7 @@ def verify_fixture_output(failures: list[str]) -> None:
         ]:
             if phrase not in output:
                 failures.append(f"fixture output missing phrase: {phrase}")
-        expected = {"QQQ": "700.00", "MGK": "200.00", "IBIT": "50.00", "SGOV": "50.00"}
+        expected = {"QQQ": "70000.00", "MGK": "20000.00", "IBIT": "5000.00", "SGOV": "5000.00"}
         actual = {row["broker_symbol"]: row["target_dollars"] for row in result.report_rows}
         if actual != expected:
             failures.append(f"target-dollar math mismatch: {actual}")

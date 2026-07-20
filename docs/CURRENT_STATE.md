@@ -361,8 +361,8 @@ The paper-live monitoring status comes from `python bot.py --paper-live-monitori
 The paper-live checklist status closeout comes from `python bot.py --paper-live-checklist-status`, with saved display through `python bot.py --show-paper-live-checklist-status`:
 
 - It writes `data/paper_live_checklist_status.csv`, `data/paper_live_checklist_status_summary.csv`, `data/paper_live_checklist_status_blockers.csv`, and `data/paper_live_checklist_status_evidence.csv`.
-- It reads saved paper-live monitoring status only and records `paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review` when the volatility-targeted seed is the active status seed, QQQ100 remains aligned long one share as previous-seed context, no action is required, and `recommended_next_step=hold_no_action_and_monitor_only`.
-- PAPER_LIVE_CHECKLIST Steps 1-11 are complete or complete-for-current-QQQ100-monitoring-phase; Step 12 remains future-only for a later generic promotion ladder, starting QQQ100 only.
+- It reads saved paper-live monitoring plus matching volatility ticket, execution, and postcheck summaries. Before execution it reports `paper_live_checklist_code_complete_market_hours_confirmation_pending`; after a fully filled and aligned cycle it reports `paper_live_checklist_complete_user_hermes_setup_pending` without approving a repeat.
+- Steps 1-10 are complete. Step 11 requires a fresh exact market-hours ticket plus final user confirmation; Step 12's monitoring-only boundary is complete and user-owned Hermes status setup remains external.
 - It does not approve execution, paper execution, repeat/follow-up orders, scheduling, live trading, or executable order instructions.
 
 The paper-live F6/F7 audit comes from `python bot.py --paper-live-f6-f7-audit`, with saved display through `python bot.py --show-paper-live-f6-f7-audit`:

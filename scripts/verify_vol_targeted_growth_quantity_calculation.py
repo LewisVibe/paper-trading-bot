@@ -82,11 +82,11 @@ def main() -> int:
 
 
 def verify_commands_registered(failures: list[str]) -> None:
-    bot_source = (ROOT / "bot.py").read_text(encoding="utf-8")
+    parser_source = (ROOT / "trading_bot/cli/parser.py").read_text(encoding="utf-8")
     inventory_source = (ROOT / "scripts/verify_command_inventory.py").read_text(encoding="utf-8")
     for command in COMMANDS:
-        if command not in bot_source:
-            failures.append(f"bot.py missing command: {command}")
+        if command not in parser_source:
+            failures.append(f"CLI parser missing command: {command}")
         if command not in inventory_source:
             failures.append(f"command inventory missing command: {command}")
 
@@ -189,7 +189,7 @@ def seed_inputs(root: Path) -> None:
         data / "vol_targeted_growth_quantity_calculation_readiness_summary.csv",
         {
             "final_quantity_calculation_readiness_decision": "READY_TO_REQUEST_QUANTITY_CALCULATION_APPROVAL_NOT_APPROVED",
-            "target_dollar_total": "1000.00",
+            "target_dollar_total": "100000.00",
         },
     )
     write_target_values(data / "vol_targeted_growth_calculated_order_values.csv")
@@ -197,7 +197,7 @@ def seed_inputs(root: Path) -> None:
         data / "vol_targeted_growth_calculated_order_values_summary.csv",
         {
             "final_calculated_order_values_decision": "CALCULATED_TARGET_DOLLARS_CREATED_QUANTITIES_BLOCKED",
-            "target_dollar_total": "1000.00",
+            "target_dollar_total": "100000.00",
         },
     )
     write_prices(data / "vol_targeted_growth_saved_price_snapshot.csv")
@@ -212,10 +212,10 @@ def seed_inputs(root: Path) -> None:
 
 def write_target_values(path: Path) -> None:
     rows = [
-        ("qqq100_core_trend_sleeve", "QQQ", "700.00"),
-        ("high_growth_stock_research_sleeve", "MGK", "200.00"),
-        ("crypto_research_sleeve", "IBIT", "50.00"),
-        ("defensive_cash_or_bond_sleeve", "SGOV", "50.00"),
+        ("qqq100_core_trend_sleeve", "QQQ", "70000.00"),
+        ("high_growth_stock_research_sleeve", "MGK", "20000.00"),
+        ("crypto_research_sleeve", "IBIT", "5000.00"),
+        ("defensive_cash_or_bond_sleeve", "SGOV", "5000.00"),
     ]
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=["sleeve_name", "broker_symbol", "target_dollars", "proposed_order_quantity"])

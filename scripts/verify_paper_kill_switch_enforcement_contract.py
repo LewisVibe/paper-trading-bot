@@ -10,6 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON = sys.executable
 APPLICATION = ROOT / "trading_bot" / "cli" / "application.py"
+PARSER = ROOT / "trading_bot" / "cli" / "parser.py"
+VOL_TARGETED_RUNNER = ROOT / "trading_bot" / "runners" / "vol_targeted_growth_paper.py"
 
 CONTRACT_PREREQUISITES = [
     "alpaca_paper_only",
@@ -75,7 +77,7 @@ def main() -> int:
     print("Future defensive execution command absent: pass")
     print("Report/preview execution approval scan: pass")
     print("Current gate remains blocked/future-work-required: pass")
-    print("Isolated helper wiring is limited to manual and slow SMA paper preflights: pass")
+    print("Isolated helper wiring covers only the guarded manual paper execution paths: pass")
     print("Result: passed")
     return 0
 
@@ -185,10 +187,15 @@ def verify_helper_wired_only_to_manual_paper_order_test(failures: list[str]) -> 
     if "evaluate_paper_kill_switch_gate" not in helper_text:
         failures.append("isolated paper kill-switch helper must expose evaluate_paper_kill_switch_gate")
     bot_source = read_text(APPLICATION)
+    vol_targeted_source = read_text(VOL_TARGETED_RUNNER)
     if "evaluate_paper_kill_switch_gate" not in bot_source:
         failures.append("configured application should use isolated paper kill-switch helper")
     elif not helper_call_is_limited_to_scoped_paper_commands(bot_source):
         failures.append("isolated helper must be limited to manual and slow SMA paper preflights")
+    if "evaluate_paper_kill_switch_gate" not in vol_targeted_source:
+        failures.append("volatility-targeted paper execution must use the isolated paper kill-switch helper")
+    elif not vol_targeted_helper_call_is_scoped(vol_targeted_source):
+        failures.append("volatility-targeted kill-switch use must remain inside its manual execution route")
     high_risk_paths = [
         ROOT / "trading_bot" / "execution.py",
         ROOT / "trading_bot" / "alpaca_client.py",
@@ -227,6 +234,19 @@ def helper_call_is_limited_to_scoped_paper_commands(bot_source: str) -> bool:
     )
 
 
+def vol_targeted_helper_call_is_scoped(source: str) -> bool:
+    try:
+        execution_start = source.index("def run_execute_vol_targeted_growth_paper(")
+        execution_end = source.index("def run_vol_targeted_growth_paper_postcheck(", execution_start)
+    except ValueError:
+        return False
+    execution_source = source[execution_start:execution_end]
+    outside_source = source[:execution_start] + source[execution_end:]
+    if "evaluate_paper_kill_switch_gate(" in outside_source:
+        return False
+    return preflight_before_terms(execution_source, ["submit_paper_order("])
+
+
 def preflight_before_terms(source: str, terms: list[str]) -> bool:
     helper_call = "evaluate_paper_kill_switch_gate("
     if helper_call not in source:
@@ -256,10 +276,20 @@ def bot_help_text() -> str:
         capture_output=True,
         timeout=30,
     )
-    return (result.stdout or "") + "\n" + (result.stderr or "")
+    output = (result.stdout or "") + "\n" + (result.stderr or "")
+    if result.returncode == 0 and "--paper-order-test" in output:
+        return output
+    return read_text(PARSER)
 
 
 def help_line_for(output: str, command: str) -> str:
+    source_token = f'"{command}"'
+    if source_token in output:
+        command_index = output.index(source_token)
+        argument_start = output.rfind("parser.add_argument(", 0, command_index)
+        argument_end = output.find("\n    )", command_index)
+        if argument_start >= 0 and argument_end >= 0:
+            return output[argument_start:argument_end]
     lines = output.splitlines()
     for index, line in enumerate(lines):
         if line.lstrip().startswith(command):

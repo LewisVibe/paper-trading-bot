@@ -1952,6 +1952,26 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Display the saved volatility-targeted growth fresh broker pre-ticket gate run.",
     )
     parser.add_argument(
+        "--prepare-vol-targeted-growth-paper-ticket",
+        action="store_true",
+        help="Prepare an exact read-only Alpaca paper ticket for the $100,000 volatility-targeted sleeve.",
+    )
+    parser.add_argument(
+        "--execute-vol-targeted-growth-paper",
+        metavar="TICKET_ID",
+        help="Execute one fresh saved volatility-targeted Alpaca paper ticket after explicit confirmation.",
+    )
+    parser.add_argument(
+        "--confirm-vol-targeted-growth-paper",
+        action="store_true",
+        help="Required with --execute-vol-targeted-growth-paper; never valid for live trading or scheduling.",
+    )
+    parser.add_argument(
+        "--vol-targeted-growth-paper-postcheck",
+        action="store_true",
+        help="Run a confirmed read-only Alpaca paper position postcheck for the latest volatility ticket.",
+    )
+    parser.add_argument(
         "--vol-targeted-growth-paper-live-execution-blocker-rollup",
         action="store_true",
         help="Create a saved-output-only paper-live execution blocker rollup for the active volatility seed.",

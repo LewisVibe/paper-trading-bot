@@ -130,6 +130,11 @@ from trading_bot.runners.paper_execution import (
     decimal_to_float,
     run_bot,
 )
+from trading_bot.runners.vol_targeted_growth_paper import (
+    run_execute_vol_targeted_growth_paper,
+    run_prepare_vol_targeted_growth_paper_ticket,
+    run_vol_targeted_growth_paper_postcheck,
+)
 from trading_bot.runners.research_reports import (
     run_build_etf_breadth_price_history_command,
     run_refresh_promoted_review_command,
@@ -1761,6 +1766,22 @@ def estimate_slow_sma_execution_position_after(
 
 def build_config_handlers():
     return {
+        "prepare_vol_targeted_growth_paper_ticket": lambda command_args, command_config, command_logger: run_prepare_vol_targeted_growth_paper_ticket(
+            command_config,
+            command_logger,
+            confirm_readonly_alpaca_check=command_args.confirm_readonly_alpaca_check,
+        ),
+        "execute_vol_targeted_growth_paper": lambda command_args, command_config, command_logger: run_execute_vol_targeted_growth_paper(
+            command_config,
+            command_logger,
+            ticket_id=command_args.execute_vol_targeted_growth_paper,
+            confirmed=command_args.confirm_vol_targeted_growth_paper,
+        ),
+        "vol_targeted_growth_paper_postcheck": lambda command_args, command_config, command_logger: run_vol_targeted_growth_paper_postcheck(
+            command_config,
+            command_logger,
+            confirm_readonly_alpaca_check=command_args.confirm_readonly_alpaca_check,
+        ),
         "execute_qqq100_paper": lambda command_args, command_config, command_logger: run_execute_qqq100_paper(
             config=command_config,
             logger=command_logger,

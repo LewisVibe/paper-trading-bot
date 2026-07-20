@@ -88,7 +88,13 @@ def generate_deployment_readiness_report(
 
 
 def build_deployment_readiness_rows(root: Path, created_at: str) -> list[dict[str, Any]]:
-    bot_source = read_text(root / "bot.py")
+    cli_source = "\n".join(
+        [
+            read_text(root / "trading_bot" / "cli" / "parser.py"),
+            read_text(root / "trading_bot" / "cli" / "application.py"),
+            read_text(root / "trading_bot" / "cli" / "dispatch.py"),
+        ]
+    )
     config_source = read_text(root / "trading_bot" / "config.py")
     readme_source = read_text(root / "README.md")
     current_state_exists = (root / "docs" / "CURRENT_STATE.md").exists()
@@ -232,9 +238,9 @@ def build_deployment_readiness_rows(root: Path, created_at: str) -> list[dict[st
         readiness_row(
             created_at,
             "high_risk_commands_gated",
-            "pass" if high_risk_commands_gated(help_text, bot_source) else "blocked_for_review",
+            "pass" if high_risk_commands_gated(help_text, cli_source) else "blocked_for_review",
             "high",
-            "Manual paper order and slow SMA paper execution commands remain explicitly gated." if high_risk_commands_gated(help_text, bot_source) else "Could not confirm high-risk commands remain gated.",
+            "Manual paper order and slow SMA paper execution commands remain explicitly gated." if high_risk_commands_gated(help_text, cli_source) else "Could not confirm high-risk commands remain gated.",
             "Keep confirmation flags required for execution-capable commands.",
         ),
         readiness_row(
@@ -256,9 +262,9 @@ def build_deployment_readiness_rows(root: Path, created_at: str) -> list[dict[st
         readiness_row(
             created_at,
             "readme_windows_task_scheduler_note",
-            "pass" if "Windows Task Scheduler" in readme_source and "not execution approval" in readme_source else "warning",
+            "pass" if task_scheduler_boundary_documented(readme_source) else "warning",
             "medium",
-            "README mentions Windows Task Scheduler readiness boundaries." if "Windows Task Scheduler" in readme_source and "not execution approval" in readme_source else "README does not yet mention Windows Task Scheduler readiness boundaries.",
+            "README mentions Task Scheduler readiness boundaries." if task_scheduler_boundary_documented(readme_source) else "README does not yet mention Task Scheduler readiness boundaries.",
             "Document any future scheduler setup as report/display only until execution is separately approved.",
         ),
         readiness_row(
@@ -382,15 +388,22 @@ def git_executable() -> str | None:
     return None
 
 
-def high_risk_commands_gated(help_text: str, bot_source: str) -> bool:
+def high_risk_commands_gated(help_text: str, cli_source: str) -> bool:
     return (
         "--paper-order-test" in help_text
         and "--confirm-paper-order" in help_text
         and "--execute-slow-sma-paper" in help_text
         and "--confirm-slow-sma-paper" in help_text
-        and "--confirm-paper-order" in bot_source
-        and "--confirm-slow-sma-paper" in bot_source
+        and "--confirm-paper-order" in cli_source
+        and "--confirm-slow-sma-paper" in cli_source
     )
+
+
+def task_scheduler_boundary_documented(readme_source: str) -> bool:
+    lower_source = readme_source.lower()
+    scheduler_named = "windows task scheduler" in lower_source or "task scheduler" in lower_source
+    execution_refused = "do not schedule execution-capable commands" in lower_source or "must never be placed" in lower_source
+    return scheduler_named and execution_refused
 
 
 def gitignore_patterns(path: Path) -> set[str]:

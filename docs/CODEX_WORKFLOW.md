@@ -411,3 +411,13 @@ Volatility-targeted growth seed-change implementation design uses `python bot.py
 Volatility-targeted growth seed-change dry-run diff uses `python bot.py --vol-targeted-growth-seed-change-dry-run-diff` and `python bot.py --show-vol-targeted-growth-seed-change-dry-run-diff`. It lists future files/areas for manual review only. It must not modify those target files, change the seed, displace QQQ100, add action-preview implementation, call Alpaca, read positions, create order fields, wire execution, or approve execution/scheduling.
 
 Volatility-targeted growth active-seed readiness uses `python bot.py --vol-targeted-growth-active-seed-readiness` and `python bot.py --show-vol-targeted-growth-active-seed-readiness`. It checks saved monitoring/status reports and supporting saved evidence for the current active report/status seed `higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x` / `MULTI_SLEEVE`, with QQQ100 retained as previous-seed context. It must not call Alpaca, refresh market data, read positions, create action preview, create order fields, wire execution, or approve execution/scheduling.
+
+## Approved Volatility Paper Boundary
+
+Lewis approved the narrow volatility-targeted Alpaca paper path on 2026-07-10. The maximum is `$100,000`; the only managed symbols are `QQQ`, `MGK`, `IBIT`, and `SGOV`; base weights are 70/20/5/5 and are scaled by the current 20-day realized-volatility factor from completed daily sessions against a 15% target with a 1x cap. Unused exposure remains cash. Unrelated paper positions must not be traded and reduce usable sleeve capital when needed to keep the combined account unleveraged.
+
+Ticket preparation is read-only and requires `--prepare-vol-targeted-growth-paper-ticket --confirm-readonly-alpaca-check`. Submission requires the exact unexpired ticket ID plus `--confirm-vol-targeted-growth-paper`; all Alpaca submissions must pass through `trading_bot.paper_orders.submit_paper_order`. The postcheck is a separate confirmed read-only command. Normal `python bot.py`, QQQ100, slow-SMA, and manual smoke-test behavior must remain separate.
+
+Regenerate `--paper-live-checklist-status` after postcheck. Matching fully filled execution and aligned postcheck evidence closes Step 11 while keeping repeat execution, follow-up orders, scheduling, and live trading unapproved.
+
+Never place ticket preparation, volatility paper execution, or its postcheck in Hermes, cron, Task Scheduler, a service, or a loop. Hermes remains status/report-only. Live trading remains unsupported.

@@ -428,6 +428,9 @@ PRE_CONFIG_BY_OPTION = {descriptor.option: descriptor for descriptor in PRE_CONF
 
 
 CONFIG_COMMANDS = (
+    CommandDescriptor("prepare_vol_targeted_growth_paper_ticket", SideEffect.BROKER_READ),
+    CommandDescriptor("execute_vol_targeted_growth_paper", SideEffect.PAPER_EXECUTION),
+    CommandDescriptor("vol_targeted_growth_paper_postcheck", SideEffect.BROKER_READ),
     CommandDescriptor("execute_qqq100_paper", SideEffect.PAPER_EXECUTION),
     CommandDescriptor("execute_slow_sma_paper", SideEffect.PAPER_EXECUTION),
     CommandDescriptor("preview_slow_sma_actions", SideEffect.BROKER_READ),

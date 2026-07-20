@@ -970,12 +970,12 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Stop condition:** Stop if the task would call Alpaca, read live positions, create executable order instructions, approve repeat/follow-up orders, or change scheduling.
 
 ### Task: Paper-live checklist status closeout
-- **Purpose:** Use `python bot.py --paper-live-checklist-status` to close out the current QQQ100 paper-live monitoring phase with saved evidence only.
-- **Risk level:** Low/report-only when it reads `data/paper_live_monitoring_status.csv` only.
+- **Purpose:** Use `python bot.py --paper-live-checklist-status` to summarize the implemented volatility paper path and the latest saved exact-ticket gate.
+- **Risk level:** Low/report-only when it reads saved monitoring and ticket-summary outputs only.
 - **Allowed commands:** `python bot.py --paper-live-checklist-status`, `python bot.py --show-paper-live-checklist-status`.
-- **Expected status:** `paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review` when the volatility-targeted seed is active for status/reporting, QQQ100 is aligned long one share as previous-seed context, no action is required, and Step 12 remains future-only.
-- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, QQQ100 paper execution, QQQ100 postcheck unless separately approved, paper-order tests, normal bot execution, scheduler changes.
-- **Stop condition:** Stop if the task would build the generic promotion ladder, approve another QQQ order, change the Hermes cron sequence, or touch execution/config/secrets.
+- **Expected status:** `paper_live_checklist_code_complete_market_hours_confirmation_pending` until a fresh exact ticket is reviewed and explicitly confirmed by the owner; matching fully filled execution and aligned postcheck evidence advances it to `paper_live_checklist_complete_user_hermes_setup_pending`.
+- **Forbidden commands:** Creating/editing/triggering Hermes cron jobs, volatility ticket preparation/execution/postcheck, QQQ100 paper execution, paper-order tests, normal bot execution, scheduler changes.
+- **Stop condition:** Stop if the task would call Alpaca, approve or submit an order, change the Hermes cron sequence, or touch execution/config/secrets.
 
 ### Task: Paper-live promotion ladder status
 - **Purpose:** Use `python bot.py --paper-live-promotion-ladder-status` to summarize the current report-only promotion ladder state from saved outputs.
@@ -1815,3 +1815,11 @@ Paper-live state checkpoint: `python bot.py --paper-live-state-summary` is saved
 - **Expected status:** The checklist records the expected first run `2026-06-29T14:00:00+01:00`, healthy/warning/failure interpretations, stop conditions, and a result-log template while preserving the four-command status-only sequence.
 - **Forbidden commands:** Creating, editing, triggering, disabling, deleting, or scheduling Hermes cron jobs; broker reads; Alpaca calls; market refresh; order creation; refresh commands; executable/account/secret fields; action preview implementation; portfolio execution wiring; or paper-live execution approval.
 - **Stop condition:** Stop if the task would change the Hermes job, run the cron manually, add commands, approve execution, create order fields, call Alpaca, read positions, schedule order-capable work, or connect the candidate to execution.
+
+### Task: Volatility-targeted paper execution implementation
+- **Purpose:** Implement the owner-approved `$100,000` Alpaca paper workflow for the 15%/20-day/1x volatility seed, limited to `QQQ`, `MGK`, `IBIT`, and `SGOV`.
+- **Status:** Code and no-network verification complete; the latest after-hours ticket remains blocked by closed market and stale intraday prices. No volatility-targeted order has been submitted.
+- **Manual commands only:** `--prepare-vol-targeted-growth-paper-ticket --confirm-readonly-alpaca-check`, `--execute-vol-targeted-growth-paper TICKET_ID --confirm-vol-targeted-growth-paper`, and `--vol-targeted-growth-paper-postcheck --confirm-readonly-alpaca-check`.
+- **Safety boundary:** Hashed 15-minute ticket, fresh market/account/position/open-order/asset checks, paper-only gateway, deterministic client IDs, no shorts, no leverage, unrelated positions untouched, and partial baskets stop for manual review.
+- **Hermes prohibition:** All three commands are forbidden from Hermes and every other scheduler. Hermes remains status/report-only.
+- **Next step:** During U.S. market hours, prepare a fresh ticket and obtain one final confirmation of its exact ID and order rows before submission.

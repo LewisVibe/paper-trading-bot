@@ -1978,7 +1978,7 @@ data/paper_live_checklist_status_blockers.csv
 data/paper_live_checklist_status_evidence.csv
 ```
 
-Expected closeout label is `paper_live_checklist_vol_targeted_seed_status_only_phase_ready_manual_review` when saved monitoring status confirms the volatility-targeted candidate is the active report/status seed, `qqq_100_trend_gate` / `QQQ` remains aligned long one share as previous-seed context, no action is required, and `recommended_next_step=hold_no_action_and_monitor_only`. The generic promotion ladder remains Step 12 future-only.
+Before the first confirmed cycle, the closeout label is `paper_live_checklist_code_complete_market_hours_confirmation_pending`. The report now also reads matching saved execution and postcheck summaries. When the exact ticket is fully filled and every managed symbol reconciles, Step 11 becomes `complete_filled_and_postcheck_aligned` and the closeout label becomes `paper_live_checklist_complete_user_hermes_setup_pending`. Step 12's monitoring-only boundary remains complete with user-owned Hermes setup external. The report does not approve or submit an order, and completed evidence does not approve a repeat.
 
 Paper-live F6/F7 audit mode is the saved-output/report-only checkpoint for remaining external-review items before any future generic promotion ladder or multi-sleeve paper-live work. F6 checks whether preview/action/report paths keep unknown positions loud (`position_unknown`, `position_unavailable`, `manual_review_required`) and never silently assume flat. F7 checks whether portfolio backtest starting-cash/accounting consistency still needs review before backtest results are used as promotion evidence. This audit is static/source-review oriented; it does not rerun market-data backtests, refresh yfinance, call Alpaca, read positions, approve execution, or build the generic promotion ladder.
 
@@ -3657,6 +3657,22 @@ Backtest output is empty:
 - Confirm yfinance can download daily data locally.
 - Try a longer `backtest.history_period`, such as `10y`.
 - Remember that backtest mode needs enough rows for 200-day SMA and volatility windows.
+
+## Volatility-Targeted Paper Ticket And Execution
+
+`python bot.py --prepare-vol-targeted-growth-paper-ticket --confirm-readonly-alpaca-check` prepares a hashed, 15-minute review ticket for the approved `$100,000` Alpaca paper sleeve. It maps only `QQQ`, `MGK`, `IBIT`, and `SGOV`; calculates a 20-day realized-volatility multiplier from completed daily sessions against a 15% target with a 1x cap; leaves the unused percentage in cash; reads paper account/position/open-order/asset state; and submits nothing. Unrelated holdings remain untouched and reduce usable sleeve capital when required to keep the combined account unleveraged. Market-closed or stale-price runs still save a review ticket but set `execution_ready=False`.
+
+`python bot.py --execute-vol-targeted-growth-paper TICKET_ID --confirm-vol-targeted-growth-paper` is the only volatility-targeted submission route. It requires an untampered, semantically valid matching ticket, market-open state, prices still no more than 15 minutes old, unchanged managed and unrelated position quantities, no open or duplicate ticket orders, active/fractionable assets, no shorts, sufficient fresh cash/equity capacity, `alpaca.paper=true`, `allow_shorting=false`, and `paper_kill_switch_enabled=true`. Every order uses the audited paper gateway and a deterministic client order ID. Sells run before buys, and a non-filled order stops the remaining basket. The command never enables live trading or scheduling.
+
+`python bot.py --vol-targeted-growth-paper-postcheck --confirm-readonly-alpaca-check` reads paper positions and open orders after execution and reconciles them against the saved ticket and a fully filled execution record. It allows only an untradeable sub-$1 residual. It cannot submit, cancel, or replace orders.
+
+Static verification:
+
+```powershell
+python scripts\verify_vol_targeted_growth_paper_execution.py
+```
+
+None of these commands may be scheduled by Hermes, cron, Task Scheduler, a service, or a loop.
 
 ## Useful References
 

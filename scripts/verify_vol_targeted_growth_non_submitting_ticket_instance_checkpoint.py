@@ -105,11 +105,11 @@ def main() -> int:
 
 
 def verify_commands_registered(failures: list[str]) -> None:
-    bot_source = read_text(ROOT / "bot.py")
+    parser_source = read_text(ROOT / "trading_bot" / "cli" / "parser.py")
     inventory_source = read_text(ROOT / "scripts" / "verify_command_inventory.py")
     for command in COMMANDS:
-        if command not in bot_source:
-            failures.append(f"bot.py missing command: {command}")
+        if command not in parser_source:
+            failures.append(f"CLI parser missing command: {command}")
         if command not in inventory_source:
             failures.append(f"command inventory missing command: {command}")
 
@@ -348,10 +348,10 @@ def write_quantity_estimates(path: Path) -> None:
         "quantity_estimate_status",
     ]
     rows = [
-        ("qqq100_core", "QQQ", "700.00", "500.00", "1", "review_quantity_estimate_created"),
-        ("high_growth_research", "MGK", "200.00", "300.00", "0.6", "review_quantity_estimate_created"),
-        ("crypto_research", "IBIT", "50.00", "60.00", "0.8", "review_quantity_estimate_created"),
-        ("defensive_buffer", "SGOV", "50.00", "100.00", "0.5", "review_quantity_estimate_created"),
+        ("qqq100_core", "QQQ", "70000.00", "500.00", "140", "review_quantity_estimate_created"),
+        ("high_growth_research", "MGK", "20000.00", "300.00", "66.666666", "review_quantity_estimate_created"),
+        ("crypto_research", "IBIT", "5000.00", "60.00", "83.333333", "review_quantity_estimate_created"),
+        ("defensive_buffer", "SGOV", "5000.00", "100.00", "50", "review_quantity_estimate_created"),
     ]
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)

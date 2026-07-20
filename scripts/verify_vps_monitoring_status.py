@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 STATUS_MODULE = ROOT / "trading_bot" / "research" / "vps_monitoring_status.py"
-BOT_PATH = ROOT / "bot.py"
+REPORT_ONLY_PATH = ROOT / "trading_bot" / "cli" / "report_only.py"
 
 REQUIRED_OUTPUT_PHRASES = [
     "VPS MONITORING STATUS. REPORT ONLY. NOT EXECUTION.",
@@ -16,7 +16,6 @@ REQUIRED_OUTPUT_PHRASES = [
     "lock-wrapped safe command: --monitor-lockfile-readiness-report",
     "lock-wrapped safe command: --refresh-promoted-review",
     "lock-wrapped safe command: --refresh-defensive-research",
-    "missing_saved_research_inputs",
     "Next safe manual report actions:",
     "Monitor lockfile readiness report flag: --monitor-lockfile-readiness-report",
     "Promoted review refresh flag: --refresh-promoted-review",
@@ -99,11 +98,11 @@ def main() -> int:
 
 
 def verify_command_registered(failures: list[str]) -> None:
-    bot_source = read_text(BOT_PATH)
-    if "--vps-monitoring-status" not in bot_source:
-        failures.append("--vps-monitoring-status is missing from bot.py")
-    if "print_vps_monitoring_status" not in bot_source:
-        failures.append("bot.py should route --vps-monitoring-status to the report-only status printer")
+    report_only_source = read_text(REPORT_ONLY_PATH)
+    if 'argv == ["--vps-monitoring-status"]' not in report_only_source:
+        failures.append("--vps-monitoring-status is missing an exact report-only route")
+    if "print_vps_monitoring_status" not in report_only_source:
+        failures.append("The report-only router should call the VPS status printer")
 
 
 def verify_status_output_text(failures: list[str]) -> None:
@@ -127,6 +126,8 @@ def verify_missing_promoted_outputs_do_not_fail(failures: list[str]) -> None:
 
     with tempfile.TemporaryDirectory() as tmpdir:
         output = "\n".join(build_vps_monitoring_status_lines(Path(tmpdir)))
+    if "missing_saved_research_inputs" not in output:
+        failures.append("Status command should label missing saved research inputs without failing")
     if "promoted_review_missing_saved_outputs" not in output:
         failures.append("Status command should label missing promoted review outputs without failing")
     if "execution_approved=False" not in output or "scheduling_approved=False" not in output:

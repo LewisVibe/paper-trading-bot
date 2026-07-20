@@ -37,9 +37,9 @@ INPUT_FILES = {
 
 SLEEVE_PROXY_SYMBOLS = {
     "qqq100_core_trend_sleeve": "QQQ",
-    "high_growth_stock_research_sleeve": "",
-    "crypto_research_sleeve": "",
-    "defensive_cash_or_bond_sleeve": "",
+    "high_growth_stock_research_sleeve": "MGK",
+    "crypto_research_sleeve": "IBIT",
+    "defensive_cash_or_bond_sleeve": "SGOV",
 }
 
 SAFETY_FLAGS = {

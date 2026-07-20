@@ -398,6 +398,34 @@ Useful docs:
 - Do not schedule execution-capable commands.
 - Do not connect new strategies to paper execution without a separate readiness review.
 
+## Volatility-Targeted Alpaca Paper Run
+
+The approved paper sleeve has a `$100,000` maximum and uses `QQQ`, `MGK`, `IBIT`, and `SGOV`. Its 70/20/5/5 base weights are multiplied by a 15%-target, 20-day realized-volatility exposure factor capped at 1x; unused exposure stays in cash. The volatility input uses completed daily sessions only. Unrelated holdings stay untouched and reduce the capital available to this sleeve so the combined account remains unleveraged.
+
+Prepare and review an exact ticket during U.S. market hours:
+
+```powershell
+.venv\Scripts\python.exe bot.py --prepare-vol-targeted-growth-paper-ticket --confirm-readonly-alpaca-check
+```
+
+Preparation reads the Alpaca paper account, positions, account state, assets, and open orders, and fetches current proxy prices. It submits nothing. A ticket is executable only when the market is open, prices are no more than 15 minutes old, all checks pass, and the ticket has not expired. Confirmation rechecks price age, every position quantity, cash, equity, assets, and open/recent orders against the exact deterministic ticket.
+
+After reviewing the exact ticket ID and every order row, execute it manually:
+
+```powershell
+.venv\Scripts\python.exe bot.py --execute-vol-targeted-growth-paper TICKET_ID --confirm-vol-targeted-growth-paper
+```
+
+Then run the separate read-only postcheck:
+
+```powershell
+.venv\Scripts\python.exe bot.py --vol-targeted-growth-paper-postcheck --confirm-readonly-alpaca-check
+```
+
+After a matching ticket is fully filled and the postcheck aligns every managed symbol, `--paper-live-checklist-status` records Step 11 as complete. This evidence never approves an automatic repeat or follow-up order.
+
+`paper_kill_switch_enabled` must be `true` in the private local config for execution. Its checked-in example default remains `false`. These three commands must never be placed in Hermes, cron, Task Scheduler, a service, or a loop. Live trading remains unsupported.
+
 ## Disclaimer
 
 This repository is for education, research, and paper-trading workflow development only. Markets are risky, backtests can mislead, and paper trading does not prove live-trading performance.

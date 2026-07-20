@@ -22,7 +22,7 @@ VPS_OPERATIONS_READINESS_COLUMNS = [
 ]
 
 OLD_ONEDRIVE_PATH = "C:\\Users\\lewis\\OneDrive\\Documents\\Paper Trading Bot"
-SAFE_HERMES_MARKET_MONITOR_COMMAND = ".venv\\Scripts\\python.exe bot.py --refresh-market-monitor"
+SAFE_HERMES_MARKET_MONITOR_COMMAND = "--refresh-market-monitor"
 
 REQUIRED_PROJECT_FILES = [
     "bot.py",
@@ -80,7 +80,12 @@ def generate_vps_operations_readiness_report(
 
 
 def build_vps_operations_readiness_rows(root: Path) -> list[dict[str, Any]]:
-    bot_source = read_text(root / "bot.py")
+    cli_source = "\n".join(
+        [
+            read_text(root / "trading_bot" / "cli" / "parser.py"),
+            read_text(root / "trading_bot" / "cli" / "report_only.py"),
+        ]
+    )
     runner_source = read_text(root / "trading_bot" / "runners" / "research_reports.py")
     inventory_source = read_text(root / "scripts" / "verify_command_inventory.py")
     readme_source = read_text(root / "README.md")
@@ -96,8 +101,8 @@ def build_vps_operations_readiness_rows(root: Path) -> list[dict[str, Any]]:
         python_executable_inside_venv_row(),
         required_project_files_exist_row(root),
         repo_safety_verifier_exists_row(root),
-        market_monitor_commands_exist_row(bot_source, runner_source, inventory_source),
-        deployment_readiness_command_exists_row(bot_source, runner_source, inventory_source),
+        market_monitor_commands_exist_row(cli_source, runner_source, inventory_source),
+        deployment_readiness_command_exists_row(cli_source, runner_source, inventory_source),
         generated_data_ignored_row(gitignore_patterns),
         config_json_not_tracked_row(tracked_files),
         env_files_not_tracked_row(tracked_files),
@@ -160,10 +165,10 @@ def repo_safety_verifier_exists_row(root: Path) -> dict[str, Any]:
     )
 
 
-def market_monitor_commands_exist_row(bot_source: str, runner_source: str, inventory_source: str) -> dict[str, Any]:
+def market_monitor_commands_exist_row(cli_source: str, runner_source: str, inventory_source: str) -> dict[str, Any]:
     missing = []
     for command in MARKET_MONITOR_COMMANDS:
-        if command not in bot_source or command not in inventory_source:
+        if command not in cli_source or command not in inventory_source:
             missing.append(command)
     runner_ok = (
         "run_refresh_market_monitor_command" in runner_source
@@ -180,10 +185,10 @@ def market_monitor_commands_exist_row(bot_source: str, runner_source: str, inven
     )
 
 
-def deployment_readiness_command_exists_row(bot_source: str, runner_source: str, inventory_source: str) -> dict[str, Any]:
+def deployment_readiness_command_exists_row(cli_source: str, runner_source: str, inventory_source: str) -> dict[str, Any]:
     command = "--deployment-readiness-report"
     passed = (
-        command in bot_source
+        command in cli_source
         and command in inventory_source
         and "run_deployment_readiness_report_command" in runner_source
     )
@@ -191,7 +196,7 @@ def deployment_readiness_command_exists_row(bot_source: str, runner_source: str,
         "deployment_readiness_command_exists",
         "pass" if passed else "error",
         "medium",
-        f"{command} present in bot/inventory/runner: {passed}",
+        f"{command} present in CLI/inventory/runner: {passed}",
         "Keep deployment readiness available as a separate audit before VPS handoff.",
     )
 
@@ -245,7 +250,18 @@ def generated_outputs_not_tracked_row(tracked_files: set[str]) -> dict[str, Any]
 
 
 def no_execution_commands_approved_for_scheduling_row(docs_source: str) -> dict[str, Any]:
-    passed = "scheduling is not approved" in docs_source.lower() and "does not approve orders" in docs_source.lower()
+    lower_source = docs_source.lower()
+    scheduling_refused = (
+        "scheduling is not approved" in lower_source
+        or "must never be scheduled" in lower_source
+        or "scheduling_approved=false" in lower_source
+    )
+    orders_refused = (
+        "does not approve orders" in lower_source
+        or "execution_approved=false" in lower_source
+        or "no follow-up or repeat order is approved" in lower_source
+    )
+    passed = scheduling_refused and orders_refused
     return readiness_row(
         "no_execution_capable_commands_approved_for_scheduling",
         "pass" if passed else "warning",

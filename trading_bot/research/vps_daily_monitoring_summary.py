@@ -44,6 +44,9 @@ VOL_NON_SUBMITTING_TICKET_INSTANCE_QUALITY_GATE_SUMMARY_PATH = "data/vol_targete
 VOL_FRESH_BROKER_PRE_TICKET_GATE_DESIGN_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_design_summary.csv"
 VOL_FRESH_BROKER_PRE_TICKET_GATE_RUN_READINESS_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_run_readiness_summary.csv"
 VOL_FRESH_BROKER_PRE_TICKET_GATE_RUN_SUMMARY_PATH = "data/vol_targeted_growth_fresh_broker_pre_ticket_gate_run_summary.csv"
+VOL_PAPER_TICKET_SUMMARY_PATH = "data/vol_targeted_growth_paper_ticket_summary.csv"
+VOL_PAPER_EXECUTION_SUMMARY_PATH = "data/vol_targeted_growth_paper_execution_summary.csv"
+VOL_PAPER_POSTCHECK_SUMMARY_PATH = "data/vol_targeted_growth_paper_postcheck_summary.csv"
 PAPER_LIVE_GO_NO_GO_DASHBOARD_SUMMARY_PATH = "data/paper_live_go_no_go_dashboard_summary.csv"
 PAPER_LIVE_GO_NO_GO_EXPECTED_DECISION = "NO_GO_EXECUTION_BLOCKED_MONITOR_ONLY"
 VOL_EXECUTABLE_TICKET_GAP_LIST_EXPECTED_DECISION = "EXECUTABLE_TICKET_DESIGN_NOT_READY"
@@ -190,6 +193,13 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
     lines.extend(
         [
             "",
+            "Volatility paper ticket and execution status (current guarded path):",
+        ]
+    )
+    lines.extend(vol_paper_runtime_status_lines(root_path))
+    lines.extend(
+        [
+            "",
             "QQQ100 daily decision:",
         ]
     )
@@ -269,6 +279,40 @@ def vol_active_seed_readiness_status_lines(root: Path) -> list[str]:
         f"- scheduling_approved: {summary_value(rows, 'scheduling_approved') or 'False'}",
         "- vol_active_seed_readiness_warning: monitor only; this is not action preview, order approval, execution approval, or scheduling approval.",
     ]
+
+
+def vol_paper_runtime_status_lines(root: Path) -> list[str]:
+    ticket_rows = read_csv_rows(root / VOL_PAPER_TICKET_SUMMARY_PATH)
+    execution_rows = read_csv_rows(root / VOL_PAPER_EXECUTION_SUMMARY_PATH)
+    postcheck_rows = read_csv_rows(root / VOL_PAPER_POSTCHECK_SUMMARY_PATH)
+    if not ticket_rows:
+        return [
+            "- vol_paper_ticket_present: False",
+            f"- vol_paper_ticket_missing_saved_output: {VOL_PAPER_TICKET_SUMMARY_PATH}",
+            "- vol_paper_execution_status: not_started",
+            "- vol_paper_runtime_warning: status only; missing ticket does not approve preparation, execution, or scheduling.",
+        ]
+    lines = [
+        "- vol_paper_ticket_present: True",
+        f"- ticket_id: {summary_value(ticket_rows, 'ticket_id')}",
+        f"- paper_capital_usd: {summary_value(ticket_rows, 'paper_capital_usd')}",
+        f"- allocation_capital_usd: {summary_value(ticket_rows, 'allocation_capital_usd')}",
+        f"- realized_volatility: {summary_value(ticket_rows, 'realized_volatility')}",
+        f"- exposure_multiplier: {summary_value(ticket_rows, 'exposure_multiplier')}",
+        f"- cash_weight: {summary_value(ticket_rows, 'cash_weight')}",
+        f"- market_open_at_preparation: {summary_value(ticket_rows, 'market_open')}",
+        f"- prices_fresh_at_preparation: {summary_value(ticket_rows, 'prices_fresh')}",
+        f"- ticket_execution_ready: {summary_value(ticket_rows, 'execution_ready')}",
+        f"- ticket_blockers: {summary_value(ticket_rows, 'blockers')}",
+        f"- execution_status: {summary_value(execution_rows, 'execution_status') or 'not_started'}",
+        f"- submitted_order_count: {summary_value(execution_rows, 'submitted_order_count') or '0'}",
+        f"- filled_order_count: {summary_value(execution_rows, 'filled_order_count') or '0'}",
+        f"- postcheck_status: {summary_value(postcheck_rows, 'postcheck_status') or 'not_run'}",
+        "- live_trading_approved: False",
+        "- scheduling_approved: False",
+        "- vol_paper_runtime_warning: status only; ticket preparation, execution, and postcheck remain manual and forbidden from Hermes.",
+    ]
+    return lines
 
 
 def vol_candidate_decision_record_status_lines(root: Path) -> list[str]:

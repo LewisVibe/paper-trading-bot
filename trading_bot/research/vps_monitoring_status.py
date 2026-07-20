@@ -27,6 +27,7 @@ HIGH_RISK_BOUNDARY_LINES = [
     "Normal bot runs remain high-risk/manual-only and are outside safe VPS monitoring.",
     "Paper-order smoke tests remain excluded from safe monitoring and scheduling readiness.",
     "Slow-SMA paper execution remains excluded from safe monitoring and scheduling readiness.",
+    "Volatility ticket preparation, paper execution, and postcheck remain manual-only and forbidden from scheduling.",
     "No execution-capable paper-trading command is approved for scheduling or automation.",
 ]
 

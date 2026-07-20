@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BOT = ROOT / "bot.py"
+REPORT_ONLY = ROOT / "trading_bot" / "cli" / "report_only.py"
 MODULE = ROOT / "trading_bot" / "research" / "paper_live_go_no_go_dashboard.py"
 
 COMMANDS = ["--paper-live-go-no-go-dashboard", "--show-paper-live-go-no-go-dashboard"]
@@ -142,10 +142,10 @@ FORBIDDEN_TOKENS = [
 
 def main() -> int:
     failures: list[str] = []
-    bot_source = read_text(BOT)
+    report_only_source = read_text(REPORT_ONLY)
     module_source = read_text(MODULE)
 
-    verify_commands(bot_source, failures)
+    verify_commands(report_only_source, failures)
     verify_module(module_source, failures)
     verify_outputs_ignored(failures)
     verify_fixture_output(failures)
@@ -162,17 +162,13 @@ def main() -> int:
     return 0
 
 
-def verify_commands(bot_source: str, failures: list[str]) -> None:
-    load_config_index = bot_source.find("config = load_config(")
+def verify_commands(report_only_source: str, failures: list[str]) -> None:
     for command in COMMANDS:
-        if command not in bot_source:
-            failures.append(f"missing command in bot.py: {command}")
-        branch = f'sys.argv[1:] == ["{command}"]'
-        branch_index = bot_source.find(branch)
-        if branch_index < 0:
+        if command not in report_only_source:
+            failures.append(f"missing command in report-only router: {command}")
+        branch = f'argv == ["{command}"]'
+        if branch not in report_only_source:
             failures.append(f"missing early route for {command}")
-        elif load_config_index >= 0 and branch_index > load_config_index:
-            failures.append(f"{command} must route before config loading")
 
 
 def verify_module(module_source: str, failures: list[str]) -> None:

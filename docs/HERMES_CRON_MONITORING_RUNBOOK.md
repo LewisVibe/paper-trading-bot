@@ -137,5 +137,6 @@ creating the second cron. It does not approve live trading.
 Do not print or inspect secrets, config contents, logs, databases, auth files,
 tokens, account IDs, webhooks, or full generated CSV contents. Do not schedule
 execution-capable commands. Normal bot runs, paper-order smoke tests, slow-SMA
-paper execution, and any future order-capable command remain manual-only and
-outside Hermes cron automation.
+paper execution, volatility-targeted ticket preparation/execution/postcheck,
+and any future order-capable command remain manual-only and outside Hermes cron
+automation.
