@@ -21,8 +21,14 @@ PRIVATE_URL = "https://hc-ping.invalid/private-uuid"
 class FakeResponse:
     status = 200
 
+    def __init__(self, body=b"OK"):
+        self.body = body
+
     def getcode(self):
         return self.status
+
+    def read(self, _size=-1):
+        return self.body
 
     def __enter__(self):
         return self
@@ -68,6 +74,20 @@ def test_gateway_heartbeat_failure_never_prints_private_url():
     assert result == 1
     assert errors.getvalue() == "gateway_heartbeat=failed\n"
     assert PRIVATE_URL not in errors.getvalue()
+
+
+def test_healthchecks_unknown_check_response_is_a_failure():
+    errors = StringIO()
+
+    result = run_gateway_heartbeat(
+        environ={HEARTBEAT_ENV_NAME: "https://hc-ping.com/mistyped-uuid"},
+        opener=lambda *_args, **_kwargs: FakeResponse(b"Not Found"),
+        stderr=errors,
+    )
+
+    assert result == 1
+    assert errors.getvalue() == "gateway_heartbeat=failed\n"
+    assert "mistyped-uuid" not in errors.getvalue()
 
 
 def test_gateway_heartbeat_missing_configuration_fails_before_network(tmp_path):

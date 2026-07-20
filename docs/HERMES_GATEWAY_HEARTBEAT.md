@@ -36,9 +36,11 @@ Send one manual test ping:
 .venv\Scripts\python.exe scripts\send_gateway_heartbeat.py
 ```
 
-Success returns exit code zero with no output on success. Confirm the external check records the
-ping before creating the Hermes job. A configuration or network failure returns nonzero and
-prints only a generic status without the private URL.
+Success returns exit code zero with no output on success. For `hc-ping.com`, the sender also
+requires Healthchecks's `OK` response body so a mistyped or unknown check URL cannot produce a
+false success. Confirm the external check records the ping before creating the Hermes job. A
+configuration, endpoint, or network failure returns nonzero and prints only a generic status
+without the private URL.
 
 ## Hermes Job
 

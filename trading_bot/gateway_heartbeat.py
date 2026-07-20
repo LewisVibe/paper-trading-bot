@@ -95,6 +95,10 @@ def run_gateway_heartbeat(
             status = int(getattr(response, "status", response.getcode()))
             if not 200 <= status < 300:
                 raise OSError("heartbeat endpoint returned a non-success status")
+            if urlsplit(heartbeat_url).hostname == "hc-ping.com":
+                body = response.read(32)
+                if body.strip() != b"OK":
+                    raise OSError("Healthchecks did not confirm the ping")
     except Exception:  # noqa: BLE001 - never expose a token-bearing URL in a traceback
         print("gateway_heartbeat=failed", file=stderr)
         return 1

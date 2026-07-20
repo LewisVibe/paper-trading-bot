@@ -26,6 +26,8 @@ def main() -> int:
         ".env.gateway-heartbeat",
         'parsed.scheme.lower() != "https"',
         "HEARTBEAT_TIMEOUT_SECONDS = 10",
+        'hostname == "hc-ping.com"',
+        'body.strip() != b"OK"',
         "gateway_heartbeat=failed",
         "gateway_heartbeat=configuration_error",
     ]:
