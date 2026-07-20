@@ -88,6 +88,7 @@ def main() -> int:
         "--execute-vol-targeted-growth-paper",
         "--confirm-vol-targeted-growth-paper",
         "--vol-targeted-growth-paper-postcheck",
+        "--run-vol-targeted-growth-auto-paper",
     ]:
         if token not in parser_source:
             failures.append(f"parser is missing {token}")
@@ -99,6 +100,21 @@ def main() -> int:
         failures.append("paper gateway must carry deterministic client order IDs")
     if "run_execute_vol_targeted_growth_paper" in normal_source:
         failures.append("normal bot path must remain disconnected from volatility paper execution")
+    for token in [
+        "auto_paper_trading_enabled",
+        "AUTO_WINDOW_START_MINUTE",
+        "America/New_York",
+        "acquire_auto_lease",
+        "vtga-",
+        "send_discord_alert",
+        "run_vol_targeted_growth_auto_paper",
+        "partial_or_failed_manual_review_required",
+    ]:
+        if token not in runner_source:
+            failures.append(f"automatic paper runner is missing safety token: {token}")
+    config_example = (ROOT / "config.example.json").read_text(encoding="utf-8")
+    if '"auto_paper_trading_enabled": false' not in config_example:
+        failures.append("automatic paper trading must default false in config.example.json")
 
     if failures:
         print("Volatility-targeted paper execution verification failed.")
@@ -106,7 +122,7 @@ def main() -> int:
             print(f"- {failure}")
         return 1
     print("Volatility-targeted paper execution verification passed.")
-    print("Verified $100,000 cap, four-symbol scope, ticket confirmation, gateway routing, and no scheduling/live path.")
+    print("Verified $100,000 cap, four-symbol scope, manual confirmation, explicit auto opt-in, lease/idempotency, gateway routing, and no live path.")
     return 0
 
 

@@ -261,13 +261,18 @@ def no_execution_commands_approved_for_scheduling_row(docs_source: str) -> dict[
         or "execution_approved=false" in lower_source
         or "no follow-up or repeat order is approved" in lower_source
     )
-    passed = scheduling_refused and orders_refused
+    scoped_exception = (
+        "--run-vol-targeted-growth-auto-paper" in docs_source
+        and "sole execution-scheduling exception" in lower_source
+        and "every manual or live execution route remains forbidden" in lower_source
+    )
+    passed = scheduling_refused and orders_refused and scoped_exception
     return readiness_row(
-        "no_execution_capable_commands_approved_for_scheduling",
+        "only_scoped_auto_paper_command_approved_for_scheduling",
         "pass" if passed else "warning",
         "high",
-        "Docs state scheduling is not approved and orders are not approved." if passed else "Could not confirm explicit scheduling/order refusal wording.",
-        "Keep execution-capable commands out of all schedules.",
+        "Docs preserve refusal wording and document only the scoped autonomous paper exception." if passed else "Could not confirm the scoped autonomous paper scheduling boundary.",
+        "Keep every manual and live execution command out of schedules.",
     )
 
 

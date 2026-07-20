@@ -40,7 +40,7 @@ SAFE_SCHEDULE_CANDIDATES = [
 MUST_NOT_SCHEDULE_COMMANDS = [
     "--paper-order-test",
     "--execute-slow-sma-paper",
-    "any future execution command",
+    "every execution command except --run-vol-targeted-growth-auto-paper",
 ]
 
 REQUIRED_GITIGNORE_PATTERNS = [

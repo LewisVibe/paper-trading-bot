@@ -48,6 +48,7 @@ The default configuration is intentionally conservative:
   "dry_run": true,
   "allow_shorting": false,
   "paper_kill_switch_enabled": false,
+  "auto_paper_trading_enabled": false,
   "alpaca": {
     "paper": true
   }
@@ -395,7 +396,8 @@ Useful docs:
 - Do not commit `config.json`, `.env`, API keys, Discord webhooks, databases, logs, generated CSVs, or charts.
 - Do not enable live trading.
 - Do not treat research reports as execution approval.
-- Do not schedule execution-capable commands.
+- Do not schedule execution-capable commands except the explicitly approved
+  `--run-vol-targeted-growth-auto-paper` route.
 - Do not connect new strategies to paper execution without a separate readiness review.
 
 ## Volatility-Targeted Alpaca Paper Run
@@ -425,6 +427,8 @@ Then run the separate read-only postcheck:
 After a matching ticket is fully filled and the postcheck aligns every managed symbol, `--paper-live-checklist-status` records Step 11 as complete. This evidence never approves an automatic repeat or follow-up order.
 
 `paper_kill_switch_enabled` must be `true` in the private local config for execution. Its checked-in example default remains `false`. These three commands must never be placed in Hermes, cron, Task Scheduler, a service, or a loop. Live trading remains unsupported.
+
+Autonomous paper rebalancing is a separate, explicit opt-in. Set `auto_paper_trading_enabled=true` only on the private VPS config and schedule only `.venv\Scripts\python.exe bot.py --run-vol-targeted-growth-auto-paper` at `5 10 * * 1-5` in `America/New_York`. It runs at most once per session, uses a date-scoped exclusive lease and deterministic Alpaca client IDs, sends outcomes to Discord, and supports no live-trading mode. See `docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`.
 
 ## Disclaimer
 

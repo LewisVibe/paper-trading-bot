@@ -7,6 +7,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BOT_PATH = ROOT / "bot.py"
+ENTRYPOINT_PATH = ROOT / "trading_bot" / "cli" / "entrypoint.py"
+REPORT_ONLY_PATH = ROOT / "trading_bot" / "cli" / "report_only.py"
+APPLICATION_PATH = ROOT / "trading_bot" / "cli" / "application.py"
+PAPER_ORDERS_PATH = ROOT / "trading_bot" / "paper_orders.py"
 
 
 def main() -> int:
@@ -27,25 +31,34 @@ def main() -> int:
 
 
 def verify_early_route_precedes_alpaca_imports(failures: list[str]) -> None:
-    source = read_text(BOT_PATH)
-    early_index = source.find("_early_report_only_route()")
-    alpaca_index = source.find("from alpaca.trading.client import TradingClient")
+    bot_source = read_text(BOT_PATH)
+    entrypoint_source = read_text(ENTRYPOINT_PATH)
+    report_only_source = read_text(REPORT_ONLY_PATH)
+    early_index = entrypoint_source.find("dispatch_early_command(argv)")
+    application_index = entrypoint_source.find("from trading_bot.cli.application import run as run_application")
+    if "from trading_bot.cli.entrypoint import run" not in bot_source:
+        failures.append("bot.py must delegate to the refactored CLI entrypoint")
     if early_index == -1:
-        failures.append("bot.py must call _early_report_only_route()")
-    if alpaca_index == -1:
-        failures.append("bot.py must retain TradingClient import for execution paths")
-    if early_index != -1 and alpaca_index != -1 and early_index > alpaca_index:
-        failures.append("_early_report_only_route() must run before top-level Alpaca imports")
-    if 'sys.argv[1:] == ["--vps-monitoring-status"]' not in source:
+        failures.append("CLI entrypoint must call dispatch_early_command(argv)")
+    if application_index == -1:
+        failures.append("CLI entrypoint must lazily import the execution application")
+    if early_index != -1 and application_index != -1 and early_index > application_index:
+        failures.append("early report-only dispatch must run before importing the execution application")
+    if 'argv == ["--vps-monitoring-status"]' not in report_only_source:
         failures.append("early route must be limited to exact --vps-monitoring-status invocation")
-    if 'sys.argv[1:] == ["--vps-daily-monitoring-summary"]' not in source:
+    if 'argv == ["--vps-daily-monitoring-summary"]' not in report_only_source:
         failures.append("early route must be limited to exact --vps-daily-monitoring-summary invocation")
-    if 'sys.argv[1:] == ["--market-monitor-scheduling-readiness-report"]' not in source:
+    if 'argv == ["--market-monitor-scheduling-readiness-report"]' not in report_only_source:
         failures.append("early route must be limited to exact --market-monitor-scheduling-readiness-report invocation")
 
 
 def verify_execution_imports_still_present(failures: list[str]) -> None:
-    source = read_text(BOT_PATH)
+    source = "\n".join(
+        [
+            read_text(APPLICATION_PATH),
+            read_text(PAPER_ORDERS_PATH),
+        ]
+    )
     required = [
         "from alpaca.trading.client import TradingClient",
         "from alpaca.trading.requests import MarketOrderRequest",

@@ -12,7 +12,8 @@ The first VPS phase should run safe report, display, and preview commands only.
 - Keep the project paper-only and dry-run-first.
 - Verify local repository, Python, package, and safety readiness before running
   any report or preview commands.
-- Keep execution-capable commands manually gated and out of automation.
+- Keep execution-capable commands manually gated and out of automation except
+  the explicitly approved autonomous paper route.
 
 ## Safety Boundary
 
@@ -21,7 +22,8 @@ The first VPS phase should run safe report, display, and preview commands only.
 - Keep `dry_run=true` unless a separately reviewed paper-execution workflow is
   explicitly being tested.
 - Keep `allow_shorting=false`.
-- Do not schedule execution-capable commands.
+- Do not schedule execution-capable commands except
+  `--run-vol-targeted-growth-auto-paper` under its dedicated runbook.
 - Do not commit `config.json`, `.env` files, logs, databases, CSV outputs, or
   chart files.
 - Keep API keys, Discord webhooks, account IDs, and all secrets private.
@@ -118,10 +120,13 @@ chat-delivered reports. Windows Task Scheduler remains an alternative, not the
 default assumption, and may be used only to start or keep the Hermes gateway
 running on boot, not for execution-capable trading commands.
 
-No refresh cron job or execution scheduling is currently approved or created
-beyond the existing status-only job. Use Hermes cron for safe
-monitoring/reporting only; not for execution. Do not paste config/API
-keys/webhooks/account IDs into Hermes prompts.
+No refresh cron job is currently approved, and the existing status job remains
+read-only. Do not paste config/API keys/webhooks/account IDs into Hermes prompts.
+
+The approved exception is the separate autonomous paper command documented in
+`docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`. It may be scheduled only after the
+private VPS config explicitly sets `auto_paper_trading_enabled=true`; it does
+not approve normal bot execution, manual ticket commands, retries, or live trading.
 
 Initial cron candidate should probably be a status/checkpoint job before refresh
 jobs. The initial future candidate set is limited to

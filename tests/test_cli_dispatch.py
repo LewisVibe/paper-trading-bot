@@ -38,7 +38,7 @@ def test_pre_config_registry_is_ordered_unique_and_complete():
 def test_config_registry_is_unique_and_has_explicit_handlers():
     destinations = [descriptor.dest for descriptor in dispatch.CONFIG_COMMANDS]
 
-    assert len(destinations) == 22
+    assert len(destinations) == 23
     assert len(destinations) == len(set(destinations))
     assert set(application.build_config_handlers()) == set(destinations)
     assert set(destinations).isdisjoint(descriptor.dest for descriptor in dispatch.PRE_CONFIG_COMMANDS)

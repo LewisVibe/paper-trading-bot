@@ -8,6 +8,7 @@
   "dry_run": true,
   "allow_shorting": false,
   "paper_kill_switch_enabled": false,
+  "auto_paper_trading_enabled": false,
   "database_path": "data/trades.db",
   "log_file": "logs/bot.log",
   "strategy": {

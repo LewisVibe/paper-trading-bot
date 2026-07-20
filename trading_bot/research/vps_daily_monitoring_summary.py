@@ -28,6 +28,7 @@ from trading_bot.research.vps_monitoring_status import (
     qqq100_manual_flatten_readiness_status_lines,
     qqq100_manual_flatten_runbook_status_lines,
     read_csv_rows,
+    vol_auto_paper_status_lines,
 )
 
 
@@ -89,6 +90,7 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         "VPS DAILY MONITORING SUMMARY. REPORT ONLY. NOT EXECUTION.",
         "execution_approved=False",
         "scheduling_approved=False",
+        "auto_paper_scheduling_approved=True",
         "",
         "Safety reminders:",
         f"- config_presence_only: {(root_path / 'config.json').exists()}; contents were not read.",
@@ -197,6 +199,13 @@ def build_vps_daily_monitoring_summary_lines(root: Path | str = ".") -> list[str
         ]
     )
     lines.extend(vol_paper_runtime_status_lines(root_path))
+    lines.extend(
+        [
+            "",
+            "Autonomous volatility paper status:",
+        ]
+    )
+    lines.extend(vol_auto_paper_status_lines(root_path))
     lines.extend(
         [
             "",
@@ -310,7 +319,7 @@ def vol_paper_runtime_status_lines(root: Path) -> list[str]:
         f"- postcheck_status: {summary_value(postcheck_rows, 'postcheck_status') or 'not_run'}",
         "- live_trading_approved: False",
         "- scheduling_approved: False",
-        "- vol_paper_runtime_warning: status only; ticket preparation, execution, and postcheck remain manual and forbidden from Hermes.",
+        "- vol_paper_runtime_warning: manual ticket commands remain forbidden from Hermes; only the dedicated auto-paper command has scoped scheduling approval.",
     ]
     return lines
 

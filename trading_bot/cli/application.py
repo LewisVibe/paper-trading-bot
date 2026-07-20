@@ -133,6 +133,7 @@ from trading_bot.runners.paper_execution import (
 from trading_bot.runners.vol_targeted_growth_paper import (
     run_execute_vol_targeted_growth_paper,
     run_prepare_vol_targeted_growth_paper_ticket,
+    run_vol_targeted_growth_auto_paper,
     run_vol_targeted_growth_paper_postcheck,
 )
 from trading_bot.runners.research_reports import (
@@ -1781,6 +1782,10 @@ def build_config_handlers():
             command_config,
             command_logger,
             confirm_readonly_alpaca_check=command_args.confirm_readonly_alpaca_check,
+        ),
+        "run_vol_targeted_growth_auto_paper": lambda command_args, command_config, command_logger: run_vol_targeted_growth_auto_paper(
+            command_config,
+            command_logger,
         ),
         "execute_qqq100_paper": lambda command_args, command_config, command_logger: run_execute_qqq100_paper(
             config=command_config,

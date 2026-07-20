@@ -21,7 +21,7 @@ CONTRACT_PREREQUISITES = [
     "paper_kill_switch_explicitly_allows_execution",
     "execution_eligibility_not_blocked",
     "defensive_allocation_decision_allows_progression",
-    "explicit_confirmation_flag_required",
+    "explicit_confirmation_or_scoped_auto_opt_in_required",
     "separate_from_normal_bot_behavior",
     "not_runnable_from_report_preview_dashboard_modes",
 ]
@@ -63,7 +63,7 @@ def main() -> int:
     verify_report_preview_no_execution_approval(failures)
     verify_contract_has_no_order_instruction_columns(failures)
     verify_gate_blocked_future_work(failures)
-    verify_helper_wired_only_to_manual_paper_order_test(failures)
+    verify_helper_wired_only_to_scoped_paper_commands(failures)
 
     if failures:
         print("Paper kill-switch enforcement contract verification failed.")
@@ -77,7 +77,7 @@ def main() -> int:
     print("Future defensive execution command absent: pass")
     print("Report/preview execution approval scan: pass")
     print("Current gate remains blocked/future-work-required: pass")
-    print("Isolated helper wiring covers only the guarded manual paper execution paths: pass")
+    print("Isolated helper wiring covers only guarded manual paths and the explicitly enabled auto-paper path: pass")
     print("Result: passed")
     return 0
 
@@ -95,6 +95,8 @@ def verify_safe_config_defaults(config_example: dict[str, object], failures: lis
         failures.append("config.example.json must keep alpaca.paper=true")
     if config_example.get("allow_shorting") is not False:
         failures.append("config.example.json must keep allow_shorting=false")
+    if config_example.get("auto_paper_trading_enabled") is not False:
+        failures.append("config.example.json must keep auto_paper_trading_enabled=false")
 
 
 def verify_high_risk_commands_still_gated(help_text: str, failures: list[str]) -> None:
@@ -178,7 +180,7 @@ def verify_gate_blocked_future_work(failures: list[str]) -> None:
             break
 
 
-def verify_helper_wired_only_to_manual_paper_order_test(failures: list[str]) -> None:
+def verify_helper_wired_only_to_scoped_paper_commands(failures: list[str]) -> None:
     helper_path = ROOT / "trading_bot" / "safety" / "paper_kill_switch.py"
     if not helper_path.exists():
         failures.append("isolated paper kill-switch helper is missing")
@@ -194,8 +196,8 @@ def verify_helper_wired_only_to_manual_paper_order_test(failures: list[str]) -> 
         failures.append("isolated helper must be limited to manual and slow SMA paper preflights")
     if "evaluate_paper_kill_switch_gate" not in vol_targeted_source:
         failures.append("volatility-targeted paper execution must use the isolated paper kill-switch helper")
-    elif not vol_targeted_helper_call_is_scoped(vol_targeted_source):
-        failures.append("volatility-targeted kill-switch use must remain inside its manual execution route")
+    elif not vol_targeted_helper_calls_are_scoped(vol_targeted_source):
+        failures.append("volatility-targeted kill-switch use must remain inside its manual and explicit auto-paper routes")
     high_risk_paths = [
         ROOT / "trading_bot" / "execution.py",
         ROOT / "trading_bot" / "alpaca_client.py",
@@ -234,17 +236,25 @@ def helper_call_is_limited_to_scoped_paper_commands(bot_source: str) -> bool:
     )
 
 
-def vol_targeted_helper_call_is_scoped(source: str) -> bool:
+def vol_targeted_helper_calls_are_scoped(source: str) -> bool:
     try:
-        execution_start = source.index("def run_execute_vol_targeted_growth_paper(")
-        execution_end = source.index("def run_vol_targeted_growth_paper_postcheck(", execution_start)
+        manual_start = source.index("def run_execute_vol_targeted_growth_paper(")
+        manual_end = source.index("def run_vol_targeted_growth_paper_postcheck(", manual_start)
+        auto_start = source.index("def run_vol_targeted_growth_auto_paper(")
+        auto_end = source.index("def collect_broker_state(", auto_start)
     except ValueError:
         return False
-    execution_source = source[execution_start:execution_end]
-    outside_source = source[:execution_start] + source[execution_end:]
+    manual_source = source[manual_start:manual_end]
+    auto_source = source[auto_start:auto_end]
+    outside_source = source[:manual_start] + source[manual_end:auto_start] + source[auto_end:]
     if "evaluate_paper_kill_switch_gate(" in outside_source:
         return False
-    return preflight_before_terms(execution_source, ["submit_paper_order("])
+    if source.count("evaluate_paper_kill_switch_gate(") != 2:
+        return False
+    return preflight_before_terms(manual_source, ["submit_paper_order("]) and preflight_before_terms(
+        auto_source,
+        ["submit_paper_order("],
+    )
 
 
 def preflight_before_terms(source: str, terms: list[str]) -> bool:

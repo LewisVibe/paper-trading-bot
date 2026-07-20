@@ -1972,6 +1972,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Run a confirmed read-only Alpaca paper position postcheck for the latest volatility ticket.",
     )
     parser.add_argument(
+        "--run-vol-targeted-growth-auto-paper",
+        action="store_true",
+        help="Run the explicitly enabled once-per-session autonomous Alpaca paper rebalance.",
+    )
+    parser.add_argument(
         "--vol-targeted-growth-paper-live-execution-blocker-rollup",
         action="store_true",
         help="Create a saved-output-only paper-live execution blocker rollup for the active volatility seed.",

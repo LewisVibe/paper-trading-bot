@@ -27,8 +27,8 @@ HIGH_RISK_BOUNDARY_LINES = [
     "Normal bot runs remain high-risk/manual-only and are outside safe VPS monitoring.",
     "Paper-order smoke tests remain excluded from safe monitoring and scheduling readiness.",
     "Slow-SMA paper execution remains excluded from safe monitoring and scheduling readiness.",
-    "Volatility ticket preparation, paper execution, and postcheck remain manual-only and forbidden from scheduling.",
-    "No execution-capable paper-trading command is approved for scheduling or automation.",
+    "Volatility manual ticket preparation, manual execution, and manual postcheck remain forbidden from scheduling.",
+    "Only --run-vol-targeted-growth-auto-paper has scoped paper scheduling approval; every other execution command remains excluded.",
 ]
 
 DEFENSIVE_SAVED_INPUTS = [
@@ -42,6 +42,7 @@ PAPER_LIVE_MONITORING_STATUS_PATH = "data/paper_live_monitoring_status.csv"
 QQQ100_DAILY_DECISION_SUMMARY_PATH = "data/qqq100_daily_decision_summary.csv"
 QQQ100_MANUAL_FLATTEN_READINESS_SUMMARY_PATH = "data/qqq100_manual_flatten_readiness_summary.csv"
 QQQ100_MANUAL_FLATTEN_RUNBOOK_SUMMARY_PATH = "data/qqq100_manual_flatten_runbook_summary.csv"
+VOL_AUTO_PAPER_SUMMARY_PATH = "data/vol_targeted_growth_auto_paper_summary.csv"
 
 PAPER_LIVE_REQUIRED_SUMMARY_VALUES = {
     "active_strategy": "higher_growth_multi_sleeve_target_vol_15_win_20_cap_1x",
@@ -99,6 +100,7 @@ GENERATED_OUTPUT_PATHS = [
     "data/qqq100_manual_flatten_runbook_summary.csv",
     "data/qqq100_manual_flatten_runbook_blockers.csv",
     "data/qqq100_manual_flatten_runbook_evidence.csv",
+    VOL_AUTO_PAPER_SUMMARY_PATH,
 ]
 
 
@@ -125,6 +127,7 @@ def build_vps_monitoring_status_lines(root: Path | str = ".") -> list[str]:
         "VPS MONITORING STATUS. REPORT ONLY. NOT EXECUTION.",
         "execution_approved=False",
         "scheduling_approved=False",
+        "auto_paper_scheduling_approved=True",
         "No dashboard, web server, open ports, loop mode, scheduling, or execution controls are enabled.",
         "",
         "Repo safety reminder:",
@@ -155,6 +158,9 @@ def build_vps_monitoring_status_lines(root: Path | str = ".") -> list[str]:
     lines.append("")
     lines.append("QQQ100 manual flatten runbook:")
     lines.extend(qqq100_manual_flatten_runbook_status_lines(root_path))
+    lines.append("")
+    lines.append("Autonomous volatility paper status:")
+    lines.extend(vol_auto_paper_status_lines(root_path))
     lines.append("")
     lines.append("Saved-output freshness:")
     lines.extend(format_freshness_lines(build_freshness_statuses(root_path)))
@@ -339,6 +345,25 @@ def qqq100_daily_decision_status_lines(root: Path) -> list[str]:
         "- qqq100_daily_decision_warning: monitor only; this is not order approval.",
     ]
     return lines
+
+
+def vol_auto_paper_status_lines(root: Path) -> list[str]:
+    rows = read_csv_rows(root / VOL_AUTO_PAPER_SUMMARY_PATH)
+    if not rows:
+        return [
+            "- auto_paper_summary_present: False",
+            "- auto_paper_status: not_run",
+            "- auto_paper_scheduling_approved: True (scoped command only)",
+        ]
+    return [
+        "- auto_paper_summary_present: True",
+        f"- auto_paper_session_date: {summary_value(rows, 'session_date')}",
+        f"- auto_paper_status: {summary_value(rows, 'status')}",
+        f"- auto_paper_submitted_order_count: {summary_value(rows, 'submitted_order_count')}",
+        f"- auto_paper_postcheck_aligned: {summary_value(rows, 'postcheck_aligned')}",
+        f"- auto_paper_scheduling_approved: {summary_value(rows, 'auto_paper_scheduling_approved') or 'True'} (scoped command only)",
+        f"- live_trading_approved: {summary_value(rows, 'live_trading_approved') or 'False'}",
+    ]
 
 
 def qqq100_manual_flatten_readiness_status_lines(root: Path) -> list[str]:

@@ -606,12 +606,13 @@ approve execution.
 
 Future Hermes cron readiness plan for safe monitoring reports only:
 
-Hermes cron preferred for future monitoring scheduling if configured. No
-refresh cron job or execution scheduling is currently approved or created beyond
-the existing status-only job. Use Hermes cron for safe
-monitoring/reporting only; not for execution. Windows Task Scheduler remains an
-alternative only for keeping the Hermes gateway running, not for trading
-commands.
+Hermes cron is preferred for monitoring scheduling if configured. No refresh
+cron job is currently approved, and the existing status job remains read-only.
+The sole execution-scheduling exception is
+`--run-vol-targeted-growth-auto-paper` under
+`docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`; every manual or live execution route
+remains forbidden. Windows Task Scheduler remains an alternative only for
+keeping the Hermes gateway running.
 
 Do not paste config/API keys/webhooks/account IDs into Hermes prompts. Candidate
 jobs should run from `C:\dev\paper-trading-bot`, use
@@ -3589,10 +3590,10 @@ Get-Content data\strategy_comparison_results.csv
 
 The bot runs once and exits. Repeated runs are not approved by default.
 
-For future monitoring-only, chat-delivered market monitor reports, prefer Hermes
-cron once Hermes runs on the VPS. Windows Task Scheduler may be used only to
-start or keep the Hermes gateway running on boot, not for execution-capable
-trading commands.
+For monitoring-only, chat-delivered market monitor reports, prefer Hermes cron
+once Hermes runs on the VPS. Windows Task Scheduler may be used only to start or
+keep the Hermes gateway running on boot. The separately approved autonomous
+paper command must use its dedicated Hermes job and runbook.
 
 Do not schedule:
 
@@ -3665,6 +3666,8 @@ Backtest output is empty:
 `python bot.py --execute-vol-targeted-growth-paper TICKET_ID --confirm-vol-targeted-growth-paper` is the only volatility-targeted submission route. It requires an untampered, semantically valid matching ticket, market-open state, prices still no more than 15 minutes old, unchanged managed and unrelated position quantities, no open or duplicate ticket orders, active/fractionable assets, no shorts, sufficient fresh cash/equity capacity, `alpaca.paper=true`, `allow_shorting=false`, and `paper_kill_switch_enabled=true`. Every order uses the audited paper gateway and a deterministic client order ID. Sells run before buys, and a non-filled order stops the remaining basket. The command never enables live trading or scheduling.
 
 `python bot.py --vol-targeted-growth-paper-postcheck --confirm-readonly-alpaca-check` reads paper positions and open orders after execution and reconciles them against the saved ticket and a fully filled execution record. It allows only an untradeable sub-$1 residual. It cannot submit, cancel, or replace orders.
+
+`python bot.py --run-vol-targeted-growth-auto-paper` is the only approved autonomous broker-write route. It requires private `auto_paper_trading_enabled=true`, `paper_kill_switch_enabled=true`, Alpaca paper mode, no shorting, the 10:00-10:20 `America/New_York` runtime window, fresh prices, open/active broker state, no open/duplicate orders, sufficient unleveraged capacity, and an exclusive date-scoped lease. It uses deterministic session client IDs, stops after any non-filled order, performs an immediate read-only reconciliation, and reports the result to Discord. It treats market holidays and already-aligned sub-dollar residuals as zero-order success. It supports no live mode and must be scheduled only as documented in `docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`.
 
 Static verification:
 

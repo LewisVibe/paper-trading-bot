@@ -140,3 +140,8 @@ execution-capable commands. Normal bot runs, paper-order smoke tests, slow-SMA
 paper execution, volatility-targeted ticket preparation/execution/postcheck,
 and any future order-capable command remain manual-only and outside Hermes cron
 automation.
+
+The separate `paper-bot-auto-paper-rebalance` job is the sole scoped exception;
+it runs only `--run-vol-targeted-growth-auto-paper` under the default-off config
+gate documented in `docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`. It is not part of
+the status job and does not make any manual execution command schedulable.

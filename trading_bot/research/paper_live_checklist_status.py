@@ -247,13 +247,21 @@ def build_checklist_snapshot(root: Path) -> PaperLiveChecklistSnapshot:
     filled_order_count = parse_int(summary_value(execution_rows, "filled_order_count"))
     aligned_symbol_count = parse_int(summary_value(postcheck_rows, "aligned_symbol_count"))
     symbol_count = parse_int(summary_value(postcheck_rows, "symbol_count"))
+    filled_cycle = (
+        paper_execution_status == "filled"
+        and submitted_order_count > 0
+        and submitted_order_count == filled_order_count
+    )
+    no_action_cycle = (
+        paper_execution_status == "no_action"
+        and submitted_order_count == 0
+        and filled_order_count == 0
+    )
     paper_cycle_complete = (
         bool(ticket_rows)
         and paper_ticket_id not in {"", "missing"}
         and paper_ticket_id == execution_ticket_id == postcheck_ticket_id
-        and paper_execution_status == "filled"
-        and submitted_order_count > 0
-        and submitted_order_count == filled_order_count
+        and (filled_cycle or no_action_cycle)
         and paper_postcheck_status == "aligned"
         and symbol_count > 0
         and aligned_symbol_count == symbol_count
@@ -273,7 +281,11 @@ def build_checklist_snapshot(root: Path) -> PaperLiveChecklistSnapshot:
     )
     if evidence_complete:
         if paper_cycle_complete:
-            paper_live_monitoring_status = "vol_targeted_paper_cycle_filled_postcheck_aligned"
+            paper_live_monitoring_status = (
+                "vol_targeted_paper_cycle_no_action_postcheck_aligned"
+                if no_action_cycle
+                else "vol_targeted_paper_cycle_filled_postcheck_aligned"
+            )
             checklist_phase_status = "paper_live_checklist_complete_user_hermes_setup_pending"
             next_step = "configure_user_owned_hermes_status_cron_and_monitor_only"
         elif ticket_rows:
@@ -332,8 +344,16 @@ def build_report_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, An
         (
             "11",
             "fresh_ticket_final_confirmation",
-            "complete_filled_and_postcheck_aligned" if snapshot.paper_cycle_complete == "True" else "pending_market_hours_and_final_user_confirmation",
-            "The exact confirmed paper ticket filled and the read-only postcheck is aligned."
+            (
+                "complete_no_action_and_postcheck_aligned"
+                if snapshot.paper_execution_status == "no_action" and snapshot.paper_cycle_complete == "True"
+                else "complete_filled_and_postcheck_aligned"
+                if snapshot.paper_cycle_complete == "True"
+                else "pending_market_hours_and_final_user_confirmation"
+            ),
+            "The autonomous paper cycle required no orders and the postcheck is aligned."
+            if snapshot.paper_execution_status == "no_action" and snapshot.paper_cycle_complete == "True"
+            else "The exact confirmed paper ticket filled and the read-only postcheck is aligned."
             if snapshot.paper_cycle_complete == "True"
             else "No order is approved until a fresh market-hours ticket is reviewed and explicitly confirmed.",
         ),
@@ -392,8 +412,16 @@ def build_summary_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, A
         ("steps_1_to_10_status", "complete", "Implementation and verification are complete through the guarded manual execution path."),
         (
             "step_11_status",
-            "complete_filled_and_postcheck_aligned" if snapshot.paper_cycle_complete == "True" else "pending_market_hours_and_final_user_confirmation",
-            "The confirmed paper basket filled and reconciled exactly."
+            (
+                "complete_no_action_and_postcheck_aligned"
+                if snapshot.paper_execution_status == "no_action" and snapshot.paper_cycle_complete == "True"
+                else "complete_filled_and_postcheck_aligned"
+                if snapshot.paper_cycle_complete == "True"
+                else "pending_market_hours_and_final_user_confirmation"
+            ),
+            "The autonomous paper cycle required no orders and reconciled exactly."
+            if snapshot.paper_execution_status == "no_action" and snapshot.paper_cycle_complete == "True"
+            else "The confirmed paper basket filled and reconciled exactly."
             if snapshot.paper_cycle_complete == "True"
             else "A fresh exact market-hours ticket and final user confirmation are still required.",
         ),
@@ -424,7 +452,7 @@ def build_blocker_rows(snapshot: PaperLiveChecklistSnapshot) -> list[dict[str, A
             0,
             ("exact_ticket_confirmation_pending", "blocked", "critical", "No current order is approved without a fresh exact ticket and final user confirmation.", snapshot.next_safe_development_step),
         )
-    if snapshot.paper_ticket_execution_ready != "True":
+    if snapshot.paper_ticket_execution_ready != "True" and snapshot.paper_cycle_complete != "True":
         rows.insert(
             1,
             (

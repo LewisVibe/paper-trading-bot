@@ -34,6 +34,27 @@ def test_paper_kill_switch_enabled_defaults_false(tmp_path, monkeypatch):
     assert config.paper_kill_switch_enabled is False
 
 
+def test_auto_paper_trading_enabled_defaults_false(tmp_path, monkeypatch):
+    monkeypatch.delenv("AUTO_PAPER_TRADING_ENABLED", raising=False)
+
+    config = load_config(write_config(tmp_path), force_dry_run=False)
+
+    assert config.auto_paper_trading_enabled is False
+
+
+def test_auto_paper_trading_enabled_requires_explicit_config_or_env(tmp_path, monkeypatch):
+    monkeypatch.setenv("AUTO_PAPER_TRADING_ENABLED", "false")
+    from_config = load_config(
+        write_config(tmp_path, auto_paper_trading_enabled=True),
+        force_dry_run=False,
+    )
+    assert from_config.auto_paper_trading_enabled is True
+
+    monkeypatch.setenv("AUTO_PAPER_TRADING_ENABLED", "true")
+    from_env = load_config(write_config(tmp_path), force_dry_run=False)
+    assert from_env.auto_paper_trading_enabled is True
+
+
 def test_paper_kill_switch_enabled_loads_from_config(tmp_path, monkeypatch):
     monkeypatch.setenv("PAPER_KILL_SWITCH_ENABLED", "false")
 

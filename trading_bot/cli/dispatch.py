@@ -431,6 +431,7 @@ CONFIG_COMMANDS = (
     CommandDescriptor("prepare_vol_targeted_growth_paper_ticket", SideEffect.BROKER_READ),
     CommandDescriptor("execute_vol_targeted_growth_paper", SideEffect.PAPER_EXECUTION),
     CommandDescriptor("vol_targeted_growth_paper_postcheck", SideEffect.BROKER_READ),
+    CommandDescriptor("run_vol_targeted_growth_auto_paper", SideEffect.PAPER_EXECUTION),
     CommandDescriptor("execute_qqq100_paper", SideEffect.PAPER_EXECUTION),
     CommandDescriptor("execute_slow_sma_paper", SideEffect.PAPER_EXECUTION),
     CommandDescriptor("preview_slow_sma_actions", SideEffect.BROKER_READ),

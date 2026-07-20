@@ -271,6 +271,25 @@ def verify_report_output_from_fixture(failures: list[str]) -> None:
         if phrase not in completed_output:
             failures.append(f"completed fixture output missing phrase: {phrase}")
 
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        data_dir = root / "data"
+        data_dir.mkdir()
+        write_monitoring_fixture(data_dir / "paper_live_monitoring_status.csv")
+        write_ticket_fixture(data_dir / "vol_targeted_growth_paper_ticket_summary.csv")
+        write_execution_fixture(data_dir / "vol_targeted_growth_paper_execution_summary.csv", status="no_action", count=0)
+        write_postcheck_fixture(data_dir / "vol_targeted_growth_paper_postcheck_summary.csv")
+        no_action_result = generate_paper_live_checklist_status(root)
+
+    no_action_output = "\n".join(no_action_result.summary_lines)
+    for phrase in [
+        "vol_targeted_paper_cycle_no_action_postcheck_aligned",
+        "complete_no_action_and_postcheck_aligned",
+        "Paper cycle complete: True",
+    ]:
+        if phrase not in no_action_output:
+            failures.append(f"no-action fixture output missing phrase: {phrase}")
+
 
 def write_monitoring_fixture(path: Path) -> None:
     path.write_text(
@@ -317,13 +336,13 @@ def write_ticket_fixture(path: Path, *, execution_ready: bool = False) -> None:
     )
 
 
-def write_execution_fixture(path: Path) -> None:
+def write_execution_fixture(path: Path, *, status: str = "filled", count: int = 4) -> None:
     path.write_text(
         "summary_name,summary_value,details\n"
         "ticket_id,vtg-fixture,Exact saved ticket ID\n"
-        "execution_status,filled,All submitted orders filled\n"
-        "submitted_order_count,4,Submitted order count\n"
-        "filled_order_count,4,Filled order count\n",
+        f"execution_status,{status},Saved execution status\n"
+        f"submitted_order_count,{count},Submitted order count\n"
+        f"filled_order_count,{count},Filled order count\n",
         encoding="utf-8",
     )
 

@@ -185,8 +185,9 @@ def test_only_gateway_calls_broker_submit_and_all_order_routes_use_gateway():
         ("run_paper_order_test", "MANUAL_TEST", "confirm_paper_order"),
         ("run_execute_qqq100_paper", "QQQ100", "confirm_qqq100_paper"),
         ("process_slow_sma_execution_ticker", "SLOW_SMA", "confirm_slow_sma_paper"),
-        ("run_execute_vol_targeted_growth_paper", "VOL_TARGETED_GROWTH", "confirmed"),
-    }
+            ("run_execute_vol_targeted_growth_paper", "VOL_TARGETED_GROWTH", "confirmed"),
+            ("run_vol_targeted_growth_auto_paper", "VOL_TARGETED_GROWTH", "auto_execution_authorized"),
+        }
     assert paper_client_owners == order_client_owners
 
 

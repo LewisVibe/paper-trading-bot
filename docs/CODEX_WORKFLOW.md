@@ -98,6 +98,11 @@ Execution-capable commands must never be scheduled and must not be protected
 merely by a lockfile. A lockfile does not approve scheduling, execution, or paper
 orders.
 
+The sole approved exception is `--run-vol-targeted-growth-auto-paper`, using the
+date-scoped execution lease and exact Hermes definition in
+`docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`. All manual and legacy execution
+commands remain excluded from scheduling.
+
 Use `python scripts\verify_monitor_lockfile_final_state.py` to verify the final
 three-command lock boundary, stale-lock manual-review policy, false
 execution/scheduling approval flags, and VPS handoff documentation.
@@ -111,10 +116,11 @@ VPS-safe lock-wrapped monitoring commands for future manual scheduling review.
 Keep these exceptions narrow: do not weaken normal bot, paper-order-test,
 slow-SMA paper execution, or any execution-capable dependency checks.
 
-Hermes cron preferred for future monitoring scheduling if configured, but no
-refresh cron job or execution scheduling is currently approved or created beyond
-the existing status-only job. Use Hermes cron for safe
-monitoring/reporting only; not for execution. Do not paste config/API
+Hermes cron is preferred for monitoring scheduling if configured. The existing
+status-only job remains read-only. The sole execution-scheduling exception is
+`--run-vol-targeted-growth-auto-paper`, under the exact scope and safeguards in
+`docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`; every manual or live execution route
+remains forbidden. Do not paste config/API
 keys/webhooks/account IDs into Hermes prompts. Initial cron candidate should
 probably be a status/checkpoint job before refresh jobs. Refresh jobs should
 remain protected by lockfile/no-overlap, and a stale lock requires manual

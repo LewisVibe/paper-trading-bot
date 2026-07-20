@@ -75,6 +75,7 @@ class AppConfig:
     etf_research_universe: ResearchUniverseConfig
     slow_sma_strategy: SlowSmaStrategyConfig
     paper_kill_switch_enabled: bool = False
+    auto_paper_trading_enabled: bool = False
 
 
 def resolve_path(config_path: Path, value: str) -> Path:
@@ -351,6 +352,12 @@ def load_config(
             "paper_kill_switch_enabled",
             False,
             "PAPER_KILL_SWITCH_ENABLED",
+        ),
+        auto_paper_trading_enabled=parse_config_bool_with_env(
+            raw,
+            "auto_paper_trading_enabled",
+            False,
+            "AUTO_PAPER_TRADING_ENABLED",
         ),
         database_path=resolve_path(config_path, str(raw.get("database_path", "data/trades.db"))),
         log_file=resolve_path(config_path, str(raw.get("log_file", "logs/bot.log"))),

@@ -183,6 +183,8 @@ Hermes must also never schedule:
 - Any command that connects research strategies to execution.
 - Any command that bypasses preview, risk checks, manual review, or explicit confirmation.
 
+The sole scoped exception is `.venv\Scripts\python.exe bot.py --run-vol-targeted-growth-auto-paper`, explicitly approved on 2026-07-20 and documented in `docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`. It requires a private default-off config opt-in, remains Alpaca paper-only, and must run as its own once-daily 10:05 `America/New_York` job. No other execution command inherits this approval.
+
 Safe-looking report, preview, display, or verifier commands should still only be scheduled after a separate user-approved scheduling review.
 
 ## 6A. Future Hermes Cron Plan For Safe Monitoring Only
@@ -195,9 +197,11 @@ alternative, but not the default assumption; if used, it should be limited to
 starting or keeping the Hermes gateway running on boot, not to running
 execution-capable trading commands.
 
-No refresh cron job or execution scheduling is currently approved or created
-beyond the existing status-only job. Use Hermes cron for safe
-monitoring/reporting only; not for execution. Do not paste config/API
+No refresh cron job is currently approved. The existing status job remains
+read-only. The sole execution-scheduling exception is
+`--run-vol-targeted-growth-auto-paper`, under the exact scope and safeguards in
+`docs/HERMES_AUTO_PAPER_EXECUTION_CRON.md`; every manual or live execution route
+remains forbidden. Do not paste config/API
 keys/webhooks/account IDs into Hermes prompts, and do not print `config.json`
 contents, API keys, webhook URLs, tokens, account IDs, generated data, logs, or
 database contents.

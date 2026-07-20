@@ -756,6 +756,8 @@ Outputs: `data/paper_live_checklist_status.csv`, `data/paper_live_checklist_stat
 
 Closeout status is `paper_live_checklist_code_complete_market_hours_confirmation_pending` until Step 11 receives a fresh exact market-hours ticket and final user confirmation. Matching fully filled execution and aligned postcheck evidence changes Step 11 to `complete_filled_and_postcheck_aligned` and the closeout status to `paper_live_checklist_complete_user_hermes_setup_pending`. Step 12's monitoring-only boundary is complete while user-owned Hermes setup remains external. No follow-up or repeat order is approved.
 
+Autonomous paper operation was separately approved on 2026-07-20. Only `--run-vol-targeted-growth-auto-paper` may be scheduled, once per U.S. session at 10:05 `America/New_York`, with private `auto_paper_trading_enabled=true`. Its session lease, deterministic client IDs, no-open-order gate, fill-stop policy, and postcheck prevent automatic retries after an ambiguous or partial cycle. Manual ticket commands and every other execution route remain unschedulable; live trading remains unsupported.
+
 Implemented F6/F7 audit checkpoint: `python bot.py --paper-live-f6-f7-audit`.
 
 Saved display: `python bot.py --show-paper-live-f6-f7-audit`.

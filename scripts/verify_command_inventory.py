@@ -454,6 +454,7 @@ REQUIRED_COMMANDS = [
     "--execute-vol-targeted-growth-paper",
     "--confirm-vol-targeted-growth-paper",
     "--vol-targeted-growth-paper-postcheck",
+    "--run-vol-targeted-growth-auto-paper",
     "--vol-targeted-growth-paper-live-execution-blocker-rollup",
     "--show-vol-targeted-growth-paper-live-execution-blocker-rollup",
     "--vol-managed-etf-backtest",
