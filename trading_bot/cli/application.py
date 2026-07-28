@@ -79,6 +79,7 @@ from trading_bot.output import (
 from trading_bot.paper_orders import (
     PaperOrderRequest,
     PaperOrderRoute,
+    build_paper_order_client_order_id,
     submit_paper_order,
 )
 from trading_bot.positions import (
@@ -326,6 +327,12 @@ def run_paper_order_test(
             return 1
 
         open_orders = get_open_orders_for_ticker(alpaca_client, ticker)
+        duplicate_recent_order = recent_matching_manual_smoke_test_order_check(
+            alpaca_client,
+            ticker,
+            side,
+            quantity,
+        )
         if smoke_test_gate_decision is not None:
             smoke_test_gate_decision = evaluate_manual_paper_smoke_test_gate(
                 ticker=ticker,
@@ -347,12 +354,6 @@ def run_paper_order_test(
                 )
                 return 2
 
-            duplicate_recent_order = recent_matching_manual_smoke_test_order_check(
-                alpaca_client,
-                ticker,
-                side,
-                quantity,
-            )
             smoke_test_gate_decision = evaluate_manual_paper_smoke_test_gate(
                 ticker=ticker,
                 side=side,
@@ -384,6 +385,17 @@ def run_paper_order_test(
                     "; ".join(smoke_test_gate_decision.reasons),
                 )
                 return 2
+        elif duplicate_recent_order.duplicate_recent_order_check != "pass":
+            logger.warning(
+                "Manual paper-order test blocked after recent-order check: status=%s source=%s",
+                duplicate_recent_order.duplicate_recent_order_check,
+                duplicate_recent_order.duplicate_recent_order_source,
+            )
+            print("PAPER ORDER TEST BLOCKED BY RECENT MATCHING-ORDER PREFLIGHT.")
+            print("No orders were created, submitted, or cancelled.")
+            print(f"Status: {duplicate_recent_order.duplicate_recent_order_check}")
+            print(f"Source: {duplicate_recent_order.duplicate_recent_order_source}")
+            return 2
 
         is_valid_asset, asset_error = validate_alpaca_asset_for_order(
             alpaca_client,
@@ -416,6 +428,7 @@ def run_paper_order_test(
 
         conn = init_database(config.database_path)
         order_config = replace(config, dry_run=False)
+        manual_intent_window = datetime.now(timezone.utc).strftime("%Y%m%dT%HZ")
         submission = submit_paper_order(
             alpaca_client,
             PaperOrderRequest(
@@ -425,6 +438,13 @@ def run_paper_order_test(
                 quantity=quantity,
                 confirmed=confirm_paper_order,
                 alpaca_paper=config.alpaca_paper,
+                client_order_id=build_paper_order_client_order_id(
+                    route=PaperOrderRoute.MANUAL_TEST,
+                    intent_key=manual_intent_window,
+                    ticker=ticker,
+                    side=side,
+                    quantity=quantity,
+                ),
             ),
         )
         order_id = submission.order_id
@@ -633,6 +653,13 @@ def run_execute_qqq100_paper(
                 quantity=QQQ100_FIXED_QUANTITY,
                 confirmed=confirm_qqq100_paper,
                 alpaca_paper=config.alpaca_paper,
+                client_order_id=build_paper_order_client_order_id(
+                    route=PaperOrderRoute.QQQ100,
+                    intent_key=signal.signal_date,
+                    ticker=QQQ100_TICKER,
+                    side=decision.order_side,
+                    quantity=QQQ100_FIXED_QUANTITY,
+                ),
             ),
         )
         order_id = submission.order_id
@@ -1624,6 +1651,13 @@ def process_slow_sma_execution_ticker(
                 quantity=quantity,
                 confirmed=confirm_slow_sma_paper,
                 alpaca_paper=config.alpaca_paper,
+                client_order_id=build_paper_order_client_order_id(
+                    route=PaperOrderRoute.SLOW_SMA,
+                    intent_key=signal_row.date,
+                    ticker=ticker,
+                    side=side,
+                    quantity=quantity,
+                ),
             ),
         )
         order_id = submission.order_id
