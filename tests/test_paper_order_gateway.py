@@ -16,6 +16,7 @@ from trading_bot.paper_orders import (
     PaperOrderRefused,
     PaperOrderRequest,
     PaperOrderRoute,
+    build_paper_order_client_order_id,
     submit_paper_order,
 )
 from trading_bot.positions import Position
@@ -84,12 +85,22 @@ def test_gateway_submits_confirmed_paper_day_market_order(route, side, expected_
     ("overrides", "message"),
     [
         ({"confirmed": False}, "Explicit confirmation"),
+        ({"confirmed": 1}, "Explicit confirmation"),
         ({"alpaca_paper": False}, "live trading is refused"),
+        ({"alpaca_paper": 1}, "live trading is refused"),
         ({"route": "unknown"}, "known paper-order route"),
+        ({"ticker": None}, "Ticker must be text"),
         ({"ticker": "   "}, "Ticker is required"),
+        ({"side": None}, "Order side must be text"),
         ({"side": "hold"}, "Order side"),
+        ({"quantity": 1}, "must be a Decimal"),
         ({"quantity": Decimal("0")}, "finite positive"),
         ({"quantity": Decimal("NaN")}, "finite positive"),
+        ({"client_order_id": ""}, "Client order ID is required"),
+        ({"client_order_id": " padded "}, "leading or trailing whitespace"),
+        ({"client_order_id": "line\nbreak"}, "only ASCII letters"),
+        ({"client_order_id": "paper-order-£"}, "only ASCII letters"),
+        ({"client_order_id": "---"}, "at least one ASCII letter"),
         ({"client_order_id": "x" * 129}, "128 characters"),
     ],
 )
@@ -102,6 +113,7 @@ def test_gateway_refuses_unsafe_request_before_broker_call(overrides, message):
         "quantity": Decimal("1"),
         "confirmed": True,
         "alpaca_paper": True,
+        "client_order_id": "paper-order-test",
     }
     values.update(overrides)
 
@@ -109,6 +121,81 @@ def test_gateway_refuses_unsafe_request_before_broker_call(overrides, message):
         submit_paper_order(client, PaperOrderRequest(**values))
 
     assert client.submitted == []
+
+
+def test_client_order_id_builder_is_deterministic_scoped_and_non_secret():
+    values = {
+        "route": PaperOrderRoute.QQQ100,
+        "intent_key": "private-signal-reference-2026-07-28",
+        "ticker": " qqq ",
+        "side": "buy",
+        "quantity": Decimal("1.0"),
+    }
+
+    first = build_paper_order_client_order_id(**values)
+    second = build_paper_order_client_order_id(**values)
+
+    assert first == second
+    assert first.startswith("execute_qqq100_paper-qqq-buy-")
+    assert "private-signal-reference" not in first
+    assert len(first) <= 128
+    assert all(character.isascii() and (character.isalnum() or character in "._-") for character in first)
+
+    variants = [
+        {**values, "route": PaperOrderRoute.SLOW_SMA},
+        {**values, "intent_key": "different-signal"},
+        {**values, "ticker": "SPY"},
+        {**values, "side": "sell"},
+        {**values, "quantity": Decimal("2")},
+    ]
+    assert len({first, *(build_paper_order_client_order_id(**variant) for variant in variants)}) == 6
+
+
+def test_client_order_id_builder_has_no_structural_delimiter_collision():
+    left = build_paper_order_client_order_id(
+        route=PaperOrderRoute.QQQ100,
+        intent_key="scope",
+        ticker=".\x1fABC",
+        side="buy",
+        quantity=Decimal("1"),
+    )
+    right = build_paper_order_client_order_id(
+        route=PaperOrderRoute.QQQ100,
+        intent_key="scope\x1f.",
+        ticker="ABC",
+        side="buy",
+        quantity=Decimal("1"),
+    )
+
+    assert left != right
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"route": "unknown"},
+        {"intent_key": None},
+        {"intent_key": "   "},
+        {"ticker": None},
+        {"ticker": "   "},
+        {"side": None},
+        {"side": "hold"},
+        {"quantity": 1},
+        {"quantity": Decimal("Infinity")},
+    ],
+)
+def test_client_order_id_builder_refuses_invalid_intent(overrides):
+    values = {
+        "route": PaperOrderRoute.MANUAL_TEST,
+        "intent_key": "20260728T09Z",
+        "ticker": "AAPL",
+        "side": "buy",
+        "quantity": Decimal("1"),
+    }
+    values.update(overrides)
+
+    with pytest.raises(PaperOrderRefused):
+        build_paper_order_client_order_id(**values)
 
 
 def test_post_submit_status_refresh_preserves_order_id_and_final_broker_state():
@@ -176,8 +263,10 @@ def test_only_gateway_calls_broker_submit_and_all_order_routes_use_gateway():
                 keywords = {keyword.arg: keyword.value for keyword in request.keywords}
                 route = keywords["route"]
                 confirmed = keywords["confirmed"]
+                client_order_id = keywords.get("client_order_id")
                 assert isinstance(route, ast.Attribute)
                 assert isinstance(confirmed, ast.Name)
+                assert client_order_id is not None
                 gateway_callers.append((owner, route.attr, confirmed.id))
 
     assert direct_submitters == [(Path("trading_bot/paper_orders.py"), "submit_paper_order")]
@@ -189,6 +278,43 @@ def test_only_gateway_calls_broker_submit_and_all_order_routes_use_gateway():
             ("run_vol_targeted_growth_auto_paper", "VOL_TARGETED_GROWTH", "auto_execution_authorized"),
         }
     assert paper_client_owners == order_client_owners
+
+
+def test_every_manual_order_runs_recent_matching_order_check_before_submission():
+    tree = ast.parse(APPLICATION_PATH.read_text(encoding="utf-8"))
+    run_function = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "run_paper_order_test"
+    )
+    parents: dict[ast.AST, ast.AST] = {}
+    for parent in ast.walk(run_function):
+        for child in ast.iter_child_nodes(parent):
+            parents[child] = parent
+
+    recent_checks = [
+        node
+        for node in ast.walk(run_function)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "recent_matching_manual_smoke_test_order_check"
+    ]
+    submissions = [
+        node
+        for node in ast.walk(run_function)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "submit_paper_order"
+    ]
+
+    assert len(recent_checks) == 1
+    assert len(submissions) == 1
+    assert recent_checks[0].lineno < submissions[0].lineno
+    ancestor = parents.get(recent_checks[0])
+    while ancestor is not None:
+        if isinstance(ancestor, ast.If):
+            assert ast.unparse(ancestor.test) != "smoke_test_gate_decision is not None"
+        ancestor = parents.get(ancestor)
 
 
 @pytest.mark.parametrize(
